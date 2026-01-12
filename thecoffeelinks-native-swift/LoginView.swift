@@ -12,7 +12,7 @@ struct LoginView: View {
                 Spacer()
                 
                 // Logo or Brand
-                Text("Theme Caffe")
+                Text("The Coffee Links")
                     .font(.brandSerif(40))
                     .foregroundStyle(Color.coffeeDark)
                 
