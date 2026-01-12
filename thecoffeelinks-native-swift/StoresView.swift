@@ -50,7 +50,7 @@ struct StoresView: View {
 struct StoreMapView: View {
     let store: Store
     @StateObject private var viewModel = StoresViewModel()
-    @State private var selectedDetent: PresentationDetent = .fraction(0.12)
+    @State private var selectedDetent: PresentationDetent = .medium
     @Environment(\.dismiss) var dismiss
     
     var body: some View {
@@ -176,9 +176,8 @@ struct StoreMapView: View {
             } onNavigate: {
                 viewModel.startNavigation()
             }
-            .presentationDetents([.fraction(0.12), .medium, .large], selection: $selectedDetent)
-            .presentationBackground(.clear)
-            .presentationDragIndicator(selectedDetent == .fraction(0.12) ? .hidden : .visible)
+            .presentationDetents([.medium, .large], selection: $selectedDetent)
+            .presentationDragIndicator(.visible)
             .background {
                 if #available(iOS 16.4, *) {
                     Color.clear
@@ -243,55 +242,34 @@ struct StoreDetailView: View {
     
     var body: some View {
         VStack(spacing: 0) {
-            if detent == .fraction(0.12) {
-                // Capsule/Minimal State
-                HStack {
-                    Spacer()
-                    Text(store.name)
-                        .font(.brandSans(18))
-                        .fontWeight(.bold)
-                        .foregroundStyle(Color.coffeeDark)
-                        .padding(.horizontal, 24)
-                        .padding(.vertical, 12)
-                        .background(
-                            Capsule()
-                                .fill(.white)
-                                .shadow(color: Color.black.opacity(0.1), radius: 8, x: 0, y: 4)
-                        )
-                    Spacer()
-                }
-                .padding(.top, 12)
-                Spacer()
-            } else {
-                // Detailed States (Medium/Large)
-                ScrollView {
-                    VStack(alignment: .leading, spacing: 20) {
-                        // Header
-                        HStack(alignment: .top) {
-                            VStack(alignment: .leading, spacing: 4) {
-                                Text(store.name)
-                                    .font(.brandSerif(28))
-                                    .foregroundStyle(Color.coffeeDark)
-                                Text("Cafe • Bakery")
-                                    .font(.brandSans(14))
-                                    .foregroundStyle(.secondary)
-                            }
-                            Spacer()
+            // Detailed States (Medium/Large)
+            ScrollView {
+                VStack(alignment: .leading, spacing: 20) {
+                    // Header
+                    HStack(alignment: .top) {
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text(store.name)
+                                .font(.brandSerif(28))
+                                .foregroundStyle(Color.coffeeDark)
+                            Text("Cafe • Bakery")
+                                .font(.brandSans(14))
+                                .foregroundStyle(.secondary)
                         }
-                        .padding(.horizontal)
-                        .padding(.top, 24)
+                        Spacer()
+                    }
+                    .padding(.horizontal)
+                    .padding(.top, 24)
                         
-                        // Action Buttons
-                        HStack(spacing: 12) {
-                            ActionButton(title: "Drive", subtitle: "Directions", icon: "car.fill", color: Color.brandAccent, action: onNavigate)
-                            ActionButton(title: "Call", subtitle: "Store", icon: "phone.fill", color: .blue.opacity(0.1), textColor: .blue, iconColor: .blue, action: {
-                                if let phone = store.phoneNumber {
-                                    URL(string: "tel://\(phone.replacingOccurrences(of: " ", with: ""))").map { UIApplication.shared.open($0) }
-                                }
-                            })
-                            ActionButton(title: "Website", subtitle: "Menu", icon: "globe", color: .green.opacity(0.1), textColor: .green, iconColor: .green, action: {})
-                        }
-                        .padding(.horizontal)
+                    // Action Buttons
+                    HStack(spacing: 12) {
+                        ActionButton(title: "Drive", subtitle: "Directions", icon: "car.fill", color: Color.brandAccent, action: onNavigate)
+                        ActionButton(title: "Call", subtitle: "Store", icon: "phone.fill", color: .blue.opacity(0.1), textColor: .blue, iconColor: .blue, action: {
+                            if let phone = store.phoneNumber {
+                                URL(string: "tel://\(phone.replacingOccurrences(of: " ", with: ""))").map { UIApplication.shared.open($0) }
+                            }
+                        })
+                    }
+                    .padding(.horizontal)
                         
                         // Info Grid
                         Grid(alignment: .leading, horizontalSpacing: 20, verticalSpacing: 12) {
@@ -346,12 +324,11 @@ struct StoreDetailView: View {
                         .padding(.horizontal)
                         
                         Spacer(minLength: 50)
-                    }
                 }
-                .background(Color.white)
-                .cornerRadius(24, corners: [.topLeft, .topRight])
-                .ignoresSafeArea(edges: .bottom)
             }
+            .background(Color.white)
+            .cornerRadius(24, corners: [.topLeft, .topRight])
+            .ignoresSafeArea(edges: .bottom)
         }
     }
     

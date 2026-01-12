@@ -32,14 +32,18 @@ struct SearchView: View {
             Color.brandBackground.ignoresSafeArea()
             
             VStack(spacing: 0) {
-                // Internal Header for Legacy Mode
+                // MAIN HEADER
+                header
+                
+                // Internal Search Bar
                 if enableInternalSearch {
                     HStack {
                         Image(systemName: "magnifyingglass")
-                            .foregroundStyle(Color.secondary)
+                            .foregroundStyle(Color.brandAccent)
                         
                         TextField("Search coffee, food...", text: $internalQuery)
                             .textFieldStyle(.plain)
+                            .font(.brandSans(16))
                             .onSubmit {
                                 Task { await viewModel.search() }
                             }
@@ -53,20 +57,17 @@ struct SearchView: View {
                                 viewModel.query = ""
                             } label: {
                                 Image(systemName: "xmark.circle.fill")
-                                    .foregroundStyle(Color.secondary)
+                                    .foregroundStyle(Color.secondary.opacity(0.5))
                             }
                         }
-                        
-                        Button("Close") {
-                            dismiss()
-                        }
-                        .font(.caption)
-                        .foregroundStyle(.blue)
                     }
-                    .padding()
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 12)
                     .background(Color.white)
                     .cornerRadius(12)
-                    .padding()
+                    .padding(.horizontal)
+                    .padding(.bottom, 8)
+                    .shadow(color: Color.black.opacity(0.05), radius: 10, x: 0, y: 5)
                 }
                 
                 // CATEGORY FILTER CHIPS
@@ -109,9 +110,7 @@ struct SearchView: View {
                     Spacer()
                 } else {
                     ScrollView {
-                        if !enableInternalSearch {
-                            header
-                        }
+                        // Grid or Content
                         
                         LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 16) {
                             ForEach(viewModel.filteredProducts) { product in
@@ -129,7 +128,7 @@ struct SearchView: View {
                 }
             }
         }
-        .navigationBarHidden(true)
+        // .navigationBarHidden(true) // Removed to allow interaction and standard bar behavior if needed
         .onChange(of: externalQuery) { newValue in
             if !enableInternalSearch {
                 viewModel.query = newValue

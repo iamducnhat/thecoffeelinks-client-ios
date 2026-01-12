@@ -32,10 +32,9 @@ struct ContentView: View {
                                 NetworkView()
                             }
                             
-                            // Search Tab with role: .search
-                            Tab("Search", systemImage: "magnifyingglass", role: .search) {
-                                SearchView(externalQuery: searchText)
-                                    .searchable(text: $searchText)
+                            // Search Tab
+                            Tab("Search", systemImage: "magnifyingglass") {
+                                SearchView(enableInternalSearch: true)
                             }
                             
                             Tab("Orders", image: "coffee") {
