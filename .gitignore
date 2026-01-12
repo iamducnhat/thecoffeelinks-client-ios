@@ -1,0 +1,4 @@
+build/
+*.log
+build_*.log
+extract_icons.py

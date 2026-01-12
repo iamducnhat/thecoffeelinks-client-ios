@@ -6,6 +6,14 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		25544F4E2F1431A0009A6830 /* Auth in Frameworks */ = {isa = PBXBuildFile; productRef = 25544F4D2F1431A0009A6830 /* Auth */; };
+		25544F502F1431A0009A6830 /* PostgREST in Frameworks */ = {isa = PBXBuildFile; productRef = 25544F4F2F1431A0009A6830 /* PostgREST */; };
+		25544F522F1431A0009A6830 /* Realtime in Frameworks */ = {isa = PBXBuildFile; productRef = 25544F512F1431A0009A6830 /* Realtime */; };
+		25544F542F1431A0009A6830 /* Storage in Frameworks */ = {isa = PBXBuildFile; productRef = 25544F532F1431A0009A6830 /* Storage */; };
+		25544F572F14341D009A6830 /* Supabase in Frameworks */ = {isa = PBXBuildFile; productRef = 25544F562F14341D009A6830 /* Supabase */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXContainerItemProxy section */
 		25544E7C2F1424F4009A6830 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -52,6 +60,11 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				25544F572F14341D009A6830 /* Supabase in Frameworks */,
+				25544F542F1431A0009A6830 /* Storage in Frameworks */,
+				25544F522F1431A0009A6830 /* Realtime in Frameworks */,
+				25544F502F1431A0009A6830 /* PostgREST in Frameworks */,
+				25544F4E2F1431A0009A6830 /* Auth in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -78,6 +91,7 @@
 				25544E702F1424F2009A6830 /* thecoffeelinks-native-swift */,
 				25544E7E2F1424F4009A6830 /* thecoffeelinks-native-swiftTests */,
 				25544E882F1424F4009A6830 /* thecoffeelinks-native-swiftUITests */,
+				25544F552F14341D009A6830 /* Frameworks */,
 				25544E6F2F1424F2009A6830 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -90,6 +104,13 @@
 				25544E852F1424F4009A6830 /* thecoffeelinks-native-swiftUITests.xctest */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		25544F552F14341D009A6830 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Frameworks;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -112,6 +133,11 @@
 			);
 			name = "thecoffeelinks-native-swift";
 			packageProductDependencies = (
+				25544F4D2F1431A0009A6830 /* Auth */,
+				25544F4F2F1431A0009A6830 /* PostgREST */,
+				25544F512F1431A0009A6830 /* Realtime */,
+				25544F532F1431A0009A6830 /* Storage */,
+				25544F562F14341D009A6830 /* Supabase */,
 			);
 			productName = "thecoffeelinks-native-swift";
 			productReference = 25544E6E2F1424F2009A6830 /* thecoffeelinks-native-swift.app */;
@@ -195,6 +221,9 @@
 			);
 			mainGroup = 25544E652F1424F2009A6830;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				25544F4C2F1431A0009A6830 /* XCRemoteSwiftPackageReference "supabase-swift" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 25544E6F2F1424F2009A6830 /* Products */;
 			projectDirPath = "";
@@ -322,12 +351,13 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 26.2;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = iphoneos;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 			};
@@ -380,11 +410,12 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 26.2;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				SDKROOT = iphoneos;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
 				SWIFT_COMPILATION_MODE = wholemodule;
 				VALIDATE_PRODUCT = YES;
 			};
@@ -400,11 +431,13 @@
 				DEVELOPMENT_TEAM = UJLGY9Y9S3;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = "The Coffee Links";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -413,6 +446,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = "vn.nhat.thecoffeelinks-native-swift";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
 				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -432,11 +466,13 @@
 				DEVELOPMENT_TEAM = UJLGY9Y9S3;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = "The Coffee Links";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -445,6 +481,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = "vn.nhat.thecoffeelinks-native-swift";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
 				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -462,11 +499,12 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = UJLGY9Y9S3;
 				GENERATE_INFOPLIST_FILE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 26.2;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = "vn.nhat.thecoffeelinks-native-swiftTests";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
@@ -484,7 +522,7 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = UJLGY9Y9S3;
 				GENERATE_INFOPLIST_FILE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 26.2;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = "vn.nhat.thecoffeelinks-native-swiftTests";
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -509,6 +547,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = "vn.nhat.thecoffeelinks-native-swiftUITests";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
@@ -529,6 +568,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = "vn.nhat.thecoffeelinks-native-swiftUITests";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
@@ -578,6 +618,45 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		25544F4C2F1431A0009A6830 /* XCRemoteSwiftPackageReference "supabase-swift" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/supabase/supabase-swift";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 2.5.1;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		25544F4D2F1431A0009A6830 /* Auth */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 25544F4C2F1431A0009A6830 /* XCRemoteSwiftPackageReference "supabase-swift" */;
+			productName = Auth;
+		};
+		25544F4F2F1431A0009A6830 /* PostgREST */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 25544F4C2F1431A0009A6830 /* XCRemoteSwiftPackageReference "supabase-swift" */;
+			productName = PostgREST;
+		};
+		25544F512F1431A0009A6830 /* Realtime */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 25544F4C2F1431A0009A6830 /* XCRemoteSwiftPackageReference "supabase-swift" */;
+			productName = Realtime;
+		};
+		25544F532F1431A0009A6830 /* Storage */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 25544F4C2F1431A0009A6830 /* XCRemoteSwiftPackageReference "supabase-swift" */;
+			productName = Storage;
+		};
+		25544F562F14341D009A6830 /* Supabase */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 25544F4C2F1431A0009A6830 /* XCRemoteSwiftPackageReference "supabase-swift" */;
+			productName = Supabase;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 25544E662F1424F2009A6830 /* Project object */;
 }
