@@ -177,6 +177,8 @@ struct StoreMapView: View {
                 viewModel.startNavigation()
             }
             .presentationDetents([.fraction(0.12), .medium, .large], selection: $selectedDetent)
+            .presentationBackground(.clear)
+            .presentationDragIndicator(selectedDetent == .fraction(0.12) ? .hidden : .visible)
             .background {
                 if #available(iOS 16.4, *) {
                     Color.clear
@@ -184,7 +186,6 @@ struct StoreMapView: View {
                 }
             }
             .interactiveDismissDisabled()
-            .presentationDragIndicator(.visible)
         }
     }
     
@@ -244,21 +245,22 @@ struct StoreDetailView: View {
         VStack(spacing: 0) {
             if detent == .fraction(0.12) {
                 // Capsule/Minimal State
-                HStack(spacing: 12) {
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text(store.name)
-                            .font(.brandSans(18))
-                            .fontWeight(.bold)
-                            .foregroundStyle(Color.coffeeDark)
-                        Text(store.address)
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
-                            .lineLimit(1)
-                    }
+                HStack {
+                    Spacer()
+                    Text(store.name)
+                        .font(.brandSans(18))
+                        .fontWeight(.bold)
+                        .foregroundStyle(Color.coffeeDark)
+                        .padding(.horizontal, 24)
+                        .padding(.vertical, 12)
+                        .background(
+                            Capsule()
+                                .fill(.white)
+                                .shadow(color: Color.black.opacity(0.1), radius: 8, x: 0, y: 4)
+                        )
                     Spacer()
                 }
-                .padding(.horizontal, 24)
-                .padding(.top, 24)
+                .padding(.top, 12)
                 Spacer()
             } else {
                 // Detailed States (Medium/Large)
@@ -346,6 +348,9 @@ struct StoreDetailView: View {
                         Spacer(minLength: 50)
                     }
                 }
+                .background(Color.white)
+                .cornerRadius(24, corners: [.topLeft, .topRight])
+                .ignoresSafeArea(edges: .bottom)
             }
         }
     }

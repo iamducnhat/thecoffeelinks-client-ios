@@ -141,7 +141,7 @@ struct SearchView: View {
             if !enableInternalSearch {
                 viewModel.query = externalQuery
             }
-    }
+        }
     }
 
     // MARK: - Components
