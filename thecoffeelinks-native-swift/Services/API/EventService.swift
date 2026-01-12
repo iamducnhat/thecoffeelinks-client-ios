@@ -2,7 +2,7 @@ import Foundation
 
 // MARK: - API Response Wrappers
 
-struct EventsResponse: Codable {
+struct EventsResponse: Decodable {
     let events: [Event]?
     let data: [Event]?
     let error: String?

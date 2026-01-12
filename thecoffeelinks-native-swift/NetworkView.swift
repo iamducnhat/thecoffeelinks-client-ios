@@ -54,9 +54,8 @@ struct NetworkView: View {
                                     .font(.brandSerif(20))
                                     .foregroundStyle(Color.coffeeDark)
                                 
-                                if viewModel.viewState == .loading {
-                                    ProgressView()
-                                        .frame(maxWidth: .infinity, alignment: .center)
+                                if viewModel.viewState == .loading && viewModel.checkedInUsers.isEmpty {
+                                    skeletonView
                                 } else if viewModel.checkedInUsers.isEmpty {
                                     VStack(spacing: 8) {
                                         Image("network")
@@ -99,6 +98,41 @@ struct NetworkView: View {
         }
         .padding(.horizontal)
         .padding(.top)
+    }
+    
+    var skeletonView: some View {
+        ScrollView {
+            VStack(spacing: 24) {
+                header
+                
+                // Status Placeholder
+                HStack {
+                    Circle()
+                        .fill(Color.sage)
+                        .frame(width: 8, height: 8)
+                    Text("Checking status...")
+                        .font(.brandSans(14))
+                        .foregroundStyle(Color.sage)
+                }
+                .padding()
+                .background(Color.white)
+                .clipShape(Capsule())
+                
+                // List of People
+                VStack(alignment: .leading, spacing: 16) {
+                    Text("Here Now")
+                        .font(.brandSerif(20))
+                        .foregroundStyle(Color.coffeeDark)
+                    
+                    ForEach(0..<4) { _ in
+                        NetworkUserCard(checkIn: .placeholder)
+                    }
+                }
+            }
+            .padding()
+        }
+        .redacted(reason: .placeholder)
+        .disabled(true)
     }
 }
 

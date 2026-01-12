@@ -17,12 +17,9 @@ struct ProfileView: View {
             List {
                 switch viewModel.viewState {
                 case .loading:
-                    HStack {
-                        Spacer()
-                        ProgressView("Loading profile...")
-                        Spacer()
-                    }
-                    .listRowBackground(Color.clear)
+                    skeletonView
+                        .listRowBackground(Color.clear)
+                        .listRowInsets(EdgeInsets())
                     
                 case .error(let message):
                     VStack {
@@ -180,6 +177,44 @@ struct ProfileView: View {
                 await viewModel.fetchProfile()
             }
         }
+    }
+    
+    var skeletonView: some View {
+        List {
+            Section {
+                VStack(alignment: .center, spacing: 12) {
+                    // Avatar
+                    Circle()
+                        .fill(Color.coffeeRich)
+                        .frame(width: 80, height: 80)
+                    
+                    Text("User Name")
+                        .font(.brandSerif(24))
+                    
+                    Text("Job Title")
+                        .font(.brandSans(14))
+                    
+                    Text("Bio placeholder text for skeleton loading state.")
+                        .font(.caption)
+                        .padding(.horizontal)
+                    
+                    // Trust Badges
+                    HStack(spacing: 8) {
+                        BadgeView(text: "Verified Member", icon: "badge_check", color: .sage)
+                        BadgeView(text: "Top Connector", icon: "network", color: .gold)
+                    }
+                    .padding(.top, 4)
+                }
+                .frame(maxWidth: .infinity)
+                .listRowBackground(Color.clear)
+                .listRowInsets(EdgeInsets())
+                .padding(.bottom, 20)
+            }
+        }
+        .scrollContentBackground(.hidden)
+        .background(Color.brandBackground)
+        .redacted(reason: .placeholder)
+        .disabled(true)
     }
 }
 

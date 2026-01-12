@@ -48,7 +48,7 @@ struct VouchersView: View {
                                     ForEach(filteredVouchers) { voucher in
                                         VoucherCard(voucher: voucher)
                                             .onTapGesture {
-                                                if !voucher.isUsed {
+                                                if !(voucher.isUsed ?? false) {
                                                     selectedVoucherCode = voucher.code
                                                     showingQRCode = true
                                                 }
@@ -106,15 +106,13 @@ struct VouchersView: View {
     func getFilteredVouchers() -> [Voucher] {
         switch selectedTab {
         case 0: // Available
-            return viewModel.vouchers.filter { !$0.isUsed } // Add expiration check if needed
+            return viewModel.vouchers.filter { !($0.isUsed ?? false) } 
         case 1: // Used
-            return viewModel.vouchers.filter { $0.isUsed }
+            return viewModel.vouchers.filter { $0.isUsed ?? false }
         case 2: // Expired
-            // Assuming we check expiration date. For parity, if not used but expired.
-            // Simplified logic: Just check expiration if available
              return viewModel.vouchers.filter { voucher in
                  if let expires = voucher.expiresAt {
-                     return expires < Date() && !voucher.isUsed
+                     return expires < Date() && !(voucher.isUsed ?? false)
                  }
                  return false
              }
@@ -128,8 +126,7 @@ struct VoucherCard: View {
     let voucher: Voucher
     
     var isGold: Bool {
-        // Simple logic for visual differentiation, or use 'type'
-        return voucher.type == "gold" || voucher.value > 20 // arbitrary check or based on type
+        return (voucher.type ?? "") == "gold" || (voucher.value ?? 0) > 20
     }
     
     var body: some View {
@@ -146,18 +143,18 @@ struct VoucherCard: View {
                 }
             
             VStack(alignment: .leading, spacing: 4) {
-                Text(voucher.description) // Or title field if added
+                Text(voucher.description ?? "Voucher") 
                     .font(.brandSerif(18))
                     .foregroundStyle(Color.coffeeDark)
                 
-                Text(voucher.code) // Or other detail
+                Text(voucher.code)
                     .font(.brandSans(13))
                     .foregroundStyle(Color.secondary)
             }
             
             Spacer()
             
-            if !voucher.isUsed {
+            if !(voucher.isUsed ?? false) {
                 Image("chevron_right")
                     .resizable()
                     .aspectRatio(contentMode: .fit)
@@ -170,7 +167,6 @@ struct VoucherCard: View {
             ZStack {
                 Color.white
                 if isGold {
-                    // Subtle Gold Gradient Border
                     RoundedRectangle(cornerRadius: 16)
                         .strokeBorder(
                             LinearGradient(
@@ -197,8 +193,6 @@ struct QRCodeSheet: View {
                 .font(.brandSerif(24))
                 .padding(.top, 32)
             
-            // Generate QR code image from 'code' string would be ideal.
-            // For now, clear placeholder or system image.
             Image("qr_code")
                 .resizable()
                 .scaledToFit()

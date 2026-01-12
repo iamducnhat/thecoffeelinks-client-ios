@@ -2,7 +2,7 @@ import Foundation
 
 // MARK: - API Response Wrappers
 
-struct VouchersResponse: Codable {
+struct VouchersResponse: Decodable {
     let vouchers: [Voucher]?
     let data: [Voucher]?
     let error: String?
@@ -12,8 +12,8 @@ struct VouchersResponse: Codable {
     }
 }
 
-struct RedeemResponse: Codable {
-    let success: Bool
+struct RedeemResponse: Decodable {
+    let success: Bool?
     let voucher: Voucher?
     let error: String?
 }
@@ -29,7 +29,6 @@ class VoucherService: VoucherServiceProtocol {
     }
     
     func getVouchersForUser(userId: UUID) async throws -> [Voucher] {
-        // User-specific vouchers from the user endpoint
         return try await getVouchers()
     }
     
@@ -38,9 +37,9 @@ class VoucherService: VoucherServiceProtocol {
             let code: String
         }
         
-        let response: RedeemResponse = try await apiClient.post("/api/vouchers/\(code)", body: RedeemRequest(code: code))
+        let response: RedeemResponse = try await apiClient.patch("/api/vouchers/\(code)", body: RedeemRequest(code: code))
         guard let voucher = response.voucher else {
-            throw APIError.notFound
+            throw APIClient.APIError.notFound
         }
         return voucher
     }

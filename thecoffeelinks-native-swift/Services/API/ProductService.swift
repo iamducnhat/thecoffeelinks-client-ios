@@ -2,7 +2,7 @@ import Foundation
 
 // MARK: - API Response Wrappers
 
-struct ProductsResponse: Codable {
+struct ProductsResponse: Decodable {
     let products: [Product]?
     let data: [Product]?
     let error: String?
@@ -12,7 +12,7 @@ struct ProductsResponse: Codable {
     }
 }
 
-struct SingleProductResponse: Codable {
+struct SingleProductResponse: Decodable {
     let product: Product?
     let error: String?
 }
@@ -30,14 +30,14 @@ class ProductService: ProductServiceProtocol {
     func getFeaturedProducts() async throws -> [Product] {
         let response: ProductsResponse = try await apiClient.get("/api/products", queryItems: [
             URLQueryItem(name: "featured", value: "true")
-        ])
+        ], keyDecodingStrategy: .useDefaultKeys)
         return response.items
     }
     
     func getProduct(id: String) async throws -> Product {
-        let response: SingleProductResponse = try await apiClient.get("/api/products/\(id)")
+        let response: SingleProductResponse = try await apiClient.get("/api/products/\(id)", keyDecodingStrategy: .useDefaultKeys)
         guard let product = response.product else {
-            throw APIError.notFound
+            throw APIClient.APIError.notFound
         }
         return product
     }

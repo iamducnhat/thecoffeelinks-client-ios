@@ -19,7 +19,7 @@ struct HomeView: View {
                 
                 switch viewModel.viewState {
                 case .loading:
-                    ProgressView()
+                    skeletonView
                 case .error(let message):
                     VStack {
                         Text("Failed to load")
@@ -29,29 +29,46 @@ struct HomeView: View {
                 case .idle, .loaded, .empty:
                     ScrollView {
                         VStack(spacing: 24) {
-                            // 1. Dynamic Greeting
+                            // 1. Header (Greeting + Profile)
                             headerSection
                             
-                            // 2. Context Stack (Active Order)
+                            // 2. Active Order (if any, High Priority)
                             if let order = viewModel.activeOrder {
                                 ActiveOrderCard(order: order)
-                            } else {
-                                // idle fallback (Featured Product)
-                                if let featured = viewModel.featuredProducts.first {
-                                    FeaturedProductCard(product: featured)
-                                } else {
-                                    // Fallback if no data
-                                    Text("Relax and enjoy.")
-                                        .font(.brandSans(14))
-                                        .foregroundStyle(Color.secondary)
-                                        .padding()
+                            }
+                            
+                            // 3. Highlights (Vouchers/Events)
+                            if !viewModel.highlights.isEmpty {
+                                highlightsSection
+                            }
+                            
+                            // 4. Trending Products (IsPopular)
+                            if !viewModel.trendingProducts.isEmpty {
+                                sectionHeader(title: "Trending Now")
+                                ScrollView(.horizontal, showsIndicators: false) {
+                                    HStack(spacing: 16) {
+                                        ForEach(viewModel.trendingProducts) { product in
+                                            ProductCard(product: product, width: 140)
+                                        }
+                                    }
+                                    .padding(.horizontal)
                                 }
                             }
                             
-                            // 3. Menu Discovery (Horizontal)
-                            menuDiscoverySection
+                            // 5. Recent Ordered (History)
+                            if !viewModel.recentProducts.isEmpty {
+                                sectionHeader(title: "Order Again")
+                                ScrollView(.horizontal, showsIndicators: false) {
+                                    HStack(spacing: 16) {
+                                        ForEach(viewModel.recentProducts) { product in
+                                            ProductCard(product: product, width: 140)
+                                        }
+                                    }
+                                    .padding(.horizontal)
+                                }
+                            }
                             
-                            Spacer()
+                            Spacer().frame(height: 40)
                         }
                         .padding(.top, 20)
                     }
@@ -75,54 +92,194 @@ struct HomeView: View {
                     .font(.brandSerif(28))
                     .foregroundStyle(Color.brandPrimary)
                 
-                Text("Ready for your coffee break?")
+                Text(appState.timeMode == .morning ? "Start your day right." : "Ready for your coffee break?")
                     .font(.brandSans(14))
                     .foregroundStyle(Color.secondary)
             }
             Spacer()
             
-            // Profile / Avatar Button
-            Circle()
-                .fill(Color.coffeeRich.opacity(0.1))
-                .frame(width: 44, height: 44)
-                .overlay {
-                    Image("user")
-                        .resizable()
-                        .aspectRatio(contentMode: .fit)
-                        .frame(width: 20, height: 20)
-                        .foregroundStyle(Color.coffeeDark)
-                }
-        }
-        .padding(.horizontal)
-    }
-    
-    private var menuDiscoverySection: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            Text("Menu")
-                .font(.brandSerif(20))
-                .padding(.horizontal)
+            Spacer()
             
-            ScrollView(.horizontal, showsIndicators: false) {
-                HStack(spacing: 16) {
-                    MenuCategoryCard(title: "Coffee", image: "cup.and.saucer.fill", color: .coffeeRich)
-                    MenuCategoryCard(title: "Food", image: "fork.knife", color: .brandAccent)
-                    MenuCategoryCard(title: "Merch", image: "bag.fill", color: .brandPremium)
-                }
-                .padding(.horizontal)
+            // Notification / Events Button
+            Button {
+                showEvents = true
+            } label: {
+                Circle()
+                    .fill(Color.coffeeRich.opacity(0.1))
+                    .frame(width: 44, height: 44)
+                    .overlay {
+                        Image(systemName: "bell.fill")
+                            .resizable()
+                            .aspectRatio(contentMode: .fit)
+                            .frame(width: 20, height: 20)
+                            .foregroundStyle(Color.brandAccent)
+                    }
+            }
+            .padding(.trailing, 8)
+            
+            // Profile / Avatar Button
+            NavigationLink(destination: ProfileView()) {
+                Circle()
+                    .fill(Color.coffeeRich.opacity(0.1))
+                    .frame(width: 44, height: 44)
+                    .overlay {
+                        Image("user")
+                            .resizable()
+                            .aspectRatio(contentMode: .fit)
+                            .frame(width: 20, height: 20)
+                            .foregroundStyle(Color.coffeeDark)
+                    }
             }
         }
+
+        .padding(.horizontal)
+        .sheet(isPresented: $showEvents) {
+            EventsView()
+        }
+    }
+    
+    // Add State for sheet
+    @State private var showEvents = false
+    
+    private var highlightsSection: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            sectionHeader(title: "Highlights")
+            
+            TabView {
+                ForEach(viewModel.highlights) { item in
+                    switch item {
+                    case .voucher(let voucher):
+                        HighlightCard(
+                            title: voucher.code,
+                            subtitle: "\(Int(voucher.value ?? 0))pts",
+                            icon: "ticket",
+                            color: .brandAccent
+                        )
+                        .padding(.horizontal) // Inner padding
+                    case .event(let event):
+                        HighlightCard(
+                            title: event.title,
+                            subtitle: event.date?.formatted(.dateTime.weekday().day()) ?? "Upcoming",
+                            icon: "calendar",
+                            color: .brandPremium
+                        )
+                        .padding(.horizontal)
+                    }
+                }
+            }
+            .tabViewStyle(.page(indexDisplayMode: .never)) // Hide dots or .always
+            .frame(height: 160) // 140 card + padding
+        }
+    }
+    
+    private func sectionHeader(title: String) -> some View {
+        Text(title)
+            .font(.brandSerif(20))
+            .foregroundStyle(Color.coffeeDark)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(.horizontal)
     }
     
     private var greetingText: String {
         switch appState.timeMode {
-        case .morning: return "Good Morning" // Simplified generic greeting if name not synced
+        case .morning: return "Good Morning"
         case .day: return "Good Afternoon"
         case .evening: return "Good Evening"
         }
     }
+    
+    private var skeletonView: some View {
+        ScrollView {
+            VStack(spacing: 24) {
+                headerSection
+                
+                // Active Order Placeholder
+                ActiveOrderCard(order: .placeholder)
+                
+                // Highlights Placeholder
+                VStack(alignment: .leading, spacing: 12) {
+                    sectionHeader(title: "Highlights")
+                    TabView {
+                        ForEach(0..<2) { _ in
+                            HighlightCard(
+                                title: "Voucher Code",
+                                subtitle: "50pts",
+                                icon: "ticket",
+                                color: .brandAccent
+                            )
+                            .padding(.horizontal)
+                        }
+                    }
+                    .tabViewStyle(.page(indexDisplayMode: .never))
+                    .frame(height: 160)
+                }
+                
+                // Trending Placeholder
+                sectionHeader(title: "Trending Now")
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack(spacing: 16) {
+                        ForEach(0..<3) { _ in
+                            ProductCard(product: .placeholder, width: 140)
+                        }
+                    }
+                    .padding(.horizontal)
+                }
+                
+                Spacer().frame(height: 40)
+            }
+            .padding(.top, 20)
+        }
+        .redacted(reason: .placeholder)
+        .disabled(true) // Prevent interaction while loading
+    }
 }
 
 // MARK: - Subviews
+
+struct HighlightCard: View {
+    let title: String
+    let subtitle: String
+    let icon: String // Asset name
+    let color: Color
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack {
+                Image(icon)
+                    .resizable()
+                    .aspectRatio(contentMode: .fit)
+                    .frame(width: 20, height: 20)
+                    .foregroundStyle(color)
+                    .padding(8)
+                    .background(color.opacity(0.1))
+                    .clipShape(Circle())
+                Spacer()
+            }
+            
+            Spacer()
+            
+            VStack(alignment: .leading, spacing: 4) {
+                Text(title)
+                    .font(.brandSans(16))
+                    .fontWeight(.bold)
+                    .foregroundStyle(Color.coffeeDark)
+                    .lineLimit(1)
+                
+                Text(subtitle)
+                    .font(.caption)
+                    .foregroundStyle(Color.secondary)
+            }
+        }
+        .padding(16)
+        .frame(maxWidth: .infinity)
+        .frame(height: 140)
+        .background(Color.white)
+        .cornerRadius(16)
+        .shadow(color: Color.black.opacity(0.05), radius: 8, x: 0, y: 4)
+    }
+}
+
+
 
 struct ActiveOrderCard: View {
     let order: Order
@@ -135,7 +292,7 @@ struct ActiveOrderCard: View {
                     .fontWeight(.bold)
                     .foregroundStyle(Color.brandAccent)
                 
-                Text(order.status.rawValue.uppercased())
+                Text((order.status?.rawValue ?? "Unknown").uppercased())
                     .font(.brandSerif(20))
                     .foregroundStyle(Color.white)
                 
@@ -154,77 +311,6 @@ struct ActiveOrderCard: View {
         .cornerRadius(16)
         .padding(.horizontal)
         .shadow(color: Color.coffeeBlack.opacity(0.2), radius: 10, x: 0, y: 5)
-    }
-}
-
-struct FeaturedProductCard: View {
-    let product: Product
-    
-    var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            Text("FEATURED SEASONAL")
-                .font(.caption)
-                .fontWeight(.bold)
-                .foregroundStyle(Color.brandPremium)
-            
-            HStack {
-                VStack(alignment: .leading, spacing: 4) {
-                    Text(product.name)
-                        .font(.brandSerif(22))
-                    Text(product.description ?? "")
-                        .font(.brandSans(14))
-                        .foregroundStyle(.secondary)
-                        .lineLimit(2)
-                }
-                Spacer()
-                
-                AsyncImage(url: URL(string: product.imageUrl ?? "")) { img in
-                    img.resizable()
-                       .aspectRatio(contentMode: .fill)
-                } placeholder: {
-                    Color.coffeeRich.opacity(0.1)
-                }
-                .frame(width: 48, height: 48)
-                .clipShape(RoundedRectangle(cornerRadius: 8))
-            }
-        }
-        .padding()
-        .background(Color.white)
-        .cornerRadius(16)
-        .padding(.horizontal)
-        .shadow(color: Color.black.opacity(0.05), radius: 5, x: 0, y: 2)
-    }
-}
-
-struct MenuCategoryCard: View {
-    let title: String
-    let image: String // System Name
-    let color: Color
-    
-    var body: some View {
-        VStack(alignment: .leading) {
-            Circle()
-                .fill(color.opacity(0.1))
-                .frame(width: 50, height: 50)
-                .overlay {
-                    Image(systemName: image)
-                        .resizable()
-                        .aspectRatio(contentMode: .fit)
-                        .frame(width: 24, height: 24)
-                        .foregroundStyle(color)
-                }
-            
-            Spacer()
-            
-            Text(title)
-                .font(.brandSans(16))
-                .fontWeight(.medium)
-        }
-        .padding()
-        .frame(width: 140, height: 180)
-        .background(Color.white)
-        .cornerRadius(20)
-        .shadow(color: Color.black.opacity(0.05), radius: 8, x: 0, y: 4)
     }
 }
 

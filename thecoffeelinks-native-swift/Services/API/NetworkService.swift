@@ -2,7 +2,7 @@ import Foundation
 
 // MARK: - API Response Wrappers
 
-struct CheckInsResponse: Codable {
+struct CheckInsResponse: Decodable {
     let checkIns: [CheckIn]?
     let users: [CheckIn]?
     let data: [CheckIn]?
@@ -13,28 +13,20 @@ struct CheckInsResponse: Codable {
     }
 }
 
-struct CheckInResult: Codable {
-    let success: Bool
+struct CheckInResult: Decodable {
+    let success: Bool?
     let checkIn: CheckIn?
     let error: String?
 }
 
-// MARK: - CheckIn Model
+// MARK: - CheckIn Model - no CodingKeys needed, APIClient uses .convertFromSnakeCase
 
-struct CheckIn: Codable, Identifiable {
+struct CheckIn: Decodable, Identifiable {
     let id: String
     let userId: String?
     let locationId: String?
     let checkedInAt: String?
     let user: User?
-    
-    enum CodingKeys: String, CodingKey {
-        case id
-        case userId = "user_id"
-        case locationId = "location_id"
-        case checkedInAt = "checked_in_at"
-        case user
-    }
 }
 
 // MARK: - NetworkService

@@ -16,7 +16,7 @@ struct OrdersView: View {
                 Color.brandBackground.ignoresSafeArea()
                 
                 if viewModel.viewState == .loading && viewModel.activeOrders.isEmpty && viewModel.pastOrders.isEmpty {
-                    ProgressView()
+                    skeletonView
                 } else {
                     ScrollView {
                         VStack(spacing: 24) {
@@ -27,10 +27,6 @@ struct OrdersView: View {
                                 ForEach(viewModel.activeOrders) { order in
                                     LiveOrderCard(order: order)
                                 }
-                            } else {
-                                // Empty state for active orders? Or just hide?
-                                // Maybe show a "No active orders" only if totally empty?
-                                // For now, just hide section if empty.
                             }
                             
                             // History Section
@@ -71,6 +67,31 @@ struct OrdersView: View {
             Spacer()
         }
     }
+    
+    var skeletonView: some View {
+        ScrollView {
+            VStack(spacing: 24) {
+                header
+                
+                ForEach(0..<2) { _ in
+                    LiveOrderCard(order: .placeholder)
+                }
+                
+                VStack(alignment: .leading, spacing: 16) {
+                    Text("Recent Visits")
+                        .font(.brandSerif(20))
+                        .foregroundStyle(Color.coffeeDark)
+                    
+                    ForEach(0..<3) { _ in
+                        HistoryItem(order: .placeholder)
+                    }
+                }
+            }
+            .padding()
+        }
+        .redacted(reason: .placeholder)
+        .disabled(true)
+    }
 }
 
 struct LiveOrderCard: View {
@@ -86,7 +107,7 @@ struct LiveOrderCard: View {
                 
                 Spacer()
                 
-                Text(order.status.rawValue.capitalized)
+                Text((order.status?.rawValue ?? "Unknown").capitalized)
                     .font(.caption)
                     .fontWeight(.bold)
                     .padding(.horizontal, 8)
@@ -124,10 +145,10 @@ struct LiveOrderCard: View {
                 Spacer()
             }
             
-            // Progress Bar simulation (Static for now based on status?)
-            // placed -> 0.2, ready -> 0.8, completed -> 1.0 (but active shouldn't be completed)
+            // Progress Bar simulation
             let progress: Double = {
-                switch order.status {
+                guard let status = order.status else { return 0.0 }
+                switch status {
                 case .placed: return 0.3
                 case .ready: return 0.8
                 case .completed: return 1.0
@@ -152,7 +173,7 @@ struct HistoryItem: View {
     var body: some View {
         HStack {
             VStack(alignment: .leading, spacing: 4) {
-                Text(order.createdAt)
+                Text(order.createdAt ?? "Just now")
                     .font(.caption)
                     .fontWeight(.medium)
                     .foregroundStyle(Color.secondary)

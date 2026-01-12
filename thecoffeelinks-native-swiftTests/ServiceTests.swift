@@ -124,9 +124,9 @@ final class OrderServiceTests: XCTestCase {
             _ = try await orderService.getOrders()
             // If no error, API might allow unauthenticated access
             print("⚠️ Orders API allowed unauthenticated access")
-        } catch let error as APIError {
+        } catch let error as APIClient.APIError {
             // Expected: unauthorized error
-            if case .unauthorized = error {
+            if case .unauthorized(_) = error {
                 print("✅ Orders correctly requires authentication")
             } else {
                 print("⚠️ Orders API error: \(error)")
@@ -152,8 +152,8 @@ final class UserServiceTests: XCTestCase {
         do {
             _ = try await userService.getCurrentUser()
             print("⚠️ User API allowed unauthenticated access")
-        } catch let error as APIError {
-            if case .unauthorized = error {
+        } catch let error as APIClient.APIError {
+            if case .unauthorized(_) = error {
                 print("✅ User profile correctly requires authentication")
             } else {
                 print("⚠️ User API error: \(error)")

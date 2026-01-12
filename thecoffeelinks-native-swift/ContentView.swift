@@ -11,57 +11,87 @@ struct ContentView: View {
     @StateObject private var appState = AppState()
     @ObservedObject private var authViewModel = AuthViewModel.shared
     
+    // Search State
+    @State private var searchText = ""
+    
     var body: some View {
         Group {
-            if authViewModel.session != nil {
-                TabView {
-                    HomeView()
-                        .tabItem {
-                            Label {
-                                Text("Home")
-                            } icon: {
-                                Image("home")
+            if authViewModel.state == .authenticated {
+                NavigationStack {
+                    if #available(iOS 26, *) {
+                        TabView {
+                            Tab("Home", image: "home") {
+                                HomeView()
+                            }
+                            
+                            Tab("Stores", image: "map_pin") {
+                                StoresView()
+                            }
+                            
+                            Tab("Network", image: "users") {
+                                NetworkView()
+                            }
+                            
+                            // Search Tab with role: .search
+                            Tab("Search", systemImage: "magnifyingglass", role: .search) {
+                                SearchView(externalQuery: searchText)
+                                    .searchable(text: $searchText)
+                            }
+                            
+                            Tab("Orders", image: "coffee") {
+                                OrdersView()
                             }
                         }
-                    
-                    EventsView()
-                        .tabItem {
-                            Label {
-                                Text("Events")
-                            } icon: {
-                                Image("calendar")
-                            }
+                        .tint(Color.coffeeDark)
+                        .environmentObject(appState)
+                    } else {
+                        // Legacy Fallback for < iOS 26
+                        TabView {
+                            HomeView()
+                                .tabItem {
+                                    Label {
+                                        Text("Home")
+                                    } icon: {
+                                        Image("home")
+                                    }
+                                }
+                            
+                            StoresView()
+                                .tabItem {
+                                    Label {
+                                        Text("Stores")
+                                    } icon: {
+                                        Image("map_pin")
+                                    }
+                                }
+                            
+                            NetworkView()
+                                .tabItem {
+                                    Label {
+                                        Text("Network")
+                                    } icon: {
+                                        Image("users")
+                                    }
+                                }
+                            
+                            OrdersView()
+                                .tabItem {
+                                    Label {
+                                        Text("Orders")
+                                    } icon: {
+                                        Image("coffee")
+                                    }
+                                }
                         }
-                    
-                    NetworkView()
-                        .tabItem {
-                            Label {
-                                Text("Network")
-                            } icon: {
-                                Image("users")
-                            }
-                        }
-                    
-                    OrdersView()
-                        .tabItem {
-                            Label {
-                                Text("Orders")
-                            } icon: {
-                                Image("coffee")
-                            }
-                        }
-                    
-                    ProfileView()
-                        .tabItem {
-                            Label {
-                                Text("Profile")
-                            } icon: {
-                                Image("user")
-                            }
-                        }
+                        .tint(Color.coffeeDark)
+                        .environmentObject(appState)
+                    }
                 }
-                .tint(Color.coffeeDark) // Brand Tint
-                .environmentObject(appState)
+            } else if authViewModel.state == .loading {
+                ZStack {
+                    Color.brandBackground.ignoresSafeArea()
+                    ProgressView()
+                }
             } else {
                 LoginView()
             }

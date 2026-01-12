@@ -1,9 +1,11 @@
 import Foundation
 
-struct User: Codable, Identifiable {
+/// User model - APIClient uses .convertFromSnakeCase so no CodingKeys needed
+struct User: Decodable, Identifiable {
     let id: String
     let email: String?
     let fullName: String?
+    let name: String?  // Some APIs use "name" instead of "full_name"
     let avatarUrl: String?
     let points: Int?
     
@@ -14,19 +16,11 @@ struct User: Codable, Identifiable {
     let linkedinUrl: String?
     let isOpenToNetworking: Bool?
     
-    enum CodingKeys: String, CodingKey {
-        case id, email
-        case fullName = "full_name" // or "name" depending on profile schema, typically full_name
-        case avatarUrl = "avatar_url"
-        case points
-        case jobTitle = "job_title"
-        case industry
-        case bio
-        case linkedinUrl = "linkedin_url"
-        case isOpenToNetworking = "is_open_to_networking"
-    }
+    // Computed for compatibility
+    var displayName: String { fullName ?? name ?? "Guest" }
 }
 
+/// UpdateProfileParams - needs CodingKeys for ENCODING (sending to API)
 struct UpdateProfileParams: Encodable {
     var fullName: String?
     var jobTitle: String?
@@ -35,12 +29,5 @@ struct UpdateProfileParams: Encodable {
     var linkedinUrl: String?
     var isOpenToNetworking: Bool?
     
-    enum CodingKeys: String, CodingKey {
-        case fullName = "full_name"
-        case jobTitle = "job_title"
-        case industry
-        case bio
-        case linkedinUrl = "linkedin_url"
-        case isOpenToNetworking = "is_open_to_networking"
-    }
+    // Note: APIClient uses .convertToSnakeCase for encoding, so no CodingKeys needed
 }

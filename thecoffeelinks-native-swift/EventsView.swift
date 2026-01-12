@@ -18,7 +18,7 @@ struct EventsView: View {
                 
                 switch viewModel.viewState {
                 case .loading:
-                    ProgressView()
+                    skeletonView
                 case .error(let message):
                     VStack {
                         Text("Error")
@@ -111,6 +111,21 @@ struct EventsView: View {
             .padding(.top, 8)
         }
         .padding(.top, 40)
+    }
+    
+    var skeletonView: some View {
+        ScrollView {
+            VStack(spacing: 24) {
+                header
+                
+                ForEach(0..<3) { _ in
+                    EventCard(event: .placeholder)
+                }
+            }
+            .padding()
+        }
+        .redacted(reason: .placeholder)
+        .disabled(true)
     }
 }
 

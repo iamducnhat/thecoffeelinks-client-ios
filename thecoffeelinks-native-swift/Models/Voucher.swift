@@ -1,19 +1,28 @@
 import Foundation
 
-struct Voucher: Codable, Identifiable {
-    let id: String
+/// Voucher model - APIClient uses .convertFromSnakeCase
+struct Voucher: Decodable, Identifiable {
+    let _id: String?
     let code: String
-    let type: String // e.g., "discount", "free_item"
-    let value: Double // Amount or percentage
-    let description: String
+    let type: String? // e.g., "discount", "free_item"
+    let value: Double? // Amount or percentage
+    let description: String?
     let minSpend: Double?
     let expiresAt: Date?
-    let isUsed: Bool
+    let isUsed: Bool?
+    
+    var id: String {
+        _id ?? code
+    }
     
     enum CodingKeys: String, CodingKey {
-        case id, code, type, value, description
-        case minSpend = "min_spend"
-        case expiresAt = "expires_at"
-        case isUsed = "is_used"
+        case _id = "id"
+        case code
+        case type
+        case value
+        case description
+        case minSpend
+        case expiresAt
+        case isUsed
     }
 }

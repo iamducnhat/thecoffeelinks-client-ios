@@ -2,9 +2,10 @@ import Foundation
 
 // MARK: - API Response Wrappers
 
-struct UserProfileResponse: Codable {
+struct UserProfileResponse: Decodable {
     let user: User?
     let profile: User?
+    let success: Bool?
     let error: String?
     
     var userData: User? {
@@ -20,7 +21,7 @@ class UserService: UserServiceProtocol {
     func getCurrentUser() async throws -> User {
         let response: UserProfileResponse = try await apiClient.get("/api/user/profile")
         guard let user = response.userData else {
-            throw APIError.notFound
+            throw APIClient.APIError.notFound
         }
         return user
     }
@@ -28,7 +29,7 @@ class UserService: UserServiceProtocol {
     func updateProfile(userId: String, params: UpdateProfileParams) async throws -> User {
         let response: UserProfileResponse = try await apiClient.patch("/api/user/profile", body: params)
         guard let user = response.userData else {
-            throw APIError.invalidResponse
+            throw APIClient.APIError.invalidResponse
         }
         return user
     }
