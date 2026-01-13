@@ -154,31 +154,42 @@ struct CheckoutView: View {
         VStack(alignment: .leading, spacing: 12) {
             sectionHeader(title: "Order Items")
             
-            VStack(spacing: 0) {
-                ForEach(cartManager.items) { item in
-                    cartItemRow(item: item)
-                        .contentShape(Rectangle())
-                        .onTapGesture {
-                            UIImpactFeedbackGenerator(style: .light).impactOccurred()
-                            itemToEdit = item
-                            showEditCustomization = true
-                        }
-                        .swipeActions(edge: .trailing, allowsFullSwipe: true) {
-                            Button(role: .destructive) {
-                                withAnimation(.easeInOut(duration: 0.3)) {
-                                    cartManager.removeFromCart(item: item)
-                                }
-                            } label: {
-                                Label("Delete", systemImage: "trash")
+            GeometryReader { geometry in
+                List {
+                    ForEach(cartManager.items) { item in
+                        cartItemRow(item: item)
+                            .listRowInsets(EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0))
+                            .listRowSeparator(.hidden)
+                            .listRowBackground(Color.clear)
+                            .contentShape(Rectangle())
+                            .onTapGesture {
+                                UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                                itemToEdit = item
+                                showEditCustomization = true
                             }
+                            .swipeActions(edge: .trailing, allowsFullSwipe: true) {
+                                Button(role: .destructive) {
+                                    withAnimation(.easeInOut(duration: 0.3)) {
+                                        cartManager.removeFromCart(item: item)
+                                    }
+                                } label: {
+                                    Label("Delete", systemImage: "trash")
+                                }
+                            }
+                        
+                        if item.id != cartManager.items.last?.id {
+                            Divider()
+                                .padding(.leading, 72)
+                                .listRowInsets(EdgeInsets())
+                                .listRowBackground(Color.clear)
                         }
-                    
-                    if item.id != cartManager.items.last?.id {
-                        Divider()
-                            .padding(.leading, 72)
                     }
                 }
+                .listStyle(.plain)
+                .scrollDisabled(true)
+                .frame(width: geometry.size.width, height: CGFloat(cartManager.items.count) * 120)
             }
+            .frame(height: CGFloat(cartManager.items.count) * 120)
             .background(Color.white)
             .cornerRadius(16)
             .shadow(color: Color.black.opacity(0.04), radius: 8, x: 0, y: 2)
