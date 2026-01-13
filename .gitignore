@@ -2,3 +2,5 @@ build/
 *.log
 build_*.log
 extract_icons.py
+
+thecoffeelinks-native-swift/Config.plist

@@ -12,7 +12,8 @@ actor APIClient {
     // Using a weak delegate to avoid retain cycles
     private weak var authDelegate: AuthDelegate?
     
-    private let baseURL = URL(string: "https://server-nu-three-90.vercel.app")!
+    // Load API URL from configuration instead of hardcoding
+    private let baseURL: URL = Secrets.apiBaseURL
     private let session: URLSession
     private var authToken: String?
     

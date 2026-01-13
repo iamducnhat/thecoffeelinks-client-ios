@@ -1,6 +1,47 @@
 import Foundation
 
+/// App configuration loaded from Config.plist
+/// IMPORTANT: Do not commit Config.plist with production values to source control
 struct Secrets {
-    static let supabaseURL = URL(string: "https://ggikmpqyhkfhctwqbytk.supabase.co")!
-    static let supabaseAnonKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdnaWttcHF5aGtmaGN0d3FieXRrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc3NzQyNzAsImV4cCI6MjA4MzM1MDI3MH0.uwxoh2aBR66hE5-ua_bO63LHOnrJZmy3qR0s3lUHX2Y"
+    
+    private static let config: [String: Any] = {
+        guard let path = Bundle.main.path(forResource: "Config", ofType: "plist"),
+              let dict = NSDictionary(contentsOfFile: path) as? [String: Any] else {
+            #if DEBUG
+            // Fallback for development - these should be replaced in production
+            return [
+                "SUPABASE_URL": "https://ggikmpqyhkfhctwqbytk.supabase.co",
+                "SUPABASE_ANON_KEY": "your-anon-key-here",
+                "API_BASE_URL": "http://localhost:3000"
+            ]
+            #else
+            fatalError("Config.plist not found. Please create Config.plist with required keys.")
+            #endif
+        }
+        return dict
+    }()
+    
+    static var supabaseURL: URL {
+        guard let urlString = config["SUPABASE_URL"] as? String,
+              let url = URL(string: urlString) else {
+            fatalError("Invalid SUPABASE_URL in Config.plist")
+        }
+        return url
+    }
+    
+    static var supabaseAnonKey: String {
+        guard let key = config["SUPABASE_ANON_KEY"] as? String, !key.isEmpty else {
+            fatalError("SUPABASE_ANON_KEY not found in Config.plist")
+        }
+        return key
+    }
+    
+    static var apiBaseURL: URL {
+        guard let urlString = config["API_BASE_URL"] as? String,
+              let url = URL(string: urlString) else {
+            // Default fallback
+            return URL(string: "https://server-nu-three-90.vercel.app")!
+        }
+        return url
+    }
 }

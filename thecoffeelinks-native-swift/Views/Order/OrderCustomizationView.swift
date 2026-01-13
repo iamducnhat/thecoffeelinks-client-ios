@@ -218,7 +218,7 @@ struct OrderCustomizationView: View {
                         addToCart()
                     }
                     .fixedSize()
-                    // Don't disable button during background sync - use last valid price
+                    .disabled(isSyncing)
                 }
                 .padding(20)
                 .background(Color.brandBackground.opacity(0.95))

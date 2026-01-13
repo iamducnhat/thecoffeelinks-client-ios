@@ -26,6 +26,22 @@ struct Product: Codable, Identifiable {
     let isAvailable: Bool?
     
     // Computed for compatibility
-    var displayImageUrl: String? { image ?? imageUrl }
+    var displayImageUrl: String? {
+        let rawUrl = image ?? imageUrl
+        guard let rawUrl = rawUrl, !rawUrl.isEmpty else { return nil }
+        
+        // If already a full URL, return as-is
+        if rawUrl.hasPrefix("http://") || rawUrl.hasPrefix("https://") {
+            return rawUrl
+        }
+        
+        // If relative path, construct full URL
+        if rawUrl.hasPrefix("/") {
+            return "https://server-nu-three-90.vercel.app" + rawUrl
+        }
+        
+        // Otherwise treat as relative and prepend slash
+        return "https://server-nu-three-90.vercel.app/" + rawUrl
+    }
     var price: Double { basePrice ?? 0 }
 }

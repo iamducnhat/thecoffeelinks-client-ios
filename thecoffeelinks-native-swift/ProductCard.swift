@@ -5,7 +5,6 @@ struct ProductCard: View {
     var width: CGFloat? = 160
     
     @State private var showingCustomization = false
-    @State private var isPressed = false
     
     var body: some View {
         Button(action: {
@@ -116,18 +115,19 @@ struct ProductCard: View {
             .padding(12)
             .background(Color.white)
             .cornerRadius(24)
-            //.shadow(color: Color.black.opacity(0.04), radius: 8, x: 0, y: 2)
-            .scaleEffect(isPressed ? 0.98 : 1.0)
-            .animation(.spring(response: 0.3, dampingFraction: 0.7), value: isPressed)
         }
-        .buttonStyle(PlainButtonStyle())
-        .simultaneousGesture(
-            DragGesture(minimumDistance: 0)
-                .onChanged { _ in isPressed = true }
-                .onEnded { _ in isPressed = false }
-        )
+        .buttonStyle(ProductCardButtonStyle())
         .sheet(isPresented: $showingCustomization) {
             OrderCustomizationView(product: product)
         }
     }
 }
+
+struct ProductCardButtonStyle: ButtonStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .scaleEffect(configuration.isPressed ? 0.98 : 1.0)
+            .animation(.spring(response: 0.3, dampingFraction: 0.7), value: configuration.isPressed)
+    }
+}
+

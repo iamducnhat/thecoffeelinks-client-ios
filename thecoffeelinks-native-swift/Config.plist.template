@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <!-- 
+    ===========================================
+    The Coffee Links iOS App - Configuration
+    ===========================================
+    
+    IMPORTANT: This is a TEMPLATE file.
+    1. Copy this file to Config.plist
+    2. Replace placeholder values with actual values
+    3. Add Config.plist to .gitignore
+    4. Never commit Config.plist with real credentials
+    -->
+    
+    <!-- Supabase Configuration -->
+    <key>SUPABASE_URL</key>
+    <string>https://your-project.supabase.co</string>
+    
+    <key>SUPABASE_ANON_KEY</key>
+    <string>your-supabase-anon-key-here</string>
+    
+    <!-- API Server Configuration -->
+    <key>API_BASE_URL</key>
+    <string>https://your-server.vercel.app</string>
+</dict>
+</plist>

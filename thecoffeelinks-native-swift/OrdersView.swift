@@ -18,28 +18,25 @@ struct OrdersView: View {
                 if viewModel.viewState == .loading && viewModel.activeOrders.isEmpty && viewModel.pastOrders.isEmpty {
                     ProgressView()
                 } else {
-                    List {
-                        // Header Section
-                        Section {
+                    GeometryReader { g in
+                        ScrollView {
+                            // Header - scrolls with content
                             HStack {
                                 Text("Orders")
                                     .font(.brandSerif(32))
                                     .foregroundStyle(Color.brandPrimary)
                                 Spacer()
                             }
-                        }
-                        .listRowBackground(Color.clear)
-                        .listRowInsets(EdgeInsets(top: 20, leading: 16, bottom: 8, trailing: 16))
-                        .listRowSeparator(.hidden)
-                        
-                        // Active Orders Section
-                        if !viewModel.activeOrders.isEmpty {
+                            .padding(.horizontal)
+                            .padding(.top, 20)
+                            
+                            List {
+                                // Active Orders Section
+                                if !viewModel.activeOrders.isEmpty {
                             Section {
                                 ForEach(viewModel.activeOrders) { order in
                                     LiveOrderCard(order: order)
-                                        .listRowInsets(EdgeInsets(top: 8, leading: 16, bottom: 8, trailing: 16))
                                         .listRowBackground(Color.coffeeDark)
-                                        //.listRowSeparator(.hidden)
                                 }
                             } header: {
                                 Text("Active Orders")
@@ -100,10 +97,10 @@ struct OrdersView: View {
                         }
                         .listRowBackground(Color.clear)
                     }
-                    .listStyle(.insetGrouped)
                     .scrollContentBackground(.hidden)
-                    .refreshable {
-                        await viewModel.fetchOrders()
+                    .listStyle(.insetGrouped)
+                    .frame(width: g.size.width, height: g.size.height - 60, alignment: .center)
+                        }
                     }
                 }
             }
@@ -253,7 +250,7 @@ private struct ItemRow: View {
             }
             
             VStack(alignment: .leading, spacing: 2) {
-                Text(item.productName ?? "Item")
+                Text(item.productName)
                     .font(.brandSans(16))
                     .foregroundStyle(Color.coffeeDark)
                 Text("Qty: \(item.quantity)")
@@ -356,7 +353,7 @@ struct LiveOrderCard: View {
                 .tint(Color.sage)
                 .background(Color.white.opacity(0.1))
         }
-        .padding(.vertical, 20)
+        .padding(.vertical, 16)
 //        .background(Color.coffeeDark)
 //        .cornerRadius(24)
 //        .shadow(color: Color.coffeeDark.opacity(0.3), radius: 12, x: 0, y: 8)
