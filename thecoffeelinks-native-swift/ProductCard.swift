@@ -15,56 +15,71 @@ struct ProductCard: View {
             VStack(alignment: .leading, spacing: 12) {
                 // Image with gradient overlay
                 ZStack(alignment: .bottomLeading) {
-                    AsyncImage(url: URL(string: product.displayImageUrl ?? "")) { phase in
-                        switch phase {
-                        case .success(let img):
-                            img
-                                .resizable()
-                                .aspectRatio(contentMode: .fill)
+                    if let imageUrl = product.displayImageUrl, !imageUrl.isEmpty, let url = URL(string: imageUrl) {
+                        AsyncImage(url: url) { phase in
+                            switch phase {
+                            case .success(let img):
+                                img
+                                    .resizable()
+                                    .aspectRatio(contentMode: .fill)
+                                    .frame(width: width, height: width)
+                                    .clipShape(RoundedRectangle(cornerRadius: 20))
+                            case .failure:
+                                ZStack {
+                                    Color.coffeeRich.opacity(0.05)
+                                    Image("coffee")
+                                        .resizable()
+                                        .renderingMode(.template)
+                                        .aspectRatio(contentMode: .fit)
+                                        .frame(width: 40)
+                                        .foregroundStyle(Color.coffeeRich.opacity(0.2))
+                                }
                                 .frame(width: width, height: width)
                                 .clipShape(RoundedRectangle(cornerRadius: 20))
-                        case .failure(_):
-                            ZStack {
-                                Color.coffeeRich.opacity(0.05)
-                                Image(systemName: "cup.and.saucer.fill")
-                                    .resizable()
-                                    .aspectRatio(contentMode: .fit)
-                                    .frame(width: 40)
-                                    .foregroundStyle(Color.coffeeRich.opacity(0.2))
+                            case .empty:
+                                ZStack {
+                                    Color.coffeeRich.opacity(0.05)
+                                    ProgressView()
+                                        .progressViewStyle(CircularProgressViewStyle(tint: .gray))
+                                }
+                                .frame(width: width, height: width)
+                                .clipShape(RoundedRectangle(cornerRadius: 20))
+                            @unknown default:
+                                ZStack {
+                                    Color.coffeeRich.opacity(0.05)
+                                    Image("coffee")
+                                        .resizable()
+                                        .renderingMode(.template)
+                                        .aspectRatio(contentMode: .fit)
+                                        .frame(width: 40)
+                                        .foregroundStyle(Color.coffeeRich.opacity(0.2))
+                                }
+                                .frame(width: width, height: width)
+                                .clipShape(RoundedRectangle(cornerRadius: 20))
                             }
-                            .frame(width: width, height: width)
-                            .clipShape(RoundedRectangle(cornerRadius: 20))
-                        case .empty:
-                            ZStack {
-                                Color.coffeeRich.opacity(0.05)
-                                ProgressView()
-                                    .progressViewStyle(CircularProgressViewStyle(tint: .gray))
-                            }
-                            .frame(width: width, height: width)
-                            .clipShape(RoundedRectangle(cornerRadius: 20))
-                        @unknown default:
-                            ZStack {
-                                Color.coffeeRich.opacity(0.05)
-                                Image(systemName: "cup.and.saucer.fill")
-                                    .resizable()
-                                    .aspectRatio(contentMode: .fit)
-                                    .frame(width: 40)
-                                    .foregroundStyle(Color.coffeeRich.opacity(0.2))
-                            }
-                            .frame(width: width, height: width)
-                            .clipShape(RoundedRectangle(cornerRadius: 20))
                         }
+                    } else {
+                        ZStack {
+                            Color.coffeeRich.opacity(0.05)
+                            Image("coffee")
+                                .resizable()
+                                .renderingMode(.template)
+                                .aspectRatio(contentMode: .fit)
+                                .frame(width: 40)
+                                .foregroundStyle(Color.coffeeRich.opacity(0.2))
+                        }
+                        .frame(width: width, height: width)
+                        .clipShape(RoundedRectangle(cornerRadius: 20))
                     }
-                    
+
                     // Subtle gradient overlay
                     LinearGradient(
-                        colors: [Color.black.opacity(0.3), Color.clear],
+                        colors: [Color.black.opacity(0.15), Color.clear],
                         startPoint: .bottom,
                         endPoint: .center
                     )
                     .clipShape(RoundedRectangle(cornerRadius: 20))
                 }
-                .shadow(color: Color.black.opacity(0.1), radius: 10, x: 0, y: 5)
                 
                 // Info
                 VStack(alignment: .leading, spacing: 6) {
@@ -99,7 +114,7 @@ struct ProductCard: View {
             .padding(12)
             .background(Color.white)
             .cornerRadius(24)
-            .shadow(color: Color.black.opacity(0.08), radius: 12, x: 0, y: 6)
+            .shadow(color: Color.black.opacity(0.04), radius: 8, x: 0, y: 2)
             .scaleEffect(isPressed ? 0.98 : 1.0)
             .animation(.spring(response: 0.3, dampingFraction: 0.7), value: isPressed)
         }

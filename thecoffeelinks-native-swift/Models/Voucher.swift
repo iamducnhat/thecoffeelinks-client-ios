@@ -1,7 +1,7 @@
 import Foundation
 
 /// Voucher model - APIClient uses .convertFromSnakeCase
-struct Voucher: Decodable, Identifiable {
+struct Voucher: Codable, Identifiable {
     let _id: String?
     let code: String
     let type: String? // e.g., "discount", "free_item"

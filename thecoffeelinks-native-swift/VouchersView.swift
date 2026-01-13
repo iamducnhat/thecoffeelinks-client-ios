@@ -147,16 +147,18 @@ struct VoucherCard: View {
                                 .frame(width: 48, height: 48)
                                 .clipShape(Circle())
                         default:
-                            Image(systemName: isGold ? "star.fill" : "ticket.fill")
+                            Image(isGold ? "star" : "ticket")
                                 .resizable()
+                                .renderingMode(.template)
                                 .aspectRatio(contentMode: .fit)
                                 .frame(width: 24, height: 24)
                                 .foregroundStyle(isGold ? Color.gold : Color.sage)
                         }
                     }
                 } else {
-                    Image(systemName: isGold ? "star.fill" : "ticket.fill")
+                    Image(isGold ? "star" : "ticket")
                         .resizable()
+                        .renderingMode(.template)
                         .aspectRatio(contentMode: .fit)
                         .frame(width: 24, height: 24)
                         .foregroundStyle(isGold ? Color.gold : Color.sage)

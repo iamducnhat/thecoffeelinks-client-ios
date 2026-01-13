@@ -10,9 +10,26 @@ class OrdersViewModel: ObservableObject {
     
     private let orderService = OrderService()
     private var realtimeChannel: RealtimeChannelV2?
+    private let activeCacheKey = "active_orders_cache"
+    private let pastCacheKey = "past_orders_cache"
+    
+    init() {
+        if let cachedActive = CacheManager.shared.load([Order].self, for: activeCacheKey) {
+            self.activeOrders = cachedActive
+        }
+        if let cachedPast = CacheManager.shared.load([Order].self, for: pastCacheKey) {
+            self.pastOrders = cachedPast
+        }
+        
+        if !activeOrders.isEmpty || !pastOrders.isEmpty {
+            self.viewState = .loaded
+        }
+    }
     
     func fetchOrders() async {
-        self.viewState = .loading
+        if activeOrders.isEmpty && pastOrders.isEmpty {
+            self.viewState = .loading
+        }
         do {
             async let activeTask = orderService.getActiveOrders()
             async let allTask = orderService.getOrders()
@@ -24,6 +41,9 @@ class OrdersViewModel: ObservableObject {
             // Filter 'all' for past orders (completed or cancelled)
             self.pastOrders = all.filter { $0.status == "completed" || $0.status == "cancelled" }
             
+            await CacheManager.shared.save(active, for: activeCacheKey)
+            await CacheManager.shared.save(pastOrders, for: pastCacheKey)
+            
             self.viewState = .loaded
             
             // Setup realtime if not already connected
@@ -31,7 +51,10 @@ class OrdersViewModel: ObservableObject {
                 await setupRealtime()
             }
         } catch {
-            self.viewState = .error(error.localizedDescription)
+            print("Orders fetch error: \(error)")
+            if activeOrders.isEmpty && pastOrders.isEmpty {
+                self.viewState = .error(error.localizedDescription)
+            }
         }
     }
     

@@ -98,7 +98,6 @@ struct CartFloater: View {
                             .font(.brandSans(15))
                             .fontWeight(.bold)
                         Image(systemName: "arrow.right")
-                            .font(.system(size: 14, weight: .bold))
                     }
                     .foregroundStyle(.white)
                     .padding(.horizontal, 16)

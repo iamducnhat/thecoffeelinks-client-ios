@@ -1,7 +1,7 @@
 import Foundation
 
 /// Event model
-struct Event: Decodable, Identifiable {
+struct Event: Codable, Identifiable {
     let id: String
     let title: String
     let description: String?
@@ -54,4 +54,17 @@ struct Event: Decodable, Identifiable {
         self.location = try container.decodeIfPresent(String.self, forKey: .location)
         self.type = try container.decodeIfPresent(String.self, forKey: .type)
     }
+    
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(id, forKey: .id)
+        try container.encode(title, forKey: .title)
+        try container.encodeIfPresent(description, forKey: .description)
+        try container.encodeIfPresent(date, forKey: .date)
+        try container.encodeIfPresent(imageUrl, forKey: .imageUrl)
+        try container.encodeIfPresent(hostName, forKey: .hostName)
+        try container.encodeIfPresent(location, forKey: .location)
+        try container.encodeIfPresent(type, forKey: .type)
+    }
 }
+

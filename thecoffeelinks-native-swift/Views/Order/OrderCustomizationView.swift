@@ -19,6 +19,7 @@ struct OrderCustomizationView: View {
     @State private var serverPrice: Double? = nil    // Last confirmed server price
     @State private var isSyncing: Bool = false       // Background sync indicator (subtle)
     @State private var calculationTask: Task<Void, Never>?
+    @State private var bottomBarHeight: CGFloat = 0
     
     // Computed Options from Repository
     var sizes: [String] {
@@ -87,21 +88,21 @@ struct OrderCustomizationView: View {
                                     .font(.brandSerif(32))
                                     .foregroundColor(.coffeeDark)
                                 
-                                HStack(spacing: 6) {
-                                    Text(displayPrice > 0 ? displayPrice.toVND() : product.price.toVND())
-                                        .font(.brandSans(24))
-                                        .fontWeight(.bold)
-                                        .foregroundColor(.brandAccent)
-                                        .contentTransition(.numericText())
-                                        .animation(.easeInOut(duration: 0.2), value: displayPrice)
-                                    
-                                    // Subtle sync indicator
-                                    if isSyncing {
-                                        ProgressView()
-                                            .controlSize(.mini)
-                                            .opacity(0.5)
-                                    }
-                                }
+//                                HStack(spacing: 6) {
+//                                    Text(displayPrice > 0 ? displayPrice.toVND() : product.price.toVND())
+//                                        .font(.brandSans(24))
+//                                        .fontWeight(.bold)
+//                                        .foregroundColor(.brandAccent)
+//                                        .contentTransition(.numericText())
+//                                        .animation(.easeInOut(duration: 0.2), value: displayPrice)
+//                                    
+//                                    // Subtle sync indicator
+//                                    if isSyncing {
+//                                        ProgressView()
+//                                            .controlSize(.mini)
+//                                            .opacity(0.5)
+//                                    }
+//                                }
                             }
                             .padding(.horizontal, 20)
                             .padding(.top, 16)
@@ -137,6 +138,7 @@ struct OrderCustomizationView: View {
                      } else {
                          Button(action: { dismiss() }) {
                              Image(systemName: "xmark.circle.fill")
+                                 .font(.system(size: 20, weight: .bold))
                                  .foregroundColor(.primary)
                          }
                      }
@@ -178,8 +180,8 @@ struct OrderCustomizationView: View {
             // Quantity Section
             quantitySection
             
-            // Bottom Spacer
-            Color.clear.frame(height: 160)
+            // Bottom Spacer - dynamic height based on bottom bar
+            Color.clear.frame(height: bottomBarHeight+40)
         }
         .padding(.horizontal, 20)
     }
@@ -212,28 +214,27 @@ struct OrderCustomizationView: View {
                     
                     Spacer()
                     
-                    Button(action: addToCart) {
-                        Text("Add to Order")
-                            .font(.brandSans(16))
-                            .fontWeight(.bold)
-                            .foregroundColor(.white)
-                            .padding(.vertical, 16)
-                            .padding(.horizontal, 32)
-                            .background(Color.coffeeDark)
-                            .cornerRadius(16)
+                    LiquidGlassPrimaryButton("Add to Order", icon: "cart.badge.plus") {
+                        addToCart()
                     }
+                    .fixedSize()
                     // Don't disable button during background sync - use last valid price
                 }
                 .padding(20)
                 .background(Color.brandBackground.opacity(0.95))
                 .background(.ultraThinMaterial)
             }
+            .onGeometryChange(for: CGFloat.self) { geo in
+                geo.size.height
+            } action: { newValue in
+                bottomBarHeight = newValue
+            }
         }
     }
     
     // MARK: - Components
     
-    private func sectionHeader(title: String, icon: String) -> some View {
+    private func sectionHeader(title: String) -> some View {
         Text(title)
             .font(.brandSerif(14).bold())
             .foregroundColor(.coffeeDark)
@@ -242,7 +243,7 @@ struct OrderCustomizationView: View {
     
     private var sizeSection: some View {
         VStack(alignment: .leading, spacing: 12) {
-            sectionHeader(title: "Size", icon: "cup.and.saucer.fill")
+            sectionHeader(title: "Size")
             
             Picker("Size", selection: $selectedSize) {
                 ForEach(sizes, id: \.self) { size in
@@ -263,7 +264,7 @@ struct OrderCustomizationView: View {
     
     private var iceLevelSection: some View {
         VStack(alignment: .leading, spacing: 12) {
-            sectionHeader(title: "Ice Level", icon: "snowflake")
+            sectionHeader(title: "Ice Level")
             
             VStack(spacing: 8) {
                 Slider(value: $iceIndex, in: 0...Double(iceLevels.count - 1), step: 1)
@@ -280,8 +281,6 @@ struct OrderCustomizationView: View {
                             .font(.caption2)
                             .foregroundColor(Int(iceIndex) == index ? .coffeeDark : .secondary)
                             .fontWeight(Int(iceIndex) == index ? .bold : .regular)
-                            .fixedSize()
-                            .frame(width: 1, alignment: .center)
                     }
                 }
             }
@@ -290,7 +289,7 @@ struct OrderCustomizationView: View {
     
     private var sugarLevelSection: some View {
         VStack(alignment: .leading, spacing: 12) {
-            sectionHeader(title: "Sugar Level", icon: "drop.fill")
+            sectionHeader(title: "Sugar Level")
             
             VStack(spacing: 8) {
                 Slider(value: $sugarIndex, in: 0...Double(sugarLevels.count - 1), step: 1)
@@ -307,8 +306,6 @@ struct OrderCustomizationView: View {
                             .font(.caption2)
                             .foregroundColor(Int(sugarIndex) == index ? .coffeeDark : .secondary)
                             .fontWeight(Int(sugarIndex) == index ? .bold : .regular)
-                            .fixedSize()
-                            .frame(width: 1, alignment: .center)
                     }
                 }
             }
@@ -317,7 +314,7 @@ struct OrderCustomizationView: View {
     
     private var toppingsSection: some View {
         VStack(alignment: .leading, spacing: 12) {
-            sectionHeader(title: "Toppings", icon: "circle.grid.2x2.fill")
+            sectionHeader(title: "Toppings")
             
             ForEach(availableToppings) { topping in
                 Toggle(isOn: toppingBinding(for: topping.id)) {
@@ -338,7 +335,7 @@ struct OrderCustomizationView: View {
     
     private var quantitySection: some View {
         VStack(alignment: .leading, spacing: 12) {
-            sectionHeader(title: "Quantity", icon: "number")
+            sectionHeader(title: "Quantity")
             
             Stepper(value: $quantity, in: 1...99) {
                 Text("\(quantity)")

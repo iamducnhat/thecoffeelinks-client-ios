@@ -23,7 +23,7 @@ enum PaymentMethod: String, Codable {
 /// Order model - API returns snake_case, but APIClient uses .convertFromSnakeCase
 /// So we DON'T need CodingKeys - just use camelCase property names
 // Order model
-struct Order: Decodable, Identifiable, Hashable {
+struct Order: Codable, Identifiable, Hashable {
     let id: String
     let userId: String?
     let status: String? // "received", "preparing", ...
@@ -59,7 +59,7 @@ struct Order: Decodable, Identifiable, Hashable {
     }
 }
 
-struct OrderItem: Decodable, Identifiable, Hashable {
+struct OrderItem: Codable, Identifiable, Hashable {
     let id: String // UUID or Int depending on DB
     let orderId: String?
     let productId: String? // Restored

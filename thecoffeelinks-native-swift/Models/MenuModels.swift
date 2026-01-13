@@ -1,6 +1,6 @@
 import Foundation
 
-struct MenuResponse: Decodable {
+struct MenuResponse: Codable {
     let categories: [MenuCategory]
     let products: [Product]
     let toppings: [Topping]
@@ -9,24 +9,24 @@ struct MenuResponse: Decodable {
     let iceOptions: [ConfigOption]
 }
 
-struct MenuCategory: Decodable, Identifiable, Hashable {
+struct MenuCategory: Codable, Identifiable, Hashable {
     let id: String
     let name: String
 }
 
-struct Topping: Decodable, Identifiable, Hashable {
+struct Topping: Codable, Identifiable, Hashable {
     let id: String
     let name: String
     let price: Double
     let isAvailable: Bool
 }
 
-struct SizeModifier: Decodable, Hashable {
+struct SizeModifier: Codable, Hashable {
     let price: Double
     let label: String
 }
 
-struct ConfigOption: Decodable, Hashable {
+struct ConfigOption: Codable, Hashable {
     let value: String
     let label: String
 }

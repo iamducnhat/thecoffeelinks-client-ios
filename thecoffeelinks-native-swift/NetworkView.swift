@@ -16,45 +16,14 @@ struct NetworkView: View {
                             header
                             // Check-in Status / Action
                             if !viewModel.isCheckedIn {
-                                if #available(iOS 26.0, *) {
-                                    Button {
-                                        Task { await viewModel.checkIn() }
-                                    } label: {
-                                        HStack {
-                                            Image("map_pin")
-                                            Text("Check In to Networking Lounge")
-                                                .fontWeight(.bold)
-                                        }
-                                        .font(.brandSans(16))
-                                        .foregroundStyle(.white)
-                                        .frame(maxWidth: .infinity)
-                                        .padding()
-//                                        .background(Color.coffeeRich)
-//                                        .cornerRadius(16)
-//                                        .shadow(color: Color.coffeeRich.opacity(0.3), radius: 10, x: 0, y: 5)
-                                    }
-                                    .buttonStyle(.glassProminent)
-                                    .tint(Color.coffeeRich)
-                                    .padding(.horizontal)
-                                } else {
-                                    Button {
-                                        Task { await viewModel.checkIn() }
-                                    } label: {
-                                        HStack {
-                                            Image("map_pin")
-                                            Text("Check In to Networking Lounge")
-                                                .fontWeight(.bold)
-                                        }
-                                        .font(.brandSans(16))
-                                        .foregroundStyle(.white)
-                                        .frame(maxWidth: .infinity)
-                                        .padding()
-                                        .background(Color.coffeeRich)
-                                        .cornerRadius(16)
-                                        .shadow(color: Color.coffeeRich.opacity(0.3), radius: 10, x: 0, y: 5)
-                                    }
-                                    .padding(.horizontal)
+                                LiquidGlassPrimaryButton(
+                                    "Check In to Networking Lounge",
+                                    icon: "map_pin",
+                                    tint: Color.coffeeRich
+                                ) {
+                                    Task { await viewModel.checkIn() }
                                 }
+                                .padding(.horizontal)
                             } else {
                                 HStack {
                                     Circle()
@@ -78,7 +47,9 @@ struct NetworkView: View {
                                     .foregroundStyle(Color.coffeeDark)
                                 
                                 if viewModel.viewState == .loading && viewModel.checkedInUsers.isEmpty {
-                                    skeletonView
+                                    ProgressView()
+                                        .frame(maxWidth: .infinity, alignment: .center)
+                                        .padding()
                                 } else if viewModel.checkedInUsers.isEmpty {
                                     VStack(spacing: 8) {
                                         Image("network")
@@ -124,40 +95,7 @@ struct NetworkView: View {
         //.padding(.top)
     }
     
-    var skeletonView: some View {
-        ScrollView {
-            VStack(spacing: 24) {
-                header
-                
-                // Status Placeholder
-                HStack {
-                    Circle()
-                        .fill(Color.sage)
-                        .frame(width: 8, height: 8)
-                    Text("Checking status...")
-                        .font(.brandSans(14))
-                        .foregroundStyle(Color.sage)
-                }
-                .padding()
-                .background(Color.white)
-                .clipShape(Capsule())
-                
-                // List of People
-                VStack(alignment: .leading, spacing: 16) {
-                    Text("Here Now")
-                        .font(.brandSerif(20))
-                        .foregroundStyle(Color.coffeeDark)
-                    
-                    ForEach(0..<4) { _ in
-                        NetworkUserCard(checkIn: .placeholder)
-                    }
-                }
-            }
-            .padding()
-        }
-        .redacted(reason: .placeholder)
-        .disabled(true)
-    }
+
 }
 
 struct NetworkUserCard: View {

@@ -16,40 +16,93 @@ struct OrdersView: View {
                 Color.brandBackground.ignoresSafeArea()
                 
                 if viewModel.viewState == .loading && viewModel.activeOrders.isEmpty && viewModel.pastOrders.isEmpty {
-                    skeletonView
+                    ProgressView()
                 } else {
-                    ScrollView {
-                        VStack(spacing: 24) {
-                            header
+                    GeometryReader { g in
+                        ScrollView {
+                            // Header - scrolls with content
+                            HStack {
+                                Text("Orders")
+                                    .font(.brandSerif(32))
+                                    .foregroundStyle(Color.brandPrimary)
+                                Spacer()
+                            }
+                            .padding(.horizontal)
+                            .padding(.top, 20)
                             
-                            // Live Activity Section (Active Orders)
-                            if !viewModel.activeOrders.isEmpty {
+                            List {
+                                // Active Orders Section
+                                if !viewModel.activeOrders.isEmpty {
+                            Section {
                                 ForEach(viewModel.activeOrders) { order in
                                     LiveOrderCard(order: order)
+                                        .listRowInsets(EdgeInsets(top: 8, leading: 16, bottom: 8, trailing: 16))
+                                        .listRowBackground(Color.clear)
+                                        .listRowSeparator(.hidden)
                                 }
+                            } header: {
+                                Text("Active Orders")
+                                    .font(.caption)
+                                    .fontWeight(.bold)
+                                    .foregroundStyle(Color.secondary)
+                                    .textCase(nil)
                             }
-                            
-                            // History Section
-                            VStack(alignment: .leading, spacing: 16) {
-                                Text("Recent Visits")
-                                    .font(.brandSerif(20))
-                                    .foregroundStyle(Color.coffeeDark)
-                                
-                                if viewModel.pastOrders.isEmpty {
+                        }
+                        
+                        // History Section
+                        Section {
+                            if viewModel.pastOrders.isEmpty {
+                                VStack(spacing: 12) {
+                                    Image("coffee")
+                                        .resizable()
+                                        .renderingMode(.template)
+                                        .aspectRatio(contentMode: .fit)
+                                        .frame(width: 32, height: 32)
+                                        .foregroundStyle(Color.secondary.opacity(0.5))
                                     Text("No recent orders")
                                         .font(.brandSans(14))
                                         .foregroundStyle(.secondary)
-                                } else {
-                                    ForEach(viewModel.pastOrders) { order in
-                                        HistoryItem(order: order)
+                                }
+                                .frame(maxWidth: .infinity)
+                                .padding(.vertical, 24)
+                                .listRowBackground(Color.clear)
+                            } else {
+                                ForEach(viewModel.pastOrders) { order in
+                                    NavigationLink(destination: OrderDetailView(order: order)) {
+                                        HistoryRow(order: order)
                                     }
+                                    .listRowBackground(Color.white)
+                                }
+                                .onDelete { indexSet in
+                                    // Optional: handle delete action
+                                    // viewModel.deleteOrders(at: indexSet)
                                 }
                             }
+                        } header: {
+                            Text("Recent Visits")
+                                .font(.caption)
+                                .fontWeight(.bold)
+                                .foregroundStyle(Color.secondary)
+                                .textCase(nil)
                         }
-                        .padding()
+                        
+                        // View All Section
+                        Section {
+                            Button {
+                                // Load more orders action
+                            } label: {
+                                Text("View All Orders")
+                                    .font(.brandSans(14))
+                                    .foregroundStyle(Color.secondary)
+                            }
+                            .frame(maxWidth: .infinity, alignment: .center)
+                        }
+                        .listRowBackground(Color.clear)
                     }
-                    .refreshable {
-                        await viewModel.fetchOrders()
+                    .scrollContentBackground(.hidden)
+                    .listStyle(.insetGrouped)
+                    .frame(width: g.size.width, height: g.size.height - 60, alignment: .center)
+                        }
                     }
                 }
             }
@@ -58,42 +111,183 @@ struct OrdersView: View {
             }
         }
     }
+}
     
-    var header: some View {
-        HStack {
-            Text("Orders")
-                .font(.brandSerif(32))
-                .foregroundStyle(Color.brandPrimary)
-            Spacer()
-        }
-    }
+
+
+// MARK: - Order Detail View (Placeholder)
+struct OrderDetailView: View {
+    let order: Order
     
-    var skeletonView: some View {
+    var body: some View {
         ScrollView {
-            VStack(spacing: 24) {
-                header
-                
-                ForEach(0..<2) { _ in
-                    LiveOrderCard(order: .placeholder)
-                }
-                
-                VStack(alignment: .leading, spacing: 16) {
-                    Text("Recent Visits")
-                        .font(.brandSerif(20))
-                        .foregroundStyle(Color.coffeeDark)
-                    
-                    ForEach(0..<3) { _ in
-                        HistoryItem(order: .placeholder)
-                    }
-                }
+            VStack(alignment: .leading, spacing: 20) {
+                headerSection
+                itemsSection
+                summarySection
+                reorderButton
             }
             .padding()
         }
-        .redacted(reason: .placeholder)
-        .disabled(true)
+        .background(Color.brandBackground)
+        .navigationTitle("Order Details")
+        .navigationBarTitleDisplayMode(.inline)
+    }
+
+    private var headerSection: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text("Order #\(String(order.id.prefix(8)))")
+                .font(.brandSerif(24))
+                .foregroundStyle(Color.coffeeDark)
+            
+            if let status = order.status {
+                Text(status.capitalized)
+                    .font(.caption)
+                    .fontWeight(.bold)
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 4)
+                    .background(status == "completed" ? Color.sage : Color.coffeeRich.opacity(0.2))
+                    .foregroundStyle(status == "completed" ? .white : Color.coffeeDark)
+                    .clipShape(Capsule())
+            }
+            
+            if let date = order.createdAt {
+                Text(date)
+                    .font(.brandSans(14))
+                    .foregroundStyle(.secondary)
+            }
+        }
+        .padding()
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(Color.white)
+        .cornerRadius(16)
+    }
+
+    private var itemsSection: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text("Items")
+                .font(.brandSerif(18))
+                .foregroundStyle(Color.coffeeDark)
+            
+            ForEach(order.items, id: \.id) { item in
+                ItemRow(item: item)
+                if item.id != order.items.last?.id {
+                    Divider()
+                }
+            }
+        }
+        .padding()
+        .background(Color.white)
+        .cornerRadius(16)
+    }
+
+    private var summarySection: some View {
+        VStack(spacing: 12) {
+            HStack {
+                Text("Delivery")
+                    .foregroundStyle(.secondary)
+                Spacer()
+                Text(order.deliveryOption.rawValue.replacingOccurrences(of: "_", with: " ").capitalized)
+                    .fontWeight(.medium)
+            }
+            .font(.brandSans(14))
+            
+            if let address = order.deliveryAddress {
+                HStack {
+                    Text("Address")
+                        .foregroundStyle(.secondary)
+                    Spacer()
+                    Text(address)
+                        .fontWeight(.medium)
+                        .lineLimit(2)
+                        .multilineTextAlignment(.trailing)
+                }
+                .font(.brandSans(14))
+            }
+            
+            Divider()
+            
+            HStack {
+                Text("Total")
+                    .font(.brandSerif(18))
+                    .foregroundStyle(Color.coffeeDark)
+                Spacer()
+                Text(order.total.toVND())
+                    .font(.brandSerif(18))
+                    .fontWeight(.bold)
+                    .foregroundStyle(Color.brandPrimary)
+            }
+        }
+        .padding()
+        .background(Color.white)
+        .cornerRadius(16)
+    }
+    
+    private var reorderButton: some View {
+        LiquidGlassPrimaryButton("Order Again", icon: "clock") {
+            // Reorder action
+        }
+        .padding(.top, 8)
     }
 }
 
+private struct ItemRow: View {
+    let item: OrderItem
+    
+    var body: some View {
+        HStack(spacing: 12) {
+            if let imageUrl = item.productImage, !imageUrl.isEmpty {
+                AsyncImage(url: URL(string: imageUrl)) { phase in
+                    switch phase {
+                    case .success(let image):
+                        image
+                            .resizable()
+                            .aspectRatio(contentMode: .fill)
+                            .frame(width: 50, height: 50)
+                            .clipShape(RoundedRectangle(cornerRadius: 8))
+                    default:
+                        placeholderImage
+                    }
+                }
+            } else {
+                placeholderImage
+            }
+            
+            VStack(alignment: .leading, spacing: 2) {
+                Text(item.productName ?? "Item")
+                    .font(.brandSans(16))
+                    .foregroundStyle(Color.coffeeDark)
+                Text("Qty: \(item.quantity)")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+            
+            Spacer()
+            
+            Text((item.finalPrice ?? 0).toVND())
+                .font(.brandSans(14))
+                .fontWeight(.semibold)
+                .foregroundStyle(Color.coffeeDark)
+        }
+        .padding(.vertical, 8)
+    }
+    
+    private var placeholderImage: some View {
+        RoundedRectangle(cornerRadius: 8)
+            .fill(Color.coffeeRich.opacity(0.1))
+            .frame(width: 50, height: 50)
+            .overlay {
+                Image("coffee")
+                    .resizable()
+                    .renderingMode(.template)
+                    .aspectRatio(contentMode: .fit)
+                    .frame(width: 24, height: 24)
+                    .foregroundStyle(Color.coffeeRich.opacity(0.3))
+            }
+    }
+}
+
+// MARK: - Live Order Card
 struct LiveOrderCard: View {
     let order: Order
     
@@ -126,6 +320,7 @@ struct LiveOrderCard: View {
                     
                     Image("coffee")
                         .resizable()
+                        .renderingMode(.template)
                         .aspectRatio(contentMode: .fit)
                         .frame(width: 24, height: 24)
                         .foregroundStyle(Color.sage)
@@ -169,7 +364,8 @@ struct LiveOrderCard: View {
     }
 }
 
-struct HistoryItem: View {
+// MARK: - History Row (for List)
+struct HistoryRow: View {
     let order: Order
     
     var body: some View {
@@ -185,34 +381,13 @@ struct HistoryItem: View {
                             .frame(width: 50, height: 50)
                             .clipShape(RoundedRectangle(cornerRadius: 8))
                     case .failure(_), .empty:
-                        RoundedRectangle(cornerRadius: 8)
-                            .fill(Color.coffeeRich.opacity(0.1))
-                            .frame(width: 50, height: 50)
-                            .overlay {
-                                Image(systemName: "cup.and.saucer.fill")
-                                    .foregroundStyle(Color.coffeeRich.opacity(0.3))
-                                    .font(.system(size: 20))
-                            }
+                        placeholderImage
                     @unknown default:
-                        RoundedRectangle(cornerRadius: 8)
-                            .fill(Color.coffeeRich.opacity(0.1))
-                            .frame(width: 50, height: 50)
-                            .overlay {
-                                Image(systemName: "cup.and.saucer.fill")
-                                    .foregroundStyle(Color.coffeeRich.opacity(0.3))
-                                    .font(.system(size: 20))
-                            }
+                        placeholderImage
                     }
                 }
             } else {
-                RoundedRectangle(cornerRadius: 8)
-                    .fill(Color.coffeeRich.opacity(0.1))
-                    .frame(width: 50, height: 50)
-                    .overlay {
-                        Image(systemName: "cup.and.saucer.fill")
-                            .foregroundStyle(Color.coffeeRich.opacity(0.3))
-                            .font(.system(size: 20))
-                    }
+                placeholderImage
             }
             
             VStack(alignment: .leading, spacing: 4) {
@@ -237,21 +412,26 @@ struct HistoryItem: View {
             
             Spacer()
             
-            VStack(alignment: .trailing, spacing: 4) {
-                Text(order.total.toVND())
-                    .font(.brandSans(16))
-                    .fontWeight(.bold)
-                    .foregroundStyle(Color.coffeeDark)
-                
-                Image(systemName: "chevron.right")
-                    .font(.system(size: 12))
-                    .foregroundStyle(.gray)
-            }
+            Text(order.total.toVND())
+                .font(.brandSans(14))
+                .fontWeight(.bold)
+                .foregroundStyle(Color.coffeeDark)
         }
-        .padding()
-        .background(Color.white)
-        .cornerRadius(12)
-        .shadow(color: Color.black.opacity(0.04), radius: 4, x: 0, y: 1)
+        .padding(.vertical, 4)
+    }
+    
+    private var placeholderImage: some View {
+        RoundedRectangle(cornerRadius: 8)
+            .fill(Color.coffeeRich.opacity(0.1))
+            .frame(width: 50, height: 50)
+            .overlay {
+                Image("coffee")
+                    .resizable()
+                    .renderingMode(.template) 
+                    .aspectRatio(contentMode: .fit)
+                    .frame(width: 20, height: 20)
+                    .foregroundStyle(Color.coffeeRich.opacity(0.3))
+            }
     }
 }
 

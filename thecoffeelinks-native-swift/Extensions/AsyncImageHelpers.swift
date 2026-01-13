@@ -45,7 +45,7 @@ extension View {
         width: CGFloat,
         height: CGFloat,
         cornerRadius: CGFloat = 12,
-        fallbackIcon: String = "photo"
+        fallbackIcon: String = "camera"
     ) -> some View {
         ZStack {
             RoundedRectangle(cornerRadius: cornerRadius)
@@ -62,8 +62,9 @@ extension View {
                             .frame(width: width, height: height)
                             .clipShape(RoundedRectangle(cornerRadius: cornerRadius))
                     case .failure(_):
-                        Image(systemName: fallbackIcon)
+                        Image(fallbackIcon)
                             .resizable()
+                            .renderingMode(.template)
                             .aspectRatio(contentMode: .fit)
                             .frame(width: width * 0.4, height: height * 0.4)
                             .foregroundStyle(Color.coffeeRich.opacity(0.3))
@@ -71,16 +72,18 @@ extension View {
                         ProgressView()
                             .progressViewStyle(CircularProgressViewStyle(tint: .gray))
                     @unknown default:
-                        Image(systemName: fallbackIcon)
+                        Image(fallbackIcon)
                             .resizable()
+                            .renderingMode(.template)
                             .aspectRatio(contentMode: .fit)
                             .frame(width: width * 0.4, height: height * 0.4)
                             .foregroundStyle(Color.coffeeRich.opacity(0.3))
                     }
                 }
             } else {
-                Image(systemName: fallbackIcon)
+                Image(fallbackIcon)
                     .resizable()
+                    .renderingMode(.template)
                     .aspectRatio(contentMode: .fit)
                     .frame(width: width * 0.4, height: height * 0.4)
                     .foregroundStyle(Color.coffeeRich.opacity(0.3))
@@ -105,8 +108,9 @@ struct ProductImageView: View {
         } placeholder: {
             ZStack {
                 Color.coffeeRich.opacity(0.05)
-                Image(systemName: "cup.and.saucer.fill")
+                Image("coffee")
                     .resizable()
+                    .renderingMode(.template)
                     .aspectRatio(contentMode: .fit)
                     .frame(width: width * 0.4)
                     .foregroundStyle(Color.coffeeRich.opacity(0.2))
@@ -131,8 +135,9 @@ struct EventImageView: View {
         } placeholder: {
             ZStack {
                 Color.coffeeRich.opacity(0.05)
-                Image(systemName: "calendar")
+                Image("calendar")
                     .resizable()
+                    .renderingMode(.template)
                     .aspectRatio(contentMode: .fit)
                     .frame(width: width * 0.4)
                     .foregroundStyle(Color.coffeeRich.opacity(0.3))
@@ -157,8 +162,9 @@ struct StoreImageView: View {
         } placeholder: {
             ZStack {
                 Color.coffeeRich.opacity(0.1)
-                Image(systemName: "building.2.fill")
+                Image("home")
                     .resizable()
+                    .renderingMode(.template)
                     .aspectRatio(contentMode: .fit)
                     .frame(width: width * 0.4)
                     .foregroundStyle(Color.coffeeRich.opacity(0.3))
@@ -186,8 +192,9 @@ struct VoucherImageView: View {
                     .frame(width: size, height: size)
                     .clipShape(Circle())
             } placeholder: {
-                Image(systemName: isGold ? "star.fill" : "ticket.fill")
+                Image(isGold ? "star" : "ticket")
                     .resizable()
+                    .renderingMode(.template)
                     .aspectRatio(contentMode: .fit)
                     .frame(width: size * 0.5)
                     .foregroundStyle(isGold ? Color.gold : Color.sage)

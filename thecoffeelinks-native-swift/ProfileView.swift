@@ -17,7 +17,8 @@ struct ProfileView: View {
             List {
                 switch viewModel.viewState {
                 case .loading:
-                    skeletonView
+                    ProgressView()
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
                         .listRowBackground(Color.clear)
                         .listRowInsets(EdgeInsets())
                     
@@ -106,6 +107,10 @@ struct ProfileView: View {
                         Toggle(isOn: $isNetworkingVisible) {
                             HStack {
                                 Image(isNetworkingVisible ? "eye" : "eye_off")
+                                    .resizable()
+                                    .renderingMode(.template)
+                                    .aspectRatio(contentMode: .fit)
+                                    .frame(width: 20, height: 20)
                                     .foregroundStyle(isNetworkingVisible ? Color.sage : Color.secondary)
                                 
                                 VStack(alignment: .leading) {
@@ -136,6 +141,10 @@ struct ProfileView: View {
                                     .font(.brandSans(16))
                             } icon: {
                                 Image("clock")
+                                    .resizable()
+                                    .renderingMode(.template)
+                                    .aspectRatio(contentMode: .fit)
+                                    .frame(width: 20, height: 20)
                                     .foregroundStyle(Color.coffeeDark)
                             }
                         }
@@ -146,6 +155,10 @@ struct ProfileView: View {
                                     .font(.brandSans(16))
                             } icon: {
                                 Image("settings")
+                                    .resizable()
+                                    .renderingMode(.template)
+                                    .aspectRatio(contentMode: .fit)
+                                    .frame(width: 20, height: 20)
                                     .foregroundStyle(Color.coffeeDark)
                             }
                         }
@@ -155,7 +168,15 @@ struct ProfileView: View {
                                 await viewModel.signOut()
                             }
                         } label: {
-                            Label("Sign Out", systemImage: "rectangle.portrait.and.arrow.right")
+                             Label {
+                                 Text("Sign Out")
+                             } icon: {
+                                 Image("log_out")
+                                     .resizable()
+                                     .renderingMode(.template)
+                                     .aspectRatio(contentMode: .fit)
+                                     .frame(width: 20, height: 20)
+                             }
                         }
                     } header: {
                         Text("Account")
@@ -179,54 +200,19 @@ struct ProfileView: View {
         }
     }
     
-    var skeletonView: some View {
-        List {
-            Section {
-                VStack(alignment: .center, spacing: 12) {
-                    // Avatar
-                    Circle()
-                        .fill(Color.coffeeRich)
-                        .frame(width: 80, height: 80)
-                    
-                    Text("User Name")
-                        .font(.brandSerif(24))
-                    
-                    Text("Job Title")
-                        .font(.brandSans(14))
-                    
-                    Text("Bio placeholder text for skeleton loading state.")
-                        .font(.caption)
-                        .padding(.horizontal)
-                    
-                    // Trust Badges
-                    HStack(spacing: 8) {
-                        BadgeView(text: "Verified Member", icon: "badge_check", color: .sage)
-                        BadgeView(text: "Top Connector", icon: "network", color: .gold)
-                    }
-                    .padding(.top, 4)
-                }
-                .frame(maxWidth: .infinity)
-                .listRowBackground(Color.clear)
-                .listRowInsets(EdgeInsets())
-                .padding(.bottom, 20)
-            }
-        }
-        .scrollContentBackground(.hidden)
-        .background(Color.brandBackground)
-        .redacted(reason: .placeholder)
-        .disabled(true)
-    }
+
 }
 
 struct BadgeView: View {
     let text: String
-    let icon: String // SF Symbol name
+    let icon: String // Asset symbol name
     let color: Color
     
     var body: some View {
         HStack(spacing: 4) {
-            Image(systemName: icon)
+            Image(icon)
                 .resizable()
+                .renderingMode(.template)
                 .aspectRatio(contentMode: .fit)
                 .frame(width: 12, height: 12)
             Text(text)

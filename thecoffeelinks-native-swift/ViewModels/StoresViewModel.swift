@@ -22,11 +22,19 @@ class StoresViewModel: NSObject, ObservableObject, CLLocationManagerDelegate {
     
     private let storeService = StoreService()
     private let locationManager = CLLocationManager()
+    private let cacheKey = "stores_cache"
     
     override init() {
         super.init()
         locationManager.delegate = self
         locationManager.desiredAccuracy = kCLLocationAccuracyBest
+        
+        // Load from cache
+        if let cachedStores = CacheManager.shared.load([Store].self, for: cacheKey) {
+            self.stores = cachedStores
+            self.viewState = .loaded
+            self.updateDistancesAndSort()
+        }
     }
     
     func requestLocation() {
@@ -35,10 +43,15 @@ class StoresViewModel: NSObject, ObservableObject, CLLocationManagerDelegate {
     }
     
     func fetchStores() async {
-        viewState = .loading
+        // Only show loading if empty and no cache loaded
+        if stores.isEmpty {
+            viewState = .loading
+        }
+        
         do {
             let fetchedStores = try await storeService.getStores()
             self.stores = fetchedStores
+            await CacheManager.shared.save(fetchedStores, for: cacheKey)
             
             updateDistancesAndSort()
             

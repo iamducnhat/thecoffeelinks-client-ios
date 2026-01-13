@@ -83,3 +83,229 @@ extension Color {
         )
     }
 }
+
+// MARK: - Liquid Glass Primary Button
+/// A primary button that uses iOS 26 Liquid Glass style when available,
+/// with a graceful fallback for older iOS versions.
+struct LiquidGlassPrimaryButton: View {
+    let title: String
+    let icon: String?
+    let isLoading: Bool
+    let isDisabled: Bool
+    let tintColor: Color
+    let action: () -> Void
+    
+    init(
+        _ title: String,
+        icon: String? = nil,
+        isLoading: Bool = false,
+        isDisabled: Bool = false,
+        tint: Color = .coffeeDark,
+        action: @escaping () -> Void
+    ) {
+        self.title = title
+        self.icon = icon
+        self.isLoading = isLoading
+        self.isDisabled = isDisabled
+        self.tintColor = tint
+        self.action = action
+    }
+    
+    var body: some View {
+        if #available(iOS 26.0, *) {
+            Button(action: action) {
+                buttonContent
+            }
+            .buttonStyle(.glassProminent)
+            .tint(tintColor)
+            .disabled(isDisabled || isLoading)
+        } else {
+            Button(action: action) {
+                buttonContent
+                    .foregroundStyle(.white)
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 16)
+                    .background(isDisabled ? Color.neutral400 : tintColor)
+                    .cornerRadius(16)
+                    .shadow(color: tintColor.opacity(0.3), radius: 10, x: 0, y: 5)
+            }
+            .disabled(isDisabled || isLoading)
+        }
+    }
+    
+    @ViewBuilder
+    private var buttonContent: some View {
+        HStack(spacing: 8) {
+            if isLoading {
+                ProgressView()
+                    .tint(.white)
+            } else {
+                if let icon = icon {
+                    if UIImage(named: icon) != nil {
+                        Image(icon)
+                            .resizable()
+                            .renderingMode(.template)
+                            .aspectRatio(contentMode: .fit)
+                            .frame(width: 16, height: 16)
+                    } else {
+                        Image(systemName: icon)
+                            .font(.system(size: 16))
+                    }
+                }
+                Text(title)
+                    .font(.brandSans(16))
+                    .fontWeight(.bold)
+            }
+        }
+        .frame(maxWidth: .infinity)
+        .padding(16)
+    }
+}
+
+// MARK: - Liquid Glass Secondary Button (for less prominent actions)
+struct LiquidGlassSecondaryButton: View {
+    let title: String
+    let icon: String?
+    let action: () -> Void
+    
+    init(
+        _ title: String,
+        icon: String? = nil,
+        action: @escaping () -> Void
+    ) {
+        self.title = title
+        self.icon = icon
+        self.action = action
+    }
+    
+    var body: some View {
+        if #available(iOS 26.0, *) {
+            Button(action: action) {
+                buttonContent
+            }
+            .buttonStyle(.glass)
+            .tint(Color.coffeeDark)
+        } else {
+            Button(action: action) {
+                buttonContent
+                    .foregroundStyle(Color.coffeeDark)
+                    .padding(.horizontal, 24)
+                    .padding(.vertical, 12)
+                    .background(Color.white)
+                    .cornerRadius(12)
+                    .overlay {
+                        RoundedRectangle(cornerRadius: 12)
+                            .stroke(Color.neutral200, lineWidth: 1)
+                    }
+            }
+        }
+    }
+    
+    @ViewBuilder
+    private var buttonContent: some View {
+        HStack(spacing: 8) {
+            if let icon = icon {
+                if UIImage(named: icon) != nil {
+                    Image(icon)
+                        .resizable()
+                        .renderingMode(.template)
+                        .aspectRatio(contentMode: .fit)
+                        .frame(width: 16, height: 16)
+                } else {
+                    Image(systemName: icon)
+                        .font(.system(size: 16))
+                }
+            }
+            Text(title)
+                .font(.brandSans(16))
+                .fontWeight(.semibold)
+        }
+    }
+}
+
+// MARK: - Splash Loading View
+/// A clean branded loading screen that replaces the "Brewing..." text
+struct SplashLoadingView: View {
+    @State private var isAnimating = false
+    
+    var body: some View {
+        ZStack {
+            // Gradient background
+            LinearGradient(
+                colors: [Color.ivory, Color.cream.opacity(0.5)],
+                startPoint: .top,
+                endPoint: .bottom
+            )
+            .ignoresSafeArea()
+            
+            VStack(spacing: 32) {
+                Spacer()
+                
+                // Logo Container with subtle animation
+                ZStack {
+                    // Outer ring
+                    Circle()
+                        .stroke(Color.caramel.opacity(0.2), lineWidth: 3)
+                        .frame(width: 120, height: 120)
+                    
+                    // Animated arc
+                    Circle()
+                        .trim(from: 0, to: 0.3)
+                        .stroke(
+                            LinearGradient(
+                                colors: [Color.caramel, Color.coffeeRich],
+                                startPoint: .leading,
+                                endPoint: .trailing
+                            ),
+                            style: StrokeStyle(lineWidth: 3, lineCap: .round)
+                        )
+                        .frame(width: 120, height: 120)
+                        .rotationEffect(.degrees(isAnimating ? 360 : 0))
+                        .animation(
+                            .linear(duration: 1.2)
+                            .repeatForever(autoreverses: false),
+                            value: isAnimating
+                        )
+                    
+                    // Icon
+                    Image(systemName: "cup.and.saucer.fill")
+                        .font(.system(size: 40))
+                        .foregroundStyle(Color.coffeeRich)
+                }
+                
+                // Brand name
+                VStack(spacing: 8) {
+                    Text("The Coffee Links")
+                        .font(.brandSerif(28))
+                        .foregroundStyle(Color.coffeeDark)
+                    
+                    // Subtle loading indicator dots
+                    HStack(spacing: 6) {
+                        ForEach(0..<3) { index in
+                            Circle()
+                                .fill(Color.caramel)
+                                .frame(width: 6, height: 6)
+                                .opacity(isAnimating ? 1 : 0.3)
+                                .animation(
+                                    .easeInOut(duration: 0.6)
+                                    .repeatForever()
+                                    .delay(Double(index) * 0.2),
+                                    value: isAnimating
+                                )
+                        }
+                    }
+                }
+                
+                Spacer()
+                Spacer()
+            }
+        }
+        .onAppear {
+            isAnimating = true
+        }
+    }
+}
+
+#Preview("Splash Loading") {
+    SplashLoadingView()
+}

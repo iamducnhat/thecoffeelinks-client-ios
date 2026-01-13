@@ -11,13 +11,18 @@ struct ContentView: View {
     @StateObject private var appState = AppState()
     @ObservedObject private var authViewModel = AuthViewModel.shared
     @ObservedObject private var cartManager = CartManager.shared
+    @StateObject private var prefetcher = DataPrefetcher.shared
     
     // Search State
     @State private var searchText = ""
+    @State private var isSetupLoading = false
     
     var body: some View {
         Group {
-            if authViewModel.state == .authenticated {
+            if isSetupLoading && !prefetcher.isReady {
+                // Clean branded loading screen
+                SplashLoadingView()
+            } else if authViewModel.state == .authenticated {
                 if #available(iOS 26, *) {
                     TabView {
                         Tab("Home", image: "home") {
@@ -38,7 +43,7 @@ struct ContentView: View {
                             }
                         }
                         
-                        Tab("Search", systemImage: "magnifyingglass", role: .search) {
+                        Tab("Search", image: "filter", role: .search) {
                             NavigationStack {
                                 SearchView(enableInternalSearch: false)
                                     .searchable(text: $searchText)
@@ -102,15 +107,21 @@ struct ContentView: View {
                     }
                 }
             } else if authViewModel.state == .loading {
-                ZStack {
-                    Color.brandBackground.ignoresSafeArea()
-                    ProgressView()
-                }
+                // Clean branded loading screen for auth check
+                SplashLoadingView()
             } else {
                 LoginView()
             }
         }
         .onAppear {
+            // Check if we need to do initial prefetch
+            if prefetcher.needsInitialFetch {
+                isSetupLoading = true
+                Task {
+                    await prefetcher.prefetchAll()
+                }
+            }
+            
             Task {
                 await authViewModel.checkSession()
             }

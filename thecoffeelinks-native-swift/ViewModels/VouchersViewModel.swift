@@ -7,12 +7,24 @@ class VouchersViewModel: ObservableObject {
     @Published var vouchers: [Voucher] = []
     
     private let voucherService = VoucherService()
+    private let cacheKey = "vouchers_cache"
+    
+    init() {
+        if let cachedVouchers = CacheManager.shared.load([Voucher].self, for: cacheKey) {
+            self.vouchers = cachedVouchers
+            self.viewState = .loaded
+        }
+    }
     
     func fetchVouchers() async {
-        self.viewState = .loading
+        if vouchers.isEmpty {
+            self.viewState = .loading
+        }
+        
         do {
             let fetchedVouchers = try await voucherService.getVouchers()
             self.vouchers = fetchedVouchers
+            await CacheManager.shared.save(fetchedVouchers, for: cacheKey)
             
             if vouchers.isEmpty {
                 self.viewState = .empty
@@ -20,7 +32,9 @@ class VouchersViewModel: ObservableObject {
                 self.viewState = .loaded
             }
         } catch {
-            self.viewState = .error(error.localizedDescription)
+            if vouchers.isEmpty {
+                self.viewState = .error(error.localizedDescription)
+            }
         }
     }
     

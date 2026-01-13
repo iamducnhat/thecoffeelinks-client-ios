@@ -59,7 +59,7 @@ final class ModelDecodingTests: XCTestCase {
         let order = try decoder.decode(Order.self, from: json)
         
         XCTAssertEqual(order.id, "order-123")
-        XCTAssertEqual(order.status, .placed)
+        XCTAssertEqual(order.status, "placed")
         XCTAssertEqual(order.totalAmount, 95000)
         
         print("✅ Order model decodes correctly from JSON")

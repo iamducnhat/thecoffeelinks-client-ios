@@ -1,7 +1,7 @@
 import Foundation
 import CoreLocation
 
-struct Store: Decodable, Identifiable {
+struct Store: Codable, Identifiable {
     let id: String
     let name: String
     let address: String

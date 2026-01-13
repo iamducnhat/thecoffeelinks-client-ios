@@ -24,24 +24,27 @@ struct EventDetailView: View {
                                         .frame(width: 120, height: 120)
                                         .clipShape(RoundedRectangle(cornerRadius: 24))
                                 case .failure(_):
-                                    Image(systemName: "calendar")
+                                    Image("calendar")
                                         .resizable()
+                                        .renderingMode(.template) 
                                         .aspectRatio(contentMode: .fit)
                                         .frame(width: 60, height: 60)
                                         .foregroundStyle(Color.coffeeRich)
                                 case .empty:
                                     ProgressView()
                                 @unknown default:
-                                    Image(systemName: "calendar")
+                                    Image("calendar")
                                         .resizable()
+                                        .renderingMode(.template)
                                         .aspectRatio(contentMode: .fit)
                                         .frame(width: 60, height: 60)
                                         .foregroundStyle(Color.coffeeRich)
                                 }
                             }
                         } else {
-                            Image(systemName: "calendar")
+                            Image("calendar")
                                 .resizable()
+                                .renderingMode(.template)
                                 .aspectRatio(contentMode: .fit)
                                 .frame(width: 60, height: 60)
                                 .foregroundStyle(Color.coffeeRich)
@@ -75,32 +78,12 @@ struct EventDetailView: View {
                     
                     // Action Buttons
                     HStack(spacing: 12) {
-                        Button {
+                        LiquidGlassPrimaryButton("Register Now") {
                             // Register logic
-                        } label: {
-                            Text("Register Now")
-                                .font(.brandSans(16))
-                                .fontWeight(.bold)
-                                .foregroundStyle(Color.white)
-                                .padding(.horizontal, 24)
-                                .padding(.vertical, 12)
-                                .background(Color.coffeeDark)
-                                .clipShape(RoundedRectangle(cornerRadius: 12))
                         }
                         
-                        Button {
+                        LiquidGlassSecondaryButton("Share", icon: "chevron_right") {
                             // Share logic
-                        } label: {
-                            Image(systemName: "square.and.arrow.up")
-                                .font(.system(size: 18, weight: .bold))
-                                .foregroundStyle(Color.coffeeDark)
-                                .frame(width: 48, height: 48)
-                                .background(Color.white)
-                                .clipShape(RoundedRectangle(cornerRadius: 12))
-                                .overlay {
-                                    RoundedRectangle(cornerRadius: 12)
-                                        .stroke(Color.neutral200, lineWidth: 1)
-                                }
                         }
                     }
                     .padding(.top, 8)
@@ -170,8 +153,11 @@ struct EventDetailView: View {
                     }
                     Spacer()
                     
-                    Image(systemName: "chevron.right")
-                        .font(.caption)
+                    Image("chevron_right")
+                        .resizable()
+                        .renderingMode(.template)
+                        .aspectRatio(contentMode: .fit)
+                        .frame(width: 12, height: 12)
                         .foregroundStyle(Color.secondary)
                 }
                 .padding(.vertical, 4)

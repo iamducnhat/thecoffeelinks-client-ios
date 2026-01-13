@@ -16,7 +16,7 @@ struct EventsView: View {
             
             switch viewModel.viewState {
             case .loading:
-                skeletonView
+                ProgressView()
             case .error(let message):
                 VStack {
                     Text("Error")
@@ -88,40 +88,17 @@ struct EventsView: View {
                 .foregroundStyle(Color.secondary)
                 .padding(.horizontal)
             
-            Button {
+            LiquidGlassPrimaryButton("Host an Event") {
                 // Host event action
-            } label: {
-                Text("Host an Event")
-                    .font(.brandSans(16))
-                    .fontWeight(.bold)
-                    .foregroundStyle(Color.white)
-                    .padding(.horizontal, 24)
-                    .padding(.vertical, 12)
-                    .background(Color.coffeeDark)
-                    .clipShape(Capsule())
             }
+            .padding(.horizontal, 40)
             .padding(.top, 8)
         }
         .padding(.vertical, 40)
         .frame(maxWidth: .infinity)
     }
     
-    var skeletonView: some View {
-        List {
-            Section {
-                ForEach(0..<3) { _ in
-                    EventRow(event: .placeholder)
-                        .listRowBackground(Color.white)
-                }
-            } header: {
-                Text("Upcoming Events")
-            }
-        }
-        .scrollContentBackground(.hidden)
-        .background(Color.brandBackground)
-        .redacted(reason: .placeholder)
-        .disabled(true)
-    }
+
 }
 
 struct EventRow: View {
@@ -145,28 +122,32 @@ struct EventRow: View {
                                 .frame(width: 60, height: 60)
                                 .clipShape(RoundedRectangle(cornerRadius: 12))
                         case .failure(_):
-                            Image(systemName: "calendar")
+                            Image("calendar")
                                 .resizable()
+                                .renderingMode(.template)
                                 .aspectRatio(contentMode: .fit)
                                 .frame(width: 24, height: 24)
                                 .foregroundStyle(Color.coffeeRich)
                         case .empty:
-                            Image(systemName: "calendar")
+                            Image("calendar")
                                 .resizable()
+                                .renderingMode(.template)
                                 .aspectRatio(contentMode: .fit)
                                 .frame(width: 24, height: 24)
                                 .foregroundStyle(Color.coffeeRich)
                         @unknown default:
-                            Image(systemName: "calendar")
+                            Image("calendar")
                                 .resizable()
+                                .renderingMode(.template) 
                                 .aspectRatio(contentMode: .fit)
                                 .frame(width: 24, height: 24)
                                 .foregroundStyle(Color.coffeeRich)
                         }
                     }
                 } else {
-                    Image(systemName: "calendar")
+                    Image("calendar")
                         .resizable()
+                        .renderingMode(.template)
                         .aspectRatio(contentMode: .fit)
                         .frame(width: 24, height: 24)
                         .foregroundStyle(Color.coffeeRich)

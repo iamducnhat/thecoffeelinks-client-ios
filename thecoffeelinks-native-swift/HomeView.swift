@@ -21,7 +21,7 @@ struct HomeView: View {
                 
                 switch viewModel.viewState {
                 case .loading:
-                    skeletonView
+                    ProgressView()
                 case .error(let message):
                     VStack {
                         Text("Failed to load")
@@ -102,12 +102,13 @@ struct HomeView: View {
             Spacer()
             
             if #available(iOS 26.0, *) {
-                GlassEffectContainer(spacing: 14) {
+                GlassEffectContainer(spacing: 12) {
                     HStack {
                         // Notification / Events Button
                         NavigationLink(destination: EventsView()) {
-                            Image(systemName: "bell")
+                            Image("bell")
                                 .resizable()
+                                .renderingMode(.template)
                                 .aspectRatio(contentMode: .fit)
                                 .frame(width: 20, height: 20)
                                 .foregroundStyle(Color.brandPrimary)
@@ -121,6 +122,7 @@ struct HomeView: View {
                         NavigationLink(destination: ProfileView()) {
                             Image("user")
                                 .resizable()
+                                .renderingMode(.template)
                                 .aspectRatio(contentMode: .fit)
                                 .frame(width: 20, height: 20)
                                 .foregroundStyle(Color.brandPrimary)
@@ -139,8 +141,9 @@ struct HomeView: View {
                         .fill(Color.coffeeRich.opacity(0.1))
                         .frame(width: 44, height: 44)
                         .overlay {
-                            Image(systemName: "bell.fill")
+                            Image("bell")
                                 .resizable()
+                                .renderingMode(.template)
                                 .aspectRatio(contentMode: .fit)
                                 .frame(width: 20, height: 20)
                                 .foregroundStyle(Color.brandAccent)
@@ -154,6 +157,7 @@ struct HomeView: View {
                         .overlay {
                             Image("user")
                                 .resizable()
+                                .renderingMode(.template)
                                 .aspectRatio(contentMode: .fit)
                                 .frame(width: 20, height: 20)
                                 .foregroundStyle(Color.coffeeDark)
@@ -220,50 +224,7 @@ struct HomeView: View {
         }
     }
     
-    private var skeletonView: some View {
-        ScrollView {
-            VStack(spacing: 24) {
-                headerSection
-                
-                // Active Order Placeholder
-                ActiveOrderCard(order: .placeholder)
-                
-                // Highlights Placeholder
-                VStack(alignment: .leading, spacing: 12) {
-                    sectionHeader(title: "Highlights")
-                    TabView {
-                        ForEach(0..<2) { _ in
-                            HighlightCard(
-                                title: "Voucher Code",
-                                subtitle: "50pts",
-                                icon: "ticket",
-                                color: .brandAccent
-                            )
-                            .padding(.horizontal)
-                        }
-                    }
-                    .tabViewStyle(.page(indexDisplayMode: .never))
-                    .frame(height: highlightCardHeight + 40)
-                }
-                
-                // Trending Placeholder
-                sectionHeader(title: "Trending Now")
-                ScrollView(.horizontal, showsIndicators: false) {
-                    HStack(spacing: 16) {
-                        ForEach(0..<3) { _ in
-                            ProductCard(product: .placeholder, width: 140)
-                        }
-                    }
-                    .padding(.horizontal)
-                }
-                
-                Spacer().frame(height: 40)
-            }
-            .padding(.top, 20)
-        }
-        .redacted(reason: .placeholder)
-        .disabled(true) // Prevent interaction while loading
-    }
+
 }
 
 // MARK: - Subviews
@@ -279,6 +240,7 @@ struct HighlightCard: View {
             HStack {
                 Image(icon)
                     .resizable()
+                    .renderingMode(.template)
                     .aspectRatio(contentMode: .fit)
                     .frame(width: 20, height: 20)
                     .foregroundStyle(color)
@@ -320,23 +282,24 @@ struct ActiveOrderCard: View {
         HStack {
             VStack(alignment: .leading) {
                 Text("ACTIVE ORDER")
-                    .font(.caption)
-                    .fontWeight(.bold)
-                    .foregroundStyle(Color.brandAccent)
+                .font(.caption)
+                .fontWeight(.bold)
+                .foregroundStyle(Color.brandAccent)
                 
                 Text((order.status ?? "Unknown").uppercased())
-                    .font(.brandSerif(20))
-                    .foregroundStyle(Color.white)
+                .font(.brandSerif(20))
+                .foregroundStyle(Color.white)
                 
                 Text("\(order.deliveryOption.rawValue.replacingOccurrences(of: "_", with: " ").capitalized) • \(order.total.toVND())")
-                    .font(.brandSans(14))
-                    .foregroundStyle(Color.white.opacity(0.8))
+                .font(.brandSans(14))
+                .foregroundStyle(Color.white.opacity(0.8))
             }
             Spacer()
             Image("arrow_right_circle")
-                .resizable()
-                .frame(width: 28, height: 28)
-                .foregroundStyle(Color.white)
+            .resizable()
+            .renderingMode(.template)
+            .frame(width: 28, height: 28)
+            .foregroundStyle(Color.white)
         }
         .padding()
         .background(Color.coffeeDark)

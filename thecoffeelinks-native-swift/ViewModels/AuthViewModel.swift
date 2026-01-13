@@ -70,6 +70,20 @@ struct LoginRequest: Encodable {
     let password: String
 }
 
+/// Registration request
+struct RegisterRequest: Encodable {
+    let email: String
+    let password: String
+    let name: String
+}
+
+/// Registration response from /api/auth/register
+struct RegisterAPIResponse: Decodable {
+    let success: Bool?
+    let user: SupabaseUser?
+    let error: String?
+}
+
 // MARK: - Stored Session (for persistence)
 
 struct StoredSession: Codable {
@@ -139,6 +153,28 @@ class AuthViewModel: ObservableObject {
                 self.state = .authenticated
             } else {
                 self.errorMessage = response.error ?? "Login failed"
+                self.state = .unauthenticated
+            }
+            
+        } catch {
+            self.errorMessage = error.localizedDescription
+            self.state = .unauthenticated
+        }
+    }
+    
+    func signUp(email: String, password: String, name: String) async {
+        self.state = .loading
+        self.errorMessage = nil
+        
+        do {
+            let registerRequest = RegisterRequest(email: email, password: password, name: name)
+            let response: RegisterAPIResponse = try await apiClient.post("/api/auth/register", body: registerRequest, retryCount: 0)
+            
+            if response.success == true {
+                // After successful registration, sign in automatically
+                await signInWithPassword(email: email, password: password)
+            } else {
+                self.errorMessage = response.error ?? "Registration failed"
                 self.state = .unauthenticated
             }
             

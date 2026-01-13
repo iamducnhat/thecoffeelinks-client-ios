@@ -101,33 +101,38 @@ struct StoreMapView: View {
                 .ignoresSafeArea()
             
             // Navigation Guidance Overlay
-            if viewModel.isNavigating {
-                VStack {
-                    HStack {
-                        Image(systemName: "arrow.up.right.circle.fill")
-                            .font(.system(size: 40))
-                            .foregroundStyle(.white)
-                        VStack(alignment: .leading, spacing: 4) {
-                            Text("Follow Route")
-                                .font(.brandSans(24))
-                                .fontWeight(.bold)
+                if viewModel.isNavigating {
+                    VStack {
+                        HStack {
+                            Image("arrow_right_circle")
+                                .resizable()
+                                .renderingMode(.template)
+                                .aspectRatio(contentMode: .fit)
+                                .frame(width: 40, height: 40)
                                 .foregroundStyle(.white)
-                            Text("Destination: \(store.name)")
-                                .font(.brandSans(14))
-                                .foregroundStyle(.white.opacity(0.8))
+                                .rotationEffect(.degrees(-45))
+
+                            VStack(alignment: .leading, spacing: 4) {
+                                Text("Follow Route")
+                                    .font(.brandSans(24))
+                                    .fontWeight(.bold)
+                                    .foregroundStyle(.white)
+                                Text("Destination: \(store.name)")
+                                    .font(.brandSans(14))
+                                    .foregroundStyle(.white.opacity(0.8))
+                            }
+                            Spacer()
+                            Button {
+                                viewModel.isNavigating = false
+                            } label: {
+                                Text("✕")
+                                    .font(.title)
+                                    .foregroundStyle(.white.opacity(0.5))
+                            }
                         }
-                        Spacer()
-                        Button {
-                            viewModel.isNavigating = false
-                        } label: {
-                            Image(systemName: "xmark.circle.fill")
-                                .font(.title)
-                                .foregroundStyle(.white.opacity(0.5))
-                        }
-                    }
-                    .padding()
-                    .background(Color.coffeeDark.opacity(0.9))
-                    .cornerRadius(16)
+                        .padding()
+                        .background(Color.coffeeDark.opacity(0.9))
+                        .cornerRadius(16)
                     .padding()
                     
                     Spacer()
@@ -166,9 +171,12 @@ struct StoreMapView: View {
             // Arrival Overlay
             if viewModel.destinationReached {
                 VStack(spacing: 24) {
-                    Image(systemName: "checkmark.circle.fill")
-                    .font(.system(size: 80))
-                    .foregroundStyle(Color.brandAccent)
+                    Image("badge_check")
+                        .resizable()
+                        .renderingMode(.template) 
+                        .aspectRatio(contentMode: .fit)
+                        .frame(width: 80, height: 80)
+                        .foregroundStyle(Color.brandAccent)
                     
                     VStack(spacing: 8) {
                         Text("You've Arrived!")
@@ -179,18 +187,9 @@ struct StoreMapView: View {
                         .foregroundStyle(.secondary)
                     }
                     
-                    Button {
+                    LiquidGlassPrimaryButton("Finish", icon: "badge_check") {
                         viewModel.destinationReached = false
                         dismiss()
-                    } label: {
-                        Text("Finish")
-                        .font(.brandSans(18))
-                        .fontWeight(.bold)
-                        .foregroundStyle(.white)
-                        .frame(maxWidth: .infinity)
-                        .frame(height: 56)
-                        .background(Color.coffeeDark)
-                        .cornerRadius(16)
                     }
                     .padding(.horizontal, 40)
                 }
@@ -301,8 +300,8 @@ struct StoreDetailView: View {
                         
                     // Action Buttons
                     HStack {
-                        ActionButton(title: "Drive", subtitle: "Directions", icon: "car.fill", color: Color.brandAccent, action: onNavigate)
-                        ActionButton(title: "Call", subtitle: "Store", icon: "phone.fill", color: .blue.opacity(0.1), textColor: .blue, iconColor: .blue, action: {
+                        ActionButton(title: "Drive", subtitle: "Directions", icon: "map_pin", color: Color.brandAccent, action: onNavigate)
+                        ActionButton(title: "Call", subtitle: "Store", icon: "coffee", color: .blue.opacity(0.1), textColor: .blue, iconColor: .blue, action: {
                             if let phone = store.phoneNumber {
                                 URL(string: "tel://\(phone.replacingOccurrences(of: " ", with: ""))").map { UIApplication.shared.open($0) }
                             }
@@ -317,8 +316,8 @@ struct StoreDetailView: View {
                                 InfoItem(label: "Distance", value: formatDistance(store.distance))
                             }
                             GridRow {
-                                InfoItem(label: "Ratings", value: "93%", icon: "hand.thumbsup.fill")
-                                InfoItem(label: "Accepts", value: "Apple Pay", icon: "applelogo")
+                                InfoItem(label: "Ratings", value: "93%", icon: "star")
+                                InfoItem(label: "Accepts", value: "Apple Pay", icon: "ticket")
                             }
                         }
                         .padding(.horizontal)
@@ -338,8 +337,11 @@ struct StoreDetailView: View {
                                                     ProgressView()
                                                 }
                                             } else {
-                                                Image(systemName: "photo")
-                                                    .font(.largeTitle)
+                                                Image("camera")
+                                                    .resizable()
+                                                    .renderingMode(.template)
+                                                    .aspectRatio(contentMode: .fit)
+                                                    .frame(width: 32, height: 32)
                                                     .foregroundStyle(Color.coffeeRich.opacity(0.1))
                                             }
                                         }
@@ -394,8 +396,11 @@ struct ActionButton: View {
     var body: some View {
         Button(action: action) {
             VStack(spacing: 4) {
-                Image(systemName: icon)
-                    .font(.system(size: 20))
+                Image(icon)
+                    .resizable()
+                    .renderingMode(.template)
+                    .aspectRatio(contentMode: .fit)
+                    .frame(width: 20, height: 20)
                     .foregroundStyle(iconColor)
                 Text(title)
                     .font(.brandSans(14))
@@ -426,8 +431,11 @@ struct InfoItem: View {
                 .foregroundStyle(.secondary)
             HStack(spacing: 4) {
                 if let icon = icon {
-                    Image(systemName: icon)
-                        .font(.caption2)
+                    Image(icon)
+                        .resizable()
+                        .renderingMode(.template)
+                        .aspectRatio(contentMode: .fit)
+                        .frame(width: 12, height: 12)
                         .foregroundStyle(valueColor == .primary ? Color.coffeeDark : valueColor)
                 }
                 Text(value)
@@ -444,7 +452,7 @@ struct StoreRow: View {
     let store: Store
     
     var body: some View {
-        HStack(spacing: 12) {
+        HStack(spacing: 16) {
             // Image Placeholder
             RoundedRectangle(cornerRadius: 12)
                 .fill(Color.coffeeRich.opacity(0.1))
@@ -457,7 +465,11 @@ struct StoreRow: View {
                             ProgressView()
                         }
                     } else {
-                        Image(systemName: "building.2.fill")
+                        Image("home")
+                            .resizable()
+                            .renderingMode(.template)
+                            .aspectRatio(contentMode: .fit)
+                            .frame(width: 32, height: 32)
                             .foregroundStyle(Color.coffeeRich.opacity(0.3))
                     }
                 }
@@ -566,7 +578,7 @@ struct InternalMapView: UIViewRepresentable {
                 annotationView = MKMarkerAnnotationView(annotation: annotation, reuseIdentifier: identifier)
                 annotationView?.canShowCallout = true
                 annotationView?.markerTintColor = .orange
-                annotationView?.glyphImage = UIImage(systemName: "cup.and.saucer.fill")
+                annotationView?.glyphImage = UIImage(named: "coffee")
             } else {
                 annotationView?.annotation = annotation
             }

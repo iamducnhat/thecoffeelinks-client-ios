@@ -39,7 +39,11 @@ struct SearchView: View {
                 if enableInternalSearch {
                     VStack(spacing: 0) {
                         HStack {
-                            Image(systemName: "magnifyingglass")
+                            Image("filter")
+                                .resizable()
+                                .renderingMode(.template)
+                                .aspectRatio(contentMode: .fit)
+                                .frame(width: 16, height: 16)
                                 .foregroundStyle(Color.secondary)
                             
                             TextField("Search coffee, food...", text: $internalQuery)
@@ -57,7 +61,8 @@ struct SearchView: View {
                                     internalQuery = ""
                                     viewModel.query = ""
                                 } label: {
-                                    Image(systemName: "xmark.circle.fill")
+                                    Text("✕")
+                                        .font(.system(size: 16, weight: .bold))
                                         .foregroundStyle(Color.secondary.opacity(0.8))
                                 }
                             }
@@ -102,11 +107,15 @@ struct SearchView: View {
                 
                 // MAIN CONTENT LIST
                 if viewModel.isLoading {
-                    skeletonView
+                    ProgressView()
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
                 } else if let error = viewModel.errorMessage {
                     VStack(spacing: 12) {
-                        Image(systemName: "exclamationmark.triangle")
-                            .font(.system(size: 40))
+                        Image("bell")
+                            .resizable()
+                            .renderingMode(.template)
+                            .aspectRatio(contentMode: .fit)
+                            .frame(width: 40, height: 40)
                             .foregroundStyle(.secondary)
                         Text("Expected error")
                             .font(.brandSerif(18))
@@ -129,12 +138,14 @@ struct SearchView: View {
                             }
                         }
                         .padding(.top, 8)
-                        .padding(.bottom, 40)
                         
                         if viewModel.filteredProducts.isEmpty {
                             VStack(spacing: 16) {
-                                Image(systemName: "magnifyingglass")
-                                    .font(.system(size: 48))
+                                Image("filter")
+                                    .resizable()
+                                    .renderingMode(.template)
+                                    .aspectRatio(contentMode: .fit)
+                                    .frame(width: 48, height: 48)
                                     .foregroundStyle(.secondary.opacity(0.5))
                                 Text("No products found")
                                     .font(.brandSans(16))
@@ -171,33 +182,10 @@ struct SearchView: View {
         }
         .padding(.horizontal)
         .padding(.bottom, 8)
+        .padding(.top, 20)
     }
     
-    private var skeletonView: some View {
-        VStack(spacing: 0) {
-            ForEach(0..<6) { _ in
-                HStack(spacing: 12) {
-                    RoundedRectangle(cornerRadius: 8)
-                        .fill(Color.gray.opacity(0.1))
-                        .frame(width: 60, height: 60)
-                    
-                    VStack(alignment: .leading, spacing: 8) {
-                        RoundedRectangle(cornerRadius: 4)
-                            .fill(Color.gray.opacity(0.1))
-                            .frame(width: 120, height: 16)
-                        
-                        RoundedRectangle(cornerRadius: 4)
-                            .fill(Color.gray.opacity(0.1))
-                            .frame(width: 80, height: 12)
-                    }
-                    Spacer()
-                }
-                .padding()
-                Divider()
-            }
-        }
-        .redacted(reason: .placeholder)
-    }
+
 }
 
 // Premium Product Card for Menu View
@@ -220,8 +208,9 @@ struct ProductRow: View {
                     } placeholder: {
                         ZStack {
                             Color.coffeeRich.opacity(0.05)
-                            Image(systemName: "cup.and.saucer.fill")
+                            Image("coffee")
                                 .resizable()
+                                .renderingMode(.template)
                                 .aspectRatio(contentMode: .fit)
                                 .frame(width: 32)
                                 .foregroundStyle(Color.coffeeRich.opacity(0.2))
