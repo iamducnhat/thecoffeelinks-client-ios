@@ -14,9 +14,10 @@ struct OrderCustomizationView: View {
     @State private var selectedToppings: Set<String> = []
     @State private var quantity: Int = 1
     
-    // Live Price State
-    @State private var calculatedPrice: Double = 0
-    @State private var isCalculating: Bool = false
+    // Live Price State - Optimistic UI Pattern
+    @State private var displayPrice: Double = 0      // What user sees (estimated or server-confirmed)
+    @State private var serverPrice: Double? = nil    // Last confirmed server price
+    @State private var isSyncing: Bool = false       // Background sync indicator (subtle)
     @State private var calculationTask: Task<Void, Never>?
     
     // Computed Options from Repository
@@ -86,16 +87,19 @@ struct OrderCustomizationView: View {
                                     .font(.brandSerif(32))
                                     .foregroundColor(.coffeeDark)
                                 
-                                HStack {
-                                    if isCalculating {
+                                HStack(spacing: 6) {
+                                    Text(displayPrice > 0 ? displayPrice.toVND() : product.price.toVND())
+                                        .font(.brandSans(24))
+                                        .fontWeight(.bold)
+                                        .foregroundColor(.brandAccent)
+                                        .contentTransition(.numericText())
+                                        .animation(.easeInOut(duration: 0.2), value: displayPrice)
+                                    
+                                    // Subtle sync indicator
+                                    if isSyncing {
                                         ProgressView()
-                                            .controlSize(.small)
-                                    } else {
-                                        Text(calculatedPrice > 0 ? calculatedPrice.toVND() : product.price.toVND())
-                                            .font(.brandSans(24))
-                                            .fontWeight(.bold)
-                                            .foregroundColor(.brandAccent)
-                                            .contentTransition(.numericText())
+                                            .controlSize(.mini)
+                                            .opacity(0.5)
                                     }
                                 }
                             }
@@ -191,15 +195,18 @@ struct OrderCustomizationView: View {
                             .font(.caption)
                             .foregroundColor(.neutral600)
                         
-                        if isCalculating {
-                            Text("Updating...")
-                                .font(.brandSerif(24))
-                                .foregroundColor(.secondary)
-                        } else {
-                            Text(calculatedPrice.toVND())
+                        HStack(spacing: 6) {
+                            Text(displayPrice.toVND())
                                 .font(.brandSerif(24))
                                 .foregroundColor(.coffeeDark)
                                 .contentTransition(.numericText())
+                                .animation(.easeInOut(duration: 0.2), value: displayPrice)
+                            
+                            if isSyncing {
+                                ProgressView()
+                                    .controlSize(.mini)
+                                    .opacity(0.5)
+                            }
                         }
                     }
                     
@@ -215,8 +222,7 @@ struct OrderCustomizationView: View {
                             .background(Color.coffeeDark)
                             .cornerRadius(16)
                     }
-                    .disabled(isCalculating)
-                    .opacity(isCalculating ? 0.7 : 1)
+                    // Don't disable button during background sync - use last valid price
                 }
                 .padding(20)
                 .background(Color.brandBackground.opacity(0.95))
@@ -393,17 +399,53 @@ struct OrderCustomizationView: View {
         )
     }
     
+    // MARK: - Local Price Estimation
+    
+    /// Calculate estimated price locally using cached menu data
+    /// This gives instant feedback while server confirms the actual price
+    private func estimateLocalPrice() -> Double {
+        var unitPrice = product.price
+        
+        // Add size modifier
+        if let sizeModifier = menuRepo.menu?.sizes[selectedSize] {
+            unitPrice += sizeModifier.price
+        }
+        
+        // Add toppings
+        if let toppings = menuRepo.menu?.toppings {
+            for toppingId in selectedToppings {
+                if let topping = toppings.first(where: { $0.id == toppingId }) {
+                    unitPrice += topping.price
+                }
+            }
+        }
+        
+        // Multiply by quantity
+        let subtotal = unitPrice * Double(quantity)
+        
+        // Add estimated tax (8%)
+        let tax = subtotal * 0.08
+        
+        return subtotal + tax
+    }
+    
     private func updatePrice() {
-        // Debounce logic
+        // Cancel any pending server request
         calculationTask?.cancel()
         
-        // Optimistic update (client-side guess) can be done here if needed, but requirements strict: "All pricing... MUST come from API"
-        // So we wait.
-        isCalculating = true
+        // 1. Immediately update with local estimate
+        let estimated = estimateLocalPrice()
+        withAnimation(.easeInOut(duration: 0.15)) {
+            displayPrice = estimated
+        }
         
+        // 2. Fetch server-confirmed price in background
         calculationTask = Task {
-            try? await Task.sleep(nanoseconds: 300_000_000) // 0.3s debounce
+            // Short debounce for rapid changes
+            try? await Task.sleep(nanoseconds: 200_000_000) // 0.2s
             if Task.isCancelled { return }
+            
+            await MainActor.run { isSyncing = true }
             
             let request = OrderPreviewRequest(
                 productId: product.id,
@@ -418,15 +460,20 @@ struct OrderCustomizationView: View {
             do {
                 let response = try await orderRepo.previewPrice(request: request)
                 await MainActor.run {
-                    self.calculatedPrice = response.total
-                    self.isCalculating = false
+                    // Only update if price differs from estimate
+                    if abs(response.total - displayPrice) > 1 {
+                        withAnimation(.easeInOut(duration: 0.2)) {
+                            displayPrice = response.total
+                        }
+                    }
+                    serverPrice = response.total
+                    isSyncing = false
                 }
             } catch {
-                print("Price calc error: \(error)")
+                print("Price sync error: \(error)")
                 await MainActor.run {
-                     // On error, maybe fallback to base price * quantity?
-                     // Or show error?
-                     self.isCalculating = false
+                    // Keep showing estimated price on error
+                    isSyncing = false
                 }
             }
         }
@@ -464,8 +511,9 @@ struct OrderCustomizationView: View {
              toppings: toppingNames
         )
         
-        // Calculate unit final price
-        let unitPrice = calculatedPrice / Double(quantity)
+        // Calculate unit final price - prefer server price if available, else use display price
+        let totalPrice = serverPrice ?? displayPrice
+        let unitPrice = totalPrice / Double(quantity)
         
         cartManager.addToCart(
             product: product,
