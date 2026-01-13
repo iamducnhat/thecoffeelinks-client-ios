@@ -85,7 +85,7 @@ struct ProductCard: View {
                 // Info
                 VStack(alignment: .leading, spacing: 6) {
                     // Category Badge
-                    Text(product.category?.rawValue.capitalized ?? "Item")
+                    Text(product.category?.capitalized ?? "Item")
                         .font(.brandSans(10))
                         .fontWeight(.semibold)
                         .foregroundStyle(Color.brandAccent)
@@ -130,4 +130,3 @@ struct ProductCardButtonStyle: ButtonStyle {
             .animation(.spring(response: 0.3, dampingFraction: 0.7), value: configuration.isPressed)
     }
 }
-

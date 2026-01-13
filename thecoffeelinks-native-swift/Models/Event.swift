@@ -1,7 +1,7 @@
 import Foundation
 
 /// Event model - matches server response format
-/// Server returns: { id, type, title, subtitle, bg, icon }
+/// Server returns: { id, type, title, subtitle, bg, icon, imageURL }
 struct Event: Codable, Identifiable {
     let id: String
     let type: String?
@@ -9,6 +9,7 @@ struct Event: Codable, Identifiable {
     let subtitle: String?
     let bg: String?
     let icon: String?
+    let imageURL: URL?
     
     enum CodingKeys: String, CodingKey {
         case id
@@ -17,15 +18,17 @@ struct Event: Codable, Identifiable {
         case subtitle
         case bg
         case icon
+        case imageURL
     }
     
-    init(id: String, type: String?, title: String, subtitle: String?, bg: String?, icon: String?) {
+    init(id: String, type: String?, title: String, subtitle: String?, bg: String?, icon: String?, imageURL: String?) {
         self.id = id
         self.type = type
         self.title = title
         self.subtitle = subtitle
         self.bg = bg
         self.icon = icon
+        self.imageURL = URL(string: imageURL ?? "")
     }
 
     init(from decoder: Decoder) throws {
@@ -45,6 +48,13 @@ struct Event: Codable, Identifiable {
         self.subtitle = try container.decodeIfPresent(String.self, forKey: .subtitle)
         self.bg = try container.decodeIfPresent(String.self, forKey: .bg)
         self.icon = try container.decodeIfPresent(String.self, forKey: .icon)
+        
+        // Decode imageURL as a String and convert to URL (tolerant of invalid/missing values)
+        if let imageURLString = try container.decodeIfPresent(String.self, forKey: .imageURL) {
+            self.imageURL = URL(string: imageURLString)
+        } else {
+            self.imageURL = nil
+        }
     }
     
     func encode(to encoder: Encoder) throws {
@@ -55,6 +65,7 @@ struct Event: Codable, Identifiable {
         try container.encodeIfPresent(subtitle, forKey: .subtitle)
         try container.encodeIfPresent(bg, forKey: .bg)
         try container.encodeIfPresent(icon, forKey: .icon)
+        try container.encodeIfPresent(imageURL, forKey: .imageURL)
     }
 }
 

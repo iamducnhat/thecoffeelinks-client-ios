@@ -206,8 +206,8 @@ struct DetailRow: View {
     }
 }
 
-#Preview {
-    NavigationStack {
-        EventDetailView(event: .placeholder)
-    }
-}
+//#Preview {
+//    NavigationStack {
+//        EventDetailView(event: .placeholder)
+//    }
+//}

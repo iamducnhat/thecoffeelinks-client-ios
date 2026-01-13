@@ -5,7 +5,8 @@ import SwiftUI
 @MainActor
 class SearchViewModel: ObservableObject {
     @Published var query: String = ""
-    @Published var selectedCategory: String = "All"
+    @Published var selectedCategory: Category = Category.all
+    @Published var categories: [Category] = [Category.all]
     @Published var isLoading: Bool = false
     @Published var errorMessage: String?
     
@@ -18,23 +19,19 @@ class SearchViewModel: ObservableObject {
         
         // 1. Filter by Category
         let categoryFiltered: [Product]
-        if selectedCategory == "All" {
+        if selectedCategory.id == "all" {
             categoryFiltered = allProducts
         } else {
-            // Mapping UI Category names to API/Model values if needed
-            // Assuming Product has a category field. If not, we might need logic.
-            // Product struct has 'category'? Let me assume yes or use description/name heuristic if not.
-            // Wait, Product model has 'category: String?'.
-            categoryFiltered = allProducts.filter {
-                guard let cat = $0.category?.rawValue else { return false }
-                
-                // Flexible matching
-                if selectedCategory == "Food" {
-                    return cat == "pastries" || cat == "food"
+            categoryFiltered = allProducts.filter { product in
+                // Check exact ID match first
+                if let catId = product.categoryId {
+                    return catId == selectedCategory.id
                 }
-                
-                return cat.caseInsensitiveCompare(selectedCategory) == .orderedSame ||
-                       cat.localizedCaseInsensitiveContains(selectedCategory)
+                // Fallback to name match for legacy/unmigrated data
+                if let catName = product.category {
+                    return catName.caseInsensitiveCompare(selectedCategory.name) == .orderedSame
+                }
+                return false
             }
         }
         
@@ -52,21 +49,29 @@ class SearchViewModel: ObservableObject {
     private let productService = ProductService()
     
     func search() async {
-        // Just ensure data is loaded. filtering happens efficiently in computed var or view.
-        if allProducts.isEmpty {
-            self.isLoading = true
-            self.errorMessage = nil
-            do {
-                self.allProducts = try await productService.getProducts()
-            } catch {
-                self.errorMessage = "Failed to load menu: \(error.localizedDescription)"
-            }
-            self.isLoading = false
+        // Fetch products and categories
+        self.isLoading = true
+        self.errorMessage = nil
+        
+        do {
+            async let productsTask = productService.getProducts()
+            async let categoriesTask = productService.getCategories()
+            
+            let (fetchedProducts, fetchedCategories) = try await (productsTask, categoriesTask)
+            
+            self.allProducts = fetchedProducts
+            self.categories = [Category.all] + fetchedCategories
+            
+        } catch {
+            self.errorMessage = "Failed to load data: \(error.localizedDescription)"
+            print("Search error: \(error)")
         }
+        
+        self.isLoading = false
     }
     
     // Alias for simpler UI usage
-    func selectCategory(_ category: String) {
+    func selectCategory(_ category: Category) {
         self.selectedCategory = category
     }
 }

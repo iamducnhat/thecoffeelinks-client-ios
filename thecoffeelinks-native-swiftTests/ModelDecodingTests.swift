@@ -30,7 +30,7 @@ final class ModelDecodingTests: XCTestCase {
         XCTAssertEqual(product.id, "test-product-1")
         XCTAssertEqual(product.name, "Cappuccino")
         XCTAssertEqual(product.basePrice, 45000)
-        XCTAssertEqual(product.category, .coffee)
+        XCTAssertEqual(product.category, "coffee") // Updated to String
         XCTAssertEqual(product.isPopular, true)
         
         print("✅ Product model decodes correctly from JSON")

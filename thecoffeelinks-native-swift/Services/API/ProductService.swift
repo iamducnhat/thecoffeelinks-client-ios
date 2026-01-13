@@ -41,4 +41,9 @@ class ProductService: ProductServiceProtocol {
         }
         return product
     }
+    
+    func getCategories() async throws -> [Category] {
+        let response: CategoriesResponse = try await apiClient.get("/api/categories")
+        return response.categories ?? []
+    }
 }

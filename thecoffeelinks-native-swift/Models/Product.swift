@@ -16,8 +16,9 @@ struct Product: Codable, Identifiable {
     let name: String
     let description: String?
     let basePrice: Double?
-    let category: ProductCategory?
+    let category: String? // Changed to String to support dynamic categories
     let categoryId: String?
+    let categoryType: String?
     let image: String?
     let imageUrl: String?
     let isPopular: Bool?
@@ -36,6 +37,7 @@ struct Product: Codable, Identifiable {
         }
         
         // If relative path, construct full URL
+        // In production this should be dynamic, but keeping hardcoded server logic as per previous implementation
         if rawUrl.hasPrefix("/") {
             return "https://server-nu-three-90.vercel.app" + rawUrl
         }

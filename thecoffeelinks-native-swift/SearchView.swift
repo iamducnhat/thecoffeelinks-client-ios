@@ -81,21 +81,21 @@ struct SearchView: View {
                 // CATEGORY FILTERS
                 ScrollView(.horizontal, showsIndicators: false) {
                     HStack(spacing: 8) {
-                        ForEach(["All", "Coffee", "Tea", "Food", "Merch"], id: \.self) { category in
+                        ForEach(viewModel.categories, id: \.id) { category in
                             Button {
                                 viewModel.selectCategory(category)
                             } label: {
-                                Text(category)
+                                Text(category.name)
                                     .font(.brandSans(14))
-                                    .fontWeight(viewModel.selectedCategory == category ? .semibold : .regular)
+                                    .fontWeight(viewModel.selectedCategory.id == category.id ? .semibold : .regular)
                                     .padding(.horizontal, 16)
                                     .padding(.vertical, 8)
-                                    .background(viewModel.selectedCategory == category ? Color.brandPrimary : Color.clear)
-                                    .foregroundStyle(viewModel.selectedCategory == category ? Color.white : Color.primary)
+                                    .background(viewModel.selectedCategory.id == category.id ? Color.brandPrimary : Color.clear)
+                                    .foregroundStyle(viewModel.selectedCategory.id == category.id ? Color.white : Color.primary)
                                     .clipShape(Capsule())
                                     .overlay(
                                         Capsule()
-                                            .strokeBorder(Color.primary.opacity(0.1), lineWidth: viewModel.selectedCategory == category ? 0 : 1)
+                                            .strokeBorder(Color.primary.opacity(0.1), lineWidth: viewModel.selectedCategory.id == category.id ? 0 : 1)
                                     )
                             }
                         }
@@ -176,8 +176,8 @@ struct SearchView: View {
     private var header: some View {
         HStack {
             Text("Menu")
-                .font(.brandSerif(32))
-                .foregroundStyle(Color.brandPrimary)
+            .font(.brandSerif(32))
+            .foregroundStyle(Color.brandPrimary)
             Spacer()
         }
         .padding(.horizontal)
@@ -228,15 +228,17 @@ struct ProductRow: View {
             // Details
             VStack(alignment: .leading, spacing: 6) {
                 // Category Badge
-                Text(product.category?.rawValue.capitalized ?? "Item")
-                    .font(.brandSans(10))
-                    .fontWeight(.semibold)
-                    .foregroundStyle(Color.brandAccent)
-                    .textCase(.uppercase)
-                    .padding(.horizontal, 8)
-                    .padding(.vertical, 4)
-                    .background(Color.brandAccent.opacity(0.1))
-                    .clipShape(Capsule())
+                if let categoryName = product.category {
+                    Text(categoryName.capitalized)
+                        .font(.brandSans(10))
+                        .fontWeight(.semibold)
+                        .foregroundStyle(Color.brandAccent)
+                        .textCase(.uppercase)
+                        .padding(.horizontal, 8)
+                        .padding(.vertical, 4)
+                        .background(Color.brandAccent.opacity(0.1))
+                        .clipShape(Capsule())
+                }
                 
                 // Product Name
                 Text(product.name)

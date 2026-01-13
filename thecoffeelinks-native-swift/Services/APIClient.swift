@@ -157,6 +157,37 @@ actor APIClient {
         return try decode(data: data, keyDecodingStrategy: keyDecodingStrategy)
     }
     
+    func delete<T: Decodable>(_ endpoint: String, keyDecodingStrategy: JSONDecoder.KeyDecodingStrategy = .convertFromSnakeCase, retryCount: Int = 1) async throws -> T {
+        let url = try buildURL(for: endpoint)
+        var request = URLRequest(url: url)
+        request.httpMethod = "DELETE"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        
+        if let token = authToken {
+            request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        }
+        
+        let (data, response) = try await session.data(for: request)
+        
+        do {
+            try validateResponse(response, data: data, for: request)
+        } catch APIError.unauthorized(_) where retryCount > 0 {
+            // Attempt refresh
+            if let delegate = authDelegate {
+                let newToken = try await delegate.refreshToken()
+                self.authToken = newToken
+                // Recursively retry
+                return try await delete(endpoint, keyDecodingStrategy: keyDecodingStrategy, retryCount: retryCount - 1)
+            } else {
+                throw APIError.unauthorized(nil)
+            }
+        } catch {
+            throw error
+        }
+        
+        return try decode(data: data, keyDecodingStrategy: keyDecodingStrategy)
+    }
+    
     /// Special method for performing token refresh to avoid circular dependency and interception recursion
     func performTokenRefresh(refreshToken: String) async throws -> LoginAPIResponse {
         let url = try buildURL(for: "api/auth/refresh")
