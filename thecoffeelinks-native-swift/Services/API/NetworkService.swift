@@ -44,6 +44,6 @@ class NetworkService: NetworkServiceProtocol {
             let locationId: String
         }
         
-        let _: CheckInResult = try await apiClient.post("/api/social/connect", body: CheckInRequest(locationId: locationId))
+        let _: CheckInResult = try await apiClient.post("/api/social/check-in", body: CheckInRequest(locationId: locationId))
     }
 }

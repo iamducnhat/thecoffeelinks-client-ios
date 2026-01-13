@@ -257,6 +257,9 @@ actor APIClient {
         case 404:
             throw APIError.notFound
         case 500...599:
+            if let message = extractErrorMessage() {
+                throw APIError.httpError(httpResponse.statusCode, message, url: request.url?.absoluteString, method: request.httpMethod)
+            }
             throw APIError.serverError(httpResponse.statusCode)
         default:
             throw APIError.httpError(httpResponse.statusCode, extractErrorMessage(), url: request.url?.absoluteString, method: request.httpMethod)
