@@ -7,7 +7,8 @@ protocol UserServiceProtocol {
 
 protocol OrderServiceProtocol {
     func getOrders() async throws -> [Order]
-    func createOrder(order: Order) async throws -> Order
+    func createOrder(items: [CartItem], total: Double, deliveryOption: DeliveryOption, storeId: String?, deliveryAddress: String?, deliveryNotes: String?, paymentMethod: PaymentMethod, paymentToken: String) async throws -> Order
+    func verifyPayment(amount: Double, paymentMethod: String, storeId: String?, items: [CartItem]) async throws -> String
     func getActiveOrders() async throws -> [Order]
 }
 

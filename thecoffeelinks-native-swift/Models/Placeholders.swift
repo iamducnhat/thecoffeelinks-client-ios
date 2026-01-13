@@ -1,3 +1,8 @@
+//
+//  Placeholders.swift
+//  thecoffeelinks-native-swift
+//
+
 import Foundation
 
 extension Product {
@@ -5,7 +10,7 @@ extension Product {
         id: "placeholder",
         name: "Delicious Coffee",
         description: "A placeholder description for the skeleton loader.",
-        basePrice: 4.50,
+        basePrice: 45000,
         category: .coffee,
         categoryId: nil,
         image: nil,
@@ -21,18 +26,12 @@ extension Order {
     static let placeholder = Order(
         id: "placeholder",
         userId: "user",
-        status: .placed,
-        totalAmount: 12.50,
-        discountAmount: 0,
-        paymentMethod: .card,
-        type: .takeAway,
-        tableQrCode: nil,
+        status: "received",
+        totalAmount: 125000,
+        type: "dine_in",
+        tableId: "T12",
         createdAt: "2026-01-01T12:00:00Z",
-        storeId: "store_123",
         deliveryAddress: nil,
-        deliveryLatitude: nil,
-        deliveryLongitude: nil,
-        deliveryNotes: nil,
         orderItems: []
     )
 }
@@ -42,7 +41,7 @@ extension Voucher {
         _id: "placeholder",
         code: "WELCOME50",
         type: "discount",
-        value: 50,
+        value: 50000,
         description: "50% Off First Order",
         minSpend: 0,
         expiresAt: Date(),

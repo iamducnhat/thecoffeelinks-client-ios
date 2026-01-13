@@ -46,12 +46,12 @@ extension Color {
 extension Font {
     /// Apple New York serif font - system serif design
     static func brandSerif(_ size: CGFloat) -> Font {
-        return .system(size: size, design: .serif).weight(.medium)
+        return .system(size: size, design: .serif).weight(.bold)
     }
     
     /// System rounded sans-serif
     static func brandSans(_ size: CGFloat) -> Font {
-        return .system(size: size, design: .rounded)
+        return .system(size: size, design: .default)
     }
 }
 

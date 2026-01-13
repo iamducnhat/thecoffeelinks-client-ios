@@ -9,74 +9,66 @@ import SwiftUI
 
 struct EventsView: View {
     @StateObject private var viewModel = EventsViewModel()
-    @State private var selectedEventId: String? // Changed to String to match Model
     
     var body: some View {
-        NavigationStack {
-            ZStack {
-                Color.brandBackground.ignoresSafeArea()
-                
-                switch viewModel.viewState {
-                case .loading:
-                    skeletonView
-                case .error(let message):
-                    VStack {
-                        Text("Error")
-                        Text(message).font(.caption).foregroundStyle(.red)
-                        Button("Retry") { Task { await viewModel.fetchEvents() } }
+        ZStack {
+            Color.brandBackground.ignoresSafeArea()
+            
+            switch viewModel.viewState {
+            case .loading:
+                skeletonView
+            case .error(let message):
+                VStack {
+                    Text("Error")
+                    Text(message).font(.caption).foregroundStyle(.red)
+                    Button("Retry") { Task { await viewModel.fetchEvents() } }
+                }
+            case .empty:
+                emptyState
+            case .idle, .loaded:
+                List {
+                    Section {
+                        if viewModel.events.isEmpty {
+                            emptyState
+                                .listRowBackground(Color.clear)
+                        } else {
+                            ForEach(viewModel.events) { event in
+                                NavigationLink(destination: EventDetailView(event: event)) {
+                                    EventRow(event: event)
+                                }
+                                .listRowBackground(Color.white)
+                            }
+                        }
+                    } header: {
+                        Text("Upcoming Events")
+                            .font(.caption)
+                            .fontWeight(.bold)
+                            .foregroundStyle(Color.secondary)
                     }
-                case .empty:
-                    emptyState
-                case .idle, .loaded:
-                    ScrollView {
-                         VStack(spacing: 24) {
-                             header
-                             
-                             if viewModel.events.isEmpty {
-                                 emptyState
-                             } else {
-                                 ForEach(viewModel.events) { event in
-                                     EventCard(event: event)
-                                         .onTapGesture {
-                                             withAnimation(.spring(response: 0.6, dampingFraction: 0.8)) {
-                                                 selectedEventId = event.id
-                                             }
-                                         }
-                                 }
-                             }
-                             
-                             Button {
-                                 // Archive logic
-                             } label: {
-                                 Text("View Past Events")
-                                     .font(.brandSans(14))
-                                     .foregroundStyle(Color.secondary)
-                                     .padding(.top, 16)
-                             }
-                         }
-                         .padding()
-                     }
-                     .refreshable {
-                         await viewModel.fetchEvents()
-                     }
+                    
+                    Section {
+                        Button {
+                            // Archive logic
+                        } label: {
+                            Text("View Past Events")
+                                .font(.brandSans(14))
+                                .foregroundStyle(Color.secondary)
+                        }
+                        .frame(maxWidth: .infinity, alignment: .center)
+                    }
+                    .listRowBackground(Color.clear)
+                }
+                .scrollContentBackground(.hidden)
+                .refreshable {
+                    await viewModel.fetchEvents()
                 }
             }
-            .navigationTitle("")
-            .navigationBarHidden(true)
-            .task {
-                await viewModel.fetchEvents()
-            }
         }
-    }
-    
-    var header: some View {
-        HStack {
-            Text("Events")
-                .font(.brandSerif(32))
-                .foregroundStyle(Color.brandPrimary)
-            Spacer()
+        .navigationTitle("Events")
+        .navigationBarTitleDisplayMode(.inline)
+        .task {
+            await viewModel.fetchEvents()
         }
-        .padding(.bottom, 8)
     }
     
     var emptyState: some View {
@@ -110,73 +102,69 @@ struct EventsView: View {
             }
             .padding(.top, 8)
         }
-        .padding(.top, 40)
+        .padding(.vertical, 40)
+        .frame(maxWidth: .infinity)
     }
     
     var skeletonView: some View {
-        ScrollView {
-            VStack(spacing: 24) {
-                header
-                
+        List {
+            Section {
                 ForEach(0..<3) { _ in
-                    EventCard(event: .placeholder)
+                    EventRow(event: .placeholder)
+                        .listRowBackground(Color.white)
                 }
+            } header: {
+                Text("Upcoming Events")
             }
-            .padding()
         }
+        .scrollContentBackground(.hidden)
+        .background(Color.brandBackground)
         .redacted(reason: .placeholder)
         .disabled(true)
     }
 }
 
-struct EventCard: View {
-    let event: Event // Using the Model 'Event'
+struct EventRow: View {
+    let event: Event
     
     var body: some View {
-        VStack(alignment: .leading, spacing: 0) {
-            // Image Area
-            Rectangle()
-                .fill(Color.coffeeRich.opacity(0.05))
-                .frame(height: 180)
-                .overlay {
-                    // Use system image for 'icon' or AsyncImage if 'bg' is actually an image URL?
-                    // Model has 'icon' and 'bg'. In Typescript 'bg' was class name.
-                    // Here let's just use SF symbol from 'icon' field if applicable, or generic.
-                    Image("calendar") // Lucide icon
-                        .resizable()
-                        .aspectRatio(contentMode: .fit)
-                        .frame(width: 60, height: 60)
-                        .foregroundStyle(Color.coffeeRich)
-                }
-            
-            // Content Area
-            VStack(alignment: .leading, spacing: 8) {
-                HStack {
-                    Text((event.type ?? "Event").uppercased())
-                        .font(.brandSans(12))
-                        .fontWeight(.bold)
-                        .padding(.horizontal, 8)
-                        .padding(.vertical, 4)
-                        .background(Color.coffeeDark)
-                        .foregroundStyle(Color.white)
-                        .cornerRadius(4)
-                    
-                    Spacer()
-                }
+        HStack(spacing: 16) {
+            // Mini Thumbnail
+            ZStack {
+                RoundedRectangle(cornerRadius: 12)
+                    .fill(Color.coffeeRich.opacity(0.05))
+                    .frame(width: 60, height: 60)
                 
+                Image("calendar") // Lucide icon placeholder
+                    .resizable()
+                    .aspectRatio(contentMode: .fit)
+                    .frame(width: 24, height: 24)
+                    .foregroundStyle(Color.coffeeRich)
+            }
+            
+            VStack(alignment: .leading, spacing: 4) {
                 Text(event.title)
-                    .font(.brandSerif(22))
+                    .font(.brandSans(16))
+                    .fontWeight(.bold)
                     .foregroundStyle(Color.coffeeDark)
                 
-                Text(event.description ?? "")
-                    .font(.brandSans(14))
-                    .foregroundStyle(Color.secondary)
+                if let type = event.type {
+                    Text(type.uppercased())
+                        .font(.brandSans(10))
+                        .fontWeight(.bold)
+                        .foregroundStyle(Color.caramel)
+                }
+                
+                if let date = event.date {
+                    Text(date.formatted(.dateTime.month().day().year()))
+                        .font(.brandSans(12))
+                        .foregroundStyle(Color.secondary)
+                }
             }
-            .padding(20)
-            .background(Color.white)
+            
+            Spacer()
         }
-        .clipShape(RoundedRectangle(cornerRadius: 20))
-        .shadow(color: Color.black.opacity(0.08), radius: 10, x: 0, y: 5)
+        .padding(.vertical, 4)
     }
 }
 

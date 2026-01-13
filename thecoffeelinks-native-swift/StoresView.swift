@@ -5,44 +5,79 @@ struct StoresView: View {
     @StateObject private var viewModel = StoresViewModel()
     
     var body: some View {
-        VStack(spacing: 0) {
-            // Header
-            Text("Our Locations")
-                .font(.brandSerif(32))
-                .foregroundStyle(Color.coffeeDark)
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(.horizontal)
-                .padding(.top, 20)
-                .padding(.bottom, 12)
-            
-            ScrollView {
-                VStack(spacing: 16) {
-                    if viewModel.viewState == .loading && viewModel.stores.isEmpty {
-                        ProgressView("Finding stores...")
-                            .padding(.top, 40)
-                    } else if viewModel.stores.isEmpty {
-                        Text("No stores found nearby.")
-                            .font(.brandSans(14))
-                            .foregroundStyle(.secondary)
-                            .padding(.top, 40)
-                    } else {
-                        ForEach(viewModel.stores) { store in
+        List {
+            if viewModel.viewState == .loading && viewModel.stores.isEmpty {
+                Section {
+                    ProgressView("Finding stores...")
+                        .frame(maxWidth: .infinity, alignment: .center)
+                        .listRowBackground(Color.clear)
+                }
+            } else {
+                let nearbyStores = viewModel.stores.filter { ($0.distance ?? Double.infinity) < 5000 }
+                
+                // Nearby Section
+                Section {
+                    if !nearbyStores.isEmpty {
+                        ForEach(nearbyStores) { store in
                             NavigationLink(destination: StoreMapView(store: store)) {
                                 StoreRow(store: store)
                             }
-                            .buttonStyle(PlainButtonStyle())
+                            .listRowBackground(Color.white)
                         }
+                    } else if viewModel.locationAuthStatus == .authorizedWhenInUse || viewModel.locationAuthStatus == .authorizedAlways {
+                        // Authorized but no stores
+                        Text("No nearby store found")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    } else {
+                        // Location disabled
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text("Enable location services to see stores near you.")
+                            Button("Open Settings") {
+                                if let url = URL(string: UIApplication.openSettingsURLString) {
+                                    UIApplication.shared.open(url)
+                                }
+                            }
+                            .foregroundStyle(Color.accent)
+                        }
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
                     }
+                } header: {
+                    Text("Nearby")
+                        .font(.caption)
+                        .fontWeight(.bold)
+                        .foregroundStyle(Color.secondary)
                 }
-                .padding()
+                
+                // All Stores Section
+                Section {
+                    ForEach(viewModel.stores) { store in
+                        NavigationLink(destination: StoreMapView(store: store)) {
+                            StoreRow(store: store)
+                        }
+                        .listRowBackground(Color.white)
+                    }
+                } header: {
+                    Text("All stores")
+                        .font(.caption)
+                        .fontWeight(.bold)
+                        .foregroundStyle(Color.secondary)
+                }
             }
+        }
+        .listStyle(.insetGrouped)
+        .scrollContentBackground(.hidden)
+        .background(Color.brandBackground)
+        .refreshable {
+            viewModel.requestLocation()
+            await viewModel.fetchStores()
         }
         .task {
             viewModel.requestLocation()
             await viewModel.fetchStores()
         }
         .navigationBarTitleDisplayMode(.inline)
-//        .navigationTitle("Stores") // Hide title to keep it clean as per request
     }
 }
 
@@ -54,14 +89,16 @@ struct StoreMapView: View {
     @Environment(\.dismiss) var dismiss
     
     var body: some View {
-        ZStack {
-            // Native Map with internal routing
-            InternalMapView(
-                region: $viewModel.region,
-                route: viewModel.route,
-                annotation: store
-            )
-            .ignoresSafeArea()
+        GeometryReader { proxy in
+            ZStack {
+                // Native Map with internal routing
+                InternalMapView(
+                    region: $viewModel.region,
+                    route: viewModel.route,
+                    annotation: store,
+                    bottomPadding: viewModel.isNavigating ? 260 : (proxy.size.height * 0.5)
+                )
+                .ignoresSafeArea()
             
             // Navigation Guidance Overlay
             if viewModel.isNavigating {
@@ -110,12 +147,12 @@ struct StoreMapView: View {
                             viewModel.isNavigating = false
                         } label: {
                             Text("End")
-                                .font(.brandSans(18))
-                                .fontWeight(.bold)
-                                .foregroundStyle(.white)
-                                .frame(width: 80, height: 44)
-                                .background(Color.red)
-                                .cornerRadius(22)
+                            .font(.brandSans(18))
+                            .fontWeight(.bold)
+                            .foregroundStyle(.white)
+                            .frame(width: 80, height: 44)
+                            .background(Color.red)
+                            .cornerRadius(22)
                         }
                     }
                     .padding(24)
@@ -130,16 +167,16 @@ struct StoreMapView: View {
             if viewModel.destinationReached {
                 VStack(spacing: 24) {
                     Image(systemName: "checkmark.circle.fill")
-                        .font(.system(size: 80))
-                        .foregroundStyle(Color.brandAccent)
+                    .font(.system(size: 80))
+                    .foregroundStyle(Color.brandAccent)
                     
                     VStack(spacing: 8) {
                         Text("You've Arrived!")
-                            .font(.brandSerif(32))
-                            .foregroundStyle(Color.coffeeDark)
+                        .font(.brandSerif(32))
+                        .foregroundStyle(Color.coffeeDark)
                         Text(store.name)
-                            .font(.brandSans(18))
-                            .foregroundStyle(.secondary)
+                        .font(.brandSans(18))
+                        .foregroundStyle(.secondary)
                     }
                     
                     Button {
@@ -147,13 +184,13 @@ struct StoreMapView: View {
                         dismiss()
                     } label: {
                         Text("Finish")
-                            .font(.brandSans(18))
-                            .fontWeight(.bold)
-                            .foregroundStyle(.white)
-                            .frame(maxWidth: .infinity)
-                            .frame(height: 56)
-                            .background(Color.coffeeDark)
-                            .cornerRadius(16)
+                        .font(.brandSans(18))
+                        .fontWeight(.bold)
+                        .foregroundStyle(.white)
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 56)
+                        .background(Color.coffeeDark)
+                        .cornerRadius(16)
                     }
                     .padding(.horizontal, 40)
                 }
@@ -169,8 +206,9 @@ struct StoreMapView: View {
             viewModel.startNavigation()
         }
         .navigationBarBackButtonHidden(viewModel.isNavigating) // Hide back when navigating
-        .navigationTitle("") 
+        .navigationTitle("")
         .toolbarBackground(.hidden, for: .navigationBar)
+        .toolbar(.hidden, for: .tabBar)
         .sheet(isPresented: .init(get: { !viewModel.isNavigating && !viewModel.destinationReached }, set: { _ in })) {
             StoreDetailView(store: store, detent: selectedDetent) {
             } onNavigate: {
@@ -185,6 +223,7 @@ struct StoreMapView: View {
                 }
             }
             .interactiveDismissDisabled()
+        }
         }
     }
     
@@ -255,13 +294,13 @@ struct StoreDetailView: View {
                                 .font(.brandSans(14))
                                 .foregroundStyle(.secondary)
                         }
-                        Spacer()
                     }
                     .padding(.horizontal)
                     .padding(.top, 24)
+                    .frame(maxWidth: .infinity, alignment: .leading)
                         
                     // Action Buttons
-                    HStack(spacing: 12) {
+                    HStack {
                         ActionButton(title: "Drive", subtitle: "Directions", icon: "car.fill", color: Color.brandAccent, action: onNavigate)
                         ActionButton(title: "Call", subtitle: "Store", icon: "phone.fill", color: .blue.opacity(0.1), textColor: .blue, iconColor: .blue, action: {
                             if let phone = store.phoneNumber {
@@ -326,7 +365,7 @@ struct StoreDetailView: View {
                         Spacer(minLength: 50)
                 }
             }
-            .background(Color.white)
+            //.background(Color.white)
             .cornerRadius(24, corners: [.topLeft, .topRight])
             .ignoresSafeArea(edges: .bottom)
         }
@@ -452,15 +491,8 @@ struct StoreRow: View {
             }
             
             Spacer()
-            
-            Image(systemName: "chevron.right")
-                .font(.system(size: 14, weight: .semibold))
-                .foregroundStyle(Color.coffeeRich.opacity(0.3))
         }
-        .padding()
-        .background(Color.white)
-        .cornerRadius(16)
-        .shadow(color: Color.black.opacity(0.04), radius: 8, x: 0, y: 4)
+        .padding(.vertical, 4)
     }
     
     private func formatDistance(_ distance: Double) -> String {
@@ -477,6 +509,7 @@ struct InternalMapView: UIViewRepresentable {
     @Binding var region: MKCoordinateRegion
     var route: MKRoute?
     var annotation: Store?
+    var bottomPadding: CGFloat = 0
     
     func makeUIView(context: Context) -> MKMapView {
         let mapView = MKMapView()
@@ -486,6 +519,9 @@ struct InternalMapView: UIViewRepresentable {
     }
     
     func updateUIView(_ uiView: MKMapView, context: Context) {
+        // Adjust layout margins to offset the center
+        uiView.layoutMargins = UIEdgeInsets(top: 0, left: 0, bottom: bottomPadding, right: 0)
+        
         // Only update region if it changed significantly to avoid jitter
         uiView.setRegion(region, animated: true)
         

@@ -9,29 +9,51 @@ struct NetworkView: View {
             ZStack {
                 Color.brandBackground.ignoresSafeArea()
                 
-                VStack(spacing: 24) {
-                    header
-                    
+                VStack(spacing: 0) {
                     // Main Content
                     ScrollView {
                         VStack(spacing: 24) {
+                            header
                             // Check-in Status / Action
                             if !viewModel.isCheckedIn {
-                                Button {
-                                    Task { await viewModel.checkIn() }
-                                } label: {
-                                    HStack {
-                                        Image("map_pin")
-                                        Text("Check In to Networking Lounge")
-                                            .fontWeight(.bold)
+                                if #available(iOS 26.0, *) {
+                                    Button {
+                                        Task { await viewModel.checkIn() }
+                                    } label: {
+                                        HStack {
+                                            Image("map_pin")
+                                            Text("Check In to Networking Lounge")
+                                                .fontWeight(.bold)
+                                        }
+                                        .font(.brandSans(16))
+                                        .foregroundStyle(.white)
+                                        .frame(maxWidth: .infinity)
+                                        .padding()
+//                                        .background(Color.coffeeRich)
+//                                        .cornerRadius(16)
+//                                        .shadow(color: Color.coffeeRich.opacity(0.3), radius: 10, x: 0, y: 5)
                                     }
-                                    .font(.brandSans(16))
-                                    .foregroundStyle(.white)
-                                    .frame(maxWidth: .infinity)
-                                    .padding()
-                                    .background(Color.coffeeRich)
-                                    .cornerRadius(16)
-                                    .shadow(color: Color.coffeeRich.opacity(0.3), radius: 10, x: 0, y: 5)
+                                    .buttonStyle(.glassProminent)
+                                    .tint(Color.coffeeRich)
+                                    .padding(.horizontal)
+                                } else {
+                                    Button {
+                                        Task { await viewModel.checkIn() }
+                                    } label: {
+                                        HStack {
+                                            Image("map_pin")
+                                            Text("Check In to Networking Lounge")
+                                                .fontWeight(.bold)
+                                        }
+                                        .font(.brandSans(16))
+                                        .foregroundStyle(.white)
+                                        .frame(maxWidth: .infinity)
+                                        .padding()
+                                        .background(Color.coffeeRich)
+                                        .cornerRadius(16)
+                                        .shadow(color: Color.coffeeRich.opacity(0.3), radius: 10, x: 0, y: 5)
+                                    }
+                                    .padding(.horizontal)
                                 }
                             } else {
                                 HStack {
@@ -46,6 +68,7 @@ struct NetworkView: View {
                                 .background(Color.white)
                                 .clipShape(Capsule())
                                 .shadow(color: Color.black.opacity(0.05), radius: 5)
+                                .padding(.horizontal)
                             }
                             
                             // List of People
@@ -73,8 +96,9 @@ struct NetworkView: View {
                                     }
                                 }
                             }
+                            .padding(.horizontal)
                         }
-                        .padding()
+                        .padding(.top, 20)
                     }
                     .refreshable {
                         await viewModel.fetchCheckIns()
@@ -97,7 +121,7 @@ struct NetworkView: View {
             Spacer()
         }
         .padding(.horizontal)
-        .padding(.top)
+        //.padding(.top)
     }
     
     var skeletonView: some View {

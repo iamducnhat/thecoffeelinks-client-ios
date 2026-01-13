@@ -1,4 +1,5 @@
 import Foundation
+import Supabase
 
 // MARK: - API Response Wrappers
 
@@ -31,26 +32,58 @@ class OrderService: OrderServiceProtocol {
     
     func getActiveOrders() async throws -> [Order] {
         let orders = try await getOrders()
-        return orders.filter { $0.status == .placed || $0.status == .ready }
+        // Status is now String. Valid statuses: received, preparing, ready.
+        return orders.filter { 
+            let s = $0.status ?? ""
+            return s == "received" || s == "preparing" || s == "ready" || s == "placed"
+        }
     }
     
-    func createOrder(order: Order) async throws -> Order {
+    func createOrder(items: [CartItem], total: Double, deliveryOption: DeliveryOption, storeId: String?, deliveryAddress: String?, deliveryNotes: String?, paymentMethod: PaymentMethod, paymentToken: String) async throws -> Order {
+        
+        // Match server expected payload structure
         struct CreateOrderRequest: Encodable {
-            let type: String
-            let totalAmount: Double
+            struct ItemPayload: Encodable {
+                let product: Product
+                let quantity: Int
+                let finalPrice: Double
+                let customization: OrderCustomization
+            }
+            
+            let items: [ItemPayload]
+            let deliveryOption: String
+            let total: Double
+            let user_id: String?
+            let paymentToken: String
+            let paymentMethod: String
             let storeId: String?
             let deliveryAddress: String?
+            let deliveryLat: Double?
+            let deliveryLng: Double?
             let deliveryNotes: String?
-            let paymentMethod: String?
+        }
+        
+        let itemPayloads = items.map { item in
+            CreateOrderRequest.ItemPayload(
+                product: item.product,
+                quantity: item.quantity,
+                finalPrice: item.finalPrice,
+                customization: item.customization
+            )
         }
         
         let request = CreateOrderRequest(
-            type: order.deliveryOption.rawValue,
-            totalAmount: order.total,
-            storeId: order.storeId,
-            deliveryAddress: order.deliveryAddress,
-            deliveryNotes: order.deliveryNotes,
-            paymentMethod: order.paymentMethod?.rawValue
+            items: itemPayloads,
+            deliveryOption: deliveryOption.rawValue,
+            total: total,
+            user_id: AuthManager.shared.session?.userId,
+            paymentToken: paymentToken,
+            paymentMethod: paymentMethod.rawValue,
+            storeId: storeId,
+            deliveryAddress: deliveryAddress,
+            deliveryLat: nil, // TODO: Add lat/lng support if needed
+            deliveryLng: nil,
+            deliveryNotes: deliveryNotes
         )
         
         let response: SingleOrderResponse = try await apiClient.post("/api/orders", body: request)
@@ -58,5 +91,62 @@ class OrderService: OrderServiceProtocol {
             throw APIClient.APIError.invalidResponse
         }
         return createdOrder
+    }
+    
+    func verifyPayment(amount: Double, paymentMethod: String, storeId: String?, items: [CartItem]) async throws -> String {
+        struct VerifyPaymentRequest: Encodable {
+            let amount: Double
+            let paymentMethod: String
+            let storeId: String?
+            let items: [CartItem]
+        }
+        
+        struct VerifyPaymentResponse: Decodable {
+            let success: Bool
+            let payment: PaymentData?
+            let error: String?
+            
+            struct PaymentData: Decodable {
+                let token: String
+            }
+        }
+        
+        let request = VerifyPaymentRequest(
+            amount: amount,
+            paymentMethod: paymentMethod,
+            storeId: storeId,
+            items: items
+        )
+        
+        let response: VerifyPaymentResponse = try await apiClient.post("/api/payments/verify", body: request)
+        
+        guard response.success, let token = response.payment?.token else {
+            throw APIClient.APIError.invalidResponse // Or a specific payment error
+        }
+        
+        return token
+    }
+    
+    // MARK: - Realtime
+    
+    func subscribeToOrders(userId: String, onChange: @escaping () -> Void) async -> RealtimeChannelV2 {
+        let channel = SupabaseManager.shared.client.channel("public:orders:\(userId)")
+        
+        let changes = channel.postgresChange(
+            AnyAction.self,
+            schema: "public",
+            table: "orders",
+            filter: "user_id=eq.\(userId)"
+        )
+        
+        await channel.subscribe()
+        
+        Task {
+            for await _ in changes {
+                onChange()
+            }
+        }
+        
+        return channel
     }
 }

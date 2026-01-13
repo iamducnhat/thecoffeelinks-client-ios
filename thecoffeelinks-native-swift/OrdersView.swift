@@ -107,7 +107,7 @@ struct LiveOrderCard: View {
                 
                 Spacer()
                 
-                Text((order.status?.rawValue ?? "Unknown").capitalized)
+                Text((order.status ?? "Unknown").capitalized)
                     .font(.caption)
                     .fontWeight(.bold)
                     .padding(.horizontal, 8)
@@ -137,7 +137,7 @@ struct LiveOrderCard: View {
                         .fontWeight(.bold)
                         .foregroundStyle(Color.white)
                     
-                    Text("Total: $\(String(format: "%.2f", order.total))")
+                    Text("Total: \(order.total.toVND())")
                         .font(.brandSans(14))
                         .foregroundStyle(Color.white.opacity(0.7))
                 }
@@ -149,10 +149,12 @@ struct LiveOrderCard: View {
             let progress: Double = {
                 guard let status = order.status else { return 0.0 }
                 switch status {
-                case .placed: return 0.3
-                case .ready: return 0.8
-                case .completed: return 1.0
-                case .cancelled: return 0.0
+                case "placed", "received": return 0.3
+                case "preparing": return 0.5
+                case "ready": return 0.8
+                case "completed": return 1.0
+                case "cancelled": return 0.0
+                default: return 0.1
                 }
             }()
             
@@ -187,7 +189,7 @@ struct HistoryItem: View {
             
             Spacer()
             
-            Text("$\(String(format: "%.2f", order.total))")
+            Text(order.total.toVND())
                 .font(.brandSans(16))
                 .fontWeight(.bold)
                 .foregroundStyle(Color.coffeeDark)

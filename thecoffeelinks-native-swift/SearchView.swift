@@ -28,122 +28,139 @@ struct SearchView: View {
     }
     
     var body: some View {
-        ZStack {
+        ZStack(alignment: .top) {
             Color.brandBackground.ignoresSafeArea()
             
             VStack(spacing: 0) {
                 // MAIN HEADER
                 header
                 
-                // Internal Search Bar
+                // INTERNAL SEARCH HEADER
                 if enableInternalSearch {
-                    HStack {
-                        Image(systemName: "magnifyingglass")
-                            .foregroundStyle(Color.brandAccent)
-                        
-                        TextField("Search coffee, food...", text: $internalQuery)
-                            .textFieldStyle(.plain)
-                            .font(.brandSans(16))
-                            .onSubmit {
-                                Task { await viewModel.search() }
-                            }
-                            .onChange(of: internalQuery) { newValue in
-                                viewModel.query = newValue
-                            }
-                        
-                        if !internalQuery.isEmpty {
-                            Button {
-                                internalQuery = ""
-                                viewModel.query = ""
-                            } label: {
-                                Image(systemName: "xmark.circle.fill")
-                                    .foregroundStyle(Color.secondary.opacity(0.5))
+                    VStack(spacing: 0) {
+                        HStack {
+                            Image(systemName: "magnifyingglass")
+                                .foregroundStyle(Color.secondary)
+                            
+                            TextField("Search coffee, food...", text: $internalQuery)
+                                .textFieldStyle(.plain)
+                                .font(.brandSans(16))
+                                .onSubmit {
+                                    Task { await viewModel.search() }
+                                }
+                                .onChange(of: internalQuery) { newValue in
+                                    viewModel.query = newValue
+                                }
+                            
+                            if !internalQuery.isEmpty {
+                                Button {
+                                    internalQuery = ""
+                                    viewModel.query = ""
+                                } label: {
+                                    Image(systemName: "xmark.circle.fill")
+                                        .foregroundStyle(Color.secondary.opacity(0.8))
+                                }
                             }
                         }
+                        .padding(12)
+                        .background(Color.white)
+                        .cornerRadius(10)
+                        
+                        Divider()
+                            .padding(.top, 10)
                     }
-                    .padding(.horizontal, 16)
-                    .padding(.vertical, 12)
-                    .background(Color.white)
-                    .cornerRadius(12)
                     .padding(.horizontal)
                     .padding(.bottom, 8)
-                    .shadow(color: Color.black.opacity(0.05), radius: 10, x: 0, y: 5)
                 }
                 
-                // CATEGORY FILTER CHIPS
+                // CATEGORY FILTERS
                 ScrollView(.horizontal, showsIndicators: false) {
-                    HStack(spacing: 12) {
+                    HStack(spacing: 8) {
                         ForEach(["All", "Coffee", "Tea", "Food", "Merch"], id: \.self) { category in
                             Button {
                                 viewModel.selectCategory(category)
                             } label: {
                                 Text(category)
                                     .font(.brandSans(14))
-                                    .fontWeight(viewModel.selectedCategory == category ? .bold : .medium)
+                                    .fontWeight(viewModel.selectedCategory == category ? .semibold : .regular)
                                     .padding(.horizontal, 16)
                                     .padding(.vertical, 8)
-                                    .background(viewModel.selectedCategory == category ? Color.brandPrimary : Color.white)
-                                    .foregroundStyle(viewModel.selectedCategory == category ? Color.white : Color.coffeeDark)
+                                    .background(viewModel.selectedCategory == category ? Color.brandPrimary : Color.clear)
+                                    .foregroundStyle(viewModel.selectedCategory == category ? Color.white : Color.primary)
                                     .clipShape(Capsule())
                                     .overlay(
                                         Capsule()
-                                            .strokeBorder(Color.coffeeRich.opacity(0.1), lineWidth: 1)
+                                            .strokeBorder(Color.primary.opacity(0.1), lineWidth: viewModel.selectedCategory == category ? 0 : 1)
                                     )
                             }
                         }
                     }
                     .padding(.horizontal)
-                    .padding(.vertical, 12)
+                    .padding(.vertical, 8)
                 }
+                .background(Color.brandBackground)
                 
-                // MAIN CONTENT (Results or Full Menu)
+                // MAIN CONTENT LIST
                 if viewModel.isLoading {
                     skeletonView
-                    Spacer()
                 } else if let error = viewModel.errorMessage {
-                    VStack {
-                        Text("Unable to load menu")
-                        Text(error).font(.caption).foregroundStyle(.red)
+                    VStack(spacing: 12) {
+                        Image(systemName: "exclamationmark.triangle")
+                            .font(.system(size: 40))
+                            .foregroundStyle(.secondary)
+                        Text("Expected error")
+                            .font(.brandSerif(18))
+                        Text(error)
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                            .multilineTextAlignment(.center)
+                        
                         Button("Retry") { Task { await viewModel.search() } }
+                            .buttonStyle(.bordered)
                     }
                     .padding()
-                    Spacer()
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
                 } else {
                     ScrollView {
-                        // Grid or Content
-                        
-                        LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 16) {
+                        LazyVStack(spacing: 16) {
                             ForEach(viewModel.filteredProducts) { product in
-                                ProductCard(product: product)
+                                ProductRow(product: product)
+                                    .padding(.horizontal)
                             }
                         }
-                        .padding()
+                        .padding(.top, 8)
+                        .padding(.bottom, 40)
                         
                         if viewModel.filteredProducts.isEmpty {
-                            Text("No products found")
-                                .foregroundStyle(.secondary)
-                                .padding(.top, 40)
+                            VStack(spacing: 16) {
+                                Image(systemName: "magnifyingglass")
+                                    .font(.system(size: 48))
+                                    .foregroundStyle(.secondary.opacity(0.5))
+                                Text("No products found")
+                                    .font(.brandSans(16))
+                                    .foregroundStyle(.secondary)
+                            }
+                            .padding(.top, 60)
                         }
                     }
                 }
             }
         }
-        // .navigationBarHidden(true) // Removed to allow interaction and standard bar behavior if needed
         .onChange(of: externalQuery) { newValue in
             if !enableInternalSearch {
                 viewModel.query = newValue
             }
         }
         .onAppear {
-            // Load initial menu data
             Task { await viewModel.search() }
             if !enableInternalSearch {
                 viewModel.query = externalQuery
             }
         }
+        .toolbar(.hidden, for: .navigationBar)
     }
-
-    // MARK: - Components
+    
+    // MARK: - Subviews
     
     private var header: some View {
         HStack {
@@ -157,106 +174,127 @@ struct SearchView: View {
     }
     
     private var skeletonView: some View {
-        VStack(spacing: 20) {
-            header
-            
-            // Filter Chips Skeleton
-            ScrollView(.horizontal, showsIndicators: false) {
+        VStack(spacing: 0) {
+            ForEach(0..<6) { _ in
                 HStack(spacing: 12) {
-                    ForEach(0..<4) { _ in
-                        Capsule()
-                            .fill(Color.coffeeRich.opacity(0.1))
-                            .frame(width: 80, height: 32)
+                    RoundedRectangle(cornerRadius: 8)
+                        .fill(Color.gray.opacity(0.1))
+                        .frame(width: 60, height: 60)
+                    
+                    VStack(alignment: .leading, spacing: 8) {
+                        RoundedRectangle(cornerRadius: 4)
+                            .fill(Color.gray.opacity(0.1))
+                            .frame(width: 120, height: 16)
+                        
+                        RoundedRectangle(cornerRadius: 4)
+                            .fill(Color.gray.opacity(0.1))
+                            .frame(width: 80, height: 12)
                     }
+                    Spacer()
                 }
-                .padding(.horizontal)
+                .padding()
+                Divider()
             }
-            
-            // Grid Skeleton
-            LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 16) {
-                ForEach(0..<6) { _ in
-                    ProductCard(product: .placeholder, width: 160)
-                }
-            }
-            .padding()
-            
-            Spacer()
         }
         .redacted(reason: .placeholder)
     }
 }
 
-struct SearchMenuCard: View {
-    let title: String
-    let image: String
-    let color: Color
-    
-    var body: some View {
-        VStack {
-            Circle()
-                .fill(color.opacity(0.1))
-                .frame(width: 50, height: 50)
-                .overlay {
-                    Image(systemName: image)
-                        .resizable()
-                        .aspectRatio(contentMode: .fit)
-                        .frame(width: 24, height: 24)
-                        .foregroundStyle(color)
-                }
-            
-            Text(title)
-                .font(.brandSans(16))
-                .fontWeight(.medium)
-        }
-        .frame(maxWidth: .infinity)
-        .padding()
-        .background(Color.white)
-        .cornerRadius(16)
-        .shadow(color: Color.black.opacity(0.05), radius: 4, x: 0, y: 2)
-    }
-}
-
+// Premium Product Card for Menu View
 struct ProductRow: View {
     let product: Product
+    @State private var showingCustomization = false
+    @State private var isPressed = false
     
     var body: some View {
-        HStack(spacing: 12) {
-            AsyncImage(url: URL(string: product.displayImageUrl ?? "")) { img in
-                img.resizable()
-                   .aspectRatio(contentMode: .fill)
-            } placeholder: {
-                Color.coffeeRich.opacity(0.1)
-            }
-            .frame(width: 60, height: 60)
-            .clipShape(RoundedRectangle(cornerRadius: 8))
-            
-            VStack(alignment: .leading, spacing: 4) {
-                Text(product.name)
-                    .font(.brandSerif(16))
-                    .foregroundStyle(Color.coffeeDark)
+        Button(action: {
+            showingCustomization = true
+            UIImpactFeedbackGenerator(style: .light).impactOccurred()
+        }) {
+            HStack(spacing: 16) {
+                // Image with gradient overlay
+                ZStack(alignment: .bottomLeading) {
+                    AsyncImage(url: URL(string: product.displayImageUrl ?? "")) { img in
+                        img.resizable()
+                           .aspectRatio(contentMode: .fill)
+                    } placeholder: {
+                        ZStack {
+                            Color.coffeeRich.opacity(0.05)
+                            Image(systemName: "cup.and.saucer.fill")
+                                .resizable()
+                                .aspectRatio(contentMode: .fit)
+                                .frame(width: 32)
+                                .foregroundStyle(Color.coffeeRich.opacity(0.2))
+                        }
+                    }
+                    .frame(width: 100, height: 100)
+                    .clipShape(RoundedRectangle(cornerRadius: 20))
+                    
+                    // Subtle gradient overlay
+                    LinearGradient(
+                        colors: [Color.black.opacity(0.3), Color.clear],
+                        startPoint: .bottom,
+                        endPoint: .center
+                    )
+                    .clipShape(RoundedRectangle(cornerRadius: 20))
+                }
+                .shadow(color: Color.black.opacity(0.1), radius: 8, x: 0, y: 4)
                 
-                Text(product.description ?? "")
-                    .font(.brandSans(12))
-                    .foregroundStyle(.secondary)
-                    .lineLimit(2)
-                
-                Text("$\(String(format: "%.0f", product.price))")
-                    .font(.brandSans(14))
-                    .fontWeight(.bold)
-                    .foregroundStyle(Color.brandAccent)
+                // Details
+                VStack(alignment: .leading, spacing: 6) {
+                    // Category Badge
+                    Text(product.category?.rawValue.capitalized ?? "Item")
+                        .font(.brandSans(10))
+                        .fontWeight(.semibold)
+                        .foregroundStyle(Color.brandAccent)
+                        .textCase(.uppercase)
+                        .padding(.horizontal, 8)
+                        .padding(.vertical, 4)
+                        .background(Color.brandAccent.opacity(0.1))
+                        .clipShape(Capsule())
+                    
+                    // Product Name
+                    Text(product.name)
+                        .font(.brandSerif(18))
+                        .fontWeight(.bold)
+                        .foregroundStyle(Color.coffeeDark)
+                        .lineLimit(2)
+                        .multilineTextAlignment(.leading)
+                    
+                    // Description (if available)
+                    if let desc = product.description, !desc.isEmpty {
+                        Text(desc)
+                            .font(.brandSans(12))
+                            .foregroundStyle(Color.secondary)
+                            .lineLimit(1)
+                    }
+                    
+                    Spacer()
+                    
+                    // Price
+                    Text(product.price.toVND())
+                        .font(.brandSans(16))
+                        .fontWeight(.bold)
+                        .foregroundStyle(Color.brandAccent)
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
             }
-            
-            Spacer()
-            
-            Image("chevron_right")
-                .resizable()
-                .frame(width: 12, height: 12)
-                .foregroundStyle(.gray)
+            .padding(12)
+            .background(Color.white)
+            .cornerRadius(24)
+            .shadow(color: Color.black.opacity(0.08), radius: 12, x: 0, y: 6)
+            .scaleEffect(isPressed ? 0.98 : 1.0)
+            .animation(.spring(response: 0.3, dampingFraction: 0.7), value: isPressed)
         }
-        .padding()
-        .background(Color.white)
-        .cornerRadius(12)
-        .shadow(color: Color.black.opacity(0.05), radius: 2, x: 0, y: 1)
+        .buttonStyle(PlainButtonStyle())
+        .simultaneousGesture(
+            DragGesture(minimumDistance: 0)
+                .onChanged { _ in isPressed = true }
+                .onEnded { _ in isPressed = false }
+        )
+        .sheet(isPresented: $showingCustomization) {
+            OrderCustomizationView(product: product)
+        }
     }
 }
 

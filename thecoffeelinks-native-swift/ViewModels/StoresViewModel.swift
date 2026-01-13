@@ -18,6 +18,7 @@ class StoresViewModel: NSObject, ObservableObject, CLLocationManagerDelegate {
         center: CLLocationCoordinate2D(latitude: 37.7749, longitude: -122.4194), // Default SF
         span: MKCoordinateSpan(latitudeDelta: 0.1, longitudeDelta: 0.1)
     )
+    @Published var locationAuthStatus: CLAuthorizationStatus = .notDetermined
     
     private let storeService = StoreService()
     private let locationManager = CLLocationManager()
@@ -159,6 +160,17 @@ class StoresViewModel: NSObject, ObservableObject, CLLocationManagerDelegate {
             withAnimation {
                 region.center = location.coordinate
             }
+        }
+    }
+    
+    func locationManager(_ manager: CLLocationManager, didChangeAuthorization status: CLAuthorizationStatus) {
+        self.locationAuthStatus = status
+        
+        switch status {
+        case .authorizedWhenInUse, .authorizedAlways:
+            manager.startUpdatingLocation()
+        default:
+            break
         }
     }
     

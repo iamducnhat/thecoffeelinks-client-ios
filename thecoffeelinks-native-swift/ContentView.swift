@@ -10,6 +10,7 @@ import SwiftUI
 struct ContentView: View {
     @StateObject private var appState = AppState()
     @ObservedObject private var authViewModel = AuthViewModel.shared
+    @ObservedObject private var cartManager = CartManager.shared
     
     // Search State
     @State private var searchText = ""
@@ -17,34 +18,46 @@ struct ContentView: View {
     var body: some View {
         Group {
             if authViewModel.state == .authenticated {
-                NavigationStack {
-                    if #available(iOS 26, *) {
-                        TabView {
-                            Tab("Home", image: "home") {
+                if #available(iOS 26, *) {
+                    TabView {
+                        Tab("Home", image: "home") {
+                            NavigationStack {
                                 HomeView()
                             }
-                            
-                            Tab("Stores", image: "map_pin") {
+                        }
+                        
+                        Tab("Stores", image: "map_pin") {
+                            NavigationStack {
                                 StoresView()
                             }
-                            
-                            Tab("Network", image: "users") {
+                        }
+                        
+                        Tab("Network", image: "users") {
+                            NavigationStack {
                                 NetworkView()
                             }
-                            
-                            // Search Tab
-                            Tab("Search", systemImage: "magnifyingglass") {
-                                SearchView(enableInternalSearch: true)
+                        }
+                        
+                        Tab("Search", systemImage: "magnifyingglass", role: .search) {
+                            NavigationStack {
+                                SearchView(enableInternalSearch: false)
+                                    .searchable(text: $searchText)
                             }
-                            
-                            Tab("Orders", image: "coffee") {
+                        }
+                        
+                        Tab("Orders", image: "coffee") {
+                            NavigationStack {
                                 OrdersView()
                             }
                         }
-                        .tint(Color.coffeeDark)
-                        .environmentObject(appState)
-                    } else {
-                        // Legacy Fallback for < iOS 26
+                    }
+                    .tint(Color.coffeeDark)
+                    .environmentObject(appState)
+                    .modifier(CartAccessoryModifier(isEnabled: !cartManager.items.isEmpty))
+                    .tabBarMinimizeBehavior(.automatic)
+                } else {
+                    // Legacy Fallback for < iOS 26
+                    ZStack(alignment: .bottom) {
                         TabView {
                             HomeView()
                                 .tabItem {
@@ -84,6 +97,8 @@ struct ContentView: View {
                         }
                         .tint(Color.coffeeDark)
                         .environmentObject(appState)
+                        
+                        CartFloater()
                     }
                 }
             } else if authViewModel.state == .loading {

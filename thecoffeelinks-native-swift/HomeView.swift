@@ -11,6 +11,8 @@ struct HomeView: View {
     @StateObject private var viewModel = HomeViewModel()
     @EnvironmentObject var appState: AppState // Keep for greeting
     
+    @Namespace private var namespace
+    
     var body: some View {
         NavigationStack {
             ZStack {
@@ -96,50 +98,77 @@ struct HomeView: View {
                     .font(.brandSans(14))
                     .foregroundStyle(Color.secondary)
             }
-            Spacer()
             
             Spacer()
             
-            // Notification / Events Button
-            Button {
-                showEvents = true
-            } label: {
-                Circle()
-                    .fill(Color.coffeeRich.opacity(0.1))
-                    .frame(width: 44, height: 44)
-                    .overlay {
-                        Image(systemName: "bell.fill")
-                            .resizable()
-                            .aspectRatio(contentMode: .fit)
-                            .frame(width: 20, height: 20)
-                            .foregroundStyle(Color.brandAccent)
+            if #available(iOS 26.0, *) {
+                GlassEffectContainer(spacing: 14) {
+                    HStack {
+                        // Notification / Events Button
+                        NavigationLink(destination: EventsView()) {
+                            Image(systemName: "bell")
+                                .resizable()
+                                .aspectRatio(contentMode: .fit)
+                                .frame(width: 20, height: 20)
+                                .foregroundStyle(Color.brandPrimary)
+                                .padding(12)
+                                .contentShape(Circle())
+                                .glassEffect(.clear.interactive())
+                                .clipShape(Circle())
+                                .glassEffectID("notifications", in: namespace)
+                        }
+                        // Profile / Avatar Button
+                        NavigationLink(destination: ProfileView()) {
+                            Image("user")
+                                .resizable()
+                                .aspectRatio(contentMode: .fit)
+                                .frame(width: 20, height: 20)
+                                .foregroundStyle(Color.brandPrimary)
+                                .padding(12)
+                                .contentShape(Circle())
+                                .glassEffect(.clear.interactive())
+                                .clipShape(Circle())
+                                .glassEffectID("profile", in: namespace)
+                        }
                     }
-            }
-            .padding(.trailing, 8)
-            
-            // Profile / Avatar Button
-            NavigationLink(destination: ProfileView()) {
-                Circle()
-                    .fill(Color.coffeeRich.opacity(0.1))
-                    .frame(width: 44, height: 44)
-                    .overlay {
-                        Image("user")
-                            .resizable()
-                            .aspectRatio(contentMode: .fit)
-                            .frame(width: 20, height: 20)
-                            .foregroundStyle(Color.coffeeDark)
-                    }
+                }
+            } else {
+                // Notification / Events Button
+                NavigationLink(destination: EventsView()) {
+                    Circle()
+                        .fill(Color.coffeeRich.opacity(0.1))
+                        .frame(width: 44, height: 44)
+                        .overlay {
+                            Image(systemName: "bell.fill")
+                                .resizable()
+                                .aspectRatio(contentMode: .fit)
+                                .frame(width: 20, height: 20)
+                                .foregroundStyle(Color.brandAccent)
+                        }
+                }
+                // Profile / Avatar Button
+                NavigationLink(destination: ProfileView()) {
+                    Circle()
+                        .fill(Color.coffeeRich.opacity(0.1))
+                        .frame(width: 44, height: 44)
+                        .overlay {
+                            Image("user")
+                                .resizable()
+                                .aspectRatio(contentMode: .fit)
+                                .frame(width: 20, height: 20)
+                                .foregroundStyle(Color.coffeeDark)
+                        }
+                }
             }
         }
-
         .padding(.horizontal)
-        .sheet(isPresented: $showEvents) {
-            EventsView()
-        }
     }
     
-    // Add State for sheet
-    @State private var showEvents = false
+    
+    private var highlightCardHeight: CGFloat {
+        let width = UIScreen.main.bounds.width - 32 // Horizontal padding
+        return width / 2
+    }
     
     private var highlightsSection: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -156,6 +185,7 @@ struct HomeView: View {
                             color: .brandAccent
                         )
                         .padding(.horizontal) // Inner padding
+                        .padding(.vertical, 20)
                     case .event(let event):
                         HighlightCard(
                             title: event.title,
@@ -164,11 +194,13 @@ struct HomeView: View {
                             color: .brandPremium
                         )
                         .padding(.horizontal)
+                        .padding(.vertical, 20)
                     }
                 }
             }
-            .tabViewStyle(.page(indexDisplayMode: .never)) // Hide dots or .always
-            .frame(height: 160) // 140 card + padding
+            .tabViewStyle(.page(indexDisplayMode: .always)) // Hide dots or .always
+            .padding(.vertical, -20)
+            .frame(height: highlightCardHeight + 40) // Card height + vertical padding
         }
     }
     
@@ -211,7 +243,7 @@ struct HomeView: View {
                         }
                     }
                     .tabViewStyle(.page(indexDisplayMode: .never))
-                    .frame(height: 160)
+                    .frame(height: highlightCardHeight + 40)
                 }
                 
                 // Trending Placeholder
@@ -272,7 +304,7 @@ struct HighlightCard: View {
         }
         .padding(16)
         .frame(maxWidth: .infinity)
-        .frame(height: 140)
+        .frame(maxHeight: .infinity)
         .background(Color.white)
         .cornerRadius(16)
         .shadow(color: Color.black.opacity(0.05), radius: 8, x: 0, y: 4)
@@ -292,11 +324,11 @@ struct ActiveOrderCard: View {
                     .fontWeight(.bold)
                     .foregroundStyle(Color.brandAccent)
                 
-                Text((order.status?.rawValue ?? "Unknown").uppercased())
+                Text((order.status ?? "Unknown").uppercased())
                     .font(.brandSerif(20))
                     .foregroundStyle(Color.white)
                 
-                Text("\(order.deliveryOption.rawValue.replacingOccurrences(of: "_", with: " ").capitalized) • $\(String(format: "%.0f", order.total))")
+                Text("\(order.deliveryOption.rawValue.replacingOccurrences(of: "_", with: " ").capitalized) • \(order.total.toVND())")
                     .font(.brandSans(14))
                     .foregroundStyle(Color.white.opacity(0.8))
             }

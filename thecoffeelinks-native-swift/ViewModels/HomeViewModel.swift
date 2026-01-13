@@ -74,7 +74,8 @@ class HomeViewModel: ObservableObject {
             // 5. Active Order (First one if status is active)
             // Assuming getActiveOrders returns active ones first or we filter
             self.activeOrder = orders.first(where: {
-                $0.status == .placed || $0.status == .ready
+                let s = $0.status ?? ""
+                return s == "received" || s == "preparing" || s == "ready"
             })
             
             self.viewState = .loaded

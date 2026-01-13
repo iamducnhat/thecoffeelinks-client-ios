@@ -1,19 +1,21 @@
 import Foundation
 
-enum Size: String, Codable {
-    case S, M, L
+struct OrderCustomization: Codable, Hashable {
+    let size: String
+    let ice: String?
+    let sugar: String?
+    let toppings: [String]?
 }
 
-struct Customization: Codable {
-    let size: Size
-    let sugarLevel: Int
-    let iceLevel: Int
-    let toppings: [String]
-}
-
-struct CartItem: Codable, Identifiable {
-    let id: String
+struct CartItem: Identifiable, Codable {
+    let id: UUID
     let product: Product
-    let customization: Customization
-    let quantity: Int
+    var quantity: Int
+    var finalPrice: Double
+    let customization: OrderCustomization
+    
+    // Computed property for display
+    var toppingsString: String {
+        customization.toppings?.joined(separator: ", ") ?? ""
+    }
 }
