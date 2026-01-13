@@ -1,8 +1,9 @@
 import SwiftUI
 
 struct EventDetailView: View {
-    let event: Event
+    var event: Event
     @Environment(\.dismiss) private var dismiss
+    @State private var storeName: String?
     
     var body: some View {
         List {
@@ -14,7 +15,7 @@ struct EventDetailView: View {
                             .fill(Color.coffeeRich.opacity(0.05))
                             .frame(width: 120, height: 120)
                         
-                        if let imageUrl = event.imageUrl, !imageUrl.isEmpty {
+                        if let imageUrl = event.imageURL, !imageUrl.isEmpty {
                             AsyncImage(url: URL(string: imageUrl)) { phase in
                                 switch phase {
                                 case .success(let image):
@@ -69,11 +70,11 @@ struct EventDetailView: View {
                             .foregroundStyle(Color.coffeeDark)
                             .multilineTextAlignment(.center)
                         
-                        if let host = event.hostName {
-                            Text("Hosted by \(host)")
-                                .font(.brandSans(14))
-                                .foregroundStyle(Color.secondary)
-                        }
+//                        if let host = event.hostName {
+//                            Text("Hosted by \(host)")
+//                                .font(.brandSans(14))
+//                                .foregroundStyle(Color.secondary)
+//                        }
                     }
                     
                     // Action Buttons
@@ -100,8 +101,10 @@ struct EventDetailView: View {
                     DetailRow(icon: "clock", title: "Date & Time", value: date.formatted(.dateTime.weekday().month().day().hour().minute()))
                 }
                 
-                if let location = event.location {
-                    DetailRow(icon: "map_pin", title: "Location", value: location)
+                if let storeName = storeName {
+                    DetailRow(icon: "map_pin", title: "Location", value: storeName)
+                } else if event.storeId != nil {
+                    DetailRow(icon: "map_pin", title: "Location", value: "Loading...")
                 }
             } header: {
                 Text("When & Where")
@@ -147,7 +150,7 @@ struct EventDetailView: View {
                             .font(.brandSans(16))
                             .fontWeight(.bold)
                             .foregroundStyle(Color.coffeeDark)
-                        Text("Community Manager")
+                        Text("Organizer")
                             .font(.caption)
                             .foregroundStyle(Color.secondary)
                     }
@@ -173,6 +176,13 @@ struct EventDetailView: View {
         .background(Color.brandBackground)
         .navigationTitle("Event Details")
         .navigationBarTitleDisplayMode(.inline)
+        .onAppear {
+            Task {
+                if let store = try? await event.fetchStore() {
+                    storeName = store.name
+                }
+            }
+        }
     }
 }
 

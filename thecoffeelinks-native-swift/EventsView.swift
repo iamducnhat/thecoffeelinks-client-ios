@@ -112,7 +112,7 @@ struct EventRow: View {
                     .fill(Color.coffeeRich.opacity(0.05))
                     .frame(width: 60, height: 60)
                 
-                if let imageUrl = event.imageUrl, !imageUrl.isEmpty {
+                if let imageUrl = event.imageURL, !imageUrl.isEmpty {
                     AsyncImage(url: URL(string: imageUrl)) { phase in
                         switch phase {
                         case .success(let image):

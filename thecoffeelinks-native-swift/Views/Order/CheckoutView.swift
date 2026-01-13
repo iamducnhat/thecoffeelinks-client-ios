@@ -8,8 +8,8 @@ struct CheckoutView: View {
     @State private var showError = false
     @State private var errorMessage = ""
     @State private var showSuccess = false
-    @State private var itemToDelete: CartItem?
-    @State private var showDeleteConfirmation = false
+    @State private var itemToEdit: CartItem?
+    @State private var showEditCustomization = false
     
     // Payment Options
     let paymentMethods: [PaymentMethod] = [.cash, .card, .momo, .zalopay]
@@ -96,18 +96,9 @@ struct CheckoutView: View {
             } message: {
                 Text("Your order has been placed successfully.")
             }
-            .alert("Remove Item", isPresented: $showDeleteConfirmation) {
-                Button("Cancel", role: .cancel) { }
-                Button("Remove", role: .destructive) {
-                    if let item = itemToDelete {
-                        withAnimation(.easeInOut(duration: 0.3)) {
-                            cartManager.removeFromCart(item: item)
-                        }
-                    }
-                }
-            } message: {
-                if let item = itemToDelete {
-                    Text("Remove \(item.product.name) from your order?")
+            .sheet(isPresented: $showEditCustomization) {
+                if let item = itemToEdit {
+                    OrderCustomizationView(product: item.product, editingItem: item)
                 }
             }
         }
@@ -164,10 +155,25 @@ struct CheckoutView: View {
             sectionHeader(title: "Order Items")
             
             VStack(spacing: 0) {
-                ForEach(Array(cartManager.items.enumerated()), id: \.element.id) { index, item in
-                    cartItemRow(item: item, index: index)
+                ForEach(cartManager.items) { item in
+                    cartItemRow(item: item)
+                        .contentShape(Rectangle())
+                        .onTapGesture {
+                            UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                            itemToEdit = item
+                            showEditCustomization = true
+                        }
+                        .swipeActions(edge: .trailing, allowsFullSwipe: true) {
+                            Button(role: .destructive) {
+                                withAnimation(.easeInOut(duration: 0.3)) {
+                                    cartManager.removeFromCart(item: item)
+                                }
+                            } label: {
+                                Label("Delete", systemImage: "trash")
+                            }
+                        }
                     
-                    if index < cartManager.items.count - 1 {
+                    if item.id != cartManager.items.last?.id {
                         Divider()
                             .padding(.leading, 72)
                     }
@@ -180,7 +186,7 @@ struct CheckoutView: View {
         .padding(.horizontal, 20)
     }
     
-    func cartItemRow(item: CartItem, index: Int) -> some View {
+    func cartItemRow(item: CartItem) -> some View {
         HStack(alignment: .top, spacing: 12) {
             // Product Image
             AsyncImage(url: URL(string: item.product.displayImageUrl ?? "")) { image in
@@ -246,53 +252,37 @@ struct CheckoutView: View {
             
             Spacer()
             
-            // Quantity & Remove
-            VStack(alignment: .trailing, spacing: 8) {
-                // Remove Button
+            // Quantity Stepper
+            HStack(spacing: 12) {
                 Button(action: {
                     UIImpactFeedbackGenerator(style: .light).impactOccurred()
-                    itemToDelete = item
-                    showDeleteConfirmation = true
+                    updateQuantity(for: item, delta: -1)
                 }) {
-                    Image(systemName: "xmark.circle.fill")
-                        .font(.system(size: 20))
-                        .foregroundColor(.neutral400)
+                    Image(systemName: "minus")
+                        .font(.system(size: 12, weight: .bold))
+                        .foregroundColor(item.quantity > 1 ? .coffeeDark : .neutral300)
+                        .frame(width: 28, height: 28)
+                        .background(Color.neutral100)
+                        .cornerRadius(8)
                 }
+                .disabled(item.quantity <= 1)
                 
-                Spacer()
+                Text("\(item.quantity)")
+                    .font(.brandSans(16))
+                    .fontWeight(.bold)
+                    .foregroundColor(.coffeeDark)
+                    .frame(minWidth: 20)
                 
-                // Quantity Stepper
-                HStack(spacing: 12) {
-                    Button(action: {
-                        UIImpactFeedbackGenerator(style: .light).impactOccurred()
-                        updateQuantity(for: item, delta: -1)
-                    }) {
-                        Image(systemName: "minus")
-                            .font(.system(size: 12, weight: .bold))
-                            .foregroundColor(item.quantity > 1 ? .coffeeDark : .neutral300)
-                            .frame(width: 28, height: 28)
-                            .background(Color.neutral100)
-                            .cornerRadius(8)
-                    }
-                    .disabled(item.quantity <= 1)
-                    
-                    Text("\(item.quantity)")
-                        .font(.brandSans(16))
-                        .fontWeight(.bold)
-                        .foregroundColor(.coffeeDark)
-                        .frame(minWidth: 20)
-                    
-                    Button(action: {
-                        UIImpactFeedbackGenerator(style: .light).impactOccurred()
-                        updateQuantity(for: item, delta: 1)
-                    }) {
-                        Image(systemName: "plus")
-                            .font(.system(size: 12, weight: .bold))
-                            .foregroundColor(.white)
-                            .frame(width: 28, height: 28)
-                            .background(Color.coffeeDark)
-                            .cornerRadius(8)
-                    }
+                Button(action: {
+                    UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                    updateQuantity(for: item, delta: 1)
+                }) {
+                    Image(systemName: "plus")
+                        .font(.system(size: 12, weight: .bold))
+                        .foregroundColor(.white)
+                        .frame(width: 28, height: 28)
+                        .background(Color.coffeeDark)
+                        .cornerRadius(8)
                 }
             }
         }

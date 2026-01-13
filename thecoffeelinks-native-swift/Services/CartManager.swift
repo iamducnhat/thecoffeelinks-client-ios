@@ -30,6 +30,14 @@ class CartManager: ObservableObject {
         items.append(item)
     }
     
+    func updateCart(item: CartItem, quantity: Int, finalPrice: Double, customization: OrderCustomization) {
+        if let index = items.firstIndex(where: { $0.id == item.id }) {
+            items[index].quantity = quantity
+            items[index].finalPrice = finalPrice
+            items[index].customization = customization
+        }
+    }
+    
     func removeFromCart(item: CartItem) {
         if let index = items.firstIndex(where: { $0.id == item.id }) {
             items.remove(at: index)

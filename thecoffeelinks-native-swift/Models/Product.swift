@@ -8,6 +8,17 @@ enum ProductCategory: String, Codable, CaseIterable {
     case seasonal
 }
 
+struct SizeOption: Codable {
+    let enabled: Bool
+    let price: Double
+}
+
+struct ProductSizeOptions: Codable {
+    let small: SizeOption
+    let medium: SizeOption
+    let large: SizeOption
+}
+
 /// Product model - API returns camelCase, so we use camelCase property names.
 /// Needs to be Codable for CartItem persistence.
 /// APIClient will need to use .useDefaultKeys when fetching products.
@@ -15,7 +26,6 @@ struct Product: Codable, Identifiable {
     let id: String
     let name: String
     let description: String?
-    let basePrice: Double?
     let category: String? // Changed to String to support dynamic categories
     let categoryId: String?
     let categoryType: String?
@@ -25,6 +35,7 @@ struct Product: Codable, Identifiable {
     let isNew: Bool?
     let isActive: Bool?
     let isAvailable: Bool?
+    let sizeOptions: ProductSizeOptions?
     
     // Computed for compatibility
     var displayImageUrl: String? {
@@ -45,5 +56,14 @@ struct Product: Codable, Identifiable {
         // Otherwise treat as relative and prepend slash
         return "https://server-nu-three-90.vercel.app/" + rawUrl
     }
-    var price: Double { basePrice ?? 0 }
+    
+    // Get available sizes with their prices
+    var availableSizes: [(size: String, price: Double)] {
+        guard let options = sizeOptions else { return [] }
+        var sizes: [(String, Double)] = []
+        if options.small.enabled { sizes.append(("Small", options.small.price)) }
+        if options.medium.enabled { sizes.append(("Medium", options.medium.price)) }
+        if options.large.enabled { sizes.append(("Large", options.large.price)) }
+        return sizes
+    }
 }

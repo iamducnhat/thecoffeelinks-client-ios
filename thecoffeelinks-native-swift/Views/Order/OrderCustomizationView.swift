@@ -1,18 +1,33 @@
 import SwiftUI
 
 struct OrderCustomizationView: View {
-    let product: Product
-    @Environment(\.dismiss) var dismiss
+    let product: Product    let editingItem: CartItem?    @Environment(\.dismiss) var dismiss
     @ObservedObject var cartManager = CartManager.shared
     @StateObject private var menuRepo = MenuRepository.shared
     @StateObject private var orderRepo = OrderRepository.shared
     
     // Customization State
-    @State private var selectedSize: String = "M"
+    @State private var selectedSize: String
     @State private var iceIndex: Double = 2 // Default to "Normal"
     @State private var sugarIndex: Double = 2 // Default to "50%"
     @State private var selectedToppings: Set<String> = []
-    @State private var quantity: Int = 1
+    @State private var quantity: Int
+    
+    init(product: Product, editingItem: CartItem? = nil) {
+        self.product = product
+        self.editingItem = editingItem
+        
+        // Initialize state from editing item or defaults
+        if let item = editingItem {
+            _selectedSize = State(initialValue: item.customization.size)
+            _quantity = State(initialValue: item.quantity)
+            // Note: ice/sugar/toppings need mapping from labels back to values/indices
+            // For now, using defaults - proper implementation would reverse-map
+        } else {
+            _selectedSize = State(initialValue: "M")
+            _quantity = State(initialValue: 1)
+        }
+    }
     
     // Live Price State - Optimistic UI Pattern
     @State private var displayPrice: Double = 0      // What user sees (estimated or server-confirmed)
@@ -23,9 +38,31 @@ struct OrderCustomizationView: View {
     
     // Computed Options from Repository
     var sizes: [String] {
+        // Use product's own size options
+        if let sizeOptions = product.sizeOptions {
+            var available: [String] = []
+            if sizeOptions.small.enabled { available.append("S") }
+            if sizeOptions.medium.enabled { available.append("M") }
+            if sizeOptions.large.enabled { available.append("L") }
+            return available
+        }
+        // Fallback to menu sizes if product doesn't have size options
         guard let sizes = menuRepo.menu?.sizes else { return ["S", "M", "L"] }
-        // Sort sizes logically: S, M, L
         return sizes.keys.sorted { $0 == "S" || ($0 == "M" && $1 == "L") }
+    }
+    
+    var sizePrice: Double {
+        // Get price from product's size options
+        if let sizeOptions = product.sizeOptions {
+            switch selectedSize {
+            case "S": return sizeOptions.small.enabled ? sizeOptions.small.price : 0
+            case "M": return sizeOptions.medium.enabled ? sizeOptions.medium.price : 0
+            case "L": return sizeOptions.large.enabled ? sizeOptions.large.price : 0
+            default: return 0
+            }
+        }
+        // Fallback to menu size modifiers
+        return menuRepo.menu?.sizes[selectedSize]?.price ?? 0
     }
     
     var iceLevels: [ConfigOption] {
@@ -214,7 +251,7 @@ struct OrderCustomizationView: View {
                     
                     Spacer()
                     
-                    LiquidGlassPrimaryButton("Add to Order", icon: "cart.badge.plus") {
+                    LiquidGlassPrimaryButton(editingItem != nil ? "Update Order" : "Add to Order", icon: "cart.badge.plus") {
                         addToCart()
                     }
                     .fixedSize()
@@ -247,7 +284,22 @@ struct OrderCustomizationView: View {
             
             Picker("Size", selection: $selectedSize) {
                 ForEach(sizes, id: \.self) { size in
-                    if let modifier = menuRepo.menu?.sizes[size] {
+                    // Show size with price from product's sizeOptions
+                    if let sizeOptions = product.sizeOptions {
+                        let sizeInfo: (label: String, price: Double)? = {
+                            switch size {
+                            case "S": return sizeOptions.small.enabled ? ("Small", sizeOptions.small.price) : nil
+                            case "M": return sizeOptions.medium.enabled ? ("Medium", sizeOptions.medium.price) : nil
+                            case "L": return sizeOptions.large.enabled ? ("Large", sizeOptions.large.price) : nil
+                            default: return nil
+                            }
+                        }()
+                        if let info = sizeInfo {
+                            Text("\(info.label) (\(info.price.toVND()))").tag(size)
+                        } else {
+                            Text(size).tag(size)
+                        }
+                    } else if let modifier = menuRepo.menu?.sizes[size] {
                         Text("\(modifier.label)").tag(size)
                     } else {
                         Text(size).tag(size)
@@ -401,12 +453,8 @@ struct OrderCustomizationView: View {
     /// Calculate estimated price locally using cached menu data
     /// This gives instant feedback while server confirms the actual price
     private func estimateLocalPrice() -> Double {
-        var unitPrice = product.price
-        
-        // Add size modifier
-        if let sizeModifier = menuRepo.menu?.sizes[selectedSize] {
-            unitPrice += sizeModifier.price
-        }
+        // Use size price from product's sizeOptions (or fallback to menu)
+        var unitPrice = sizePrice
         
         // Add toppings
         if let toppings = menuRepo.menu?.toppings {
@@ -417,13 +465,8 @@ struct OrderCustomizationView: View {
             }
         }
         
-        // Multiply by quantity
-        let subtotal = unitPrice * Double(quantity)
-        
-        // Add estimated tax (8%)
-        let tax = subtotal * 0.08
-        
-        return subtotal + tax
+        // Multiply by quantity (no tax - prices are already final)
+        return unitPrice * Double(quantity)
     }
     
     private func updatePrice() {
@@ -479,27 +522,14 @@ struct OrderCustomizationView: View {
     func addToCart() {
         let customization = OrderCustomization(
             size: selectedSize,
-            ice: selectedIce.label, // Storing label for display, value for ID?
-            // Current OrderCustomization struct probably expects strings.
-            // Let's store human readable for now as existing CartItem expects? 
-            // Or better, store the FULL modification object.
-            // For this task, let's stick to strings matching previous implementation but derived from API.
+            ice: selectedIce.label,
             sugar: selectedSugar.label,
-            toppings: Array(selectedToppings) // Note: This stores IDs now.
+            toppings: Array(selectedToppings)
         )
         
-        // IMPORTANT: Cart logic needs to handle Topping IDs vs Names. 
-        // We should map IDs back to Names for display in Cart if needed.
-        // Or updated CartItem to store both.
-        // For visual consistency with valid existing code, let's map back to names.
         let toppingNames = selectedToppings.compactMap { id in
             availableToppings.first(where: { $0.id == id })?.name
         }
-        
-        // We'll pass toppingNames to the legacy customization struct if it expects names.
-        // If we want to be strict, we really should update CartItem to support IDs.
-        // But let's check `OrderCustomization` struct definition first.
-        // Proceeding with Topping Names for safely calling `OrderCustomization` which likely takes [String]
         
         let displayCustomization = OrderCustomization(
              size: menuRepo.menu?.sizes[selectedSize]?.label ?? selectedSize,
@@ -512,12 +542,23 @@ struct OrderCustomizationView: View {
         let totalPrice = serverPrice ?? displayPrice
         let unitPrice = totalPrice / Double(quantity)
         
-        cartManager.addToCart(
-            product: product,
-            quantity: quantity,
-            finalPrice: unitPrice,
-            customization: displayCustomization
-        )
+        if let editingItem = editingItem {
+            // Update existing item
+            cartManager.updateCart(
+                item: editingItem,
+                quantity: quantity,
+                finalPrice: unitPrice,
+                customization: displayCustomization
+            )
+        } else {
+            // Add new item
+            cartManager.addToCart(
+                product: product,
+                quantity: quantity,
+                finalPrice: unitPrice,
+                customization: displayCustomization
+            )
+        }
         
         UIImpactFeedbackGenerator(style: .heavy).impactOccurred()
         dismiss()

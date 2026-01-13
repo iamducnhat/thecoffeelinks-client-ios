@@ -104,11 +104,45 @@ struct ProductCard: View {
                         .multilineTextAlignment(.leading)
                         .fixedSize(horizontal: false, vertical: true)
                     
-                    // Price
-                    Text(product.price.toVND())
-                        .font(.brandSans(16))
-                        .fontWeight(.bold)
-                        .foregroundStyle(Color.brandAccent)
+                    // Available Sizes
+                    if !product.availableSizes.isEmpty {
+                        HStack(spacing: 4) {
+                            ForEach(product.availableSizes, id: \.size) { size in
+                                Text(size.size.prefix(1))
+                                    .font(.brandSans(10))
+                                    .fontWeight(.medium)
+                                    .foregroundStyle(Color.coffeeDark.opacity(0.6))
+                                    .frame(width: 18, height: 18)
+                                    .background(Color.coffeeRich.opacity(0.1))
+                                    .clipShape(Circle())
+                            }
+                        }
+                    }
+                    
+                    // Price - show medium price or first available
+                    if let sizeOptions = product.sizeOptions {
+                        let displayPrice: Double? = {
+                            if sizeOptions.medium.enabled {
+                                return sizeOptions.medium.price
+                            } else if sizeOptions.large.enabled {
+                                return sizeOptions.large.price
+                            } else if sizeOptions.small.enabled {
+                                return sizeOptions.small.price
+                            }
+                            return nil
+                        }()
+                        
+                        if let price = displayPrice {
+                            Text(price.toVND())
+                                .font(.brandSans(16))
+                                .fontWeight(.bold)
+                                .foregroundStyle(Color.brandAccent)
+                        }
+                    } else {
+                        Text("Price varies")
+                            .font(.brandSans(14))
+                            .foregroundStyle(Color.secondary)
+                    }
                 }
             }
             .frame(width: width)

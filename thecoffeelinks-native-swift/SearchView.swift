@@ -258,11 +258,30 @@ struct ProductRow: View {
                 
                 Spacer()
                 
-                // Price
-                Text(product.price.toVND())
-                    .font(.brandSans(16))
-                    .fontWeight(.bold)
-                    .foregroundStyle(Color.brandAccent)
+                // Price - show medium price or first available
+                if let sizeOptions = product.sizeOptions {
+                    let displayPrice: Double? = {
+                        if sizeOptions.medium.enabled {
+                            return sizeOptions.medium.price
+                        } else if sizeOptions.large.enabled {
+                            return sizeOptions.large.price
+                        } else if sizeOptions.small.enabled {
+                            return sizeOptions.small.price
+                        }
+                        return nil
+                    }()
+                    
+                    if let price = displayPrice {
+                        Text(price.toVND())
+                            .font(.brandSans(16))
+                            .fontWeight(.bold)
+                            .foregroundStyle(Color.brandAccent)
+                    }
+                } else {
+                    Text("Price varies")
+                        .font(.brandSans(14))
+                        .foregroundStyle(Color.secondary)
+                }
             }
             .frame(maxWidth: .infinity, alignment: .leading)
         }
