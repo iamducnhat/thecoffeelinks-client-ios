@@ -50,7 +50,7 @@ struct HomeView: View {
                                 ScrollView(.horizontal, showsIndicators: false) {
                                     HStack(spacing: 16) {
                                         ForEach(viewModel.trendingProducts) { product in
-                                            ProductCard(product: product, width: 140)
+                                            ProductCard(product: product, width: 180)
                                         }
                                     }
                                     .padding(.horizontal)
@@ -63,7 +63,7 @@ struct HomeView: View {
                                 ScrollView(.horizontal, showsIndicators: false) {
                                     HStack(spacing: 16) {
                                         ForEach(viewModel.recentProducts) { product in
-                                            ProductCard(product: product, width: 140)
+                                            ProductCard(product: product, width: 180)
                                         }
                                     }
                                     .padding(.horizontal)
