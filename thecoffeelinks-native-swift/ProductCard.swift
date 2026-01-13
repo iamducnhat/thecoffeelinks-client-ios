@@ -15,20 +15,46 @@ struct ProductCard: View {
             VStack(alignment: .leading, spacing: 12) {
                 // Image with gradient overlay
                 ZStack(alignment: .bottomLeading) {
-                    AsyncImage(url: URL(string: product.displayImageUrl ?? "")) { img in
-                        img.resizable().aspectRatio(contentMode: .fill)
-                    } placeholder: {
-                        ZStack {
-                            Color.coffeeRich.opacity(0.05)
-                            Image(systemName: "cup.and.saucer.fill")
+                    AsyncImage(url: URL(string: product.displayImageUrl ?? "")) { phase in
+                        switch phase {
+                        case .success(let img):
+                            img
                                 .resizable()
-                                .aspectRatio(contentMode: .fit)
-                                .frame(width: 40)
-                                .foregroundStyle(Color.coffeeRich.opacity(0.2))
+                                .aspectRatio(contentMode: .fill)
+                                .frame(width: width, height: width)
+                                .clipShape(RoundedRectangle(cornerRadius: 20))
+                        case .failure(_):
+                            ZStack {
+                                Color.coffeeRich.opacity(0.05)
+                                Image(systemName: "cup.and.saucer.fill")
+                                    .resizable()
+                                    .aspectRatio(contentMode: .fit)
+                                    .frame(width: 40)
+                                    .foregroundStyle(Color.coffeeRich.opacity(0.2))
+                            }
+                            .frame(width: width, height: width)
+                            .clipShape(RoundedRectangle(cornerRadius: 20))
+                        case .empty:
+                            ZStack {
+                                Color.coffeeRich.opacity(0.05)
+                                ProgressView()
+                                    .progressViewStyle(CircularProgressViewStyle(tint: .gray))
+                            }
+                            .frame(width: width, height: width)
+                            .clipShape(RoundedRectangle(cornerRadius: 20))
+                        @unknown default:
+                            ZStack {
+                                Color.coffeeRich.opacity(0.05)
+                                Image(systemName: "cup.and.saucer.fill")
+                                    .resizable()
+                                    .aspectRatio(contentMode: .fit)
+                                    .frame(width: 40)
+                                    .foregroundStyle(Color.coffeeRich.opacity(0.2))
+                            }
+                            .frame(width: width, height: width)
+                            .clipShape(RoundedRectangle(cornerRadius: 20))
                         }
                     }
-                    .frame(width: width, height: width) // Square image
-                    .clipShape(RoundedRectangle(cornerRadius: 20))
                     
                     // Subtle gradient overlay
                     LinearGradient(

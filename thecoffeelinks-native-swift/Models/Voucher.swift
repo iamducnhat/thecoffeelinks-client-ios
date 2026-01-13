@@ -10,6 +10,7 @@ struct Voucher: Decodable, Identifiable {
     let minSpend: Double?
     let expiresAt: Date?
     let isUsed: Bool?
+    let imageUrl: String? // Added for voucher images
     
     var id: String {
         _id ?? code
@@ -24,5 +25,6 @@ struct Voucher: Decodable, Identifiable {
         case minSpend
         case expiresAt
         case isUsed
+        case imageUrl
     }
 }

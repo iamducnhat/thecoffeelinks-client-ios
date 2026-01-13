@@ -9,23 +9,38 @@ struct EventDetailView: View {
             // MARK: - Hero Section
             Section {
                 VStack(alignment: .center, spacing: 16) {
-                    // Image / Icon
-                    ZStack {
-                        RoundedRectangle(cornerRadius: 24)
+                    // Event Hero Image
+                    ZStack {                    RoundedRectangle(cornerRadius: 24)
                             .fill(Color.coffeeRich.opacity(0.05))
                             .frame(width: 120, height: 120)
                         
-                        if let imageUrl = event.imageUrl, let url = URL(string: imageUrl) {
-                            AsyncImage(url: url) { image in
-                                image.resizable()
-                                     .aspectRatio(contentMode: .fill)
-                            } placeholder: {
-                                ProgressView()
+                        if let imageUrl = event.imageUrl, !imageUrl.isEmpty {
+                            AsyncImage(url: URL(string: imageUrl)) { phase in
+                                switch phase {
+                                case .success(let image):
+                                    image
+                                        .resizable()
+                                        .aspectRatio(contentMode: .fill)
+                                        .frame(width: 120, height: 120)
+                                        .clipShape(RoundedRectangle(cornerRadius: 24))
+                                case .failure(_):
+                                    Image(systemName: "calendar")
+                                        .resizable()
+                                        .aspectRatio(contentMode: .fit)
+                                        .frame(width: 60, height: 60)
+                                        .foregroundStyle(Color.coffeeRich)
+                                case .empty:
+                                    ProgressView()
+                                @unknown default:
+                                    Image(systemName: "calendar")
+                                        .resizable()
+                                        .aspectRatio(contentMode: .fit)
+                                        .frame(width: 60, height: 60)
+                                        .foregroundStyle(Color.coffeeRich)
+                                }
                             }
-                            .frame(width: 120, height: 120)
-                            .clipShape(RoundedRectangle(cornerRadius: 24))
                         } else {
-                            Image("calendar")
+                            Image(systemName: "calendar")
                                 .resizable()
                                 .aspectRatio(contentMode: .fit)
                                 .frame(width: 60, height: 60)

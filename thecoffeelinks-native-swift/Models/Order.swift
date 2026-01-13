@@ -64,6 +64,7 @@ struct OrderItem: Decodable, Identifiable, Hashable {
     let orderId: String?
     let productId: String? // Restored
     let productName: String // Mapped from product_name
+    let productImage: String? // Added for product image in orders
     let quantity: Int
     let finalPrice: Double?
     // customization is stored as options_snapshot_json in DB.

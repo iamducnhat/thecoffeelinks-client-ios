@@ -131,16 +131,37 @@ struct VoucherCard: View {
     
     var body: some View {
         HStack {
-            // Icon / Value
-            Circle()
-                .fill(isGold ? Color.gold.opacity(0.2) : Color.sage.opacity(0.2))
-                .frame(width: 48, height: 48)
-                .overlay {
-                    Image(isGold ? "star" : "ticket")
+            // Voucher Image or Icon
+            ZStack {
+                Circle()
+                    .fill(isGold ? Color.gold.opacity(0.2) : Color.sage.opacity(0.2))
+                    .frame(width: 48, height: 48)
+                
+                if let imageUrl = voucher.imageUrl, !imageUrl.isEmpty {
+                    AsyncImage(url: URL(string: imageUrl)) { phase in
+                        switch phase {
+                        case .success(let image):
+                            image
+                                .resizable()
+                                .aspectRatio(contentMode: .fill)
+                                .frame(width: 48, height: 48)
+                                .clipShape(Circle())
+                        default:
+                            Image(systemName: isGold ? "star.fill" : "ticket.fill")
+                                .resizable()
+                                .aspectRatio(contentMode: .fit)
+                                .frame(width: 24, height: 24)
+                                .foregroundStyle(isGold ? Color.gold : Color.sage)
+                        }
+                    }
+                } else {
+                    Image(systemName: isGold ? "star.fill" : "ticket.fill")
                         .resizable()
+                        .aspectRatio(contentMode: .fit)
                         .frame(width: 24, height: 24)
                         .foregroundStyle(isGold ? Color.gold : Color.sage)
                 }
+            }
             
             VStack(alignment: .leading, spacing: 4) {
                 Text(voucher.description ?? "Voucher") 

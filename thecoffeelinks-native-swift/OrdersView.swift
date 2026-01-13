@@ -173,32 +173,80 @@ struct HistoryItem: View {
     let order: Order
     
     var body: some View {
-        HStack {
+        HStack(spacing: 12) {
+            // Product Image (first item's image if available)
+            if let firstItem = order.items.first, let imageUrl = firstItem.productImage, !imageUrl.isEmpty {
+                AsyncImage(url: URL(string: imageUrl)) { phase in
+                    switch phase {
+                    case .success(let image):
+                        image
+                            .resizable()
+                            .aspectRatio(contentMode: .fill)
+                            .frame(width: 50, height: 50)
+                            .clipShape(RoundedRectangle(cornerRadius: 8))
+                    case .failure(_), .empty:
+                        RoundedRectangle(cornerRadius: 8)
+                            .fill(Color.coffeeRich.opacity(0.1))
+                            .frame(width: 50, height: 50)
+                            .overlay {
+                                Image(systemName: "cup.and.saucer.fill")
+                                    .foregroundStyle(Color.coffeeRich.opacity(0.3))
+                                    .font(.system(size: 20))
+                            }
+                    @unknown default:
+                        RoundedRectangle(cornerRadius: 8)
+                            .fill(Color.coffeeRich.opacity(0.1))
+                            .frame(width: 50, height: 50)
+                            .overlay {
+                                Image(systemName: "cup.and.saucer.fill")
+                                    .foregroundStyle(Color.coffeeRich.opacity(0.3))
+                                    .font(.system(size: 20))
+                            }
+                    }
+                }
+            } else {
+                RoundedRectangle(cornerRadius: 8)
+                    .fill(Color.coffeeRich.opacity(0.1))
+                    .frame(width: 50, height: 50)
+                    .overlay {
+                        Image(systemName: "cup.and.saucer.fill")
+                            .foregroundStyle(Color.coffeeRich.opacity(0.3))
+                            .font(.system(size: 20))
+                    }
+            }
+            
             VStack(alignment: .leading, spacing: 4) {
                 Text(order.createdAt ?? "Just now")
                     .font(.caption)
                     .fontWeight(.medium)
                     .foregroundStyle(Color.secondary)
                 
-                // Show delivery option or address instead of items (which we don't have)
+                // Show delivery option or address instead of items
                 Text(order.deliveryAddress ?? order.deliveryOption.rawValue.replacingOccurrences(of: "_", with: " ").capitalized)
                     .font(.brandSans(16))
                     .foregroundStyle(Color.coffeeDark)
                     .lineLimit(1)
+                
+                // Show item count if available
+                if !order.items.isEmpty {
+                    Text("\(order.items.count) item\(order.items.count != 1 ? "s" : "")")
+                        .font(.caption2)
+                        .foregroundStyle(Color.secondary)
+                }
             }
             
             Spacer()
             
-            Text(order.total.toVND())
-                .font(.brandSans(16))
-                .fontWeight(.bold)
-                .foregroundStyle(Color.coffeeDark)
-            
-            Image("chevron_right")
-                .resizable()
-                .aspectRatio(contentMode: .fit)
-                .frame(width: 12, height: 12)
-                .foregroundStyle(.gray)
+            VStack(alignment: .trailing, spacing: 4) {
+                Text(order.total.toVND())
+                    .font(.brandSans(16))
+                    .fontWeight(.bold)
+                    .foregroundStyle(Color.coffeeDark)
+                
+                Image(systemName: "chevron.right")
+                    .font(.system(size: 12))
+                    .foregroundStyle(.gray)
+            }
         }
         .padding()
         .background(Color.white)

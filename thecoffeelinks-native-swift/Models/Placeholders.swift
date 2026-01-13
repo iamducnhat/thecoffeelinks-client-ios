@@ -45,7 +45,8 @@ extension Voucher {
         description: "50% Off First Order",
         minSpend: 0,
         expiresAt: Date(),
-        isUsed: false
+        isUsed: false,
+        imageUrl: nil
     )
 }
 

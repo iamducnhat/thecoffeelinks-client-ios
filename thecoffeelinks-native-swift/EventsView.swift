@@ -129,17 +129,48 @@ struct EventRow: View {
     
     var body: some View {
         HStack(spacing: 16) {
-            // Mini Thumbnail
+            // Event Image Thumbnail
             ZStack {
                 RoundedRectangle(cornerRadius: 12)
                     .fill(Color.coffeeRich.opacity(0.05))
                     .frame(width: 60, height: 60)
                 
-                Image("calendar") // Lucide icon placeholder
-                    .resizable()
-                    .aspectRatio(contentMode: .fit)
-                    .frame(width: 24, height: 24)
-                    .foregroundStyle(Color.coffeeRich)
+                if let imageUrl = event.imageUrl, !imageUrl.isEmpty {
+                    AsyncImage(url: URL(string: imageUrl)) { phase in
+                        switch phase {
+                        case .success(let image):
+                            image
+                                .resizable()
+                                .aspectRatio(contentMode: .fill)
+                                .frame(width: 60, height: 60)
+                                .clipShape(RoundedRectangle(cornerRadius: 12))
+                        case .failure(_):
+                            Image(systemName: "calendar")
+                                .resizable()
+                                .aspectRatio(contentMode: .fit)
+                                .frame(width: 24, height: 24)
+                                .foregroundStyle(Color.coffeeRich)
+                        case .empty:
+                            Image(systemName: "calendar")
+                                .resizable()
+                                .aspectRatio(contentMode: .fit)
+                                .frame(width: 24, height: 24)
+                                .foregroundStyle(Color.coffeeRich)
+                        @unknown default:
+                            Image(systemName: "calendar")
+                                .resizable()
+                                .aspectRatio(contentMode: .fit)
+                                .frame(width: 24, height: 24)
+                                .foregroundStyle(Color.coffeeRich)
+                        }
+                    }
+                } else {
+                    Image(systemName: "calendar")
+                        .resizable()
+                        .aspectRatio(contentMode: .fit)
+                        .frame(width: 24, height: 24)
+                        .foregroundStyle(Color.coffeeRich)
+                }
             }
             
             VStack(alignment: .leading, spacing: 4) {
