@@ -178,6 +178,9 @@ struct LoginView: View {
                 performAuth()
             }
             
+            // Social Login Section
+            socialLoginSection 
+            
             // Divider
             dividerSection
             
@@ -264,6 +267,45 @@ struct LoginView: View {
                         .font(.brandSans(14).weight(.semibold))
                         .foregroundStyle(Color.coffeeRich)
                 }
+            }
+        }
+    }
+    
+    // MARK: - Social Login Section
+    private var socialLoginSection: some View {
+        VStack(spacing: 12) {
+            HStack(spacing: 16) {
+                SocialLoginButton(icon: "apple.logo", label: "Apple")
+                SocialLoginButton(icon: "g.circle.fill", label: "Google") 
+                // LinkedIn - Blueprint P0
+                SocialLoginButton(icon: "l.circle.fill", label: "LinkedIn", color: .blue)
+            }
+        }
+        .padding(.top, 8)
+    }
+    
+    // MARK: - Social Login Component
+    struct SocialLoginButton: View {
+        let icon: String
+        let label: String
+        var color: Color = .primary
+        
+        var body: some View {
+            Button {
+                // Mock Action
+                let generator = UINotificationFeedbackGenerator()
+                generator.notificationOccurred(.success)
+            } label: {
+                Image(systemName: icon)
+                    .font(.system(size: 20))
+                    .foregroundStyle(color)
+                    .frame(width: 50, height: 50)
+                    .background(Color.neutral100)
+                    .clipShape(Circle())
+                    .overlay(
+                        Circle()
+                            .stroke(Color.neutral200, lineWidth: 1)
+                    )
             }
         }
     }

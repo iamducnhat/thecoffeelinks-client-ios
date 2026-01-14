@@ -19,15 +19,66 @@ class CartManager: ObservableObject {
         items.reduce(0) { $0 + ($1.finalPrice * Double($1.quantity)) }
     }
     
+    var totalItemCount: Int {
+        items.reduce(0) { $0 + $1.quantity }
+    }
+    
+    // MARK: - Item Merging
+    
+    /// Check if two items have identical traits (product, customization)
+    private func haveSameTraits(_ item1: CartItem, _ item2: CartItem) -> Bool {
+        // Check if same product
+        guard item1.product.id == item2.product.id else { return false }
+        
+        // Check if customizations are identical
+        let custom1 = item1.customization
+        let custom2 = item2.customization
+        
+        return custom1.size == custom2.size &&
+               custom1.ice == custom2.ice &&
+               custom1.sugar == custom2.sugar &&
+               custom1.toppings == custom2.toppings &&
+               abs(item1.finalPrice - item2.finalPrice) < 0.01 // Use small epsilon for Double comparison
+    }
+    
+    /// Consolidates all duplicate items in the cart by merging items with identical traits
+    private func consolidateItems() {
+        var consolidated: [CartItem] = []
+        
+        for item in items {
+            if let existingIndex = consolidated.firstIndex(where: { haveSameTraits($0, item) }) {
+                // Merge with existing consolidated item
+                let existing = consolidated[existingIndex]
+                let merged = CartItem(
+                    id: existing.id,
+                    product: existing.product,
+                    quantity: existing.quantity + item.quantity,
+                    finalPrice: existing.finalPrice,
+                    customization: existing.customization
+                )
+                consolidated[existingIndex] = merged
+            } else {
+                // Add as new consolidated item
+                consolidated.append(item)
+            }
+        }
+        
+        items = consolidated
+    }
+    
+    // MARK: - Cart Operations
+    
     func addToCart(product: Product, quantity: Int, finalPrice: Double, customization: OrderCustomization) {
-        let item = CartItem(
+        let newItem = CartItem(
             id: UUID(),
             product: product,
             quantity: quantity,
             finalPrice: finalPrice,
             customization: customization
         )
-        items.append(item)
+        
+        items.append(newItem)
+        consolidateItems()
     }
     
     func updateCart(item: CartItem, quantity: Int, finalPrice: Double, customization: OrderCustomization) {
@@ -40,6 +91,18 @@ class CartManager: ObservableObject {
                 customization: customization
             )
             items[index] = updated
+            consolidateItems()
+        }
+    }
+    
+    func updateQuantity(item: CartItem, delta: Int) {
+        if let index = items.firstIndex(where: { $0.id == item.id }) {
+            let newQuantity = items[index].quantity + delta
+            if newQuantity > 0 {
+                items[index].quantity = newQuantity
+            } else {
+                removeFromCart(item: item)
+            }
         }
     }
     
@@ -52,7 +115,28 @@ class CartManager: ObservableObject {
     func clearCart() {
         items.removeAll()
         deliveryNotes = ""
-        // Keep address/option potentially
+        voucherCode = ""
+        discountAmount = 0
+    }
+    
+    // MARK: - Vouchers
+    @Published var voucherCode: String = ""
+    @Published var discountAmount: Double = 0
+    @Published var voucherError: String?
+    
+    func applyVoucher(_ code: String) async {
+        guard !code.isEmpty else { return }
+        
+        // Mock validation
+        await MainActor.run {
+            if code.lowercased() == "coffee10" {
+                discountAmount = totalAmount * 0.1
+                voucherError = nil
+            } else {
+                discountAmount = 0
+                voucherError = "Invalid voucher code"
+            }
+        }
     }
     
     // MARK: - Checkout
@@ -66,19 +150,35 @@ class CartManager: ObservableObject {
         checkoutError = nil
         
         do {
+            // Validate Payment Method
+            if selectedDeliveryOption == .delivery && deliveryAddress.isEmpty {
+                throw NSError(domain: "Cart", code: 400, userInfo: [NSLocalizedDescriptionKey: "Delivery address required"])
+            }
+            
             let type = selectedDeliveryOption == .dineIn ? "dine_in" : "take_away"
-            // For now, hardcode tableId or paymentMethod or expose them as properties
             let paymentMethod = "apple_pay" 
+            
+            // Record order for Quick Order "Your Usual" algorithm
+            let itemsToRecord = items
+            
+            let finalTotal = totalAmount - discountAmount
             
             let orderId = try await OrderRepository.shared.createOrder(
                 items: items,
-                total: totalAmount,
+                total: finalTotal,
                 type: type,
                 tableId: "T12", // Placeholder as per prompt
                 paymentMethod: paymentMethod
             )
             
             print("Order Placed: \(orderId)")
+            
+            // Record for Quick Order Service
+            await MainActor.run {
+                QuickOrderService.shared.recordOrder(items: itemsToRecord)
+                QuickOrderService.shared.updateStreak()
+            }
+            
             clearCart()
             isPlacingOrder = false
             return true

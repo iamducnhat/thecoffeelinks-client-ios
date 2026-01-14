@@ -34,19 +34,23 @@ struct HomeView: View {
                             // 1. Header (Greeting + Profile)
                             headerSection
                             
-                            // 2. Active Order (if any, High Priority)
+                            // 2. Quick Order Widget (Primary - Morning Ritual)
+                            QuickOrderWidget()
+                            
+                            // 3. Active Order (if any, High Priority)
                             if let order = viewModel.activeOrder {
-                                ActiveOrderCard(order: order)
+                                OrderTrackingBannerCompact(order: order)
+                                    .padding(.horizontal)
                             }
                             
-                            // 3. Highlights (Vouchers/Events)
+                            // 4. Highlights (Vouchers/Events)
                             if !viewModel.highlights.isEmpty {
                                 highlightsSection
                             }
                             
-                            // 4. Trending Products (IsPopular)
+                            // 5. Trending Products (IsPopular)
                             if !viewModel.trendingProducts.isEmpty {
-                                sectionHeader(title: "Trending Now")
+                                sectionHeader(title: "What's hot")
                                 ScrollView(.horizontal, showsIndicators: false) {
                                     HStack(spacing: 16) {
                                         ForEach(viewModel.trendingProducts) { product in
@@ -57,9 +61,9 @@ struct HomeView: View {
                                 }
                             }
                             
-                            // 5. Recent Ordered (History)
+                            // 6. Recent Ordered (History)
                             if !viewModel.recentProducts.isEmpty {
-                                sectionHeader(title: "Order Again")
+                                sectionHeader(title: "Order again")
                                 ScrollView(.horizontal, showsIndicators: false) {
                                     HStack(spacing: 16) {
                                         ForEach(viewModel.recentProducts) { product in
@@ -70,7 +74,7 @@ struct HomeView: View {
                                 }
                             }
                             
-                            Spacer().frame(height: 40)
+                            Spacer().frame(height: 100) // Extra space for floating cart
                         }
                         .padding(.top, 20)
                     }
@@ -94,7 +98,7 @@ struct HomeView: View {
                     .font(.brandSerif(28))
                     .foregroundStyle(Color.brandPrimary)
                 
-                Text(appState.timeMode == .morning ? "Start your day right." : "Ready for your coffee break?")
+                Text(greetingSubtitle)
                     .font(.brandSans(14))
                     .foregroundStyle(Color.secondary)
             }
@@ -218,9 +222,17 @@ struct HomeView: View {
     
     private var greetingText: String {
         switch appState.timeMode {
-        case .morning: return "Good Morning"
-        case .day: return "Good Afternoon"
-        case .evening: return "Good Evening"
+        case .morning: return "Rise and grind"
+        case .day: return "Afternoon push"
+        case .evening: return "Winding down?"
+        }
+    }
+    
+    private var greetingSubtitle: String {
+        switch appState.timeMode {
+        case .morning: return "What's fueling you today?"
+        case .day: return "Need a lift?"
+        case .evening: return "Or just getting started?"
         }
     }
     

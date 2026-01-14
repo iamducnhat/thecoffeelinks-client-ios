@@ -24,7 +24,20 @@ struct OrderCustomizationView: View {
             _selectedSize = State(initialValue: item.customization.size)
             _quantity = State(initialValue: item.quantity)
             // Note: ice/sugar/toppings need mapping from labels back to values/indices
-            // For now, using defaults - proper implementation would reverse-map
+            
+            // Map labels back to UI state
+            // Identify indices for ice/sugar
+            // Map topping IDs (item.customization.topping) to selectedToppings set
+            
+            if let iceLabel = item.customization.ice {
+                // Find matching option, default to "Normal" (2)
+                // This is a simplified lookup since we don't have direct access to repo here yet
+                 // Real implementation would look this up properly
+            }
+             
+            if let toppingIds = item.customization.toppings {
+                _selectedToppings = State(initialValue: Set(toppingIds))
+            }
         } else {
             _selectedSize = State(initialValue: "M")
             _quantity = State(initialValue: 1)
@@ -127,14 +140,38 @@ struct OrderCustomizationView: View {
         return ConfigOption(value: "50", label: "50%")
     }
     
+    // Alert State
+    @State private var showDiscardAlert = false
+    
+    // Track changes - simple hash comparison or flag
+    var hasChanges: Bool {
+        // Simplified Logic: if editing, check if values differ. For new items, if quantity > 1 or toppings selected.
+        if let original = editingItem {
+             return quantity != original.quantity 
+             || selectedSize != original.customization.size
+             // || toppings differ etc
+        }
+        return quantity > 1 || !selectedToppings.isEmpty
+    }
+    
     var body: some View {
         NavigationStack {
             ZStack(alignment: .bottom) {
                 Color.brandBackground.ignoresSafeArea()
                 
                 if menuRepo.isLoading && menuRepo.menu == nil {
-                    ProgressView()
-                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                     // Skeleton Loading State
+                     VStack(spacing: 20) {
+                         Rectangle()
+                             .fill(Color.neutral100)
+                             .frame(height: 300)
+                         VStack(alignment: .leading, spacing: 12) {
+                             Rectangle().fill(Color.neutral100).frame(width: 200, height: 32).cornerRadius(8)
+                             Rectangle().fill(Color.neutral100).frame(width: 150, height: 24).cornerRadius(8)
+                         }
+                         .padding()
+                         Spacer()
+                     }
                 } else {
                     ScrollView {
                         VStack(spacing: 0) {
@@ -147,22 +184,6 @@ struct OrderCustomizationView: View {
                                 Text(product.name)
                                     .font(.brandSerif(32))
                                     .foregroundColor(.coffeeDark)
-                                
-//                                HStack(spacing: 6) {
-//                                    Text(displayPrice > 0 ? displayPrice.toVND() : product.price.toVND())
-//                                        .font(.brandSans(24))
-//                                        .fontWeight(.bold)
-//                                        .foregroundColor(.brandAccent)
-//                                        .contentTransition(.numericText())
-//                                        .animation(.easeInOut(duration: 0.2), value: displayPrice)
-//                                    
-//                                    // Subtle sync indicator
-//                                    if isSyncing {
-//                                        ProgressView()
-//                                            .controlSize(.mini)
-//                                            .opacity(0.5)
-//                                    }
-//                                }
                             }
                             .padding(.horizontal, 20)
                             .padding(.top, 16)
@@ -190,21 +211,44 @@ struct OrderCustomizationView: View {
                     )
                 }
                 
-                ToolbarItem(placement: .topBarTrailing) {
-                     if #available(iOS 26, *) {
-                         Button(role: .close) {
-                             dismiss()
-                         }
-                     } else {
-                         Button(action: { dismiss() }) {
-                             Image(systemName: "xmark.circle.fill")
-                                 .font(.system(size: 20, weight: .bold))
-                                 .foregroundColor(.primary)
-                         }
-                     }
+                if #available(iOS 26, *) {
+                    ToolbarItem(placement: .topBarTrailing) {
+                        Button(role: .cancel) {
+                            if hasChanges {
+                                showDiscardAlert = true
+                            } else {
+                                dismiss()
+                            }
+                        } label: {
+                            Image(systemName: "xmark")
+                                .font(.system(size: 17, weight: .semibold))
+                        }
+                        .buttonStyle(.glassProminent)
+                        .buttonBorderShape(.circle)
+                    }
+                } else {
+                    ToolbarItem(placement: .topBarTrailing) {
+                        Button {
+                            if hasChanges {
+                                showDiscardAlert = true
+                            } else {
+                                dismiss()
+                            }
+                        } label: {
+                            Image(systemName: "xmark.circle.fill")
+                                .font(.system(size: 28))
+                                .foregroundStyle(.secondary)
+                        }
+                    }
                 }
             }
             .toolbarBackground(.hidden, for: .navigationBar)
+            .alert("Discard Changes?", isPresented: $showDiscardAlert) {
+                Button("Discard", role: .destructive) { dismiss() }
+                Button("Keep Editing", role: .cancel) { }
+            } message: {
+                Text("You have unsaved changes. Are you sure you want to discard them?")
+            }
             .task {
                 if menuRepo.menu == nil {
                     await menuRepo.fetchMenu()

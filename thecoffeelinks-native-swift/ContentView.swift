@@ -12,118 +12,130 @@ struct ContentView: View {
     @ObservedObject private var authViewModel = AuthViewModel.shared
     @ObservedObject private var cartManager = CartManager.shared
     @StateObject private var prefetcher = DataPrefetcher.shared
+    @StateObject private var networkMonitor = NetworkMonitor.shared // Network Monitor
     
     // Search State
     @State private var searchText = ""
     @State private var isSetupLoading = false
     
     var body: some View {
-        Group {
+        ZStack(alignment: .top) { // Change to ZStack for Overlay
+            Group {
             if isSetupLoading && !prefetcher.isReady {
-                // Clean branded loading screen
+                // 0. Loading / Splash
                 SplashLoadingView()
-            } else if authViewModel.state == .authenticated {
-                if #available(iOS 26, *) {
-                    TabView {
-                        Tab("Home", image: "home") {
-                            NavigationStack {
-                                HomeView()
-                            }
-                        }
-                        
-                        Tab("Stores", image: "map_pin") {
-                            NavigationStack {
-                                StoresView()
-                            }
-                        }
-                        
-                        Tab("Network", image: "users") {
-                            NavigationStack {
-                                NetworkView()
-                            }
-                        }
-                        
-                        Tab("Search", image: "filter", role: .search) {
-                            NavigationStack {
-                                SearchView(enableInternalSearch: false)
-                                    .searchable(text: $searchText)
-                            }
-                        }
-                        
-                        Tab("Orders", image: "coffee") {
-                            NavigationStack {
-                                OrdersView()
-                            }
-                        }
-                    }
-                    .tint(Color.coffeeDark)
-                    .environmentObject(appState)
-                    .modifier(CartAccessoryModifier(isEnabled: !cartManager.items.isEmpty))
-                    .tabBarMinimizeBehavior(.automatic)
-                } else {
-                    // Legacy Fallback for < iOS 26
-                    ZStack(alignment: .bottom) {
-                        TabView {
-                            HomeView()
-                                .tabItem {
-                                    Label {
-                                        Text("Home")
-                                    } icon: {
-                                        Image("home")
-                                    }
-                                }
-                            
-                            StoresView()
-                                .tabItem {
-                                    Label {
-                                        Text("Stores")
-                                    } icon: {
-                                        Image("map_pin")
-                                    }
-                                }
-                            
-                            NetworkView()
-                                .tabItem {
-                                    Label {
-                                        Text("Network")
-                                    } icon: {
-                                        Image("users")
-                                    }
-                                }
-                            
-                            OrdersView()
-                                .tabItem {
-                                    Label {
-                                        Text("Orders")
-                                    } icon: {
-                                        Image("coffee")
-                                    }
-                                }
-                        }
-                        .tint(Color.coffeeDark)
-                        .environmentObject(appState)
-                        
-                        CartFloater()
-                    }
-                }
-            } else if authViewModel.state == .loading {
-                // Clean branded loading screen for auth check
-                SplashLoadingView()
-            } else {
+            } else if !appState.isOnboardingCompleted {
+                // 1. Onboarding Flow (Strict)
+                OnboardingView()
+            } else if authViewModel.state != .authenticated {
+                // 2. Authentication
                 LoginView()
+            } else if !appState.isInitialSetupCompleted {
+                // 3. Initial Setup
+                InitialSetupView()
+            } else {
+                // 4. Main App
+                mainAppContent
+            }
+            }
+            .onAppear {
+                Task { await authViewModel.checkSession() }
+            }
+            
+            // Offline Banner
+            if !networkMonitor.isConnected {
+                HStack {
+                    Image(systemName: "wifi.slash")
+                    Text("No Internet Connection")
+                        .font(.caption.bold())
+                }
+                .foregroundStyle(.white)
+                .padding(.horizontal, 16)
+                .padding(.vertical, 8)
+                .background(Color.red)
+                .cornerRadius(20)
+                .padding(.top, 50) // Adjust for Safe Area
+                .transition(.move(edge: .top))
+                .animation(.easeInOut, value: networkMonitor.isConnected)
+                .zIndex(999)
             }
         }
         .onAppear {
-            // Check if we need to do initial prefetch
-            if prefetcher.needsInitialFetch {
-                isSetupLoading = true
-                Task {
-                    await prefetcher.prefetchAll()
+             if prefetcher.needsInitialFetch {
+                 isSetupLoading = true
+                 Task { await prefetcher.prefetchAll() }
+             }
+        }
+    }
+    
+    // MARK: - Main App Content
+    @ViewBuilder
+    private var mainAppContent: some View {
+        if #available(iOS 26, *) {
+            TabView {
+                // TAB 1: HOME (Discovery Hub)
+                Tab("Home", image: "home") {
+                    NavigationStack {
+                        HomeView()
+                    }
+                }
+                
+                // TAB 2: ORDER (Transaction Engine)
+                Tab("Order", image: "coffee") {
+                    NavigationStack {
+                        OrderTabView()
+                    }
+                }
+                
+                // TAB 3: SPACE (Location + Booking)
+                Tab("Space", image: "map_pin") {
+                    NavigationStack {
+                        StoresView()
+                    }
+                }
+                
+                // TAB 4: CONNECT (Networking)
+                Tab("Connect", image: "network") {
+                    NavigationStack {
+                        ConnectView()
+                    }
+                }
+                
+                // TAB 5: PROFILE (Control Center)
+                Tab("Profile", image: "users") {
+                    NavigationStack {
+                        ProfileView()
+                    }
                 }
             }
-            
-            Task {
-                await authViewModel.checkSession()
+            .tint(Color.forestCanopy)
+            .environmentObject(appState)
+            .modifier(CartAccessoryModifier(isEnabled: !cartManager.items.isEmpty))
+            .tabBarMinimizeBehavior(.automatic)
+            .withRefillPrompt()
+        } else {
+            // Legacy Fallback for < iOS 26
+            ZStack(alignment: .bottom) {
+                TabView {
+                    HomeView()
+                        .tabItem { Label("Home", image: "home") }
+                    
+                    OrderTabView()
+                        .tabItem { Label("Order", image: "coffee") }
+                    
+                    StoresView()
+                        .tabItem { Label("Space", image: "map_pin") }
+                    
+                    ConnectView()
+                        .tabItem { Label("Connect", image: "network") }
+                    
+                    ProfileView()
+                        .tabItem { Label("Profile", image: "users") }
+                }
+                .tint(Color.forestCanopy)
+                .environmentObject(appState)
+                
+                CartFloater()
             }
         }
     }

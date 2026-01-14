@@ -168,7 +168,7 @@ struct CheckoutView: View {
                 .font(.brandSerif(32))
                 .foregroundColor(.coffeeDark)
             
-            Text("\(cartManager.items.count) item\(cartManager.items.count > 1 ? "s" : "") in your order")
+            Text("\(cartManager.totalItemCount) item\(cartManager.totalItemCount > 1 ? "s" : "") in your order")
                 .font(.brandSans(14))
                 .foregroundColor(.neutral500)
         }
@@ -480,7 +480,7 @@ struct CheckoutView: View {
                 // Price Breakdown
                 VStack(spacing: 8) {
                     breakdownRow(label: "Subtotal", value: cartManager.totalAmount)
-                    breakdownRow(label: "Tax (8%)", value: cartManager.totalAmount * 0.08)
+                    // Tax is included in price
                     
                     Divider()
                     
@@ -489,7 +489,7 @@ struct CheckoutView: View {
                             .font(.brandSerif(18))
                             .foregroundColor(.coffeeDark)
                         Spacer()
-                        Text((cartManager.totalAmount * 1.08).toVND())
+                        Text(cartManager.totalAmount.toVND())
                             .font(.brandSerif(22))
                             .fontWeight(.bold)
                             .foregroundColor(.coffeeDark)
@@ -603,7 +603,7 @@ struct CheckoutView: View {
         Task {
             do {
                 let service = OrderService()
-                let total = cartManager.totalAmount * 1.08 // Include tax
+                let total = cartManager.totalAmount
                 
                 // 1. Verify Payment
                 let token = try await service.verifyPayment(

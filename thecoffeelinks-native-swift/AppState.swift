@@ -29,6 +29,10 @@ class AppState: ObservableObject {
     @Published var userActivity: UserActivity = .idle
     @Published var userName: String = "Nhat"
     
+    // MARK: - App Flow Persistence
+    @AppStorage("isOnboardingCompleted") var isOnboardingCompleted: Bool = false
+    @AppStorage("isInitialSetupCompleted") var isInitialSetupCompleted: Bool = false
+    
     // MARK: - Derived "Thesis" States
     var topIntent: String? {
         switch userActivity {

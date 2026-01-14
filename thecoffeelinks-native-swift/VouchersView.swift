@@ -209,29 +209,53 @@ struct VoucherCard: View {
 
 struct QRCodeSheet: View {
     let code: String
+    @Environment(\.dismiss) private var dismiss
     
     var body: some View {
-        VStack(spacing: 24) {
-            Text("Scan to Redeem")
-                .font(.brandSerif(24))
-                .padding(.top, 32)
-            
-            Image("qr_code")
-                .resizable()
-                .scaledToFit()
-                .frame(width: 200, height: 200)
-                .foregroundStyle(Color.coffeeDark)
-            
-            Text(code)
-                .font(.brandSans(24).monospaced())
-                .fontWeight(.bold)
-                .foregroundStyle(Color.coffeeDark)
-            
-            Text("Show this code to the barista")
-                .font(.brandSans(14))
-                .foregroundStyle(.secondary)
-            
-            Spacer()
+        NavigationStack {
+            VStack(spacing: 24) {
+                Text("Scan to Redeem")
+                    .font(.brandSerif(24))
+                    .padding(.top, 32)
+                
+                Image("qr_code")
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: 200, height: 200)
+                    .foregroundStyle(Color.coffeeDark)
+                
+                Text(code)
+                    .font(.brandSans(24).monospaced())
+                    .fontWeight(.bold)
+                    .foregroundStyle(Color.coffeeDark)
+                
+                Text("Show this code to the barista")
+                    .font(.brandSans(14))
+                    .foregroundStyle(.secondary)
+                
+                Spacer()
+            }
+            .padding(.horizontal, 20)
+            .toolbar {
+                if #available(iOS 26, *) {
+                    ToolbarItem(placement: .cancellationAction) {
+                        Button(role: .cancel) { dismiss() } label: {
+                            Image(systemName: "xmark")
+                                .font(.system(size: 17, weight: .semibold))
+                        }
+                        .buttonStyle(.glassProminent)
+                        .buttonBorderShape(.circle)
+                    }
+                } else {
+                    ToolbarItem(placement: .topBarLeading) {
+                        Button { dismiss() } label: {
+                            Image(systemName: "xmark.circle.fill")
+                                .font(.system(size: 28))
+                                .foregroundStyle(.secondary)
+                        }
+                    }
+                }
+            }
         }
     }
 }

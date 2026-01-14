@@ -10,11 +10,11 @@ import SwiftUI
 // MARK: - Brand Colors - Sequoia Forest Palette
 extension Color {
     // Sequoia Forest Primary Colors - Calm, Grounded, Timeless
-    static let forestCanopy = Color(hex: 0x1F2D24)      /* Primary - deep forest */
-    static let forestFloor = Color(hex: 0x3A2E25)       /* Secondary - grounded earth */
-    static let morningFog = Color(hex: 0xF2EFEA)        /* Main background - light, spacious */
-    static let filteredLight = Color(hex: 0x6F8F72)     /* Accent - soft, green trust */
-    static let sunRay = Color(hex: 0xC2A14D)            /* Premium actions - rare gold */
+    static let forestCanopy = Color(hex: 0x0A4E5C)      /* Primary - Deep Success (Blueprint) */
+    static let forestFloor = Color(hex: 0x2D241E)       /* Secondary - Roasted Mocha (Blueprint) */
+    static let morningFog = Color(hex: 0xF8F4EC)        /* Main background - Cream Latte (Blueprint) */
+    static let filteredLight = Color(hex: 0x388E3C)     /* Accent - Growth Green (Blueprint) */
+    static let sunRay = Color(hex: 0xD4AF37)            /* Premium actions - Gold Badge (Blueprint) */
     
     // Neutrals - Desaturated, Natural
     static let neutral50 = Color(hex: 0xFAFAF8)
@@ -294,6 +294,12 @@ struct SplashLoadingView: View {
                         .tracking(0.5)
                         .foregroundStyle(Color.forestCanopy)
                     
+                    Text("Connect for Success")
+                        .font(.brandSans(14))
+                        .tracking(1.0)
+                        .foregroundStyle(Color.forestFloor.opacity(0.8))
+                        .padding(.top, -4)
+                    
                     // Subtle loading indicator dots - calm breathing
                     HStack(spacing: 8) {
                         ForEach(0..<3) { index in
@@ -320,6 +326,69 @@ struct SplashLoadingView: View {
         .onAppear {
             isAnimating = true
         }
+    }
+}
+
+// MARK: - Sheet Close Button (iOS 26 Native Style)
+/// A close button for sheets that uses the native iOS 26 close button when available,
+/// with a graceful fallback for older iOS versions.
+struct SheetCloseButton: View {
+    let action: () -> Void
+    var foregroundStyle: Color = .primary
+    
+    var body: some View {
+        if #available(iOS 26, *) {
+            Button(role: .cancel, action: action) {
+                Image(systemName: "xmark")
+                    .font(.system(size: 17, weight: .semibold))
+            }
+            .buttonStyle(.glassProminent)
+            .buttonBorderShape(.circle)
+        } else {
+            Button(action: action) {
+                Image(systemName: "xmark.circle.fill")
+                    .font(.system(size: 28))
+                    .foregroundStyle(foregroundStyle.opacity(0.6))
+            }
+        }
+    }
+}
+
+// MARK: - Sheet Close Toolbar Modifier
+/// A view modifier that adds a close button to the toolbar, using native iOS 26 style when available
+struct SheetCloseToolbarModifier: ViewModifier {
+    @Environment(\.dismiss) private var dismiss
+    var foregroundStyle: Color = .secondary
+    
+    func body(content: Content) -> some View {
+        content
+            .toolbar {
+                if #available(iOS 26, *) {
+                    ToolbarItem(placement: .cancellationAction) {
+                        Button(role: .cancel) { dismiss() } label: {
+                            Image(systemName: "xmark")
+                                .font(.system(size: 17, weight: .semibold))
+                        }
+                        .buttonStyle(.glassProminent)
+                        .buttonBorderShape(.circle)
+                    }
+                } else {
+                    ToolbarItem(placement: .topBarLeading) {
+                        Button { dismiss() } label: {
+                            Image(systemName: "xmark.circle.fill")
+                                .font(.system(size: 28))
+                                .foregroundStyle(foregroundStyle)
+                        }
+                    }
+                }
+            }
+    }
+}
+
+extension View {
+    /// Adds a sheet close button to the toolbar using native iOS 26 style when available
+    func sheetCloseButton(foregroundStyle: Color = .secondary) -> some View {
+        modifier(SheetCloseToolbarModifier(foregroundStyle: foregroundStyle))
     }
 }
 

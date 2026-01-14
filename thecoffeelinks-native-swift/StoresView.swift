@@ -278,108 +278,230 @@ struct StoreDetailView: View {
     let onClose: () -> Void
     let onNavigate: () -> Void
     
+    @State private var showOrderSheet = false
+    @State private var showBookingSheet = false // Added booking state
+    @ObservedObject private var cartManager = CartManager.shared
+    
     var body: some View {
         VStack(spacing: 0) {
             // Detailed States (Medium/Large)
             ScrollView {
                 VStack(alignment: .leading, spacing: 20) {
-                    // Header
-                    HStack(alignment: .top) {
-                        VStack(alignment: .leading, spacing: 4) {
-                            Text(store.name)
-                                .font(.brandSerif(28))
-                                .foregroundStyle(Color.coffeeDark)
-                            Text("Cafe • Bakery")
-                                .font(.brandSans(14))
-                                .foregroundStyle(.secondary)
+                    // Header with premium copy
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text(store.name)
+                            .font(.brandSerif(28))
+                            .foregroundStyle(Color.forestCanopy)
+                        
+                        HStack(spacing: 8) {
+                            // Availability badge (for MVP - always show as available)
+                            HStack(spacing: 4) {
+                                Circle()
+                                    .fill(Color.successGreen)
+                                    .frame(width: 8, height: 8)
+                                Text("Seats available")
+                                    .font(.caption.bold())
+                                    .foregroundStyle(Color.successGreen)
+                            }
+                            .padding(.horizontal, 10)
+                            .padding(.vertical, 4)
+                            .background(Color.successGreen.opacity(0.1))
+                            .cornerRadius(12)
+                            
+                            Text("•")
+                                .foregroundStyle(Color.neutral400)
+                            
+                            Text(formatDistance(store.distance))
+                                .font(.caption)
+                                .foregroundStyle(Color.neutral600)
                         }
                     }
                     .padding(.horizontal)
                     .padding(.top, 24)
                     .frame(maxWidth: .infinity, alignment: .leading)
+                    
+                    // Primary CTAs - Order from here + Navigate + Book
+                    HStack(spacing: 8) {
+                        // BOOK SPACE - Blueprint P1
+                        Button {
+                            showBookingSheet = true
+                            UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+                        } label: {
+                            VStack(spacing: 4) {
+                                Image(systemName: "calendar.badge.plus")
+                                    .font(.system(size: 20))
+                                Text("Book")
+                                    .font(.caption.bold())
+                            }
+                            .foregroundStyle(Color.forestCanopy)
+                            .frame(width: 70, height: 60)
+                            .background(Color.sunRay.opacity(0.15))
+                            .cornerRadius(14)
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 14)
+                                    .stroke(Color.sunRay.opacity(0.5), lineWidth: 1)
+                            )
+                        }
                         
-                    // Action Buttons
-                    HStack {
-                        ActionButton(title: "Drive", subtitle: "Directions", icon: "map_pin", color: Color.brandAccent, action: onNavigate)
-                        ActionButton(title: "Call", subtitle: "Store", icon: "coffee", color: .blue.opacity(0.1), textColor: .blue, iconColor: .blue, action: {
+                        // ORDER FROM HERE - Primary CTA
+                        Button {
+                            // Set this store for order
+                            cartManager.selectedStoreId = store.id
+                            
+                            // Start session tracking
+                            RefillPromptService.shared.startSession(storeId: store.id)
+                            
+                            showOrderSheet = true
+                            UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+                        } label: {
+                            HStack(spacing: 8) {
+                                Image(systemName: "cup.and.saucer.fill")
+                                    .font(.system(size: 16))
+                                VStack(alignment: .leading, spacing: 0) {
+                                    Text("Order from here")
+                                        .font(.subheadline.bold())
+                                    Text("Ready in ~5 min")
+                                        .font(.caption2)
+                                        .opacity(0.8)
+                                }
+                            }
+                            .foregroundStyle(.white)
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 14)
+                            .background(Color.forestCanopy.gradient)
+                            .cornerRadius(14)
+                        }
+                        
+                        // Navigate - Secondary
+                        Button(action: onNavigate) {
+                            VStack(spacing: 4) {
+                                Image(systemName: "arrow.triangle.turn.up.right.diamond.fill")
+                                    .font(.system(size: 20))
+                                Text("Go")
+                                    .font(.caption.bold())
+                            }
+                            .foregroundStyle(Color.forestCanopy)
+                            .frame(width: 70, height: 60)
+                            .background(Color.filteredLight.opacity(0.3))
+                            .cornerRadius(14)
+                        }
+                    }
+                    .padding(.horizontal)
+                    
+                    // Quick Info
+                    HStack(spacing: 16) {
+                        InfoPill(icon: "clock", text: store.openingHours ?? "Open now", color: .successGreen)
+                        InfoPill(icon: "star.fill", text: "4.8", color: .sunRay)
+                        InfoPill(icon: "creditcard", text: "Apple Pay", color: .neutral600)
+                    }
+                    .padding(.horizontal)
+                    
+                    // Image Carousel
+                    ScrollView(.horizontal, showsIndicators: false) {
+                        HStack(spacing: 12) {
+                            ForEach(0..<3) { _ in
+                                RoundedRectangle(cornerRadius: 16)
+                                    .fill(Color.neutral100)
+                                    .frame(width: 220, height: 150)
+                                    .overlay {
+                                        if let url = store.imageUrl, !url.isEmpty {
+                                            AsyncImage(url: URL(string: url)) { img in
+                                                img.resizable().aspectRatio(contentMode: .fill)
+                                            } placeholder: {
+                                                ProgressView()
+                                            }
+                                        } else {
+                                            Image(systemName: "photo")
+                                                .font(.title)
+                                                .foregroundStyle(Color.neutral300)
+                                        }
+                                    }
+                                    .clipped()
+                                    .cornerRadius(16)
+                            }
+                        }
+                        .padding(.horizontal)
+                    }
+                    
+                    // About Section with premium copy
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text("About this space")
+                            .font(.headline)
+                            .foregroundStyle(Color.forestCanopy)
+                        
+                        Text("A premium workspace designed for focus. High-speed WiFi, comfortable seating, and the perfect atmosphere for your productive hours.")
+                            .font(.subheadline)
+                            .foregroundStyle(Color.neutral600)
+                            .lineSpacing(4)
+                    }
+                    .padding(.horizontal)
+                    
+                    // Call Store
+                    if store.phoneNumber != nil {
+                        Button {
                             if let phone = store.phoneNumber {
                                 URL(string: "tel://\(phone.replacingOccurrences(of: " ", with: ""))").map { UIApplication.shared.open($0) }
                             }
-                        })
+                        } label: {
+                            HStack {
+                                Image(systemName: "phone.fill")
+                                Text("Call store")
+                                Spacer()
+                                Image(systemName: "chevron.right")
+                                    .font(.caption)
+                            }
+                            .foregroundStyle(Color.forestCanopy)
+                            .padding()
+                            .background(Color.white)
+                            .cornerRadius(12)
+                            .shadow(color: Color.forestCanopy.opacity(0.05), radius: 8, x: 0, y: 2)
+                        }
+                        .padding(.horizontal)
                     }
-                    .padding(.horizontal)
-                        
-                        // Info Grid
-                        Grid(alignment: .leading, horizontalSpacing: 20, verticalSpacing: 12) {
-                            GridRow {
-                                InfoItem(label: "Hours", value: store.openingHours ?? "Open", valueColor: .green)
-                                InfoItem(label: "Distance", value: formatDistance(store.distance))
-                            }
-                            GridRow {
-                                InfoItem(label: "Ratings", value: "93%", icon: "star")
-                                InfoItem(label: "Accepts", value: "Apple Pay", icon: "ticket")
-                            }
-                        }
-                        .padding(.horizontal)
-                        
-                        // Image Carousel
-                        ScrollView(.horizontal, showsIndicators: false) {
-                            HStack(spacing: 12) {
-                                ForEach(0..<3) { _ in
-                                    RoundedRectangle(cornerRadius: 16)
-                                        .fill(Color.coffeeRich.opacity(0.05))
-                                        .frame(width: 250, height: 180)
-                                        .overlay {
-                                            if let url = store.imageUrl, !url.isEmpty {
-                                                AsyncImage(url: URL(string: url)) { img in
-                                                    img.resizable().aspectRatio(contentMode: .fill)
-                                                } placeholder: {
-                                                    ProgressView()
-                                                }
-                                            } else {
-                                                Image("camera")
-                                                    .resizable()
-                                                    .renderingMode(.template)
-                                                    .aspectRatio(contentMode: .fit)
-                                                    .frame(width: 32, height: 32)
-                                                    .foregroundStyle(Color.coffeeRich.opacity(0.1))
-                                            }
-                                        }
-                                        .clipped()
-                                        .cornerRadius(16)
-                                }
-                            }
-                            .padding(.horizontal)
-                        }
-                        
-                        // About Section
-                        VStack(alignment: .leading, spacing: 8) {
-                            Text("About")
-                                .font(.brandSerif(20))
-                                .foregroundStyle(Color.coffeeDark)
-                            Text("The Coffee Links is your premium destination for the finest beans and a luxurious atmosphere. Located in the heart of the city, we offer a unique experience for coffee lovers.")
-                                .font(.brandSans(14))
-                                .foregroundStyle(.secondary)
-                                .lineSpacing(4)
-                        }
-                        .padding(.horizontal)
-                        
-                        Spacer(minLength: 50)
+                    
+                    Spacer(minLength: 50)
                 }
             }
-            //.background(Color.white)
             .cornerRadius(24, corners: [.topLeft, .topRight])
             .ignoresSafeArea(edges: .bottom)
+        }
+        .sheet(isPresented: $showOrderSheet) {
+            SearchView(enableInternalSearch: true)
+        }
+        .sheet(isPresented: $showBookingSheet) {
+            BookingSheet(storeName: store.name)
         }
     }
     
     private func formatDistance(_ distance: Double?) -> String {
-        guard let d = distance else { return "-- km" }
+        guard let d = distance else { return "Nearby" }
         if d < 1000 {
-            return "\(Int(d))m"
+            return "\(Int(d))m away"
         } else {
-            return String(format: "%.1f km", d / 1000).replacingOccurrences(of: ".", with: ",")
+            return String(format: "%.1f km away", d / 1000).replacingOccurrences(of: ".", with: ",")
         }
+    }
+}
+
+// MARK: - Info Pill Component
+struct InfoPill: View {
+    let icon: String
+    let text: String
+    let color: Color
+    
+    var body: some View {
+        HStack(spacing: 4) {
+            Image(systemName: icon)
+                .font(.caption)
+                .foregroundStyle(color)
+            Text(text)
+                .font(.caption)
+                .foregroundStyle(Color.neutral700)
+        }
+        .padding(.horizontal, 10)
+        .padding(.vertical, 6)
+        .background(Color.neutral100)
+        .cornerRadius(8)
     }
 }
 
@@ -590,4 +712,110 @@ struct InternalMapView: UIViewRepresentable {
 
 #Preview {
     StoresView()
+}
+
+// MARK: - Booking Sheet (Mock)
+struct BookingSheet: View {
+    let storeName: String
+    @Environment(\.dismiss) var dismiss
+    
+    @State private var selectedDate = Date()
+    @State private var selectedSlot = "09:00 AM"
+    @State private var peopleCount = 1
+    @State private var isBooked = false
+    
+    let slots = ["09:00 AM", "11:00 AM", "02:00 PM", "04:00 PM"]
+    
+    var body: some View {
+        NavigationStack {
+            VStack(spacing: 24) {
+                if !isBooked {
+                    // Form
+                    VStack(alignment: .leading, spacing: 20) {
+                        DatePicker("Date", selection: $selectedDate, displayedComponents: .date)
+                            .tint(Color.forestCanopy)
+                        
+                        VStack(alignment: .leading, spacing: 10) {
+                            Text("Time Slot")
+                                .font(.headline)
+                            ScrollView(.horizontal, showsIndicators: false) {
+                                HStack {
+                                    ForEach(slots, id: \.self) { slot in
+                                        Button {
+                                            selectedSlot = slot
+                                        } label: {
+                                            Text(slot)
+                                                .padding(.horizontal, 16)
+                                                .padding(.vertical, 8)
+                                                .background(selectedSlot == slot ? Color.forestCanopy : Color.neutral100)
+                                                .foregroundStyle(selectedSlot == slot ? .white : .primary)
+                                                .cornerRadius(8)
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        
+                        Stepper("People: \(peopleCount)", value: $peopleCount, in: 1...10)
+                    }
+                    .padding()
+                    
+                    Spacer()
+                    
+                    Button {
+                        // Mock Booking Action
+                        withAnimation {
+                            isBooked = true
+                        }
+                    } label: {
+                        Text("Confirm Booking")
+                            .font(.headline)
+                            .foregroundStyle(.white)
+                            .frame(maxWidth: .infinity)
+                            .padding()
+                            .background(Color.forestCanopy)
+                            .cornerRadius(16)
+                    }
+                    .padding()
+                } else {
+                    // Success State
+                    VStack(spacing: 20) {
+                        Image(systemName: "checkmark.circle.fill")
+                            .font(.system(size: 64))
+                            .foregroundStyle(Color.successGreen)
+                        Text("Booking Confirmed!")
+                            .font(.title2.bold())
+                        Text("You're booked at \(storeName)")
+                            .foregroundStyle(.secondary)
+                        
+                        Button("Done") {
+                            dismiss()
+                        }
+                        .buttonStyle(.bordered)
+                        .padding(.top)
+                    }
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                }
+            }
+            .navigationTitle("Reserve Space")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                if #available(iOS 26, *) {
+                    ToolbarItem(placement: .cancellationAction) {
+                        Button(role: .cancel) { dismiss() } label: {
+                            Image(systemName: "xmark")
+                                .font(.system(size: 17, weight: .semibold))
+                        }
+                        .buttonStyle(.glassProminent)
+                        .buttonBorderShape(.circle)
+                    }
+                } else {
+                    ToolbarItem(placement: .cancellationAction) {
+                        Button("Close") { dismiss() }
+                    }
+                }
+            }
+        }
+        .presentationDetents([.medium])
+    }
 }

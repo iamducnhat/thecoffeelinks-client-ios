@@ -10,6 +10,7 @@ import SwiftUI
 struct ProfileView: View {
     @StateObject private var viewModel = ProfileViewModel()
     @State private var isNetworkingVisible: Bool = true
+    @State private var showDigitalCard = false
     @EnvironmentObject var appState: AppState // Keep for now if needed for other global state
     
     var body: some View {
@@ -135,7 +136,30 @@ struct ProfileView: View {
                     
                     // MARK: - Account
                     Section {
-                        NavigationLink { Text("Orders History") } label: {
+                        // Digital Card
+                        Button {
+                            showDigitalCard = true
+                        } label: {
+                            Label {
+                                HStack {
+                                    Text("Member Card")
+                                        .font(.brandSans(16))
+                                        .foregroundStyle(Color.coffeeDark)
+                                    Spacer()
+                                    Text("Scan at store")
+                                        .font(.caption)
+                                        .foregroundStyle(Color.secondary)
+                                }
+                            } icon: {
+                                Image(systemName: "qrcode")
+                                    .resizable()
+                                    .aspectRatio(contentMode: .fit)
+                                    .frame(width: 20, height: 20)
+                                    .foregroundStyle(Color.forestCanopy)
+                            }
+                        }
+                        
+                        NavigationLink { OrdersView() } label: {
                             Label {
                                 Text("Order History")
                                     .font(.brandSans(16))
@@ -149,7 +173,40 @@ struct ProfileView: View {
                             }
                         }
                         
-                        NavigationLink { Text("Settings") } label: {
+                        NavigationLink { PointsView() } label: {
+                            Label {
+                                HStack {
+                                    Text("Rewards")
+                                        .font(.brandSans(16))
+                                        .foregroundStyle(Color.coffeeDark)
+                                    Spacer()
+                                    Text("\(viewModel.user?.points ?? 0) pts")
+                                        .font(.caption.bold())
+                                        .foregroundStyle(Color.forestCanopy)
+                                }
+                            } icon: {
+                                Image(systemName: "star.fill")
+                                    .resizable()
+                                    .aspectRatio(contentMode: .fit)
+                                    .frame(width: 20, height: 20)
+                                    .foregroundStyle(Color.sunRay)
+                            }
+                        }
+                        
+                        NavigationLink { VouchersView() } label: {
+                            Label {
+                                Text("Vouchers")
+                                    .font(.brandSans(16))
+                            } icon: {
+                                Image(systemName: "ticket.fill")
+                                    .resizable()
+                                    .aspectRatio(contentMode: .fit)
+                                    .frame(width: 20, height: 20)
+                                    .foregroundStyle(Color.sunRay)
+                            }
+                        }
+                        
+                        NavigationLink { SettingsView() } label: {
                             Label {
                                 Text("Settings")
                                     .font(.brandSans(16))
@@ -196,6 +253,9 @@ struct ProfileView: View {
             .navigationBarTitleDisplayMode(.inline)
             .task {
                 await viewModel.fetchProfile()
+            }
+            .sheet(isPresented: $showDigitalCard) {
+                DigitalCardView()
             }
         }
     }

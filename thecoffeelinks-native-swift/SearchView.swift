@@ -9,7 +9,7 @@ import SwiftUI
 
 struct SearchView: View {
     // Mode 1: Driven by external native search bar (iOS 26+)
-    var externalQuery: String = ""
+    @Binding var externalQuery: String
     
     // Mode 2: Self-contained with internal Header (Legacy)
     var enableInternalSearch: Bool = false
@@ -18,8 +18,8 @@ struct SearchView: View {
     @State private var internalQuery: String = ""
     @Environment(\.dismiss) var dismiss
     
-    init(externalQuery: String = "", enableInternalSearch: Bool = false) {
-        self.externalQuery = externalQuery
+    init(externalQuery: Binding<String> = .constant(""), enableInternalSearch: Bool = false) {
+        self._externalQuery = externalQuery
         self.enableInternalSearch = enableInternalSearch
     }
     
@@ -28,7 +28,7 @@ struct SearchView: View {
     }
     
     var body: some View {
-        ZStack(alignment: .top) {
+        ZStack {
             Color.brandBackground.ignoresSafeArea()
             
             VStack(spacing: 0) {
@@ -105,42 +105,35 @@ struct SearchView: View {
                 }
                 .background(Color.brandBackground)
                 
-                // MAIN CONTENT LIST
-                if viewModel.isLoading {
-                    ProgressView()
-                        .frame(maxWidth: .infinity, maxHeight: .infinity)
-                } else if let error = viewModel.errorMessage {
-                    VStack(spacing: 12) {
-                        Image("bell")
-                            .resizable()
-                            .renderingMode(.template)
-                            .aspectRatio(contentMode: .fit)
-                            .frame(width: 40, height: 40)
-                            .foregroundStyle(.secondary)
-                        Text("Expected error")
-                            .font(.brandSerif(18))
-                        Text(error)
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
-                            .multilineTextAlignment(.center)
-                        
-                        Button("Retry") { Task { await viewModel.search() } }
-                            .buttonStyle(.bordered)
-                    }
-                    .padding()
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
-                } else {
-                    ScrollView {
-                        LazyVStack(spacing: 16) {
-                            ForEach(viewModel.filteredProducts) { product in
-                                ProductRow(product: product)
-                                    .padding(.horizontal)
+                // SCROLLABLE CONTENT - Takes remaining space
+                Group {
+                    if viewModel.isLoading {
+                        ProgressView()
+                    } else if let error = viewModel.errorMessage {
+                        ScrollView {
+                            VStack(spacing: 12) {
+                                Image("bell")
+                                    .resizable()
+                                    .renderingMode(.template)
+                                    .aspectRatio(contentMode: .fit)
+                                    .frame(width: 40, height: 40)
+                                    .foregroundStyle(.secondary)
+                                Text("Expected error")
+                                    .font(.brandSerif(18))
+                                Text(error)
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                                    .multilineTextAlignment(.center)
+                                
+                                Button("Retry") { Task { await viewModel.search() } }
+                                    .buttonStyle(.bordered)
                             }
+                            .padding()
+                            .frame(maxWidth: .infinity)
                         }
-                        .padding(.top, 8)
-                        
-                        if viewModel.filteredProducts.isEmpty {
-                            LazyVStack(spacing: 16) {
+                    } else if viewModel.filteredProducts.isEmpty {
+                        ScrollView {
+                            VStack(spacing: 16) {
                                 Image("filter")
                                     .resizable()
                                     .renderingMode(.template)
@@ -150,11 +143,25 @@ struct SearchView: View {
                                 Text("No products found")
                                     .font(.brandSans(16))
                                     .foregroundStyle(.secondary)
+                                Spacer()
                             }
                             .padding(.top, 60)
+                            .frame(maxWidth: .infinity, maxHeight: .infinity)
+                        }
+                    } else {
+                        ScrollView {
+                            LazyVStack(spacing: 16) {
+                                ForEach(viewModel.filteredProducts) { product in
+                                    ProductRow(product: product)
+                                        .padding(.horizontal)
+                                }
+                            }
+                            .padding(.top, 8)
+                            .padding(.bottom, 20)
                         }
                     }
                 }
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
             }
         }
         .onChange(of: externalQuery) { newValue in
