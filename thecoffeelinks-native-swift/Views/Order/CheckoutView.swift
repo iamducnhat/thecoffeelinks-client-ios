@@ -24,18 +24,47 @@ struct CheckoutView: View {
                 if cartManager.items.isEmpty {
                     emptyState
                 } else {
-                    ScrollView {
-                        VStack(spacing: 0) {
+                    GeometryReader { g in
+                        ScrollView {
                             // Header
                             checkoutHeader
                             
-                            // Content
+                            // Order Items Section Header (app style)
+                            sectionHeader(title: "Order Items")
+                                .padding(.horizontal, 20)
+                                .padding(.top, 24)
+                            
+                            // Custom List-style view with swipe-to-delete
+                            VStack(spacing: 0) {
+                                ForEach(cartManager.items) { item in
+                                    SwipeToDeleteRow(
+                                        onDelete: {
+                                            withAnimation(.easeInOut(duration: 0.3)) {
+                                                cartManager.removeFromCart(item: item)
+                                            }
+                                        }
+                                    ) {
+                                        cartItemRow(item: item) {
+                                            UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                                            itemToEdit = item
+                                            showEditCustomization = true
+                                        }
+                                        .background(Color.white)
+                                    }
+                                    
+                                    if item.id != cartManager.items.last?.id {
+                                        Divider()
+                                            .padding(.leading, 84)
+                                    }
+                                }
+                            }
+                            .background(Color.white)
+                            .cornerRadius(12)
+                            .padding(.horizontal, 20)
+                            .padding(.top, 12)
+                            
+                            // Other sections outside List
                             VStack(spacing: 24) {
-                                // Order Items Section
-                                orderItemsSection
-                                
-                                Divider().padding(.horizontal, 20)
-                                
                                 // Order Method Section
                                 orderMethodSection
                                 
@@ -49,8 +78,8 @@ struct CheckoutView: View {
                                 // Notes Section
                                 notesSection
                                 
-                                // Bottom Spacer - dynamic height based on bottom bar
-                                Color.clear.frame(height: bottomBarHeight+40)
+                                // Bottom Spacer
+                                Color.clear.frame(height: bottomBarHeight + 40)
                             }
                             .padding(.top, 24)
                         }
@@ -148,152 +177,121 @@ struct CheckoutView: View {
         .padding(.top, 16)
     }
     
-    // MARK: - Order Items Section
+    // MARK: - Cart Item Row
     
-    var orderItemsSection: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            sectionHeader(title: "Order Items")
-            
-            GeometryReader { geometry in
-                List {
-                    ForEach(cartManager.items) { item in
-                        cartItemRow(item: item)
-                            .listRowInsets(EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0))
-                            .listRowSeparator(.hidden)
-                            .listRowBackground(Color.clear)
-                            .contentShape(Rectangle())
-                            .onTapGesture {
-                                UIImpactFeedbackGenerator(style: .light).impactOccurred()
-                                itemToEdit = item
-                                showEditCustomization = true
-                            }
-                            .swipeActions(edge: .trailing, allowsFullSwipe: true) {
-                                Button(role: .destructive) {
-                                    withAnimation(.easeInOut(duration: 0.3)) {
-                                        cartManager.removeFromCart(item: item)
-                                    }
-                                } label: {
-                                    Label("Delete", systemImage: "trash")
-                                }
-                            }
+    func cartItemRow(item: CartItem, onProductTap: @escaping () -> Void) -> some View {
+        VStack(spacing: 12) {
+            // Product area - tappable for edit
+            HStack(alignment: .top, spacing: 12) {
+                // Product Image
+                AsyncImage(url: URL(string: item.product.displayImageUrl ?? "")) { image in
+                    image
+                        .resizable()
+                        .aspectRatio(contentMode: .fill)
+                } placeholder: {
+                    Rectangle()
+                        .fill(Color.neutral200)
+                }
+                .frame(width: 56, height: 56)
+                .cornerRadius(10)
+                
+                // Product Info
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(item.product.name)
+                        .font(.brandSans(16))
+                        .fontWeight(.medium)
+                        .foregroundColor(.coffeeDark)
+                        .lineLimit(1)
+                    
+                    // Customization details
+                    HStack(spacing: 4) {
+                        Text(item.customization.size)
+                            .padding(.horizontal, 6)
+                            .padding(.vertical, 2)
+                            .background(Color.neutral100)
+                            .cornerRadius(4)
                         
-                        if item.id != cartManager.items.last?.id {
-                            Divider()
-                                .padding(.leading, 72)
-                                .listRowInsets(EdgeInsets())
-                                .listRowBackground(Color.clear)
+                        if let ice = item.customization.ice {
+                            Text(ice)
+                                .padding(.horizontal, 6)
+                                .padding(.vertical, 2)
+                                .background(Color.neutral100)
+                                .cornerRadius(4)
+                        }
+                        
+                        if let sugar = item.customization.sugar {
+                            Text(sugar)
+                                .padding(.horizontal, 6)
+                                .padding(.vertical, 2)
+                                .background(Color.neutral100)
+                                .cornerRadius(4)
                         }
                     }
+                    .font(.caption2)
+                    .foregroundColor(.neutral600)
+                    
+                    if let toppings = item.customization.toppings, !toppings.isEmpty {
+                        Text("+ \(toppings.joined(separator: ", "))")
+                            .font(.caption)
+                            .foregroundColor(.neutral500)
+                            .lineLimit(1)
+                    }
                 }
-                .listStyle(.plain)
-                .scrollDisabled(true)
-                .frame(width: geometry.size.width, height: CGFloat(cartManager.items.count) * 120)
+                
+                Spacer()
+                
+                // Edit indicator
+                Image(systemName: "chevron.right")
+                    .font(.system(size: 14, weight: .medium))
+                    .foregroundColor(.neutral400)
             }
-            .frame(height: CGFloat(cartManager.items.count) * 120)
-            .background(Color.white)
-            .cornerRadius(16)
-            .shadow(color: Color.black.opacity(0.04), radius: 8, x: 0, y: 2)
-        }
-        .padding(.horizontal, 20)
-    }
-    
-    func cartItemRow(item: CartItem) -> some View {
-        HStack(alignment: .top, spacing: 12) {
-            // Product Image
-            AsyncImage(url: URL(string: item.product.displayImageUrl ?? "")) { image in
-                image
-                    .resizable()
-                    .aspectRatio(contentMode: .fill)
-            } placeholder: {
-                Rectangle()
-                    .fill(Color.neutral200)
+            .contentShape(Rectangle())
+            .onTapGesture {
+                onProductTap()
             }
-            .frame(width: 56, height: 56)
-            .cornerRadius(10)
             
-            // Product Info
-            VStack(alignment: .leading, spacing: 4) {
-                Text(item.product.name)
-                    .font(.brandSans(16))
-                    .fontWeight(.medium)
-                    .foregroundColor(.coffeeDark)
-                    .lineLimit(1)
-                
-                // Customization details
-                HStack(spacing: 4) {
-                    Text(item.customization.size)
-                        .padding(.horizontal, 6)
-                        .padding(.vertical, 2)
-                        .background(Color.neutral100)
-                        .cornerRadius(4)
-                    
-                    if let ice = item.customization.ice {
-                        Text(ice)
-                            .padding(.horizontal, 6)
-                            .padding(.vertical, 2)
-                            .background(Color.neutral100)
-                            .cornerRadius(4)
-                    }
-                    
-                    if let sugar = item.customization.sugar {
-                        Text(sugar)
-                            .padding(.horizontal, 6)
-                            .padding(.vertical, 2)
-                            .background(Color.neutral100)
-                            .cornerRadius(4)
-                    }
-                }
-                .font(.caption2)
-                .foregroundColor(.neutral600)
-                
-                if let toppings = item.customization.toppings, !toppings.isEmpty {
-                    Text("+ \(toppings.joined(separator: ", "))")
-                        .font(.caption)
-                        .foregroundColor(.neutral500)
-                        .lineLimit(1)
-                }
-                
+            // Bottom row: Price and Quantity
+            HStack {
                 // Price
                 Text(item.finalPrice.toVND())
-                    .font(.brandSans(14))
+                    .font(.brandSans(16))
                     .fontWeight(.semibold)
                     .foregroundColor(.brandAccent)
-                    .padding(.top, 2)
-            }
-            
-            Spacer()
-            
-            // Quantity Stepper
-            HStack(spacing: 12) {
-                Button(action: {
-                    UIImpactFeedbackGenerator(style: .light).impactOccurred()
-                    updateQuantity(for: item, delta: -1)
-                }) {
-                    Image(systemName: "minus")
-                        .font(.system(size: 12, weight: .bold))
-                        .foregroundColor(item.quantity > 1 ? .coffeeDark : .neutral300)
-                        .frame(width: 28, height: 28)
-                        .background(Color.neutral100)
-                        .cornerRadius(8)
-                }
-                .disabled(item.quantity <= 1)
                 
-                Text("\(item.quantity)")
-                    .font(.brandSans(16))
-                    .fontWeight(.bold)
-                    .foregroundColor(.coffeeDark)
-                    .frame(minWidth: 20)
+                Spacer()
                 
-                Button(action: {
-                    UIImpactFeedbackGenerator(style: .light).impactOccurred()
-                    updateQuantity(for: item, delta: 1)
-                }) {
-                    Image(systemName: "plus")
-                        .font(.system(size: 12, weight: .bold))
-                        .foregroundColor(.white)
-                        .frame(width: 28, height: 28)
-                        .background(Color.coffeeDark)
-                        .cornerRadius(8)
+                // Quantity Stepper
+                HStack(spacing: 12) {
+                    Button(action: {
+                        UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                        updateQuantity(for: item, delta: -1)
+                    }) {
+                        Image(systemName: "minus")
+                            .font(.system(size: 12, weight: .bold))
+                            .foregroundColor(item.quantity > 1 ? .coffeeDark : .neutral300)
+                            .frame(width: 28, height: 28)
+                            .background(Color.neutral100)
+                            .cornerRadius(8)
+                    }
+                    .disabled(item.quantity <= 1)
+                    
+                    Text("\(item.quantity)")
+                        .font(.brandSans(16))
+                        .fontWeight(.bold)
+                        .foregroundColor(.coffeeDark)
+                        .frame(minWidth: 20)
+                    
+                    Button(action: {
+                        UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                        updateQuantity(for: item, delta: 1)
+                    }) {
+                        Image(systemName: "plus")
+                            .font(.system(size: 12, weight: .bold))
+                            .foregroundColor(.white)
+                            .frame(width: 28, height: 28)
+                            .background(Color.coffeeDark)
+                            .cornerRadius(8)
+                    }
                 }
             }
         }
@@ -360,6 +358,55 @@ struct CheckoutView: View {
         .padding(.horizontal, 20)
     }
     
+    // Order Method Content (for List section)
+    var orderMethodContent: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Picker("Method", selection: $cartManager.selectedDeliveryOption) {
+                Text("Take Away").tag(DeliveryOption.takeAway)
+                Text("Dine In").tag(DeliveryOption.dineIn)
+                Text("Delivery").tag(DeliveryOption.delivery)
+            }
+            .pickerStyle(.segmented)
+            .onChange(of: cartManager.selectedDeliveryOption) { _ in
+                UIImpactFeedbackGenerator(style: .light).impactOccurred()
+            }
+            
+            if cartManager.selectedDeliveryOption == .dineIn {
+                HStack(spacing: 12) {
+                    Image(systemName: "tablecells")
+                        .font(.system(size: 18))
+                        .foregroundColor(.neutral400)
+                    
+                    TextField("Table Number (Optional)", text: $cartManager.deliveryNotes)
+                        .font(.brandSans(15))
+                }
+                .padding(14)
+                .background(Color.neutral100)
+                .cornerRadius(12)
+            } else if cartManager.selectedDeliveryOption == .delivery {
+                VStack(spacing: 8) {
+                    HStack(spacing: 12) {
+                        Image(systemName: "location.fill")
+                            .font(.system(size: 18))
+                            .foregroundColor(.neutral400)
+                        
+                        TextField("Delivery Address", text: $cartManager.deliveryAddress)
+                            .font(.brandSans(15))
+                    }
+                    .padding(14)
+                    .background(Color.neutral100)
+                    .cornerRadius(12)
+                    
+                    if cartManager.deliveryAddress.isEmpty {
+                        Text("Please enter a delivery address")
+                            .font(.caption)
+                            .foregroundColor(.red)
+                    }
+                }
+            }
+        }
+    }
+    
     // MARK: - Payment Method Section
     
     var paymentMethodSection: some View {
@@ -381,6 +428,21 @@ struct CheckoutView: View {
         .padding(.horizontal, 20)
     }
     
+    // Payment Method Content (for List section)
+    var paymentMethodContent: some View {
+        LazyVGrid(columns: [
+            GridItem(.flexible()),
+            GridItem(.flexible())
+        ], spacing: 12) {
+            ForEach(paymentMethods, id: \.self) { method in
+                paymentCard(method: method, isSelected: selectedPaymentMethod == method) {
+                    selectedPaymentMethod = method
+                    UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+                }
+            }
+        }
+    }
+    
     // MARK: - Notes Section
     
     var notesSection: some View {
@@ -399,6 +461,13 @@ struct CheckoutView: View {
                 )
         }
         .padding(.horizontal, 20)
+    }
+    
+    // Notes Content (for List section)
+    var notesContent: some View {
+        TextField("Add notes for your order (optional)", text: $cartManager.deliveryNotes, axis: .vertical)
+            .font(.brandSans(15))
+            .lineLimit(3...5)
     }
     
     // MARK: - Bottom Action Bar
@@ -566,5 +635,109 @@ struct CheckoutView: View {
             }
             isPlacingOrder = false
         }
+    }
+}
+// MARK: - Swipe to Delete Row Component
+// Based on https://stackoverflow.com/a/76980028 by Ihor Chernysh
+
+struct SwipeToDeleteRow<Content: View>: View {
+    let onDelete: () -> Void
+    let content: () -> Content
+    
+    @State private var offset: CGFloat = 0
+    
+    private let deleteButtonWidth: CGFloat = 80
+    private let swipeThreshold: CGFloat = -40 // Minimum swipe to show button
+    
+    init(onDelete: @escaping () -> Void, @ViewBuilder content: @escaping () -> Content) {
+        self.onDelete = onDelete
+        self.content = content
+    }
+    
+    var body: some View {
+        GeometryReader { geometry in
+            HStack(spacing: 0) {
+                // Main content
+                content()
+                    .frame(width: geometry.size.width)
+                    .background(Color.white)
+                
+                // Delete button
+                Button {
+                    UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+                    withAnimation(.easeInOut(duration: 0.25)) {
+                        offset = -geometry.size.width
+                    }
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) {
+                        onDelete()
+                    }
+                } label: {
+                    ZStack {
+                        Color.red
+                        Image(systemName: "trash.fill")
+                            .font(.system(size: 20))
+                            .foregroundColor(.white)
+                    }
+                }
+                .frame(width: max(deleteButtonWidth, -offset))
+            }
+            .offset(x: offset)
+            .gesture(
+                DragGesture()
+                    .onChanged { gesture in
+                        // Prevent swipe to the right in default position
+                        if offset == 0 && gesture.translation.width > 0 {
+                            return
+                        }
+                        
+                        // If already swiped and dragging right
+                        if offset < 0 && gesture.translation.width > 0 {
+                            let newOffset = offset + gesture.translation.width
+                            
+                            // If dragged far enough right, reset to zero
+                            if newOffset > -deleteButtonWidth / 2 {
+                                withAnimation(.interpolatingSpring(stiffness: 300, damping: 30)) {
+                                    offset = 0
+                                }
+                                return
+                            }
+                            
+                            // Otherwise update the offset
+                            self.offset = min(0, newOffset)
+                            return
+                        }
+                        
+                        // Swiping left - allow unlimited stretch like native
+                        if gesture.translation.width < 0 {
+                            offset = gesture.translation.width
+                        }
+                    }
+                    .onEnded { gesture in
+                        withAnimation(.interpolatingSpring(stiffness: 300, damping: 30)) {
+                            // If swiped far enough, lock at delete button width
+                            if offset < swipeThreshold {
+                                // If swiped way past, trigger delete
+                                if offset < -geometry.size.width * 0.6 {
+                                    UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+                                    withAnimation(.easeInOut(duration: 0.25)) {
+                                        offset = -geometry.size.width
+                                    }
+                                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) {
+                                        onDelete()
+                                    }
+                                } else {
+                                    offset = -deleteButtonWidth
+                                }
+                                return
+                            }
+                            
+                            // Not swiped enough, reset
+                            offset = 0
+                        }
+                    }
+            )
+        }
+        .frame(height: 120)
+        .clipped()
     }
 }

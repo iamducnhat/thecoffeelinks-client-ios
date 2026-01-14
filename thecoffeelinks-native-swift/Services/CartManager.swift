@@ -32,9 +32,14 @@ class CartManager: ObservableObject {
     
     func updateCart(item: CartItem, quantity: Int, finalPrice: Double, customization: OrderCustomization) {
         if let index = items.firstIndex(where: { $0.id == item.id }) {
-            items[index].quantity = quantity
-            items[index].finalPrice = finalPrice
-            items[index].customization = customization
+            let updated = CartItem(
+                id: items[index].id,
+                product: items[index].product,
+                quantity: quantity,
+                finalPrice: finalPrice,
+                customization: customization
+            )
+            items[index] = updated
         }
     }
     

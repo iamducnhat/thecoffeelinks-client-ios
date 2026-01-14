@@ -1,7 +1,9 @@
 import SwiftUI
 
 struct OrderCustomizationView: View {
-    let product: Product    let editingItem: CartItem?    @Environment(\.dismiss) var dismiss
+    let product: Product
+    let editingItem: CartItem?
+    @Environment(\.dismiss) var dismiss
     @ObservedObject var cartManager = CartManager.shared
     @StateObject private var menuRepo = MenuRepository.shared
     @StateObject private var orderRepo = OrderRepository.shared
@@ -62,6 +64,7 @@ struct OrderCustomizationView: View {
             }
         }
         // Fallback to menu size modifiers
+        // fatalError("Don't have a size in the menu!")
         return menuRepo.menu?.sizes[selectedSize]?.price ?? 0
     }
     
@@ -450,36 +453,11 @@ struct OrderCustomizationView: View {
     
     // MARK: - Local Price Estimation
     
-    /// Calculate estimated price locally using cached menu data
-    /// This gives instant feedback while server confirms the actual price
-    private func estimateLocalPrice() -> Double {
-        // Use size price from product's sizeOptions (or fallback to menu)
-        var unitPrice = sizePrice
-        
-        // Add toppings
-        if let toppings = menuRepo.menu?.toppings {
-            for toppingId in selectedToppings {
-                if let topping = toppings.first(where: { $0.id == toppingId }) {
-                    unitPrice += topping.price
-                }
-            }
-        }
-        
-        // Multiply by quantity (no tax - prices are already final)
-        return unitPrice * Double(quantity)
-    }
-    
     private func updatePrice() {
         // Cancel any pending server request
         calculationTask?.cancel()
         
-        // 1. Immediately update with local estimate
-        let estimated = estimateLocalPrice()
-        withAnimation(.easeInOut(duration: 0.15)) {
-            displayPrice = estimated
-        }
-        
-        // 2. Fetch server-confirmed price in background
+        // Fetch server price
         calculationTask = Task {
             // Short debounce for rapid changes
             try? await Task.sleep(nanoseconds: 200_000_000) // 0.2s
@@ -500,11 +478,8 @@ struct OrderCustomizationView: View {
             do {
                 let response = try await orderRepo.previewPrice(request: request)
                 await MainActor.run {
-                    // Only update if price differs from estimate
-                    if abs(response.total - displayPrice) > 1 {
-                        withAnimation(.easeInOut(duration: 0.2)) {
-                            displayPrice = response.total
-                        }
+                    withAnimation(.easeInOut(duration: 0.2)) {
+                        displayPrice = response.total
                     }
                     serverPrice = response.total
                     isSyncing = false
@@ -512,7 +487,6 @@ struct OrderCustomizationView: View {
             } catch {
                 print("Price sync error: \(error)")
                 await MainActor.run {
-                    // Keep showing estimated price on error
                     isSyncing = false
                 }
             }

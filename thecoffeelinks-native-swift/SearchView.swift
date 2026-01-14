@@ -140,7 +140,7 @@ struct SearchView: View {
                         .padding(.top, 8)
                         
                         if viewModel.filteredProducts.isEmpty {
-                            VStack(spacing: 16) {
+                            LazyVStack(spacing: 16) {
                                 Image("filter")
                                     .resizable()
                                     .renderingMode(.template)
@@ -212,18 +212,11 @@ struct ProductRow: View {
                             .foregroundStyle(Color.coffeeRich.opacity(0.2))
                     }
                 }
-                .frame(width: 100, height: 100)
-                .clipShape(RoundedRectangle(cornerRadius: 20))
-                
-                // Subtle gradient overlay
-                LinearGradient(
-                    colors: [Color.black.opacity(0.3), Color.clear],
-                    startPoint: .bottom,
-                    endPoint: .center
-                )
-                .clipShape(RoundedRectangle(cornerRadius: 20))
+                .frame(width: 120, height: 120)
+                .clipShape(RoundedRectangle(cornerRadius: 12))
             }
-            .shadow(color: Color.black.opacity(0.1), radius: 8, x: 0, y: 4)
+            .frame(width: 120, height: 120)
+            .scaledToFit()
             
             // Details
             VStack(alignment: .leading, spacing: 6) {
@@ -302,6 +295,7 @@ struct ProductRow: View {
         .sheet(isPresented: $showingCustomization) {
             OrderCustomizationView(product: product)
         }
+        .fixedSize(horizontal: false, vertical: true)
     }
 }
 

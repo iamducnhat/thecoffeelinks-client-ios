@@ -22,7 +22,7 @@ struct ProductCard: View {
                                     .resizable()
                                     .aspectRatio(contentMode: .fill)
                                     .frame(width: width, height: width)
-                                    .clipShape(RoundedRectangle(cornerRadius: 20))
+                                    .clipShape(RoundedRectangle(cornerRadius: 12))
                             case .failure:
                                 ZStack {
                                     Color.coffeeRich.opacity(0.05)
@@ -34,7 +34,7 @@ struct ProductCard: View {
                                         .foregroundStyle(Color.coffeeRich.opacity(0.2))
                                 }
                                 .frame(width: width, height: width)
-                                .clipShape(RoundedRectangle(cornerRadius: 20))
+                                .clipShape(RoundedRectangle(cornerRadius: 12))
                             case .empty:
                                 ZStack {
                                     Color.coffeeRich.opacity(0.05)
@@ -42,7 +42,7 @@ struct ProductCard: View {
                                         .progressViewStyle(CircularProgressViewStyle(tint: .gray))
                                 }
                                 .frame(width: width, height: width)
-                                .clipShape(RoundedRectangle(cornerRadius: 20))
+                                .clipShape(RoundedRectangle(cornerRadius: 12))
                             @unknown default:
                                 ZStack {
                                     Color.coffeeRich.opacity(0.05)
@@ -54,7 +54,7 @@ struct ProductCard: View {
                                         .foregroundStyle(Color.coffeeRich.opacity(0.2))
                                 }
                                 .frame(width: width, height: width)
-                                .clipShape(RoundedRectangle(cornerRadius: 20))
+                                .clipShape(RoundedRectangle(cornerRadius: 12))
                             }
                         }
                     } else {
@@ -68,7 +68,7 @@ struct ProductCard: View {
                                 .foregroundStyle(Color.coffeeRich.opacity(0.2))
                         }
                         .frame(width: width, height: width)
-                        .clipShape(RoundedRectangle(cornerRadius: 20))
+                        .clipShape(RoundedRectangle(cornerRadius: 12))
                     }
 
                     // Subtle gradient overlay
@@ -77,7 +77,7 @@ struct ProductCard: View {
                         startPoint: .bottom,
                         endPoint: .center
                     )
-                    .clipShape(RoundedRectangle(cornerRadius: 20))
+                    .clipShape(RoundedRectangle(cornerRadius: 12))
                 }
                 
                 Spacer(minLength: 0)
