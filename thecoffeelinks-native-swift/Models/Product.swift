@@ -36,6 +36,7 @@ struct Product: Codable, Identifiable {
     let isActive: Bool?
     let isAvailable: Bool?
     let sizeOptions: ProductSizeOptions?
+    let availableToppings: [String]? // Array of topping IDs available for this product
     
     // Computed for compatibility
     var displayImageUrl: String? {

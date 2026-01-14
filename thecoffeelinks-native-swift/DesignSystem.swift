@@ -7,39 +7,55 @@
 
 import SwiftUI
 
-// MARK: - Brand Colors
+// MARK: - Brand Colors - Sequoia Forest Palette
 extension Color {
+    // Sequoia Forest Primary Colors - Calm, Grounded, Timeless
+    static let forestCanopy = Color(hex: 0x1F2D24)      /* Primary - deep forest */
+    static let forestFloor = Color(hex: 0x3A2E25)       /* Secondary - grounded earth */
+    static let morningFog = Color(hex: 0xF2EFEA)        /* Main background - light, spacious */
+    static let filteredLight = Color(hex: 0x6F8F72)     /* Accent - soft, green trust */
+    static let sunRay = Color(hex: 0xC2A14D)            /* Premium actions - rare gold */
+    
+    // Neutrals - Desaturated, Natural
+    static let neutral50 = Color(hex: 0xFAFAF8)
+    static let neutral100 = Color(hex: 0xF5F2ED)
+    static let neutral200 = Color(hex: 0xE8E4DD)
+    static let neutral300 = Color(hex: 0xD8D0C8)
+    static let neutral400 = Color(hex: 0xC2B5A8)
+    static let neutral500 = Color(hex: 0x9E9285)
+    static let neutral600 = Color(hex: 0x7A6E63)
+    static let neutral700 = Color(hex: 0x5C4F46)
+    static let neutral800 = Color(hex: 0x3A332A)
+    static let neutral900 = Color(hex: 0x1F1B17)
+    
+    // Semantic Colors - Muted, Calm
+    static let successGreen = Color(hex: 0x4a7a5a)     /* Validation - muted green */
+    static let warningAmber = Color(hex: 0xb89a4a)     /* Warning - warm amber */
+    static let dangerRed = Color(hex: 0xa85a5a)        /* Danger - muted red */
+    static let infoBlue = Color(hex: 0x5a7a9a)         /* Info - cool muted blue */
+    
+    // Legacy Coffee Tones (for transition compatibility)
     static let coffeeBlack = Color(hex: 0x0d0906)
-    static let coffeeDark = Color(hex: 0x1a1210) // Primary Text / Headings
-    static let coffeeRich = Color(hex: 0x2d1f18)
+    static let coffeeDark = Color.forestCanopy         /* Use forest canopy instead */
+    static let coffeeRich = Color.forestFloor          /* Use forest floor instead */
     
-    static let caramel = Color(hex: 0xc89b6a) // Accents
-    static let caramelLight = Color(hex: 0xdbb896)
+    static let caramel = Color.sunRay                  /* Map to sun ray */
+    static let caramelLight = Color.sunRay.opacity(0.7)
     
-    static let ivory = Color(hex: 0xfaf8f5) // Background
-    static let cream = Color(hex: 0xf5ebe0)
+    static let ivory = Color.morningFog                /* Map to morning fog */
+    static let cream = Color.morningFog.opacity(0.9)
     
-    static let gold = Color(hex: 0xb8860b) // Premium / Reward
-    static let sage = Color(hex: 0x7a9e7e) // Trust / Connection
-    
-    // Neutrals
-    static let neutral50 = Color(hex: 0xfdfcfa)
-    static let neutral100 = Color(hex: 0xf8f6f2)
-    static let neutral200 = Color(hex: 0xefe9e0)
-    static let neutral300 = Color(hex: 0xddd4c8)
-    static let neutral400 = Color(hex: 0xb8a899)
-    static let neutral500 = Color(hex: 0x8f8175)
-    static let neutral600 = Color(hex: 0x6b5f54)
-    static let neutral900 = Color(hex: 0x1a1614)
+    static let gold = Color.sunRay                     /* Map to sun ray */
+    static let sage = Color.filteredLight              /* Map to filtered light */
 }
 
 // MARK: - Semantic Colors
 extension Color {
-    static let brandBackground = Color.ivory
-    static let brandPrimary = Color.coffeeDark
-    static let brandAccent = Color.caramel
-    static let brandSuccess = Color.sage
-    static let brandPremium = Color.gold
+    static let brandBackground = Color.morningFog
+    static let brandPrimary = Color.forestCanopy
+    static let brandAccent = Color.filteredLight
+    static let brandSuccess = Color.successGreen
+    static let brandPremium = Color.sunRay
 }
 
 // MARK: - Typography
@@ -100,7 +116,7 @@ struct LiquidGlassPrimaryButton: View {
         icon: String? = nil,
         isLoading: Bool = false,
         isDisabled: Bool = false,
-        tint: Color = .coffeeDark,
+        tint: Color = .forestCanopy,
         action: @escaping () -> Void
     ) {
         self.title = title
@@ -124,10 +140,10 @@ struct LiquidGlassPrimaryButton: View {
                 buttonContent
                     .foregroundStyle(.white)
                     .frame(maxWidth: .infinity)
-                    .padding(.vertical, 16)
+                    .padding(.vertical, 14)
                     .background(isDisabled ? Color.neutral400 : tintColor)
-                    .cornerRadius(16)
-                    .shadow(color: tintColor.opacity(0.3), radius: 10, x: 0, y: 5)
+                    .cornerRadius(14)
+                    .shadow(color: tintColor.opacity(0.2), radius: 8, x: 0, y: 4)
             }
             .disabled(isDisabled || isLoading)
         }
@@ -153,12 +169,11 @@ struct LiquidGlassPrimaryButton: View {
                     }
                 }
                 Text(title)
-                    .font(.brandSans(16))
-                    .fontWeight(.bold)
+                    .font(.system(size: 16, weight: .semibold, design: .default))
             }
         }
         .frame(maxWidth: .infinity)
-        .padding(16)
+        .padding(14)
     }
 }
 
@@ -184,18 +199,18 @@ struct LiquidGlassSecondaryButton: View {
                 buttonContent
             }
             .buttonStyle(.glass)
-            .tint(Color.coffeeDark)
+            .tint(Color.forestCanopy)
         } else {
             Button(action: action) {
                 buttonContent
-                    .foregroundStyle(Color.coffeeDark)
-                    .padding(.horizontal, 24)
+                    .foregroundStyle(Color.forestCanopy)
+                    .padding(.horizontal, 22)
                     .padding(.vertical, 12)
                     .background(Color.white)
                     .cornerRadius(12)
                     .overlay {
                         RoundedRectangle(cornerRadius: 12)
-                            .stroke(Color.neutral200, lineWidth: 1)
+                            .stroke(Color.neutral300, lineWidth: 1.5)
                     }
             }
         }
@@ -217,88 +232,90 @@ struct LiquidGlassSecondaryButton: View {
                 }
             }
             Text(title)
-                .font(.brandSans(16))
-                .fontWeight(.semibold)
+                .font(.system(size: 16, weight: .semibold, design: .default))
         }
     }
 }
 
 // MARK: - Splash Loading View
-/// A clean branded loading screen that replaces the "Brewing..." text
+/// A clean branded loading screen that embodies the Sequoia Forest experience
 struct SplashLoadingView: View {
     @State private var isAnimating = false
     
     var body: some View {
         ZStack {
-            // Gradient background
+            // Gradient background - Morning Fog to light neutral
             LinearGradient(
-                colors: [Color.ivory, Color.cream.opacity(0.5)],
-                startPoint: .top,
-                endPoint: .bottom
+                colors: [Color.morningFog, Color.neutral100.opacity(0.7)],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
             )
             .ignoresSafeArea()
             
             VStack(spacing: 32) {
                 Spacer()
                 
-                // Logo Container with subtle animation
+                // Logo Container with calm, weighted animation
                 ZStack {
-                    // Outer ring
+                    // Outer subtle ring
                     Circle()
-                        .stroke(Color.caramel.opacity(0.2), lineWidth: 3)
+                        .stroke(Color.filteredLight.opacity(0.15), lineWidth: 2)
                         .frame(width: 120, height: 120)
                     
-                    // Animated arc
+                    // Animated arc - weighted motion
                     Circle()
-                        .trim(from: 0, to: 0.3)
+                        .trim(from: 0, to: 0.25)
                         .stroke(
                             LinearGradient(
-                                colors: [Color.caramel, Color.coffeeRich],
-                                startPoint: .leading,
-                                endPoint: .trailing
+                                colors: [Color.sunRay, Color.filteredLight],
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
                             ),
-                            style: StrokeStyle(lineWidth: 3, lineCap: .round)
+                            style: StrokeStyle(lineWidth: 2.5, lineCap: .round)
                         )
                         .frame(width: 120, height: 120)
                         .rotationEffect(.degrees(isAnimating ? 360 : 0))
                         .animation(
-                            .linear(duration: 1.2)
+                            .easeInOut(duration: 1.5)
                             .repeatForever(autoreverses: false),
                             value: isAnimating
                         )
                     
-                    // Icon
+                    // Icon - forest canopy
                     Image(systemName: "cup.and.saucer.fill")
                         .font(.system(size: 40))
-                        .foregroundStyle(Color.coffeeRich)
+                        .foregroundStyle(Color.forestCanopy)
                 }
                 
-                // Brand name
-                VStack(spacing: 8) {
+                // Brand name - Sequoia Forest typography
+                VStack(spacing: 12) {
                     Text("The Coffee Links")
-                        .font(.brandSerif(28))
-                        .foregroundStyle(Color.coffeeDark)
+                        .font(.system(size: 28, weight: .bold, design: .default))
+                        .tracking(0.5)
+                        .foregroundStyle(Color.forestCanopy)
                     
-                    // Subtle loading indicator dots
-                    HStack(spacing: 6) {
+                    // Subtle loading indicator dots - calm breathing
+                    HStack(spacing: 8) {
                         ForEach(0..<3) { index in
                             Circle()
-                                .fill(Color.caramel)
+                                .fill(Color.filteredLight)
                                 .frame(width: 6, height: 6)
-                                .opacity(isAnimating ? 1 : 0.3)
+                                .opacity(isAnimating ? 0.8 : 0.3)
                                 .animation(
-                                    .easeInOut(duration: 0.6)
+                                    .easeInOut(duration: 0.8)
                                     .repeatForever()
-                                    .delay(Double(index) * 0.2),
+                                    .delay(Double(index) * 0.25),
                                     value: isAnimating
                                 )
                         }
                     }
+                    .padding(.top, 4)
                 }
                 
                 Spacer()
                 Spacer()
             }
+            .padding(.horizontal, 24)
         }
         .onAppear {
             isAnimating = true
@@ -306,6 +323,6 @@ struct SplashLoadingView: View {
     }
 }
 
-#Preview("Splash Loading") {
+#Preview("Splash Loading - Sequoia Forest") {
     SplashLoadingView()
 }

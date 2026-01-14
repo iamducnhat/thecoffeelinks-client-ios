@@ -9,6 +9,16 @@ struct OrderPreviewRequest: Encodable {
     let toppings: [String]
     let quantity: Int
     let voucherId: String?
+    
+    enum CodingKeys: String, CodingKey {
+        case productId = "product_id"
+        case size
+        case ice
+        case sugar
+        case toppings
+        case quantity
+        case voucherId = "voucher_id"
+    }
 }
 
 struct OrderPreviewResponse: Decodable {
@@ -27,6 +37,11 @@ class OrderRepository: ObservableObject {
     // This is a stateless service for now.
     
     func previewPrice(request: OrderPreviewRequest) async throws -> OrderPreviewResponse {
+        // Debug: Log request
+        if let jsonData = try? JSONEncoder().encode(request),
+           let jsonString = String(data: jsonData, encoding: .utf8) {
+            print("DEBUG OrderPreview Request: \(jsonString)")
+        }
         return try await client.post("api/orders/preview", body: request)
     }
     

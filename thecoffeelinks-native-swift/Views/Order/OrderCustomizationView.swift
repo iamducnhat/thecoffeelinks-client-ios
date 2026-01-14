@@ -88,7 +88,27 @@ struct OrderCustomizationView: View {
     }
     
     var availableToppings: [Topping] {
-        menuRepo.menu?.toppings ?? []
+        // Filter menu toppings by product's available toppings
+        guard let menu = menuRepo.menu else {
+            print("DEBUG: Menu not loaded yet")
+            return []
+        }
+        
+        // Debug: Log product info
+        print("DEBUG: Product \(product.name)")
+        print("DEBUG: Product availableToppings: \(product.availableToppings?.count ?? 0) toppings")
+        print("DEBUG: Menu has \(menu.toppings.count) total toppings")
+        
+        guard let productToppingIds = product.availableToppings, !productToppingIds.isEmpty else {
+            print("DEBUG: Product has no availableToppings, showing all menu toppings")
+            return menu.toppings
+        }
+        
+        let filtered = menu.toppings.filter { topping in
+            productToppingIds.contains(topping.id)
+        }
+        print("DEBUG: Filtered to \(filtered.count) toppings for this product")
+        return filtered
     }
     
     var selectedIce: ConfigOption {
@@ -494,22 +514,16 @@ struct OrderCustomizationView: View {
     }
     
     func addToCart() {
+        let toppingDetails = selectedToppings.compactMap { id in
+            availableToppings.first(where: { $0.id == id })
+        }
+        
         let customization = OrderCustomization(
             size: selectedSize,
             ice: selectedIce.label,
             sugar: selectedSugar.label,
-            toppings: Array(selectedToppings)
-        )
-        
-        let toppingNames = selectedToppings.compactMap { id in
-            availableToppings.first(where: { $0.id == id })?.name
-        }
-        
-        let displayCustomization = OrderCustomization(
-             size: menuRepo.menu?.sizes[selectedSize]?.label ?? selectedSize,
-             ice: selectedIce.label,
-             sugar: selectedSugar.label,
-             toppings: toppingNames
+            toppings: Array(selectedToppings),
+            selectedToppingDetails: toppingDetails
         )
         
         // Calculate unit final price - prefer server price if available, else use display price
@@ -522,7 +536,7 @@ struct OrderCustomizationView: View {
                 item: editingItem,
                 quantity: quantity,
                 finalPrice: unitPrice,
-                customization: displayCustomization
+                customization: customization
             )
         } else {
             // Add new item
@@ -530,7 +544,7 @@ struct OrderCustomizationView: View {
                 product: product,
                 quantity: quantity,
                 finalPrice: unitPrice,
-                customization: displayCustomization
+                customization: customization
             )
         }
         
