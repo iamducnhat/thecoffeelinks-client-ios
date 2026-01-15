@@ -67,13 +67,9 @@ struct OrdersView: View {
                             } else {
                                 ForEach(viewModel.pastOrders) { order in
                                     NavigationLink(destination: OrderDetailView(order: order)) {
-                                        HistoryRow(order: order)
+                                        HistoryRowWithReorder(order: order)
                                     }
                                     .listRowBackground(Color.white)
-                                }
-                                .onDelete { indexSet in
-                                    // Optional: handle delete action
-                                    // viewModel.deleteOrders(at: indexSet)
                                 }
                             }
                         } header: {
@@ -220,10 +216,56 @@ struct OrderDetailView: View {
     }
     
     private var reorderButton: some View {
-        LiquidGlassPrimaryButton("Order Again", icon: "clock") {
-            // Reorder action
+        OrderAgainButton(order: order) {
+            await reorderItems()
         }
+        .frame(maxWidth: .infinity)
         .padding(.top, 8)
+    }
+    
+    private func reorderItems() async {
+        let cartManager = CartManager.shared
+        
+        for item in order.items {
+            // Create product from order item
+            let product = Product(
+                id: item.productId ?? UUID().uuidString,
+                name: item.productName,
+                description: nil,
+                category: nil,
+                categoryId: nil,
+                categoryType: nil,
+                image: nil,
+                imageUrl: item.productImage,
+                isPopular: false,
+                isNew: nil,
+                isActive: true,
+                isAvailable: true,
+                sizeOptions: ProductSizeOptions(
+                    small: SizeOption(enabled: true, price: (item.finalPrice ?? 0) / Double(item.quantity)),
+                    medium: SizeOption(enabled: true, price: (item.finalPrice ?? 0) / Double(item.quantity)),
+                    large: SizeOption(enabled: true, price: (item.finalPrice ?? 0) / Double(item.quantity))
+                ),
+                availableToppings: nil
+            )
+            
+            // Use saved customization or default
+            let customization = item.optionsSnapshotJson ?? OrderCustomization(
+                size: "M",
+                ice: nil,
+                sugar: nil,
+                toppings: nil
+            )
+            
+            cartManager.addToCart(
+                product: product,
+                quantity: item.quantity,
+                finalPrice: (item.finalPrice ?? 0) / Double(item.quantity),
+                customization: customization
+            )
+        }
+        
+        UINotificationFeedbackGenerator().notificationOccurred(.success)
     }
 }
 
@@ -360,13 +402,16 @@ struct LiveOrderCard: View {
     }
 }
 
-// MARK: - History Row (for List)
-struct HistoryRow: View {
+// MARK: - History Row with Quick Reorder
+struct HistoryRowWithReorder: View {
     let order: Order
+    @ObservedObject private var cartManager = CartManager.shared
+    @State private var isReordering = false
+    @State private var showAddedFeedback = false
     
     var body: some View {
         HStack(spacing: 12) {
-            // Product Image (first item's image if available)
+            // Product Image
             if let firstItem = order.items.first, let imageUrl = firstItem.productImage, !imageUrl.isEmpty {
                 AsyncImage(url: URL(string: imageUrl)) { phase in
                     switch phase {
@@ -392,26 +437,47 @@ struct HistoryRow: View {
                     .fontWeight(.medium)
                     .foregroundStyle(Color.secondary)
                 
-                // Show delivery option or address instead of items
-                Text(order.deliveryAddress ?? order.deliveryOption.rawValue.replacingOccurrences(of: "_", with: " ").capitalized)
-                    .font(.brandSans(16))
-                    .foregroundStyle(Color.coffeeDark)
-                    .lineLimit(1)
-                
-                // Show item count if available
-                if !order.items.isEmpty {
-                    Text("\(order.items.count) item\(order.items.count != 1 ? "s" : "")")
-                        .font(.caption2)
-                        .foregroundStyle(Color.secondary)
+                // Show first item name
+                if let firstItem = order.items.first {
+                    Text(firstItem.productName + (order.items.count > 1 ? " +\(order.items.count - 1)" : ""))
+                        .font(.brandSans(16))
+                        .foregroundStyle(Color.coffeeDark)
+                        .lineLimit(1)
                 }
+                
+                Text(order.total.toVND())
+                    .font(.caption)
+                    .foregroundStyle(Color.brandAccent)
             }
             
             Spacer()
             
-            Text(order.total.toVND())
-                .font(.brandSans(14))
-                .fontWeight(.bold)
-                .foregroundStyle(Color.coffeeDark)
+            // Quick Order Again Button
+            Button {
+                Task {
+                    await quickReorder()
+                }
+            } label: {
+                if isReordering {
+                    ProgressView()
+                        .frame(width: 32, height: 32)
+                } else if showAddedFeedback {
+                    Image(systemName: "checkmark")
+                        .font(.system(size: 14, weight: .bold))
+                        .foregroundStyle(.white)
+                        .frame(width: 32, height: 32)
+                        .background(Color.successGreen)
+                        .clipShape(Circle())
+                } else {
+                    Image(systemName: "arrow.clockwise")
+                        .font(.system(size: 14, weight: .semibold))
+                        .foregroundStyle(Color.forestCanopy)
+                        .frame(width: 32, height: 32)
+                        .background(Color.forestCanopy.opacity(0.1))
+                        .clipShape(Circle())
+                }
+            }
+            .buttonStyle(.plain)
         }
         .padding(.vertical, 4)
     }
@@ -428,6 +494,62 @@ struct HistoryRow: View {
                     .frame(width: 20, height: 20)
                     .foregroundStyle(Color.coffeeRich.opacity(0.3))
             }
+    }
+    
+    private func quickReorder() async {
+        isReordering = true
+        
+        for item in order.items {
+            let product = Product(
+                id: item.productId ?? UUID().uuidString,
+                name: item.productName,
+                description: nil,
+                category: nil,
+                categoryId: nil,
+                categoryType: nil,
+                image: nil,
+                imageUrl: item.productImage,
+                isPopular: false,
+                isNew: nil,
+                isActive: true,
+                isAvailable: true,
+                sizeOptions: ProductSizeOptions(
+                    small: SizeOption(enabled: true, price: (item.finalPrice ?? 0) / Double(item.quantity)),
+                    medium: SizeOption(enabled: true, price: (item.finalPrice ?? 0) / Double(item.quantity)),
+                    large: SizeOption(enabled: true, price: (item.finalPrice ?? 0) / Double(item.quantity))
+                ),
+                availableToppings: nil
+            )
+            
+            let customization = item.optionsSnapshotJson ?? OrderCustomization(
+                size: "M",
+                ice: nil,
+                sugar: nil,
+                toppings: nil
+            )
+            
+            await MainActor.run {
+                cartManager.addToCart(
+                    product: product,
+                    quantity: item.quantity,
+                    finalPrice: (item.finalPrice ?? 0) / Double(item.quantity),
+                    customization: customization
+                )
+            }
+        }
+        
+        UINotificationFeedbackGenerator().notificationOccurred(.success)
+        
+        await MainActor.run {
+            isReordering = false
+            showAddedFeedback = true
+        }
+        
+        try? await Task.sleep(nanoseconds: 1_500_000_000)
+        
+        await MainActor.run {
+            showAddedFeedback = false
+        }
     }
 }
 

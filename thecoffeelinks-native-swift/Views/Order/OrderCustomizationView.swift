@@ -11,7 +11,7 @@ struct OrderCustomizationView: View {
     // Customization State
     @State private var selectedSize: String
     @State private var iceIndex: Double = 2 // Default to "Normal"
-    @State private var sugarIndex: Double = 2 // Default to "50%"
+    @State private var sugarIndex: Double = 4 // Default to "100%"
     @State private var selectedToppings: Set<String> = []
     @State private var quantity: Int
     

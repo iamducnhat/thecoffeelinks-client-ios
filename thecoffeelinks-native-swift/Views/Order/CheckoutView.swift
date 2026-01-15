@@ -2,6 +2,9 @@ import SwiftUI
 
 struct CheckoutView: View {
     @ObservedObject var cartManager = CartManager.shared
+    @ObservedObject var deliveryService = DeliveryService.shared
+    @ObservedObject var userPreferences = UserPreferencesManager.shared
+    @ObservedObject var favoritesService = FavoritesService.shared
     @Environment(\.dismiss) var dismiss
     
     @State private var isPlacingOrder = false
@@ -10,10 +13,16 @@ struct CheckoutView: View {
     @State private var showSuccess = false
     @State private var itemToEdit: CartItem?
     @State private var showEditCustomization = false
+    @State private var showAddressPicker = false
     
-    // Payment Options
-    let paymentMethods: [PaymentMethod] = [.cash, .card, .momo, .zalopay]
+    // Speed optimization: Pre-fill from last order
     @State private var selectedPaymentMethod: PaymentMethod = .cash
+    
+    // 30-second undo window
+    @State private var showUndoToast = false
+    @State private var pendingOrderId: String?
+    
+    let paymentMethods: [PaymentMethod] = [.cash, .card, .momo, .zalopay]
     @State private var bottomBarHeight: CGFloat = 0
     
     var body: some View {
@@ -21,20 +30,17 @@ struct CheckoutView: View {
             ZStack(alignment: .bottom) {
                 Color.brandBackground.ignoresSafeArea()
                 
-                if cartManager.items.isEmpty {
+                if cartManager.items.isEmpty && !showUndoToast {
                     emptyState
                 } else {
                     GeometryReader { g in
                         ScrollView {
-                            // Header
                             checkoutHeader
                             
-                            // Order Items Section Header (app style)
                             sectionHeader(title: "Order Items")
                                 .padding(.horizontal, 20)
                                 .padding(.top, 24)
                             
-                            // Custom List-style view with swipe-to-delete
                             VStack(spacing: 0) {
                                 ForEach(cartManager.items) { item in
                                     SwipeToDeleteRow(
@@ -53,8 +59,7 @@ struct CheckoutView: View {
                                     }
                                     
                                     if item.id != cartManager.items.last?.id {
-                                        Divider()
-                                            .padding(.leading, 84)
+                                        Divider().padding(.leading, 84)
                                     }
                                 }
                             }
@@ -63,30 +68,51 @@ struct CheckoutView: View {
                             .padding(.horizontal, 20)
                             .padding(.top, 12)
                             
-                            // Other sections outside List
                             VStack(spacing: 24) {
-                                // Order Method Section
+                                // Order Type with Delivery Integration
                                 orderMethodSection
+                                
+                                // Delivery-specific section (if delivery selected)
+                                if cartManager.selectedDeliveryOption == .delivery {
+                                    deliveryDetailsSection
+                                }
                                 
                                 Divider().padding(.horizontal, 20)
                                 
-                                // Payment Method Section
+                                // Payment Method (Pre-filled from preferences)
                                 paymentMethodSection
                                 
                                 Divider().padding(.horizontal, 20)
                                 
-                                // Notes Section
+                                // Notes Section with Favorite Notes Display
                                 notesSection
                                 
-                                // Bottom Spacer
                                 Color.clear.frame(height: bottomBarHeight + 40)
                             }
                             .padding(.top, 24)
                         }
                     }
                     
-                    // Bottom Action Bar
                     bottomActionBar
+                }
+                
+                // 30-second Undo Toast
+                if showUndoToast {
+                    VStack {
+                        Spacer()
+                        UndoToast(
+                            message: "Order placed",
+                            onUndo: {
+                                cancelOrder()
+                            },
+                            onDismiss: {
+                                finalizeOrder()
+                            }
+                        )
+                        .padding()
+                        .padding(.bottom, 80)
+                    }
+                    .transition(.move(edge: .bottom).combined(with: .opacity))
                 }
             }
             .navigationBarTitleDisplayMode(.inline)
@@ -117,17 +143,29 @@ struct CheckoutView: View {
             } message: {
                 Text(errorMessage)
             }
-            .alert("Success!", isPresented: $showSuccess) {
-                Button("OK", role: .cancel) {
-                    cartManager.clearCart()
-                    dismiss()
-                }
-            } message: {
-                Text("Your order has been placed successfully.")
-            }
             .sheet(isPresented: $showEditCustomization) {
                 if let item = itemToEdit {
                     OrderCustomizationView(product: item.product, editingItem: item)
+                }
+            }
+            .sheet(isPresented: $showAddressPicker) {
+                AddressPickerSheet { address in
+                    cartManager.deliveryAddress = address.fullAddress
+                    deliveryService.selectAddress(address)
+                }
+            }
+            .onAppear {
+                // Pre-fill payment method from last order
+                if let lastMethod = userPreferences.lastPaymentMethod {
+                    selectedPaymentMethod = PaymentMethod(rawValue: lastMethod) ?? .cash
+                }
+                
+                // Auto-select delivery address if delivery mode
+                if cartManager.selectedDeliveryOption == .delivery {
+                    deliveryService.autoSelectAddress()
+                    if let addr = deliveryService.selectedAddress {
+                        cartManager.deliveryAddress = addr.fullAddress
+                    }
                 }
             }
         }
@@ -168,67 +206,84 @@ struct CheckoutView: View {
                 .font(.brandSerif(32))
                 .foregroundColor(.coffeeDark)
             
-            Text("\(cartManager.totalItemCount) item\(cartManager.totalItemCount > 1 ? "s" : "") in your order")
-                .font(.brandSans(14))
-                .foregroundColor(.neutral500)
+            HStack {
+                Text("\(cartManager.totalItemCount) item\(cartManager.totalItemCount > 1 ? "s" : "") in your order")
+                    .font(.brandSans(14))
+                    .foregroundColor(.neutral500)
+                
+                Spacer()
+                
+                // Cart badge for visibility
+                HStack(spacing: 4) {
+                    Image(systemName: "cart.fill")
+                        .font(.system(size: 12))
+                    Text("\(cartManager.totalItemCount)")
+                        .font(.caption.bold())
+                }
+                .foregroundStyle(.white)
+                .padding(.horizontal, 8)
+                .padding(.vertical, 4)
+                .background(Color.forestCanopy)
+                .clipShape(Capsule())
+            }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(.horizontal, 20)
         .padding(.top, 16)
     }
     
-    // MARK: - Cart Item Row
+    // MARK: - Cart Item Row with Inline Editing
     
     func cartItemRow(item: CartItem, onProductTap: @escaping () -> Void) -> some View {
         VStack(spacing: 12) {
-            // Product area - tappable for edit
             HStack(alignment: .top, spacing: 12) {
-                // Product Image
                 AsyncImage(url: URL(string: item.product.displayImageUrl ?? "")) { image in
-                    image
-                        .resizable()
-                        .aspectRatio(contentMode: .fill)
+                    image.resizable().aspectRatio(contentMode: .fill)
                 } placeholder: {
-                    Rectangle()
-                        .fill(Color.neutral200)
+                    Rectangle().fill(Color.neutral200)
                 }
                 .frame(width: 56, height: 56)
                 .cornerRadius(10)
                 
-                // Product Info
                 VStack(alignment: .leading, spacing: 4) {
-                    Text(item.product.name)
-                        .font(.brandSans(16))
-                        .fontWeight(.medium)
-                        .foregroundColor(.coffeeDark)
-                        .lineLimit(1)
+                    HStack {
+                        Text(item.product.name)
+                            .font(.brandSans(16))
+                            .fontWeight(.medium)
+                            .foregroundColor(.coffeeDark)
+                            .lineLimit(1)
+                        
+                        Spacer()
+                        
+                        // Favorite indicator
+                        if favoritesService.isProductFavorited(item.product) {
+                            Image(systemName: "heart.fill")
+                                .font(.system(size: 12))
+                                .foregroundStyle(.red)
+                        }
+                    }
                     
-                    // Customization details
+                    // Inline customization tags
                     HStack(spacing: 4) {
                         Text(item.customization.size)
-                            .padding(.horizontal, 6)
-                            .padding(.vertical, 2)
-                            .background(Color.neutral100)
-                            .cornerRadius(4)
+                            .inlineTag()
                         
                         if let ice = item.customization.ice {
                             Text(ice)
-                                .padding(.horizontal, 6)
-                                .padding(.vertical, 2)
-                                .background(Color.neutral100)
-                                .cornerRadius(4)
+                                .inlineTag()
                         }
                         
                         if let sugar = item.customization.sugar {
                             Text(sugar)
-                                .padding(.horizontal, 6)
-                                .padding(.vertical, 2)
-                                .background(Color.neutral100)
-                                .cornerRadius(4)
+                                .inlineTag()
                         }
                     }
-                    .font(.caption2)
-                    .foregroundColor(.neutral600)
+                    
+                    // Display notes from favorites (read-only)
+                    if let favorite = favoritesService.getFavorite(product: item.product, customization: item.customization),
+                       let notesText = favorite.notesDisplay {
+                        NotesDisplayBadge(notes: notesText)
+                    }
                     
                     if let toppings = item.customization.toppings, !toppings.isEmpty {
                         Text("+ \(toppings.joined(separator: ", "))")
@@ -238,21 +293,15 @@ struct CheckoutView: View {
                     }
                 }
                 
-                Spacer()
-                
-                // Edit indicator
                 Image(systemName: "chevron.right")
                     .font(.system(size: 14, weight: .medium))
                     .foregroundColor(.neutral400)
             }
             .contentShape(Rectangle())
-            .onTapGesture {
-                onProductTap()
-            }
+            .onTapGesture { onProductTap() }
             
-            // Bottom row: Price and Quantity
+            // Bottom row: Price and Inline Quantity Editor
             HStack {
-                // Price
                 Text(item.finalPrice.toVND())
                     .font(.brandSans(16))
                     .fontWeight(.semibold)
@@ -260,61 +309,29 @@ struct CheckoutView: View {
                 
                 Spacer()
                 
-                // Quantity Stepper
-                HStack(spacing: 12) {
-                    Button(action: {
-                        UIImpactFeedbackGenerator(style: .light).impactOccurred()
-                        updateQuantity(for: item, delta: -1)
-                    }) {
-                        Image(systemName: "minus")
-                            .font(.system(size: 12, weight: .bold))
-                            .foregroundColor(item.quantity > 1 ? .coffeeDark : .neutral300)
-                            .frame(width: 28, height: 28)
-                            .background(Color.neutral100)
-                            .cornerRadius(8)
+                // Inline quantity editor with delete option
+                InlineQuantityEditor(
+                    quantity: .init(
+                        get: { item.quantity },
+                        set: { newQty in updateQuantity(for: item, to: newQty) }
+                    ),
+                    onDelete: {
+                        withAnimation { cartManager.removeFromCart(item: item) }
                     }
-                    .disabled(item.quantity <= 1)
-                    
-                    Text("\(item.quantity)")
-                        .font(.brandSans(16))
-                        .fontWeight(.bold)
-                        .foregroundColor(.coffeeDark)
-                        .frame(minWidth: 20)
-                    
-                    Button(action: {
-                        UIImpactFeedbackGenerator(style: .light).impactOccurred()
-                        updateQuantity(for: item, delta: 1)
-                    }) {
-                        Image(systemName: "plus")
-                            .font(.system(size: 12, weight: .bold))
-                            .foregroundColor(.white)
-                            .frame(width: 28, height: 28)
-                            .background(Color.coffeeDark)
-                            .cornerRadius(8)
-                    }
-                }
+                )
             }
         }
         .padding(16)
     }
     
-    // MARK: - Order Method Section
+    // MARK: - Order Method Section with DeliveryModeToggle
     
     var orderMethodSection: some View {
         VStack(alignment: .leading, spacing: 12) {
             sectionHeader(title: "Order Type")
             
-            Picker("Method", selection: $cartManager.selectedDeliveryOption) {
-                Text("Take Away").tag(DeliveryOption.takeAway)
-                Text("Dine In").tag(DeliveryOption.dineIn)
-                Text("Delivery").tag(DeliveryOption.delivery)
-            }
-            .pickerStyle(.segmented)
-            .onChange(of: cartManager.selectedDeliveryOption) { _ in
-                UIImpactFeedbackGenerator(style: .light).impactOccurred()
-            }
+            DeliveryModeToggle(selectedMode: $cartManager.selectedDeliveryOption)
             
-            // Conditional input based on order type
             if cartManager.selectedDeliveryOption == .dineIn {
                 HStack(spacing: 12) {
                     Image(systemName: "tablecells")
@@ -331,87 +348,145 @@ struct CheckoutView: View {
                     RoundedRectangle(cornerRadius: 12)
                         .stroke(Color.neutral200, lineWidth: 1)
                 )
-            } else if cartManager.selectedDeliveryOption == .delivery {
-                HStack(spacing: 12) {
-                    Image(systemName: "location.fill")
-                        .font(.system(size: 18))
-                        .foregroundColor(.neutral400)
-                    
-                    TextField("Delivery Address", text: $cartManager.deliveryAddress)
-                        .font(.brandSans(15))
-                }
-                .padding(14)
-                .background(Color.white)
-                .cornerRadius(12)
-                .overlay(
-                    RoundedRectangle(cornerRadius: 12)
-                        .stroke(cartManager.deliveryAddress.isEmpty ? Color.red.opacity(0.5) : Color.neutral200, lineWidth: 1)
-                )
-                
-                if cartManager.deliveryAddress.isEmpty {
-                    Text("Please enter a delivery address")
-                        .font(.caption)
-                        .foregroundColor(.red)
+            }
+        }
+        .padding(.horizontal, 20)
+        .onChange(of: cartManager.selectedDeliveryOption) { newValue in
+            if newValue == .delivery {
+                deliveryService.autoSelectAddress()
+                if let addr = deliveryService.selectedAddress {
+                    cartManager.deliveryAddress = addr.fullAddress
                 }
             }
+        }
+    }
+    
+    // MARK: - Delivery Details Section (ETA, Fees, Address)
+    
+    var deliveryDetailsSection: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            sectionHeader(title: "Delivery Details")
+            
+            VStack(spacing: 12) {
+                // Address Row
+                Button {
+                    showAddressPicker = true
+                } label: {
+                    HStack(spacing: 12) {
+                        Image(systemName: "location.fill")
+                            .font(.system(size: 18))
+                            .foregroundColor(.forestCanopy)
+                        
+                        VStack(alignment: .leading, spacing: 2) {
+                            if let address = deliveryService.selectedAddress {
+                                Text(address.label)
+                                    .font(.caption)
+                                    .foregroundStyle(Color.neutral500)
+                                Text(address.fullAddress)
+                                    .font(.subheadline)
+                                    .foregroundStyle(Color.coffeeDark)
+                                    .lineLimit(1)
+                            } else if !cartManager.deliveryAddress.isEmpty {
+                                Text(cartManager.deliveryAddress)
+                                    .font(.subheadline)
+                                    .foregroundStyle(Color.coffeeDark)
+                            } else {
+                                Text("Select delivery address")
+                                    .font(.subheadline)
+                                    .foregroundStyle(Color.red)
+                            }
+                        }
+                        
+                        Spacer()
+                        
+                        Image(systemName: "chevron.right")
+                            .font(.system(size: 14))
+                            .foregroundColor(.neutral400)
+                    }
+                    .padding(14)
+                    .background(Color.white)
+                    .cornerRadius(12)
+                }
+                
+                // ETA Row
+                if let etaDisplay = deliveryService.etaDisplay {
+                    HStack(spacing: 12) {
+                        Image(systemName: "clock")
+                            .font(.system(size: 18))
+                            .foregroundColor(.neutral400)
+                        
+                        Text(etaDisplay)
+                            .font(.subheadline)
+                            .foregroundStyle(Color.coffeeDark)
+                        
+                        Spacer()
+                        
+                        // Delivery trust signal
+                        DeliveryTrustSignal(text: "Tracked delivery")
+                    }
+                    .padding(14)
+                    .background(Color.white)
+                    .cornerRadius(12)
+                }
+                
+                // Delivery Fee Row
+                if deliveryService.deliveryFee > 0 {
+                    HStack(spacing: 12) {
+                        Image(systemName: "bicycle")
+                            .font(.system(size: 18))
+                            .foregroundColor(.neutral400)
+                        
+                        Text("Delivery Fee")
+                            .font(.subheadline)
+                            .foregroundStyle(Color.coffeeDark)
+                        
+                        Spacer()
+                        
+                        Text(deliveryService.feeDisplay)
+                            .font(.subheadline.bold())
+                            .foregroundStyle(Color.brandAccent)
+                    }
+                    .padding(14)
+                    .background(Color.white)
+                    .cornerRadius(12)
+                }
+                
+                // Zone warning
+                if !deliveryService.isInDeliveryZone {
+                    HStack(spacing: 8) {
+                        Image(systemName: "exclamationmark.triangle.fill")
+                            .foregroundColor(.orange)
+                        Text("This address is outside our delivery zone")
+                            .font(.caption)
+                            .foregroundStyle(Color.orange)
+                    }
+                    .padding(12)
+                    .background(Color.orange.opacity(0.1))
+                    .cornerRadius(10)
+                }
+            }
+            .overlay(
+                RoundedRectangle(cornerRadius: 12)
+                    .stroke(cartManager.deliveryAddress.isEmpty ? Color.red.opacity(0.5) : Color.clear, lineWidth: 1)
+            )
         }
         .padding(.horizontal, 20)
     }
     
-    // Order Method Content (for List section)
-    var orderMethodContent: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            Picker("Method", selection: $cartManager.selectedDeliveryOption) {
-                Text("Take Away").tag(DeliveryOption.takeAway)
-                Text("Dine In").tag(DeliveryOption.dineIn)
-                Text("Delivery").tag(DeliveryOption.delivery)
-            }
-            .pickerStyle(.segmented)
-            .onChange(of: cartManager.selectedDeliveryOption) { _ in
-                UIImpactFeedbackGenerator(style: .light).impactOccurred()
-            }
-            
-            if cartManager.selectedDeliveryOption == .dineIn {
-                HStack(spacing: 12) {
-                    Image(systemName: "tablecells")
-                        .font(.system(size: 18))
-                        .foregroundColor(.neutral400)
-                    
-                    TextField("Table Number (Optional)", text: $cartManager.deliveryNotes)
-                        .font(.brandSans(15))
-                }
-                .padding(14)
-                .background(Color.neutral100)
-                .cornerRadius(12)
-            } else if cartManager.selectedDeliveryOption == .delivery {
-                VStack(spacing: 8) {
-                    HStack(spacing: 12) {
-                        Image(systemName: "location.fill")
-                            .font(.system(size: 18))
-                            .foregroundColor(.neutral400)
-                        
-                        TextField("Delivery Address", text: $cartManager.deliveryAddress)
-                            .font(.brandSans(15))
-                    }
-                    .padding(14)
-                    .background(Color.neutral100)
-                    .cornerRadius(12)
-                    
-                    if cartManager.deliveryAddress.isEmpty {
-                        Text("Please enter a delivery address")
-                            .font(.caption)
-                            .foregroundColor(.red)
-                    }
-                }
-            }
-        }
-    }
-    
-    // MARK: - Payment Method Section
+    // MARK: - Payment Method Section (Pre-filled)
     
     var paymentMethodSection: some View {
         VStack(alignment: .leading, spacing: 12) {
-            sectionHeader(title: "Payment Method")
+            HStack {
+                sectionHeader(title: "Payment Method")
+                
+                // Show "remembered" indicator
+                if userPreferences.lastPaymentMethod != nil {
+                    Text("(remembered)")
+                        .font(.caption)
+                        .foregroundStyle(Color.neutral500)
+                }
+            }
             
             LazyVGrid(columns: [
                 GridItem(.flexible()),
@@ -426,21 +501,6 @@ struct CheckoutView: View {
             }
         }
         .padding(.horizontal, 20)
-    }
-    
-    // Payment Method Content (for List section)
-    var paymentMethodContent: some View {
-        LazyVGrid(columns: [
-            GridItem(.flexible()),
-            GridItem(.flexible())
-        ], spacing: 12) {
-            ForEach(paymentMethods, id: \.self) { method in
-                paymentCard(method: method, isSelected: selectedPaymentMethod == method) {
-                    selectedPaymentMethod = method
-                    UIImpactFeedbackGenerator(style: .medium).impactOccurred()
-                }
-            }
-        }
     }
     
     // MARK: - Notes Section
@@ -463,13 +523,6 @@ struct CheckoutView: View {
         .padding(.horizontal, 20)
     }
     
-    // Notes Content (for List section)
-    var notesContent: some View {
-        TextField("Add notes for your order (optional)", text: $cartManager.deliveryNotes, axis: .vertical)
-            .font(.brandSans(15))
-            .lineLimit(3...5)
-    }
-    
     // MARK: - Bottom Action Bar
     
     var bottomActionBar: some View {
@@ -477,10 +530,12 @@ struct CheckoutView: View {
             Divider()
             
             VStack(spacing: 16) {
-                // Price Breakdown
                 VStack(spacing: 8) {
                     breakdownRow(label: "Subtotal", value: cartManager.totalAmount)
-                    // Tax is included in price
+                    
+                    if cartManager.selectedDeliveryOption == .delivery && deliveryService.deliveryFee > 0 {
+                        breakdownRow(label: "Delivery Fee", value: deliveryService.deliveryFee)
+                    }
                     
                     Divider()
                     
@@ -489,16 +544,15 @@ struct CheckoutView: View {
                             .font(.brandSerif(18))
                             .foregroundColor(.coffeeDark)
                         Spacer()
-                        Text(cartManager.totalAmount.toVND())
+                        Text(totalWithDelivery.toVND())
                             .font(.brandSerif(22))
                             .fontWeight(.bold)
                             .foregroundColor(.coffeeDark)
                             .contentTransition(.numericText())
-                            .animation(.easeInOut(duration: 0.2), value: cartManager.totalAmount)
+                            .animation(.easeInOut(duration: 0.2), value: totalWithDelivery)
                     }
                 }
                 
-                // Place Order Button
                 LiquidGlassPrimaryButton(
                     "Place Order",
                     icon: "arrow.right",
@@ -519,9 +573,17 @@ struct CheckoutView: View {
         }
     }
     
+    var totalWithDelivery: Double {
+        var total = cartManager.totalAmount
+        if cartManager.selectedDeliveryOption == .delivery {
+            total += deliveryService.deliveryFee
+        }
+        return total
+    }
+    
     var isOrderValid: Bool {
         !cartManager.items.isEmpty &&
-        (cartManager.selectedDeliveryOption != .delivery || !cartManager.deliveryAddress.isEmpty)
+        (cartManager.selectedDeliveryOption != .delivery || (!cartManager.deliveryAddress.isEmpty && deliveryService.isInDeliveryZone))
     }
     
     // MARK: - Components
@@ -585,9 +647,8 @@ struct CheckoutView: View {
     
     // MARK: - Actions
     
-    func updateQuantity(for item: CartItem, delta: Int) {
+    func updateQuantity(for item: CartItem, to newQuantity: Int) {
         if let index = cartManager.items.firstIndex(where: { $0.id == item.id }) {
-            let newQuantity = cartManager.items[index].quantity + delta
             if newQuantity >= 1 && newQuantity <= 99 {
                 withAnimation(.easeInOut(duration: 0.2)) {
                     cartManager.items[index].quantity = newQuantity
@@ -600,12 +661,14 @@ struct CheckoutView: View {
         UIImpactFeedbackGenerator(style: .heavy).impactOccurred()
         isPlacingOrder = true
         
+        // Remember payment method
+        userPreferences.lastPaymentMethod = selectedPaymentMethod.rawValue
+        
         Task {
             do {
                 let service = OrderService()
-                let total = cartManager.totalAmount
+                let total = totalWithDelivery
                 
-                // 1. Verify Payment
                 let token = try await service.verifyPayment(
                     amount: total,
                     paymentMethod: selectedPaymentMethod.rawValue,
@@ -613,10 +676,7 @@ struct CheckoutView: View {
                     items: cartManager.items
                 )
                 
-                // 2. Create Order
-                print("Payment verified, token: \(token)")
-                
-                _ = try await service.createOrder(
+                let orderId = try await service.createOrder(
                     items: cartManager.items,
                     total: total,
                     deliveryOption: cartManager.selectedDeliveryOption,
@@ -627,7 +687,17 @@ struct CheckoutView: View {
                     paymentToken: token
                 )
                 
-                showSuccess = true
+                // Record for learning
+                let context = PredictionContext()
+                FavoritesService.shared.recordOrder(items: cartManager.items)
+                PredictionEngine.shared.recordOrder(items: cartManager.items, context: context)
+                
+                // Show undo toast instead of immediate success
+                pendingOrderId = orderId
+                withAnimation(.spring(response: 0.3)) {
+                    showUndoToast = true
+                }
+                
             } catch {
                 print("Order placement error: \(error)")
                 errorMessage = error.localizedDescription
@@ -636,9 +706,194 @@ struct CheckoutView: View {
             isPlacingOrder = false
         }
     }
+    
+    func cancelOrder() {
+        // Cancel the pending order
+        if let orderId = pendingOrderId {
+            Task {
+                do {
+                    try await OrderService().cancelOrder(orderId: orderId)
+                    UINotificationFeedbackGenerator().notificationOccurred(.success)
+                } catch {
+                    print("Failed to cancel order: \(error)")
+                }
+            }
+        }
+        
+        withAnimation {
+            showUndoToast = false
+        }
+        pendingOrderId = nil
+    }
+    
+    func finalizeOrder() {
+        // Order confirmed, clear cart and dismiss
+        withAnimation {
+            showUndoToast = false
+        }
+        cartManager.clearCart()
+        dismiss()
+    }
 }
+
+// MARK: - Address Picker Sheet
+
+struct AddressPickerSheet: View {
+    @Environment(\.dismiss) private var dismiss
+    @ObservedObject private var deliveryService = DeliveryService.shared
+    
+    let onSelect: (DeliveryAddress) -> Void
+    
+    @State private var newAddressText = ""
+    @State private var newAddressLabel = "Home"
+    @State private var showingNewAddress = false
+    
+    var body: some View {
+        NavigationStack {
+            ZStack {
+                Color.brandBackground.ignoresSafeArea()
+                
+                if deliveryService.savedAddresses.isEmpty && !showingNewAddress {
+                    emptyState
+                } else {
+                    List {
+                        if !deliveryService.savedAddresses.isEmpty {
+                            Section("Saved Addresses") {
+                                ForEach(deliveryService.savedAddresses) { address in
+                                    Button {
+                                        onSelect(address)
+                                        dismiss()
+                                    } label: {
+                                        HStack {
+                                            VStack(alignment: .leading, spacing: 4) {
+                                                Text(address.label)
+                                                    .font(.caption.bold())
+                                                    .foregroundStyle(Color.forestCanopy)
+                                                Text(address.fullAddress)
+                                                    .font(.subheadline)
+                                                    .foregroundStyle(Color.coffeeDark)
+                                                    .lineLimit(2)
+                                            }
+                                            
+                                            Spacer()
+                                            
+                                            if address.isDefault {
+                                                Text("Default")
+                                                    .font(.caption2)
+                                                    .foregroundStyle(.white)
+                                                    .padding(.horizontal, 6)
+                                                    .padding(.vertical, 2)
+                                                    .background(Color.forestCanopy)
+                                                    .cornerRadius(4)
+                                            }
+                                        }
+                                    }
+                                    .swipeActions {
+                                        Button(role: .destructive) {
+                                            deliveryService.deleteAddress(address.id)
+                                        } label: {
+                                            Label("Delete", systemImage: "trash")
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        
+                        Section("Add New Address") {
+                            VStack(spacing: 12) {
+                                HStack {
+                                    ForEach(["Home", "Work", "Other"], id: \.self) { label in
+                                        Button {
+                                            newAddressLabel = label
+                                        } label: {
+                                            Text(label)
+                                                .font(.caption)
+                                                .padding(.horizontal, 12)
+                                                .padding(.vertical, 6)
+                                                .background(newAddressLabel == label ? Color.forestCanopy : Color.neutral100)
+                                                .foregroundStyle(newAddressLabel == label ? .white : Color.coffeeDark)
+                                                .cornerRadius(8)
+                                        }
+                                    }
+                                }
+                                
+                                TextField("Enter full address", text: $newAddressText, axis: .vertical)
+                                    .lineLimit(2...4)
+                                
+                                Button {
+                                    guard !newAddressText.isEmpty else { return }
+                                    let newAddress = DeliveryAddress(
+                                        label: newAddressLabel,
+                                        fullAddress: newAddressText,
+                                        isDefault: deliveryService.savedAddresses.isEmpty
+                                    )
+                                    deliveryService.addAddress(newAddress)
+                                    onSelect(newAddress)
+                                    dismiss()
+                                } label: {
+                                    Text("Add & Use This Address")
+                                        .font(.subheadline.bold())
+                                        .frame(maxWidth: .infinity)
+                                        .padding(.vertical, 12)
+                                        .background(newAddressText.isEmpty ? Color.neutral300 : Color.forestCanopy)
+                                        .foregroundStyle(.white)
+                                        .cornerRadius(10)
+                                }
+                                .disabled(newAddressText.isEmpty)
+                            }
+                        }
+                    }
+                }
+            }
+            .navigationTitle("Delivery Address")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button("Cancel") { dismiss() }
+                }
+            }
+        }
+    }
+    
+    private var emptyState: some View {
+        VStack(spacing: 20) {
+            Image(systemName: "location.slash")
+                .font(.system(size: 48))
+                .foregroundStyle(Color.neutral300)
+            
+            Text("No saved addresses")
+                .font(.headline)
+            
+            Button {
+                showingNewAddress = true
+            } label: {
+                Text("Add Your First Address")
+                    .font(.subheadline.bold())
+                    .foregroundStyle(.white)
+                    .padding(.horizontal, 24)
+                    .padding(.vertical, 12)
+                    .background(Color.forestCanopy)
+                    .cornerRadius(10)
+            }
+        }
+    }
+}
+
+// MARK: - Helper Extensions
+
+extension Text {
+    func inlineTag() -> some View {
+        self
+            .font(.caption2)
+            .foregroundColor(.neutral600)
+            .padding(.horizontal, 6)
+            .padding(.vertical, 2)
+            .background(Color.neutral100)
+            .cornerRadius(4)
+    }
+}
+
 // MARK: - Swipe to Delete Row Component
-// Based on https://stackoverflow.com/a/76980028 by Ihor Chernysh
 
 struct SwipeToDeleteRow<Content: View>: View {
     let onDelete: () -> Void
@@ -647,7 +902,7 @@ struct SwipeToDeleteRow<Content: View>: View {
     @State private var offset: CGFloat = 0
     
     private let deleteButtonWidth: CGFloat = 80
-    private let swipeThreshold: CGFloat = -40 // Minimum swipe to show button
+    private let swipeThreshold: CGFloat = -40
     
     init(onDelete: @escaping () -> Void, @ViewBuilder content: @escaping () -> Content) {
         self.onDelete = onDelete
@@ -657,12 +912,10 @@ struct SwipeToDeleteRow<Content: View>: View {
     var body: some View {
         GeometryReader { geometry in
             HStack(spacing: 0) {
-                // Main content
                 content()
                     .frame(width: geometry.size.width)
                     .background(Color.white)
                 
-                // Delete button
                 Button {
                     UIImpactFeedbackGenerator(style: .medium).impactOccurred()
                     withAnimation(.easeInOut(duration: 0.25)) {
@@ -685,38 +938,27 @@ struct SwipeToDeleteRow<Content: View>: View {
             .gesture(
                 DragGesture()
                     .onChanged { gesture in
-                        // Prevent swipe to the right in default position
-                        if offset == 0 && gesture.translation.width > 0 {
-                            return
-                        }
+                        if offset == 0 && gesture.translation.width > 0 { return }
                         
-                        // If already swiped and dragging right
                         if offset < 0 && gesture.translation.width > 0 {
                             let newOffset = offset + gesture.translation.width
-                            
-                            // If dragged far enough right, reset to zero
                             if newOffset > -deleteButtonWidth / 2 {
                                 withAnimation(.interpolatingSpring(stiffness: 300, damping: 30)) {
                                     offset = 0
                                 }
                                 return
                             }
-                            
-                            // Otherwise update the offset
                             self.offset = min(0, newOffset)
                             return
                         }
                         
-                        // Swiping left - allow unlimited stretch like native
                         if gesture.translation.width < 0 {
                             offset = gesture.translation.width
                         }
                     }
                     .onEnded { gesture in
                         withAnimation(.interpolatingSpring(stiffness: 300, damping: 30)) {
-                            // If swiped far enough, lock at delete button width
                             if offset < swipeThreshold {
-                                // If swiped way past, trigger delete
                                 if offset < -geometry.size.width * 0.6 {
                                     UIImpactFeedbackGenerator(style: .medium).impactOccurred()
                                     withAnimation(.easeInOut(duration: 0.25)) {
@@ -730,14 +972,12 @@ struct SwipeToDeleteRow<Content: View>: View {
                                 }
                                 return
                             }
-                            
-                            // Not swiped enough, reset
                             offset = 0
                         }
                     }
             )
         }
-        .frame(height: 120)
+        .frame(height: 140)
         .clipped()
     }
 }

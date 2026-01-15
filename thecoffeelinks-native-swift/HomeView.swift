@@ -2,16 +2,38 @@
 //  HomeView.swift
 //  thecoffeelinks-native-swift
 //
-//  Created by AppCafe on 2026-01-12.
+//  Home as Ordering Engine — not a marketing page.
+//  Max 6 actionable items above the fold.
+//  Priority: Ready-to-Order > Favorites > Active Order > Popular > Recent
 //
 
 import SwiftUI
 
 struct HomeView: View {
     @StateObject private var viewModel = HomeViewModel()
-    @EnvironmentObject var appState: AppState // Keep for greeting
+    @ObservedObject private var favoritesService = FavoritesService.shared
+    @ObservedObject private var predictionEngine = PredictionEngine.shared
+    @ObservedObject private var connectionService = ConnectionService.shared
+    @ObservedObject private var deliveryService = DeliveryService.shared
+    @ObservedObject private var cartManager = CartManager.shared
+    @EnvironmentObject var appState: AppState
     
     @Namespace private var namespace
+    
+    // Delivery-filtered products
+    private var filteredProducts: [Product] {
+        if cartManager.selectedDeliveryOption == .delivery {
+            return deliveryService.filterDeliverableProducts(viewModel.allProducts)
+        }
+        return viewModel.allProducts
+    }
+    
+    private var filteredTrendingProducts: [Product] {
+        if cartManager.selectedDeliveryOption == .delivery {
+            return deliveryService.filterDeliverableProducts(viewModel.trendingProducts)
+        }
+        return viewModel.trendingProducts
+    }
     
     var body: some View {
         NavigationStack {
@@ -30,39 +52,67 @@ struct HomeView: View {
                     }
                 case .idle, .loaded, .empty:
                     ScrollView {
-                        VStack(spacing: 24) {
+                        VStack(spacing: 20) {
                             // 1. Header (Greeting + Profile)
                             headerSection
                             
-                            // 2. Quick Order Widget (Primary - Morning Ritual)
-                            QuickOrderWidget()
+                            // 2. Delivery Mode Indicator (when in delivery mode)
+                            if CartManager.shared.selectedDeliveryOption == .delivery {
+                                DeliveryModeIndicator()
+                                    .frame(maxWidth: .infinity, alignment: .leading)
+                                    .padding(.horizontal)
+                            }
                             
-                            // 3. Active Order (if any, High Priority)
+                            // 3. AI Ready-to-Order Card (PRIMARY - Zero thinking)
+                            // Uses explicit dominance rules
+                            if predictionEngine.shouldShowAICard {
+                                ReadyToOrderCard()
+                                    .environmentObject(appState)
+                            } else if predictionEngine.shouldShowAsHint {
+                                // Downgraded to hint
+                                aiHintView
+                            } else if !favoritesService.favorites.isEmpty || !viewModel.recentProducts.isEmpty {
+                                // Fallback: Quick Order Widget
+                                QuickOrderWidget()
+                            }
+                            
+                            // 4. Active Order Banner (if any, High Priority)
                             if let order = viewModel.activeOrder {
                                 OrderTrackingBannerCompact(order: order)
                                     .padding(.horizontal)
                             }
                             
-                            // 4. Highlights (Vouchers/Events)
+                            // 5. Favorites Section (Heart-marked items)
+                            FavoritesSection()
+                            
+                            // 6. Popular Right Now (with anti-herd)
+                            // Filtered by delivery mode
+                            PopularRightNowSection(
+                                products: filteredTrendingProducts,
+                                orderCounts: viewModel.orderCounts
+                            )
+                            
+                            // 7. Regulars Here Now (from ConnectionService)
+                            if connectionService.isOpenToConnect {
+                                let presence = connectionService.getPresenceSignal()
+                                PresenceSignalView(
+                                    connectedNames: presence.connectedNames,
+                                    regularsCount: presence.regularsCount
+                                )
+                                .padding(.horizontal)
+                            }
+                            
+                            // 8. Context-Aware Recommendations (below fold)
+                            ContextAwareSection(products: filteredProducts)
+                                .environmentObject(appState)
+                            
+                            // 9. Highlights (Vouchers/Events) - Lower priority
                             if !viewModel.highlights.isEmpty {
                                 highlightsSection
                             }
                             
-                            // 5. Trending Products (IsPopular)
-                            if !viewModel.trendingProducts.isEmpty {
-                                sectionHeader(title: "What's hot")
-                                ScrollView(.horizontal, showsIndicators: false) {
-                                    HStack(spacing: 16) {
-                                        ForEach(viewModel.trendingProducts) { product in
-                                            ProductCard(product: product, width: 180)
-                                        }
-                                    }
-                                    .padding(.horizontal)
-                                }
-                            }
-                            
-                            // 6. Recent Ordered (History)
-                            if !viewModel.recentProducts.isEmpty {
+                            // 10. Order Again / Recent (if no favorites)
+                            if favoritesService.favorites.isEmpty && !viewModel.recentProducts.isEmpty {
                                 sectionHeader(title: "Order again")
                                 ScrollView(.horizontal, showsIndicators: false) {
                                     HStack(spacing: 16) {
@@ -74,12 +124,13 @@ struct HomeView: View {
                                 }
                             }
                             
-                            Spacer().frame(height: 100) // Extra space for floating cart
+                            Spacer().frame(height: 100)
                         }
                         .padding(.top, 20)
                     }
                     .refreshable {
                         await viewModel.fetchData()
+                        PredictionEngine.shared.resetSession() // Reset AI session on refresh
                     }
                 }
             }
@@ -236,6 +287,35 @@ struct HomeView: View {
         }
     }
     
+    // AI Hint (downgraded from full card)
+    private var aiHintView: some View {
+        HStack(spacing: 12) {
+            Image(systemName: "sparkle")
+                .font(.system(size: 14))
+                .foregroundStyle(Color.brandAccent)
+            
+            if let cart = predictionEngine.readyToOrderCart,
+               let firstItem = cart.items.first {
+                Text("\(predictionEngine.predictionLanguage): \(firstItem.product.name)")
+                    .font(.subheadline)
+                    .foregroundStyle(Color.coffeeDark)
+            }
+            
+            Spacer()
+            
+            Button {
+                // Navigate to product
+            } label: {
+                Text("View")
+                    .font(.caption.bold())
+                    .foregroundStyle(Color.brandAccent)
+            }
+        }
+        .padding(12)
+        .background(Color.brandAccent.opacity(0.1))
+        .cornerRadius(10)
+        .padding(.horizontal)
+    }
 
 }
 

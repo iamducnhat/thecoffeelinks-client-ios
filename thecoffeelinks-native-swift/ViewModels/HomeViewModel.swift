@@ -11,6 +11,14 @@ class HomeViewModel: ObservableObject {
     @Published var highlights: [HighlightItem] = [] // Vouchers + Events
     @Published var trendingProducts: [Product] = [] // Popular == true
     @Published var recentProducts: [Product] = [] // From Past Orders
+    @Published var allProducts: [Product] = [] // For context-aware filtering
+    
+    // Popularity tracking (orders today per product)
+    @Published var orderCounts: [String: Int] = [:]
+    
+    // Social signals
+    @Published var regularsAtStore: Int = 0
+    @Published var connectedUsersAtStore: [String] = []
     
     private let productService = ProductService()
     private let orderService = OrderService()
@@ -58,6 +66,30 @@ class HomeViewModel: ObservableObject {
             
             processData(products: products, orders: orders, vouchers: vouchers)
             
+            // Generate AI prediction in background
+            Task {
+                await PredictionEngine.shared.generatePrediction()
+            }
+            
+            // Record orders for prediction learning
+            for order in orders {
+                let context = PredictionContext()
+                let cartItems = order.items.compactMap { item -> CartItem? in
+                    guard let product = products.first(where: { $0.id == item.productId }) else { return nil }
+                    return CartItem(
+                        id: UUID(),
+                        product: product,
+                        quantity: item.quantity,
+                        finalPrice: item.finalPrice ?? 0,
+                        customization: item.optionsSnapshotJson ?? OrderCustomization(size: "M", ice: nil, sugar: nil, toppings: nil)
+                    )
+                }
+                if !cartItems.isEmpty {
+                    FavoritesService.shared.recordOrder(items: cartItems)
+                    PredictionEngine.shared.recordOrder(items: cartItems, context: context)
+                }
+            }
+            
             self.viewState = .loaded
             
         } catch {
@@ -69,8 +101,11 @@ class HomeViewModel: ObservableObject {
     }
     
     private func processData(products: [Product], orders: [Order], vouchers: [Voucher]) {
+        // Store all products for context-aware filtering
+        self.allProducts = products
+        
         // 2. Process Highlights (Vouchers Only)
-        let availableVouchers = vouchers.prefix(5) // Show top 5 vouchers
+        let availableVouchers = vouchers.prefix(5)
         
         var voucherHighlights: [HighlightItem] = []
         
@@ -80,8 +115,15 @@ class HomeViewModel: ObservableObject {
         
         self.highlights = voucherHighlights
         
-        // 3. Process Trending
+        // 3. Process Trending (with order counts for anti-herd display)
         self.trendingProducts = products.filter { $0.isPopular ?? false }
+        
+        // Simulate order counts (in production, this comes from server)
+        var counts: [String: Int] = [:]
+        for product in trendingProducts {
+            counts[product.id] = Int.random(in: 3...25)
+        }
+        self.orderCounts = counts
         
         // 4. Process Recent Ordered Products
         var recentProductIds: Set<String> = []
@@ -108,6 +150,10 @@ class HomeViewModel: ObservableObject {
             let s = $0.status ?? ""
             return s == "received" || s == "preparing" || s == "ready"
         })
+        
+        // 6. Mock social signals (in production from server)
+        self.regularsAtStore = Int.random(in: 0...8)
+        self.connectedUsersAtStore = ["Minh", "Lan"].filter { _ in Bool.random() }
     }
 }
 

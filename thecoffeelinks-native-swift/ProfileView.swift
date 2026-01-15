@@ -103,31 +103,11 @@ struct ProfileView: View {
                         .padding(.bottom, 20)
                     }
                     
-                    // MARK: - Networking Control
+                    // MARK: - Connection Mode (Focus vs Open)
                     Section {
-                        Toggle(isOn: $isNetworkingVisible) {
-                            HStack {
-                                Image(isNetworkingVisible ? "eye" : "eye_off")
-                                    .resizable()
-                                    .renderingMode(.template)
-                                    .aspectRatio(contentMode: .fit)
-                                    .frame(width: 20, height: 20)
-                                    .foregroundStyle(isNetworkingVisible ? Color.sage : Color.secondary)
-                                
-                                VStack(alignment: .leading) {
-                                    Text("Networking Visibility")
-                                        .font(.brandSans(16))
-                                        .foregroundStyle(Color.coffeeDark)
-                                    
-                                    Text(isNetworkingVisible ? "Visible to nearby members" : "Hidden from everyone")
-                                        .font(.caption)
-                                        .foregroundStyle(Color.secondary)
-                                }
-                            }
-                        }
-                        .tint(Color.sage)
+                        ConnectionModeToggle()
                     } header: {
-                        Text("Privacy & Control")
+                        Text("Connection")
                             .font(.caption)
                             .fontWeight(.bold)
                             .foregroundStyle(Color.secondary)
@@ -170,6 +150,27 @@ struct ProfileView: View {
                                     .aspectRatio(contentMode: .fit)
                                     .frame(width: 20, height: 20)
                                     .foregroundStyle(Color.coffeeDark)
+                            }
+                        }
+                        
+                        // Favorites - Edit favorites and notes
+                        NavigationLink { FavoritesManagerView() } label: {
+                            Label {
+                                HStack {
+                                    Text("Favorites")
+                                        .font(.brandSans(16))
+                                        .foregroundStyle(Color.coffeeDark)
+                                    Spacer()
+                                    Text("\(FavoritesService.shared.favorites.count) saved")
+                                        .font(.caption)
+                                        .foregroundStyle(Color.secondary)
+                                }
+                            } icon: {
+                                Image(systemName: "heart.fill")
+                                    .resizable()
+                                    .aspectRatio(contentMode: .fit)
+                                    .frame(width: 20, height: 20)
+                                    .foregroundStyle(Color.red)
                             }
                         }
                         
