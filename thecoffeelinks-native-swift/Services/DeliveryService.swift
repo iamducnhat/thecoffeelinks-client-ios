@@ -142,14 +142,73 @@ class DeliveryService: ObservableObject {
             isInDeliveryZone = true
             deliveryFee = baseDeliveryFee
         }
+        
+        // Sync to CartManager
+        CartManager.shared.deliveryFee = deliveryFee
+        // Assuming default min order for client-side calc fallback
+        CartManager.shared.minimumOrderAmount = 50000 // Default 50k fallback
     }
     
-    /// Check if address is in delivery zone
-    func validateDeliveryZone(for address: DeliveryAddress) async -> Bool {
-        // TODO: Server-side validation
-        // For now, assume all addresses are valid
-        return true
+    /// Check if address is in delivery zone via server API
+    func validateDeliveryZone(for address: DeliveryAddress, storeId: String? = nil) async -> Bool {
+        guard let actualStoreId = storeId ?? CartManager.shared.selectedStoreId else {
+            return true // No store selected, assume valid
+        }
+        
+        isLoading = true
+        error = nil
+        
+        do {
+            let response = try await fetchDeliveryAvailability(addressId: address.id, storeId: actualStoreId)
+            
+            await MainActor.run {
+                isInDeliveryZone = response.available
+                estimatedETA = response.eta?.minutes
+                deliveryFee = response.fee?.amount ?? 0
+                isSurge = response.fee?.surge ?? false
+                minimumOrderAmount = response.minOrderAmount
+                
+                // Sync to CartManager
+                CartManager.shared.deliveryFee = deliveryFee
+                if let min = response.minOrderAmount {
+                    CartManager.shared.minimumOrderAmount = min
+                }
+                
+                if !response.available {
+                    error = response.message
+                }
+                
+                isLoading = false
+            }
+            
+            return response.available
+        } catch {
+            await MainActor.run {
+                self.error = error.localizedDescription
+                isLoading = false
+            }
+            return true // Don't block on error
+        }
     }
+    
+    /// Fetch delivery availability from server
+    private func fetchDeliveryAvailability(addressId: String?, storeId: String) async throws -> DeliveryAvailabilityResponse {
+        var queryItems = [URLQueryItem(name: "storeId", value: storeId)]
+        
+        if let addressId = addressId {
+            queryItems.append(URLQueryItem(name: "addressId", value: addressId))
+        } else if let address = selectedAddress, let coords = address.coordinates {
+            queryItems.append(URLQueryItem(name: "latitude", value: String(coords.latitude)))
+            queryItems.append(URLQueryItem(name: "longitude", value: String(coords.longitude)))
+        }
+        
+        return try await APIClient.shared.get("api/delivery/availability", queryItems: queryItems)
+    }
+    
+    // MARK: - Server Response Properties
+    
+    @Published var isSurge: Bool = false
+    @Published var minimumOrderAmount: Double? = nil
     
     /// Get ETA display string
     var etaDisplay: String? {
@@ -205,10 +264,13 @@ extension DeliveryService {
     
     /// Check if a specific product is deliverable
     func isProductDeliverable(_ product: Product) -> Bool {
-        // Products with "pastries" category might not travel well
-        // Ice-heavy drinks may not be ideal
-        // TODO: Add `isDeliverable` field to Product model from server
+        // Use server-provided is_deliverable field
+        // Falls back to category-based logic if field not present
+        if let isDeliverable = product.isDeliverable {
+            return isDeliverable
+        }
         
+        // Legacy fallback: category-based check
         let category = product.category?.lowercased() ?? ""
         
         // Categories that don't deliver well

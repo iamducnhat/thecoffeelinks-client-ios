@@ -19,6 +19,7 @@ struct HomeView: View {
     @EnvironmentObject var appState: AppState
     
     @Namespace private var namespace
+    @State private var showAddressPicker = false
     
     // Delivery-filtered products
     private var filteredProducts: [Product] {
@@ -56,11 +57,29 @@ struct HomeView: View {
                             // 1. Header (Greeting + Profile)
                             headerSection
                             
-                            // 2. Delivery Mode Indicator (when in delivery mode)
+                            // 2. Delivery Mode Banner (when in delivery mode)
                             if CartManager.shared.selectedDeliveryOption == .delivery {
-                                DeliveryModeIndicator()
-                                    .frame(maxWidth: .infinity, alignment: .leading)
-                                    .padding(.horizontal)
+                                if deliveryService.isInDeliveryZone {
+                                    DeliveryModeBanner(
+                                        address: deliveryService.selectedAddress?.fullAddress ?? "Select address",
+                                        eta: deliveryService.etaDisplay,
+                                        fee: deliveryService.feeDisplay,
+                                        isSurge: deliveryService.isSurge,
+                                        minimumOrderAmount: deliveryService.minimumOrderAmount,
+                                        onChangeAddress: { showAddressPicker = true },
+                                        onSwitchToPickup: { 
+                                            withAnimation { cartManager.selectedDeliveryOption = .takeAway }
+                                        }
+                                    )
+                                } else {
+                                    DeliveryOutOfZoneBanner(
+                                        message: deliveryService.error ?? "Your address is outside our delivery area",
+                                        onSwitchToPickup: {
+                                            withAnimation { cartManager.selectedDeliveryOption = .takeAway }
+                                        },
+                                        onChangeAddress: { showAddressPicker = true }
+                                    )
+                                }
                             }
                             
                             // 3. AI Ready-to-Order Card (PRIMARY - Zero thinking)
@@ -152,6 +171,21 @@ struct HomeView: View {
                 Text(greetingSubtitle)
                     .font(.brandSans(14))
                     .foregroundStyle(Color.secondary)
+                
+                // Delivery Mode Toggle
+                if #available(iOS 26.0, *) {
+                    DeliveryModeSelector(
+                        selectedOption: $cartManager.selectedDeliveryOption,
+                        namespace: namespace
+                    )
+                    .padding(.top, 4)
+                } else {
+                    DeliveryModeSelector(
+                        selectedOption: $cartManager.selectedDeliveryOption,
+                        namespace: namespace
+                    )
+                    .padding(.top, 4)
+                }
             }
             
             Spacer()
@@ -398,6 +432,94 @@ struct ActiveOrderCard: View {
         .cornerRadius(16)
         .padding(.horizontal)
         .shadow(color: Color.coffeeBlack.opacity(0.2), radius: 10, x: 0, y: 5)
+    }
+}
+
+struct DeliveryModeSelector: View {
+    @Binding var selectedOption: DeliveryOption
+    var namespace: Namespace.ID
+    
+    var body: some View {
+        HStack(spacing: 0) {
+            // Pickup Option
+            Button {
+                withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
+                    selectedOption = .takeAway
+                }
+            } label: {
+                HStack(spacing: 6) {
+                    Image(systemName: "bag")
+                        .font(.system(size: 14))
+                    Text("Pickup")
+                        .font(.brandSans(14).weight(.semibold))
+                }
+                .foregroundColor(selectedOption == .takeAway ? .white : .secondary)
+                .padding(.vertical, 8)
+                .padding(.horizontal, 16)
+                .background {
+                    if selectedOption == .takeAway {
+                        Capsule()
+                            .fill(Color.brandPrimary)
+                            .matchedGeometryEffect(id: "delivery_mode_selector", in: namespace)
+                    }
+                }
+            }
+            .buttonStyle(.plain)
+            
+            // Delivery Option
+            Button {
+                withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
+                    selectedOption = .delivery
+                }
+            } label: {
+                HStack(spacing: 6) {
+                    Image(systemName: "bicycle")
+                        .font(.system(size: 14))
+                    Text("Delivery")
+                        .font(.brandSans(14).weight(.semibold))
+                }
+                .foregroundColor(selectedOption == .delivery ? .white : .secondary)
+                .padding(.vertical, 8)
+                .padding(.horizontal, 16)
+                .background {
+                    if selectedOption == .delivery {
+                        Capsule()
+                            .fill(Color.brandPrimary)
+                            .matchedGeometryEffect(id: "delivery_mode_selector", in: namespace)
+                    }
+                }
+            }
+            .buttonStyle(.plain)
+            
+            // Dine In Option (Optional, only if store supports)
+             Button {
+                withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
+                    selectedOption = .dineIn
+                }
+            } label: {
+                HStack(spacing: 6) {
+                    Image(systemName: "fork.knife")
+                        .font(.system(size: 14))
+                    Text("Dine In")
+                        .font(.brandSans(14).weight(.semibold))
+                }
+                .foregroundColor(selectedOption == .dineIn ? .white : .secondary)
+                .padding(.vertical, 8)
+                .padding(.horizontal, 16)
+                .background {
+                    if selectedOption == .dineIn {
+                        Capsule()
+                            .fill(Color.brandPrimary)
+                            .matchedGeometryEffect(id: "delivery_mode_selector", in: namespace)
+                    }
+                }
+            }
+            .buttonStyle(.plain)
+        }
+        .padding(4)
+        .background(Color.white)
+        .clipShape(Capsule())
+        .shadow(color: Color.black.opacity(0.05), radius: 4, x: 0, y: 2)
     }
 }
 

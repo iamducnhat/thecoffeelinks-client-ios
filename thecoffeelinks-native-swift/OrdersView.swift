@@ -241,6 +241,8 @@ struct OrderDetailView: View {
                 isNew: nil,
                 isActive: true,
                 isAvailable: true,
+                isDeliverable: nil,
+                deliveryPrepMinutes: nil,
                 sizeOptions: ProductSizeOptions(
                     small: SizeOption(enabled: true, price: (item.finalPrice ?? 0) / Double(item.quantity)),
                     medium: SizeOption(enabled: true, price: (item.finalPrice ?? 0) / Double(item.quantity)),
@@ -513,6 +515,8 @@ struct HistoryRowWithReorder: View {
                 isNew: nil,
                 isActive: true,
                 isAvailable: true,
+                isDeliverable: nil,
+                deliveryPrepMinutes: nil,
                 sizeOptions: ProductSizeOptions(
                     small: SizeOption(enabled: true, price: (item.finalPrice ?? 0) / Double(item.quantity)),
                     medium: SizeOption(enabled: true, price: (item.finalPrice ?? 0) / Double(item.quantity)),

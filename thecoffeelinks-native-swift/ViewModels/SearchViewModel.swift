@@ -16,13 +16,22 @@ class SearchViewModel: ObservableObject {
     // Computed Results
     var filteredProducts: [Product] {
         let term = query.lowercased().trimmingCharacters(in: .whitespacesAndNewlines)
+        let isDeliveryMode = CartManager.shared.selectedDeliveryOption == .delivery
+        
+        // 0. Filter by Delivery Mode first
+        let deliveryFiltered: [Product]
+        if isDeliveryMode {
+             deliveryFiltered = allProducts.filter { DeliveryService.shared.isProductDeliverable($0) }
+        } else {
+             deliveryFiltered = allProducts
+        }
         
         // 1. Filter by Category
         let categoryFiltered: [Product]
         if selectedCategory.id == "all" {
-            categoryFiltered = allProducts
+            categoryFiltered = deliveryFiltered
         } else {
-            categoryFiltered = allProducts.filter { product in
+            categoryFiltered = deliveryFiltered.filter { product in
                 // Check exact ID match first
                 if let catId = product.categoryId {
                     return catId == selectedCategory.id

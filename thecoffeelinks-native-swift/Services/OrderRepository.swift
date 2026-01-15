@@ -46,13 +46,16 @@ class OrderRepository: ObservableObject {
     }
     
     // Create order logic
-    func createOrder(items: [CartItem], total: Double, type: String, tableId: String? = nil, paymentMethod: String) async throws -> String {
+    func createOrder(items: [CartItem], total: Double, type: String, tableId: String? = nil, paymentMethod: String, deliveryAddress: String? = nil, deliveryNotes: String? = nil, deliveryFee: Double = 0) async throws -> String {
         let request = CreateOrderRequest(
             items: items,
             order_type: type,
             total_amount: total,
             table_id: tableId,
-            payment_method: paymentMethod
+            payment_method: paymentMethod,
+            deliveryAddress: deliveryAddress,
+            deliveryNotes: deliveryNotes,
+            deliveryFee: deliveryFee
         )
         
         let response: CreateOrderResponse = try await client.post("api/orders", body: request)
@@ -67,7 +70,9 @@ struct CreateOrderRequest: Encodable {
     let total_amount: Double
     let table_id: String?
     let payment_method: String
-    // Add user_id if needed, but usually derived from Auth Header on server or passed here
+    let deliveryAddress: String?
+    let deliveryNotes: String?
+    let deliveryFee: Double?
 }
 
 struct CreateOrderResponse: Decodable {

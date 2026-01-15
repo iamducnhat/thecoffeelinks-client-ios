@@ -75,6 +75,31 @@ struct CheckoutView: View {
                                 // Delivery-specific section (if delivery selected)
                                 if cartManager.selectedDeliveryOption == .delivery {
                                     deliveryDetailsSection
+                                    
+                                    // Minimum Order Validation Warning
+                                    if !cartManager.meetsDeliveryMinimum {
+                                        HStack(spacing: 12) {
+                                            Image(systemName: "exclamationmark.circle.fill")
+                                                .foregroundColor(.orange)
+                                                .font(.system(size: 20))
+                                            
+                                            VStack(alignment: .leading, spacing: 2) {
+                                                Text("Order minimum not met")
+                                                    .font(.subheadline.bold())
+                                                    .foregroundColor(.orange)
+                                                
+                                                Text("Add \(cartManager.remainingForFreeDelivery.toVND()) more for delivery")
+                                                    .font(.caption)
+                                                    .foregroundColor(.orange)
+                                            }
+                                        }
+                                        .padding()
+                                        .frame(maxWidth: .infinity, alignment: .leading)
+                                        .background(Color.orange.opacity(0.1))
+                                        .cornerRadius(12)
+                                        .padding(.horizontal, 20)
+                                        .padding(.top, 8)
+                                    }
                                 }
                                 
                                 Divider().padding(.horizontal, 20)
@@ -509,7 +534,7 @@ struct CheckoutView: View {
         VStack(alignment: .leading, spacing: 12) {
             sectionHeader(title: "Special Instructions")
             
-            TextField("Add notes for your order (optional)", text: $cartManager.deliveryNotes, axis: .vertical)
+            TextField(cartManager.selectedDeliveryOption == .delivery ? "Gate code, building access, floor..." : "Add notes for your order (optional)", text: $cartManager.deliveryNotes, axis: .vertical)
                 .font(.brandSans(15))
                 .lineLimit(3...5)
                 .padding(14)

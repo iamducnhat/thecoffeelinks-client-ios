@@ -15,6 +15,7 @@ struct SearchView: View {
     var enableInternalSearch: Bool = false
     
     @StateObject private var viewModel = SearchViewModel()
+    @ObservedObject private var cartManager = CartManager.shared
     @State private var internalQuery: String = ""
     @Environment(\.dismiss) var dismiss
     

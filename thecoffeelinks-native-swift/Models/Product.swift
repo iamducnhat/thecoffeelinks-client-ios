@@ -35,8 +35,15 @@ struct Product: Codable, Identifiable {
     let isNew: Bool?
     let isActive: Bool?
     let isAvailable: Bool?
+    let isDeliverable: Bool? // NEW: Whether product can be delivered
+    let deliveryPrepMinutes: Int? // NEW: Extra prep time for delivery
     let sizeOptions: ProductSizeOptions?
     let availableToppings: [String]? // Array of topping IDs available for this product
+    
+    // Computed for delivery filtering
+    var canBeDelivered: Bool {
+        isDeliverable ?? true // Default to true if not specified
+    }
     
     // Computed for compatibility
     var displayImageUrl: String? {

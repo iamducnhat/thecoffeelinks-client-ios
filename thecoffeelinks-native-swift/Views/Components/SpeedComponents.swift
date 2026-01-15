@@ -436,6 +436,8 @@ struct DeliveryTrustSignal: View {
         isNew: nil,
         isActive: true,
         isAvailable: true,
+        isDeliverable: nil,
+        deliveryPrepMinutes: nil,
         sizeOptions: ProductSizeOptions(
             small: SizeOption(enabled: true, price: 49000),
             medium: SizeOption(enabled: true, price: 59000),

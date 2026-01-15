@@ -12,11 +12,30 @@ class CartManager: ObservableObject {
     @Published var selectedStoreId: String?
     @Published var deliveryAddress: String = ""
     @Published var deliveryNotes: String = ""
+    @Published var deliveryFee: Double = 0
+    @Published var minimumOrderAmount: Double = 0
     
     private init() {}
     
-    var totalAmount: Double {
+    var subtotal: Double {
         items.reduce(0) { $0 + ($1.finalPrice * Double($1.quantity)) }
+    }
+    
+    var totalAmount: Double {
+        var total = subtotal
+        if selectedDeliveryOption == .delivery {
+            total += deliveryFee
+        }
+        return total
+    }
+    
+    var meetsDeliveryMinimum: Bool {
+        if selectedDeliveryOption != .delivery { return true }
+        return subtotal >= minimumOrderAmount
+    }
+    
+    var remainingForFreeDelivery: Double {
+        max(0, minimumOrderAmount - subtotal)
     }
     
     var totalItemCount: Int {
@@ -151,24 +170,32 @@ class CartManager: ObservableObject {
         
         do {
             // Validate Payment Method
-            if selectedDeliveryOption == .delivery && deliveryAddress.isEmpty {
-                throw NSError(domain: "Cart", code: 400, userInfo: [NSLocalizedDescriptionKey: "Delivery address required"])
+            if selectedDeliveryOption == .delivery {
+                if deliveryAddress.isEmpty {
+                    throw NSError(domain: "Cart", code: 400, userInfo: [NSLocalizedDescriptionKey: "Delivery address required"])
+                }
+                if !meetsDeliveryMinimum {
+                     throw NSError(domain: "Cart", code: 400, userInfo: [NSLocalizedDescriptionKey: "Order is below minimum for delivery"])
+                }
             }
             
-            let type = selectedDeliveryOption == .dineIn ? "dine_in" : "take_away"
+            let type = selectedDeliveryOption == .dineIn ? "dine_in" : (selectedDeliveryOption == .delivery ? "delivery" : "take_away")
             let paymentMethod = "apple_pay" 
             
             // Record order for Quick Order "Your Usual" algorithm
             let itemsToRecord = items
             
-            let finalTotal = totalAmount - discountAmount
+            let finalTotal = totalAmount - discountAmount // totalAmount now includes deliveryFee
             
             let orderId = try await OrderRepository.shared.createOrder(
                 items: items,
                 total: finalTotal,
                 type: type,
                 tableId: "T12", // Placeholder as per prompt
-                paymentMethod: paymentMethod
+                paymentMethod: paymentMethod,
+                deliveryAddress: selectedDeliveryOption == .delivery ? deliveryAddress : nil,
+                deliveryNotes: selectedDeliveryOption == .delivery ? deliveryNotes : nil,
+                deliveryFee: selectedDeliveryOption == .delivery ? deliveryFee : 0
             )
             
             print("Order Placed: \(orderId)")
