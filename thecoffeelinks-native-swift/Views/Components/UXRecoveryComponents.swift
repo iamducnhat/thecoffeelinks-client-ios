@@ -82,21 +82,17 @@ struct StorePickerRow: View {
                         .font(.subheadline.bold())
                         .foregroundStyle(Color.coffeeDark)
                     
-                    if let address = store.address {
+                    if let address = store.address as String?, !address.isEmpty {
                         Text(address)
                             .font(.caption)
                             .foregroundStyle(Color.neutral500)
                             .lineLimit(1)
                     }
                     
-                    if store.isOpen {
-                        Text("Open now")
+                    if let hours = store.openingHours {
+                        Text(hours)
                             .font(.caption2)
                             .foregroundStyle(Color.forestCanopy)
-                    } else {
-                        Text("Closed")
-                            .font(.caption2)
-                            .foregroundStyle(Color.red)
                     }
                 }
                 

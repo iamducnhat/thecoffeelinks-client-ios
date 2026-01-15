@@ -299,7 +299,7 @@ struct ContextAwareSection: View {
             VStack(alignment: .leading, spacing: 12) {
                 Text(contextTitle)
                     .font(.brandSerif(20))
-                    .foregroundStyle(Color.coffieDark)
+                    .foregroundStyle(Color.coffeeDark)
                     .padding(.horizontal)
                 
                 ScrollView(.horizontal, showsIndicators: false) {

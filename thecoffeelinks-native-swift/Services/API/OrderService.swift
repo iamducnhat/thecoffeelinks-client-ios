@@ -127,6 +127,21 @@ class OrderService: OrderServiceProtocol {
         return token
     }
     
+    func cancelOrder(orderId: String) async throws {
+        struct CancelOrderResponse: Decodable {
+            let success: Bool
+            let error: String?
+        }
+        
+        let response: CancelOrderResponse = try await apiClient.post("/api/orders/\(orderId)/cancel", body: EmptyRequest())
+        
+        if !response.success {
+            throw APIClient.APIError.httpError(400, response.error ?? "Failed to cancel order")
+        }
+    }
+    
+    private struct EmptyRequest: Encodable {}
+    
     // MARK: - Realtime
     
     func subscribeToOrders(userId: String, onChange: @escaping () -> Void) async -> RealtimeChannelV2 {

@@ -676,7 +676,7 @@ struct CheckoutView: View {
                     items: cartManager.items
                 )
                 
-                let orderId = try await service.createOrder(
+                let createdOrder = try await service.createOrder(
                     items: cartManager.items,
                     total: total,
                     deliveryOption: cartManager.selectedDeliveryOption,
@@ -693,7 +693,7 @@ struct CheckoutView: View {
                 PredictionEngine.shared.recordOrder(items: cartManager.items, context: context)
                 
                 // Show undo toast instead of immediate success
-                pendingOrderId = orderId
+                pendingOrderId = createdOrder.id
                 withAnimation(.spring(response: 0.3)) {
                     showUndoToast = true
                 }
