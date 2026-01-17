@@ -52,7 +52,7 @@ struct SkeletonRectangle: View {
     
     var body: some View {
         RoundedRectangle(cornerRadius: cornerRadius)
-            .fill(Color.neutral200)
+            .fill(Editorial.Colors.secondaryBackground)
             .frame(height: height)
             .shimmer()
     }
@@ -63,7 +63,7 @@ struct SkeletonCircle: View {
     
     var body: some View {
         Circle()
-            .fill(Color.neutral200)
+            .fill(Editorial.Colors.secondaryBackground)
             .frame(width: size, height: size)
             .shimmer()
     }
@@ -71,12 +71,12 @@ struct SkeletonCircle: View {
 
 // MARK: - Product Card Skeleton
 
-struct ProductCardSkeleton: View {
+struct LegacyProductCardSkeleton: View {
     var body: some View {
         HStack(spacing: 12) {
             // Image placeholder
             RoundedRectangle(cornerRadius: 12)
-                .fill(Color.neutral200)
+                .fill(Editorial.Colors.secondaryBackground)
                 .frame(width: 72, height: 72)
                 .shimmer()
             
@@ -98,12 +98,12 @@ struct ProductCardSkeleton: View {
             
             // Add button
             RoundedRectangle(cornerRadius: 8)
-                .fill(Color.neutral200)
+                .fill(Editorial.Colors.secondaryBackground)
                 .frame(width: 32, height: 32)
                 .shimmer()
         }
         .padding(14)
-        .background(Color.white)
+        .background(Editorial.Colors.secondaryBackground)
     }
 }
 
@@ -120,14 +120,14 @@ struct MenuSkeletonView: View {
                 Spacer()
             }
             .padding()
-            .background(Color.white)
+            .background(Editorial.Colors.secondaryBackground)
             
             // Category tabs skeleton
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: 12) {
                     ForEach(0..<4, id: \.self) { _ in
                         RoundedRectangle(cornerRadius: 20)
-                            .fill(Color.neutral200)
+                            .fill(Editorial.Colors.secondaryBackground)
                             .frame(width: 80, height: 32)
                             .shimmer()
                     }
@@ -135,16 +135,16 @@ struct MenuSkeletonView: View {
                 .padding(.horizontal)
                 .padding(.vertical, 12)
             }
-            .background(Color.white)
+            .background(Editorial.Colors.secondaryBackground)
             
             // Products skeleton
             VStack(spacing: 0) {
                 ForEach(0..<5, id: \.self) { _ in
-                    ProductCardSkeleton()
+                    LegacyProductCardSkeleton()
                     Divider().padding(.leading, 88)
                 }
             }
-            .background(Color.white)
+            .background(Editorial.Colors.secondaryBackground)
             .cornerRadius(16)
             .padding()
         }
@@ -180,7 +180,7 @@ struct HomeSkeletonView: View {
                         HStack(spacing: 12) {
                             ForEach(0..<3, id: \.self) { _ in
                                 RoundedRectangle(cornerRadius: 16)
-                                    .fill(Color.neutral200)
+                                    .fill(Editorial.Colors.secondaryBackground)
                                     .frame(width: 100, height: 150)
                                     .shimmer()
                             }
@@ -196,7 +196,7 @@ struct HomeSkeletonView: View {
                         .padding(.horizontal)
                     
                     RoundedRectangle(cornerRadius: 16)
-                        .fill(Color.neutral200)
+                        .fill(Editorial.Colors.secondaryBackground)
                         .frame(height: 160)
                         .padding(.horizontal)
                         .shimmer()
@@ -205,16 +205,16 @@ struct HomeSkeletonView: View {
                 // Products skeleton
                 VStack(spacing: 0) {
                     ForEach(0..<3, id: \.self) { _ in
-                        ProductCardSkeleton()
+                        LegacyProductCardSkeleton()
                     }
                 }
-                .background(Color.white)
+                .background(Editorial.Colors.secondaryBackground)
                 .cornerRadius(16)
                 .padding(.horizontal)
             }
             .padding(.vertical)
         }
-        .background(Color.morningFog)
+        .background(Editorial.Colors.backgroundPaper)
     }
 }
 
@@ -225,7 +225,7 @@ struct StoreCardSkeleton: View {
         HStack(spacing: 12) {
             // Image
             RoundedRectangle(cornerRadius: 12)
-                .fill(Color.neutral200)
+                .fill(Editorial.Colors.secondaryBackground)
                 .frame(width: 80, height: 80)
                 .shimmer()
             
@@ -246,7 +246,7 @@ struct StoreCardSkeleton: View {
             Spacer()
         }
         .padding()
-        .background(Color.white)
+        .background(Editorial.Colors.secondaryBackground)
         .cornerRadius(16)
     }
 }
@@ -271,7 +271,7 @@ struct ProfileSkeletonView: View {
             HStack(spacing: 8) {
                 ForEach(0..<2, id: \.self) { _ in
                     RoundedRectangle(cornerRadius: 12)
-                        .fill(Color.neutral200)
+                        .fill(Editorial.Colors.secondaryBackground)
                         .frame(width: 100, height: 24)
                         .shimmer()
                 }
@@ -287,7 +287,7 @@ struct ProfileSkeletonView: View {
                         Spacer()
                     }
                     .padding()
-                    .background(Color.white)
+                    .background(Editorial.Colors.secondaryBackground)
                 }
             }
             .cornerRadius(12)
@@ -315,7 +315,7 @@ struct OrderHistorySkeleton: View {
                     HStack(spacing: 8) {
                         ForEach(0..<2, id: \.self) { _ in
                             RoundedRectangle(cornerRadius: 8)
-                                .fill(Color.neutral200)
+                                .fill(Editorial.Colors.secondaryBackground)
                                 .frame(width: 50, height: 50)
                                 .shimmer()
                         }
@@ -325,7 +325,7 @@ struct OrderHistorySkeleton: View {
                     }
                 }
                 .padding()
-                .background(Color.white)
+                .background(Editorial.Colors.secondaryBackground)
                 .cornerRadius(12)
             }
         }
@@ -336,15 +336,15 @@ struct OrderHistorySkeleton: View {
 // MARK: - Preview
 
 #Preview {
-    ScrollView {
+    ScrollView(.vertical) {
         VStack(spacing: 40) {
             Text("Product Card").font(.headline)
-            ProductCardSkeleton()
+            LegacyProductCardSkeleton()
             
             Text("Menu View").font(.headline)
             MenuSkeletonView()
                 .frame(height: 400)
         }
     }
-    .background(Color.morningFog)
+    .background(Editorial.Colors.backgroundPaper)
 }

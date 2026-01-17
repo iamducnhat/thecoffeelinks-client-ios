@@ -22,7 +22,7 @@ struct ConfettiView: View {
     @State private var pieces: [ConfettiPiece] = []
     @State private var isAnimating = false
     
-    let colors: [Color] = [.sunRay, .forestCanopy, .red, .orange, .blue, .green]
+    let colors: [Color] = [Editorial.Colors.secondaryLatte, Editorial.Colors.semanticSuccess, .red, .orange, .blue, .green]
     
     var body: some View {
         GeometryReader { geometry in
@@ -74,13 +74,13 @@ struct SuccessCheckmark: View {
         ZStack {
             // Circle
             Circle()
-                .stroke(Color.forestCanopy.opacity(0.2), lineWidth: 4)
+                .stroke(Editorial.Colors.semanticSuccess.opacity(0.2), lineWidth: 4)
                 .frame(width: 80, height: 80)
             
             // Animated circle
             Circle()
                 .trim(from: 0, to: isAnimating ? 1 : 0)
-                .stroke(Color.forestCanopy, style: StrokeStyle(lineWidth: 4, lineCap: .round))
+                .stroke(Editorial.Colors.semanticSuccess, style: StrokeStyle(lineWidth: 4, lineCap: .round))
                 .frame(width: 80, height: 80)
                 .rotationEffect(.degrees(-90))
                 .animation(.easeInOut(duration: 0.6), value: isAnimating)
@@ -92,7 +92,7 @@ struct SuccessCheckmark: View {
                 path.addLine(to: CGPoint(x: 58, y: 28))
             }
             .trim(from: 0, to: isAnimating ? 1 : 0)
-            .stroke(Color.forestCanopy, style: StrokeStyle(lineWidth: 4, lineCap: .round, lineJoin: .round))
+            .stroke(Editorial.Colors.semanticSuccess, style: StrokeStyle(lineWidth: 4, lineCap: .round, lineJoin: .round))
             .animation(.easeInOut(duration: 0.4).delay(0.4), value: isAnimating)
         }
         .onAppear {
@@ -279,7 +279,7 @@ extension View {
         
         Text("Tap me!")
             .padding()
-            .background(Color.forestCanopy)
+            .background(Editorial.Colors.semanticSuccess)
             .foregroundStyle(.white)
             .cornerRadius(12)
             .pulse()

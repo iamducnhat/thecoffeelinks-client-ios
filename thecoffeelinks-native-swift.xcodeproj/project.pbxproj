@@ -12,6 +12,9 @@
 		25544F522F1431A0009A6830 /* Realtime in Frameworks */ = {isa = PBXBuildFile; productRef = 25544F512F1431A0009A6830 /* Realtime */; };
 		25544F542F1431A0009A6830 /* Storage in Frameworks */ = {isa = PBXBuildFile; productRef = 25544F532F1431A0009A6830 /* Storage */; };
 		25544F572F14341D009A6830 /* Supabase in Frameworks */ = {isa = PBXBuildFile; productRef = 25544F562F14341D009A6830 /* Supabase */; };
+		12777CFB3F8B4F0FB4ECD5AA /* LibreBaskerville-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = B4331C9B483A4F6E99149D4A /* LibreBaskerville-Regular.ttf */; };
+		F495694AB08C4E538B0A3F32 /* LibreBaskerville-Bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 696376B4AF3B4F08ABC24923 /* LibreBaskerville-Bold.ttf */; };
+		311132BBAFDC4D87A1AEF0E9 /* LibreBaskerville-Italic.ttf in Resources */ = {isa = PBXBuildFile; fileRef = FC02A854467A483D898B0051 /* LibreBaskerville-Italic.ttf */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -35,6 +38,9 @@
 		25544E6E2F1424F2009A6830 /* thecoffeelinks-native-swift.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "thecoffeelinks-native-swift.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		25544E7B2F1424F4009A6830 /* thecoffeelinks-native-swiftTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "thecoffeelinks-native-swiftTests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		25544E852F1424F4009A6830 /* thecoffeelinks-native-swiftUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "thecoffeelinks-native-swiftUITests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
+		696376B4AF3B4F08ABC24923 /* LibreBaskerville-Bold.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; name = "LibreBaskerville-Bold.ttf"; path = "thecoffeelinks-native-swift/Fonts/LibreBaskerville-Bold.ttf"; sourceTree = "<group>"; };
+		B4331C9B483A4F6E99149D4A /* LibreBaskerville-Regular.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; name = "LibreBaskerville-Regular.ttf"; path = "thecoffeelinks-native-swift/Fonts/LibreBaskerville-Regular.ttf"; sourceTree = "<group>"; };
+		FC02A854467A483D898B0051 /* LibreBaskerville-Italic.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; name = "LibreBaskerville-Italic.ttf"; path = "thecoffeelinks-native-swift/Fonts/LibreBaskerville-Italic.ttf"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -93,6 +99,7 @@
 				25544E882F1424F4009A6830 /* thecoffeelinks-native-swiftUITests */,
 				25544F552F14341D009A6830 /* Frameworks */,
 				25544E6F2F1424F2009A6830 /* Products */,
+				25A0C1742F1A36FB00FAD546 /* Recovered References */,
 			);
 			sourceTree = "<group>";
 		};
@@ -111,6 +118,16 @@
 			children = (
 			);
 			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		25A0C1742F1A36FB00FAD546 /* Recovered References */ = {
+			isa = PBXGroup;
+			children = (
+				B4331C9B483A4F6E99149D4A /* LibreBaskerville-Regular.ttf */,
+				696376B4AF3B4F08ABC24923 /* LibreBaskerville-Bold.ttf */,
+				FC02A854467A483D898B0051 /* LibreBaskerville-Italic.ttf */,
+			);
+			name = "Recovered References";
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -241,7 +258,11 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-			);
+			
+				12777CFB3F8B4F0FB4ECD5AA /* LibreBaskerville-Regular.ttf in Resources */,
+				F495694AB08C4E538B0A3F32 /* LibreBaskerville-Bold.ttf in Resources */,
+				311132BBAFDC4D87A1AEF0E9 /* LibreBaskerville-Italic.ttf in Resources */,
+);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 		25544E792F1424F4009A6830 /* Resources */ = {
@@ -430,7 +451,8 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = UJLGY9Y9S3;
 				ENABLE_PREVIEWS = YES;
-				GENERATE_INFOPLIST_FILE = YES;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = "thecoffeelinks-native-swift/App-Info.plist";
 				INFOPLIST_KEY_CFBundleDisplayName = "The Coffee Links";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.food-and-drink";
 				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "We use your location to find the nearest coffee shops.";
@@ -467,7 +489,8 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = UJLGY9Y9S3;
 				ENABLE_PREVIEWS = YES;
-				GENERATE_INFOPLIST_FILE = YES;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = "thecoffeelinks-native-swift/App-Info.plist";
 				INFOPLIST_KEY_CFBundleDisplayName = "The Coffee Links";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.food-and-drink";
 				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "We use your location to find the nearest coffee shops.";
@@ -502,7 +525,8 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = UJLGY9Y9S3;
-				GENERATE_INFOPLIST_FILE = YES;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = "thecoffeelinks-native-swift/App-Info.plist";
 				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = "vn.nhat.thecoffeelinks-native-swiftTests";
@@ -525,7 +549,8 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = UJLGY9Y9S3;
-				GENERATE_INFOPLIST_FILE = YES;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = "thecoffeelinks-native-swift/App-Info.plist";
 				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = "vn.nhat.thecoffeelinks-native-swiftTests";
@@ -546,7 +571,8 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = UJLGY9Y9S3;
-				GENERATE_INFOPLIST_FILE = YES;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = "thecoffeelinks-native-swift/App-Info.plist";
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = "vn.nhat.thecoffeelinks-native-swiftUITests";
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -567,7 +593,8 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = UJLGY9Y9S3;
-				GENERATE_INFOPLIST_FILE = YES;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = "thecoffeelinks-native-swift/App-Info.plist";
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = "vn.nhat.thecoffeelinks-native-swiftUITests";
 				PRODUCT_NAME = "$(TARGET_NAME)";

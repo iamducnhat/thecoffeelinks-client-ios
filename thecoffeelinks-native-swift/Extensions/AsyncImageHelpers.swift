@@ -49,7 +49,7 @@ extension View {
     ) -> some View {
         ZStack {
             RoundedRectangle(cornerRadius: cornerRadius)
-                .fill(Color.coffeeRich.opacity(0.05))
+
                 .frame(width: width, height: height)
             
             if let urlString = url, !urlString.isEmpty, let url = URL(string: urlString) {
@@ -67,7 +67,7 @@ extension View {
                             .renderingMode(.template)
                             .aspectRatio(contentMode: .fit)
                             .frame(width: width * 0.4, height: height * 0.4)
-                            .foregroundStyle(Color.coffeeRich.opacity(0.3))
+                            .foregroundStyle(Editorial.Colors.primaryEspresso.opacity(0.3))
                     case .empty:
                         ProgressView()
                             .progressViewStyle(CircularProgressViewStyle(tint: .gray))
@@ -77,7 +77,7 @@ extension View {
                             .renderingMode(.template)
                             .aspectRatio(contentMode: .fit)
                             .frame(width: width * 0.4, height: height * 0.4)
-                            .foregroundStyle(Color.coffeeRich.opacity(0.3))
+                            .foregroundStyle(Editorial.Colors.primaryEspresso.opacity(0.3))
                     }
                 }
             } else {
@@ -86,7 +86,7 @@ extension View {
                     .renderingMode(.template)
                     .aspectRatio(contentMode: .fit)
                     .frame(width: width * 0.4, height: height * 0.4)
-                    .foregroundStyle(Color.coffeeRich.opacity(0.3))
+                    .foregroundStyle(Editorial.Colors.primaryEspresso.opacity(0.3))
             }
         }
     }
@@ -107,13 +107,13 @@ struct ProductImageView: View {
                 .clipped()
         } placeholder: {
             ZStack {
-                Color.coffeeRich.opacity(0.05)
+                Editorial.Colors.primaryEspresso.opacity(0.1)
                 Image("coffee")
                     .resizable()
                     .renderingMode(.template)
                     .aspectRatio(contentMode: .fit)
                     .frame(width: width * 0.4)
-                    .foregroundStyle(Color.coffeeRich.opacity(0.2))
+                    .foregroundStyle(Editorial.Colors.primaryEspresso.opacity(0.2))
             }
             .frame(width: width, height: height)
         }
@@ -134,13 +134,13 @@ struct EventImageView: View {
                 .clipped()
         } placeholder: {
             ZStack {
-                Color.coffeeRich.opacity(0.05)
+                Editorial.Colors.primaryEspresso.opacity(0.1)
                 Image("calendar")
                     .resizable()
                     .renderingMode(.template)
                     .aspectRatio(contentMode: .fit)
                     .frame(width: width * 0.4)
-                    .foregroundStyle(Color.coffeeRich.opacity(0.3))
+                    .foregroundStyle(Editorial.Colors.primaryEspresso.opacity(0.3))
             }
             .frame(width: width, height: height)
         }
@@ -161,13 +161,13 @@ struct StoreImageView: View {
                 .clipped()
         } placeholder: {
             ZStack {
-                Color.coffeeRich.opacity(0.1)
+                Editorial.Colors.primaryEspresso.opacity(0.05)
                 Image("home")
                     .resizable()
                     .renderingMode(.template)
                     .aspectRatio(contentMode: .fit)
                     .frame(width: width * 0.4)
-                    .foregroundStyle(Color.coffeeRich.opacity(0.3))
+                    .foregroundStyle(Editorial.Colors.primaryEspresso.opacity(0.3))
             }
             .frame(width: width, height: height)
         }
@@ -182,7 +182,7 @@ struct VoucherImageView: View {
     var body: some View {
         ZStack {
             Circle()
-                .fill(isGold ? Color.gold.opacity(0.2) : Color.sage.opacity(0.2))
+                .fill(isGold ? Editorial.Colors.secondaryLatte.opacity(0.2) : Editorial.Colors.semanticSuccess.opacity(0.2))
                 .frame(width: size, height: size)
             
             CachedAsyncImage(url: imageUrl) { image in
@@ -197,7 +197,7 @@ struct VoucherImageView: View {
                     .renderingMode(.template)
                     .aspectRatio(contentMode: .fit)
                     .frame(width: size * 0.5)
-                    .foregroundStyle(isGold ? Color.gold : Color.sage)
+                    .foregroundStyle(isGold ? Editorial.Colors.secondaryLatte : Editorial.Colors.semanticSuccess)
             }
         }
     }

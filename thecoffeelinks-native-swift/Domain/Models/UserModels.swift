@@ -1,0 +1,311 @@
+//
+//  UserModels.swift
+//  thecoffeelinks-native-swift
+//
+//  Domain models for users - NO SwiftUI imports
+//
+
+import Foundation
+
+// MARK: - User
+
+struct User: Codable, Identifiable, Hashable, Sendable {
+    let id: String
+    let email: String?
+    let phone: String?
+    let displayName: String
+    let avatarUrl: String?
+    let membershipTier: MembershipTier
+    let points: Int
+    let createdAt: Date
+    var preferences: UserPreferences
+    
+    var fullName: String { displayName } // UI Compatibility
+    var bio: String? { nil } // UI Compatibility (Phase 6 Profile)
+    var jobTitle: String? { nil } // UI Compatibility
+    var linkedinProfile: String? { nil } // UI Compatibility
+    
+    enum CodingKeys: String, CodingKey {
+        case id, email, phone
+        case displayName = "name"
+        case avatarUrl = "avatar_url"
+        case membershipTier = "membership_tier"
+        case points
+        case createdAt = "member_since"
+        case preferences
+    }
+    
+    init(id: String, email: String?, phone: String?, displayName: String,
+         avatarUrl: String?, membershipTier: MembershipTier, points: Int,
+         createdAt: Date, preferences: UserPreferences) {
+        self.id = id
+        self.email = email
+        self.phone = phone
+        self.displayName = displayName
+        self.avatarUrl = avatarUrl
+        self.membershipTier = membershipTier
+        self.points = points
+        self.createdAt = createdAt
+        self.preferences = preferences
+    }
+    
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        id = try container.decode(String.self, forKey: .id)
+        email = try container.decodeIfPresent(String.self, forKey: .email)
+        phone = try container.decodeIfPresent(String.self, forKey: .phone)
+        displayName = try container.decode(String.self, forKey: .displayName)
+        avatarUrl = try container.decodeIfPresent(String.self, forKey: .avatarUrl)
+        points = try container.decodeIfPresent(Int.self, forKey: .points) ?? 0
+        
+        // Safe decoding for dates with fallback
+        if let dateString = try? container.decode(String.self, forKey: .createdAt) {
+            let iso = ISO8601DateFormatter()
+             // Handle fractional seconds if present
+             iso.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+             if let date = iso.date(from: dateString) {
+                 createdAt = date
+             } else {
+                 // Try without fractional seconds
+                 iso.formatOptions = [.withInternetDateTime]
+                 createdAt = iso.date(from: dateString) ?? Date()
+             }
+        } else {
+            createdAt = Date()
+        }
+        
+        // Safe decoding for enums/objects that might be missing
+        membershipTier = try container.decodeIfPresent(MembershipTier.self, forKey: .membershipTier) ?? .bronze
+        preferences = try container.decodeIfPresent(UserPreferences.self, forKey: .preferences) ?? .default
+    }
+    
+    static func == (lhs: User, rhs: User) -> Bool { lhs.id == rhs.id }
+    func hash(into hasher: inout Hasher) { hasher.combine(id) }
+    
+    static var placeholder: User {
+        User(id: "placeholder", email: nil, phone: nil, displayName: "User",
+             avatarUrl: nil, membershipTier: .bronze, points: 0,
+             createdAt: Date(), preferences: .default)
+    }
+}
+
+// MARK: - Membership Tier
+
+enum MembershipTier: String, Codable, CaseIterable, Sendable {
+    case bronze, silver, gold, platinum
+    
+    var displayName: String { rawValue.capitalized }
+    
+    var pointsMultiplier: Double {
+        switch self {
+        case .bronze: return 1.0
+        case .silver: return 1.25
+        case .gold: return 1.5
+        case .platinum: return 2.0
+        }
+    }
+    
+    var discountPercentage: Double {
+        switch self {
+        case .bronze: return 0
+        case .silver: return 5
+        case .gold: return 10
+        case .platinum: return 15
+        }
+    }
+}
+
+// MARK: - User Preferences
+
+struct UserPreferences: Codable, Hashable, Sendable {
+    var defaultOrderingMode: OrderingMode
+    var defaultStoreId: String?
+    var defaultPaymentMethod: PaymentMethod?
+    var defaultSize: ProductSize
+    var defaultSugar: SugarLevel?
+    var defaultIce: IceLevel?
+    var notificationsEnabled: Bool
+    var orderUpdatesEnabled: Bool
+    var promotionsEnabled: Bool
+    var presenceMode: PresenceMode
+    
+    static var `default`: UserPreferences {
+        UserPreferences(
+            defaultOrderingMode: .pickup, defaultStoreId: nil,
+            defaultPaymentMethod: .applePay, defaultSize: .medium,
+            defaultSugar: .half, defaultIce: .normal,
+            notificationsEnabled: true, orderUpdatesEnabled: true,
+            promotionsEnabled: false, presenceMode: .private
+        )
+    }
+}
+
+// MARK: - Presence Mode
+
+enum PresenceMode: String, Codable, CaseIterable, Sendable {
+    case `private`, friends, `public`
+    
+    var displayName: String {
+        switch self {
+        case .private: return "Private"
+        case .friends: return "Friends Only"
+        case .public: return "Public"
+        }
+    }
+    
+    var description: String {
+        switch self {
+        case .private: return "Your presence is hidden from everyone"
+        case .friends: return "Only friends can see when you're at a store"
+        case .public: return "Anyone at the store can see you're there"
+        }
+    }
+    
+    var allowsPublicVisibility: Bool { self == .public }
+    var allowsFriendVisibility: Bool { self == .public || self == .friends }
+    
+    func canBeSeenBy(viewer: User, isConnection: Bool) -> Bool {
+        switch self {
+        case .private: return false
+        case .friends: return isConnection
+        case .public: return true
+        }
+    }
+}
+
+// MARK: - Favorite Item
+
+struct FavoriteItem: Codable, Identifiable, Hashable, Sendable {
+    let id: String
+    let userId: String
+    let product: Product
+    let customization: OrderCustomization
+    let nickname: String?
+    let notes: String?
+    let orderCount: Int
+    let lastOrderedAt: Date?
+    let createdAt: Date
+    
+    var displayName: String { nickname ?? product.name }
+    
+    static func == (lhs: FavoriteItem, rhs: FavoriteItem) -> Bool { lhs.id == rhs.id }
+    func hash(into hasher: inout Hasher) { hasher.combine(id) }
+}
+
+// MARK: - Store
+
+struct Store: Codable, Identifiable, Hashable, Sendable {
+    let id: String
+    let name: String
+    let address: String
+    let latitude: Double
+    let longitude: Double
+    let phone: String?
+    let imageUrl: String?
+    let layoutMapUrl: String? // Phase 3 Space Feature
+    let openingHours: [OpeningHour]?
+    let amenities: [StoreAmenity]?
+    let isOpen: Bool?
+    let isBusy: Bool?
+    let currentWaitMinutes: Int?
+    let deliveryAvailable: Bool?
+    let pickupAvailable: Bool?
+    let dineInAvailable: Bool?
+    
+    var isCurrentlyOpen: Bool {
+        guard let openingHours = openingHours else { return false }
+        let now = Date()
+        let calendar = Calendar.current
+        let weekday = calendar.component(.weekday, from: now)
+        let currentMinutes = calendar.component(.hour, from: now) * 60 + calendar.component(.minute, from: now)
+        guard let todayHours = openingHours.first(where: { $0.dayOfWeek == weekday }) else { return false }
+        return currentMinutes >= todayHours.openMinutes && currentMinutes <= todayHours.closeMinutes
+    }
+    
+    static func == (lhs: Store, rhs: Store) -> Bool { lhs.id == rhs.id }
+    func hash(into hasher: inout Hasher) { hasher.combine(id) }
+}
+
+struct OpeningHour: Codable, Hashable, Sendable {
+    let dayOfWeek: Int
+    let openMinutes: Int
+    let closeMinutes: Int
+    
+    var openTime: String { formatMinutes(openMinutes) }
+    var closeTime: String { formatMinutes(closeMinutes) }
+    
+    private func formatMinutes(_ minutes: Int) -> String {
+        String(format: "%02d:%02d", minutes / 60, minutes % 60)
+    }
+}
+
+enum StoreAmenity: String, Codable, CaseIterable, Sendable {
+    case wifi, parking
+    case powerOutlets = "power_outlets"
+    case wheelchairAccessible = "wheelchair_accessible"
+    case outdoorSeating = "outdoor_seating"
+    case driveThrough = "drive_through"
+    
+    var displayName: String {
+        switch self {
+        case .wifi: return "WiFi"
+        case .parking: return "Parking"
+        case .powerOutlets: return "Power Outlets"
+        case .wheelchairAccessible: return "Wheelchair Accessible"
+        case .outdoorSeating: return "Outdoor Seating"
+        case .driveThrough: return "Drive Through"
+        }
+    }
+    
+    var iconName: String {
+        switch self {
+        case .wifi: return "wifi"
+        case .parking: return "car.fill"
+        case .powerOutlets: return "poweroutlet.type.b"
+        case .wheelchairAccessible: return "figure.roll"
+        case .outdoorSeating: return "sun.max"
+        case .driveThrough: return "car.side"
+        }
+    }
+}
+
+// MARK: - Auth
+
+struct AuthSession: Codable, Sendable {
+    let accessToken: String
+    let refreshToken: String
+    let expiresAt: Date
+    let user: User
+    
+    var isExpired: Bool { Date() >= expiresAt }
+    var shouldRefresh: Bool { Date().addingTimeInterval(5 * 60) >= expiresAt }
+}
+
+struct LoginRequest: Codable, Sendable {
+    let email: String?
+    let phone: String?
+    let password: String?
+    let otp: String?
+    let provider: AuthProvider?
+}
+
+enum AuthProvider: String, Codable, Sendable {
+    case email, phone, apple, google
+}
+
+struct AuthResponse: Codable, Sendable {
+    let success: Bool
+    let session: AuthSession?
+    let message: String?
+    let requiresVerification: Bool?
+}
+
+// MARK: - API Responses
+
+struct UserResponse: Codable, Sendable { let success: Bool; let user: User }
+struct StoresResponse: Codable, Sendable { let success: Bool; let stores: [Store] }
+struct StoreResponse: Codable, Sendable { let success: Bool; let store: Store }
+struct FavoritesResponse: Codable, Sendable { let success: Bool; let favorites: [FavoriteItem] }
+struct FavoriteResponse: Codable, Sendable { let success: Bool; let favorite: FavoriteItem }
+struct PreferencesResponse: Codable, Sendable { let success: Bool; let preferences: UserPreferences }
+struct EmptyResponse: Codable, Sendable { let success: Bool }

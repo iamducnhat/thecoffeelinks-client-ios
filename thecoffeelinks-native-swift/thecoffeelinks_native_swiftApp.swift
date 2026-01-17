@@ -1,17 +1,44 @@
-//
-//  thecoffeelinks_native_swiftApp.swift
-//  thecoffeelinks-native-swift
-//
-//  Created by Nguyen Duc Nhat on 12/1/26.
-//
-
 import SwiftUI
+import Combine
 
 @main
 struct thecoffeelinks_native_swiftApp: App {
+    // Shared Singletons - Use .shared if init is private, or just use shared instance directly
+    @StateObject private var appState = AppState()
+    @StateObject private var networkMonitor = NetworkMonitor()
+    @StateObject private var authViewModel = AuthViewModel(authRepository: DependencyContainer.shared.authRepository)
+    @StateObject private var cartViewModel = CartViewModel(
+        deliveryRepository: DependencyContainer.shared.deliveryRepository,
+        voucherRepository: DependencyContainer.shared.voucherRepository,
+        hapticService: DependencyContainer.shared.hapticManager
+    )
+    @StateObject private var storeViewModel = StoreViewModel(
+        storeRepository: DependencyContainer.shared.storeRepository,
+        locationManager: DependencyContainer.shared.locationManager
+    )
+    @StateObject private var deliveryViewModel = DeliveryViewModel(
+        deliveryRepository: DependencyContainer.shared.deliveryRepository,
+        locationService: DependencyContainer.shared.locationManager
+    )
+    
+    // Core Dependencies injected via environment
+    // Use shared instance for repositories if they are singletons or created once
+    private let dependencyContainer = DependencyContainer.shared
+    
     var body: some Scene {
         WindowGroup {
             ContentView()
+                .environmentObject(appState)
+                .environmentObject(networkMonitor)
+                .environmentObject(authViewModel)
+                .environmentObject(cartViewModel)
+                .environmentObject(storeViewModel)
+                .environmentObject(deliveryViewModel)
+                .environmentObject(dependencyContainer.userPreferences) // Inject preferences
+                //.preferredColorScheme(.dark)
         }
     }
 }
+
+// AppState moved to separate file for clarity
+// ContentView is in ContentView.swift - single source of truth for app routing

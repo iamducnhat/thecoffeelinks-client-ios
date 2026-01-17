@@ -2,7 +2,7 @@
 //  AppState.swift
 //  thecoffeelinks-native-swift
 //
-//  Created by AppCafe on 2026-01-12.
+//  Global app state - single source of truth
 //
 
 import SwiftUI
@@ -29,9 +29,15 @@ class AppState: ObservableObject {
     @Published var userActivity: UserActivity = .idle
     @Published var userName: String = "Nhat"
     
-    // MARK: - App Flow Persistence
+    // MARK: - App Flow Persistence (AUTH GATES)
     @AppStorage("isOnboardingCompleted") var isOnboardingCompleted: Bool = false
     @AppStorage("isInitialSetupCompleted") var isInitialSetupCompleted: Bool = false
+    
+    // MARK: - Tab Selection (for MainTabView)
+    @Published var selectedTab: Int = 0
+    
+    // MARK: - Delivery Mode Toggle
+    @Published var isDeliveryMode: Bool = false
     
     // MARK: - Derived "Thesis" States
     var topIntent: String? {

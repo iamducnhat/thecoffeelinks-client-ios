@@ -1,0 +1,724 @@
+# The Coffee Links - Complete UI/UX Redesign Plan (v2)
+
+> **Vision**: Starbucks × LinkedIn × Notion-level polish. A coffee app that feels premium, warm, and professional.
+
+---
+
+## Changelog from v1
+
+| Area | Improvement |
+|------|-------------|
+| **Networking** | Added intent-first entry, contextual triggers, time-boxed visibility |
+| **Community** | Narrowed scope to 4 professional post types only |
+| **Reviews** | Dual-blind reveal, aggregated trust scores, no public star ratings |
+| **FTUE** | Added 3-step onboarding + guided first actions |
+| **Metrics** | Feature-to-outcome mapping for product success |
+
+---
+
+## 1. UX Architecture
+
+### Information Architecture
+
+```mermaid
+graph TD
+    A[Home / Menu] --> B[Product Detail]
+    A --> C[Cart]
+    C --> D[Checkout]
+    D --> E[Order Tracking]
+    
+    A --> F[Rewards]
+    F --> G[Redeem Reward]
+    
+    A --> H[Network]
+    H --> H1[Intent Selection]
+    H1 --> I[Contextual People Discovery]
+    I --> J[User Profile View]
+    I --> K[Chat / Connect]
+    H --> L[Community Board]
+    
+    A --> M[Events]
+    A --> N[My Profile]
+    N --> O[Settings]
+    N --> P[Order History]
+    
+    Q[Bottom Nav] --> A
+    Q --> F
+    Q --> H
+    Q --> M
+    Q --> N
+    
+    R[Onboarding] --> A
+```
+
+### Navigation Structure
+
+| Tab | Icon | Primary Function |
+|-----|------|-----------------|
+| **Home** | Coffee cup | Browse menu, quick order |
+| **Rewards** | Star/Gift | Points, redemptions, tier status |
+| **Network** | Users | Intent-driven professional connections |
+| **Events** | Calendar | Promos, happenings, announcements |
+| **Account** | User | Profile, settings, order history |
+
+### User Journey Flows
+
+#### Coffee Ordering Flow
+```
+Home → Browse Categories → Select Product → Customize Options → Add to Cart → 
+Checkout (Store Selection + Payment) → Order Confirmation → Track Order → Complete
+```
+
+#### Networking Flow (Revised - Intent-First)
+```
+Network Tab → Select Intent (Hiring / Learning / Collaboration / Open Chat) → 
+Check In (30-60 min visibility) → See Contextual Matches → View Profile → 
+Request to Connect → Chat → Schedule Meeting → Meet → Dual-Blind Review
+```
+
+#### First-Time User Experience (New)
+```
+App Launch → Welcome (3 slides) → Quick Profile Setup → 
+First Order Suggestion → Enable Networking (Optional) → Home
+```
+
+---
+
+## 2. Screen List
+
+| Screen | Purpose | Priority |
+|--------|---------|----------|
+| **Onboarding** | Welcome flow for new users | P0 |
+| **Home** | Menu browsing, quick actions, membership card | P0 |
+| **Product Detail** | Full drink/food customization modal | P0 |
+| **Cart** | Review order, apply vouchers, store selection | P0 |
+| **Checkout** | Payment processing, order confirmation | P0 |
+| **Order Tracking** | Real-time status updates | P0 |
+| **Order History** | Past orders with reorder capability | P1 |
+| **Rewards** | Points balance, tier progress, redemptions | P0 |
+| **Network - Intent** | Select purpose before browsing | P0 |
+| **Network - People** | Contextual user discovery (checked-in, events) | P0 |
+| **User Profile (View)** | View other user's professional profile | P1 |
+| **Chat** | Direct messaging with connections | P1 |
+| **Community Board** | Professional posts (4 types only) | P1 |
+| **Meeting Scheduler** | Schedule coffee meeting | P2 |
+| **Post-Meeting Review** | Dual-blind rating and feedback | P2 |
+| **Events** | Promotions and happenings | P1 |
+| **My Profile** | Personal profile editing | P0 |
+| **Settings** | App preferences, notifications, privacy | P1 |
+| **Login / Signup** | Authentication flow | P0 |
+| **Vouchers** | Available vouchers and codes | P1 |
+
+---
+
+## 3. Networking Feature (Revised)
+
+### Intent-First Entry
+
+When users open the Network tab, they first select their **purpose**:
+
+```
+┌─────────────────────────────────────────┐
+│   What brings you here today?           │
+│                                         │
+│   ┌─────────┐  ┌─────────┐              │
+│   │ 🔍      │  │ 📚      │              │
+│   │ Hiring  │  │ Learning│              │
+│   └─────────┘  └─────────┘              │
+│                                         │
+│   ┌─────────┐  ┌─────────┐              │
+│   │ 🤝      │  │ ☕      │              │
+│   │ Collab  │  │ Open    │              │
+│   └─────────┘  └─────────┘              │
+│                                         │
+│   [Skip for now]                        │
+└─────────────────────────────────────────┘
+```
+
+This intent:
+- Filters who you see (matching intents prioritized)
+- Shows in your profile when visible
+- Creates natural conversation starters
+
+### Contextual Triggers
+
+Users see people based on **real context**, not generic browsing:
+
+| Trigger | Description |
+|---------|-------------|
+| **Checked In Nearby** | Users at the same café location, visible for 30-60 mins |
+| **Same Event Attendees** | People registered for the same event |
+| **Similar Intent** | Users looking for what you offer (e.g., hiring ↔ looking) |
+| **At Nearby Tables** | Physical proximity indicator (Table 5, Table 7) |
+
+### Time-Boxed Visibility (Check-In)
+
+```
+┌─────────────────────────────────────────┐
+│   Check In to Be Visible                │
+│                                         │
+│   📍 Bean & Gone Café                   │
+│   🪑 Table: [___7___]                   │
+│                                         │
+│   Visibility duration:                  │
+│   ○ 30 minutes                          │
+│   ● 60 minutes                          │
+│   ○ Until I check out                   │
+│                                         │
+│   Your intent: 🤝 Collaboration         │
+│                                         │
+│   [Check In Now]                        │
+└─────────────────────────────────────────┘
+```
+
+Benefits:
+- Creates urgency ("they're here now!")
+- Reduces stale/ghost profiles
+- Privacy-friendly (auto check-out)
+
+### Connection Flow
+
+```
+See Profile → "Request to Connect" → (Optional) Add intro message →
+Wait for acceptance → Chat unlocked → Schedule meeting (optional)
+```
+
+---
+
+## 4. Community Board (Revised - Focused Scope)
+
+### Strict Post Types
+
+Only 4 professional post types allowed:
+
+| Type | Color | Example Use Case |
+|------|-------|------------------|
+| **🔍 Hiring** | Blue | "Looking for a part-time designer" |
+| **📚 Learning** | Purple | "Anyone here experienced in AI/ML?" |
+| **🤝 Collaboration** | Green | "Need a co-founder for my startup" |
+| **📣 Event Discussion** | Orange | "Anyone going to the startup meetup?" |
+
+### No Free-Form Social Posts
+
+- ❌ No "Just had a great coffee!" posts
+- ❌ No memes, opinions, or general updates
+- ✅ Only professional, actionable content
+
+### Post Creation Flow
+
+```
+[+] Create Post
+    ↓
+Select Type: [Hiring] [Learning] [Collab] [Event]
+    ↓
+Write your message (max 280 chars)
+    ↓
+Preview → Post
+```
+
+### Visual Distinction
+
+Each post type has:
+- Distinct accent color
+- Type badge at top
+- Author info + "Reply" action
+- "Interested" count
+
+---
+
+## 5. Meeting Review System (Trust-First)
+
+### Dual-Blind Reveal
+
+Ratings are only revealed **after both parties submit**:
+
+```
+You rate Sarah: ⭐⭐⭐⭐⭐
+Sarah rates you: (pending)
+    ↓
+Your rating: Hidden until Sarah submits
+    ↓
+[Both submitted]
+    ↓
+"Your meeting with Sarah was mutually positive! 🎉"
+```
+
+### Aggregated Trust Indicators (Not Raw Scores)
+
+Instead of showing "4.2 stars", show:
+
+| Indicator | Meaning |
+|-----------|---------|
+| ✅ **Verified Networker** | Completed 5+ meetings |
+| 💬 **Recommended** | "Recommended by 3 of your connections" |
+| ⭐ **Consistently Positive** | 90%+ positive ratings (no number) |
+| 🆕 **New to Networking** | < 3 meetings (encourage first meetings) |
+
+### Feedback Categories
+
+After meeting, rate on:
+- **Conversation Quality** (thumbs up/down)
+- **Value Provided** (thumbs up/down)
+- **Would Meet Again** (yes/no)
+
+Optional: Short private note (not public).
+
+### Privacy-First
+
+- No public star ratings
+- No visible negative feedback
+- Only aggregated positive indicators shown
+- Private feedback for personal improvement only
+
+---
+
+## 6. First-Time User Experience (FTUE)
+
+### Onboarding Flow (3 Steps Max)
+
+```
+┌─────────────────────────────────────────┐
+│   Welcome to The Coffee Links ☕        │
+│                                         │
+│   [Illustration: Coffee + Handshake]    │
+│                                         │
+│   Order amazing coffee.                 │
+│   Connect with professionals.           │
+│   Earn exclusive rewards.               │
+│                                         │
+│   ● ○ ○                                 │
+│   [Get Started →]                       │
+└─────────────────────────────────────────┘
+```
+
+Step 1: **Value Proposition** (what you get)
+Step 2: **Quick Profile** (name, job title - optional)
+Step 3: **Enable Networking** (opt-in, can skip)
+
+### Empty States with Guidance
+
+**Network - No Connections:**
+```
+┌─────────────────────────────────────────┐
+│   👋 Start Connecting                   │
+│                                         │
+│   Check in at a café to see who's       │
+│   working nearby. Your first coffee     │
+│   connection awaits!                    │
+│                                         │
+│   [Check In Now]                        │
+└─────────────────────────────────────────┘
+```
+
+**Community - No Posts:**
+```
+┌─────────────────────────────────────────┐
+│   📝 Be the First                       │
+│                                         │
+│   Share what you're looking for.        │
+│   Hiring? Learning? Collaborating?      │
+│                                         │
+│   [Create Your First Post]              │
+└─────────────────────────────────────────┘
+```
+
+**Rewards - First Visit:**
+```
+┌─────────────────────────────────────────┐
+│   🎁 Welcome Gift                       │
+│                                         │
+│   Here's 50 bonus points to start!      │
+│   Order a drink to earn more.           │
+│                                         │
+│   [Browse Menu]                         │
+└─────────────────────────────────────────┘
+```
+
+### Guided First Actions
+
+After onboarding, gentle nudges:
+- "Try your first coffee → [Order Now]"
+- "Complete your profile → +25 points"
+- "First connection → Special badge"
+
+---
+
+## 7. Product Success Metrics
+
+### Feature-to-Outcome Mapping
+
+| Feature | Primary Metric | Secondary Metrics |
+|---------|---------------|-------------------|
+| **Ordering** | Order frequency per user | AOV, reorder rate |
+| **Rewards** | Points redemption rate | Tier upgrades, repeat visits |
+| **Networking** | Connections made per session | Check-in duration, messages sent |
+| **Community** | Posts created per week | Replies, interested clicks |
+| **Meetings** | Meetings scheduled | Completion rate, satisfaction score |
+| **FTUE** | Onboarding completion rate | Time to first order |
+
+### Key Performance Indicators (KPIs)
+
+| KPI | Target | Why It Matters |
+|-----|--------|----------------|
+| **D7 Retention** | > 40% | Users return within 7 days |
+| **Orders/User/Month** | > 3 | Healthy engagement |
+| **Avg Check-In Duration** | 30-45 min | Networking is being used |
+| **Connection Accept Rate** | > 60% | Quality connections |
+| **Review Submission Rate** | > 70% | Trust system is adopted |
+| **NPS** | > 50 | Users recommend the app |
+
+### Success Signals Per Screen
+
+| Screen | Success Signal |
+|--------|----------------|
+| Home | Tap on product within 10s |
+| Rewards | Tier progress viewed |
+| Network | Check-in completed |
+| Community | Post or reply created |
+| Profile | Completion > 80% |
+
+---
+
+## 8. Design System
+
+### Color Palette
+
+```css
+/* Primary Coffee Tones */
+--coffee-black: #0d0906;      /* Deepest espresso */
+--coffee-dark: #1a1210;       /* Rich roast */
+--coffee-rich: #2d1f18;       /* Dark mocha */
+--espresso: #3d2a1e;          /* Medium roast */
+--mocha: #5d4235;             /* Light roast */
+
+/* Warm Accents */
+--caramel: #c89b6a;           /* Primary action */
+--caramel-light: #dbb896;     /* Hover states */
+--cream: #f5ebe0;             /* Backgrounds */
+--ivory: #faf8f5;             /* Pure background */
+
+/* Gold & Luxury */
+--gold: #b8860b;              /* Premium accents */
+--gold-bright: #d4a847;       /* Highlights */
+--champagne: #f5e6c8;         /* Subtle glow */
+
+/* Sage Green (Secondary) */
+--sage: #7a9e7e;              /* Success, connection */
+--sage-light: #a8c5ab;        /* Light success */
+--mint: #e8f2e8;              /* Success background */
+
+/* Intent Colors */
+--intent-hiring: #5b8def;     /* Blue */
+--intent-learning: #9b6dd7;   /* Purple */
+--intent-collab: #5dba7d;     /* Green */
+--intent-open: #e8a54b;       /* Orange */
+
+/* Status Colors */
+--success: #4a7c59;
+--warning: #c9a227;
+--error: #b54a4a;
+
+/* Neutrals (Warm) */
+--neutral-50: #fdfcfa;
+--neutral-100: #f8f6f2;
+--neutral-200: #efe9e0;
+--neutral-300: #ddd4c8;
+--neutral-400: #b8a899;
+--neutral-500: #8f8175;
+--neutral-600: #6b5f54;
+--neutral-700: #4a4238;
+--neutral-800: #2d2621;
+--neutral-900: #1a1614;
+```
+
+### Typography Scale
+
+```css
+/* Fonts */
+--font-display: 'Playfair Display', serif;   /* Headlines, branding */
+--font-body: 'DM Sans', sans-serif;          /* Body text, UI */
+--font-mono: 'JetBrains Mono', monospace;    /* Numbers, prices */
+
+/* Scale */
+--text-xs: 0.75rem;      /* 12px - Labels */
+--text-sm: 0.875rem;     /* 14px - Captions */
+--text-base: 1rem;       /* 16px - Body */
+--text-lg: 1.125rem;     /* 18px - Emphasis */
+--text-xl: 1.25rem;      /* 20px - Subheadings */
+--text-2xl: 1.5rem;      /* 24px - Section titles */
+--text-3xl: 1.875rem;    /* 30px - Page titles */
+--text-4xl: 2.5rem;      /* 40px - Hero */
+--text-5xl: 3.5rem;      /* 56px - Display */
+```
+
+---
+
+## 9. Component Library
+
+### Core Components
+
+| Component | Description | States |
+|-----------|-------------|--------|
+| `Button` | Primary, secondary, outline, ghost, intent | Default, hover, active, disabled |
+| `Card` | Standard, glass, premium, dark | Elevated, flat |
+| `Input` | Text, search, textarea | Default, focus, error, success |
+| `Badge` | Status, category, tier, intent | Various colors |
+| `Avatar` | User avatar with status indicator | Online, busy, offline |
+| [Modal](file:///Users/nguyenducnhat/appcafe/thecoffeelinks-client-ios/src/app/page.tsx#146-150) | Bottom sheet, centered dialog | Open, closing |
+| `Toast` | Success, error, info notifications | Auto-dismiss |
+| `BottomNav` | 5-tab navigation | Active, inactive |
+| `EmptyState` | Guided empty states | With CTA |
+| `IntentPill` | Intent selector button | Selected, unselected |
+
+### Feature Components
+
+| Component | Purpose |
+|-----------|---------|
+| `MembershipCard` | Display points, tier, progress |
+| `ProductCard` | Menu item with image, price, quick-add |
+| `ProductModal` | Full customization: size, options, add-ons |
+| `CartItem` | Line item with quantity controls |
+| `OrderCard` | Order summary with status |
+| `ConnectionCard` | User card with intent badge, connect/chat |
+| [CommunityPost](file:///Users/nguyenducnhat/appcafe/thecoffeelinks-client-ios/src/store/socialStore.ts#99-125) | Typed post with author, actions |
+| `EventCard` | Event/promo display |
+| `RewardCard` | Redeemable reward item |
+| `HeroCarousel` | Featured promotions slider |
+| `PaymentSheet` | Payment method selection |
+| `StoreSelector` | Choose pickup location |
+| `IntentSelector` | Grid of 4 intent options |
+| `CheckInSheet` | Table number + duration picker |
+| `TrustBadge` | Verified Networker, Recommended, etc. |
+| `ReviewCard` | Dual-blind review submission |
+| `OnboardingSlide` | Welcome carousel slide |
+
+---
+
+## 10. Proposed Changes
+
+### New Files
+
+---
+
+#### [NEW] [onboarding/page.tsx](file:///Users/nguyenducnhat/appcafe/thecoffeelinks-client-ios/src/app/onboarding/page.tsx)
+
+3-step onboarding carousel:
+- Step 1: Value proposition (order, connect, earn)
+- Step 2: Quick profile (optional)
+- Step 3: Enable networking (opt-in)
+- Persist completion flag to skip on future visits
+
+---
+
+#### [NEW] [IntentSelector.tsx](file:///Users/nguyenducnhat/appcafe/thecoffeelinks-client-ios/src/components/social/IntentSelector.tsx)
+
+2x2 grid of intent options:
+- Hiring (blue)
+- Learning (purple)
+- Collaboration (green)
+- Open Chat (orange)
+- Stores selected intent in socialStore
+- Skip option at bottom
+
+---
+
+#### [NEW] [CheckInSheet.tsx](file:///Users/nguyenducnhat/appcafe/thecoffeelinks-client-ios/src/components/social/CheckInSheet.tsx)
+
+Bottom sheet for check-in:
+- Store/café indicator
+- Table number input
+- Duration selector (30min, 60min, until checkout)
+- Shows current intent
+- Submit button
+
+---
+
+#### [NEW] [TrustBadge.tsx](file:///Users/nguyenducnhat/appcafe/thecoffeelinks-client-ios/src/components/social/TrustBadge.tsx)
+
+Displays aggregated trust indicators:
+- ✅ Verified Networker
+- 💬 Recommended by X
+- ⭐ Consistently Positive
+- 🆕 New to Networking
+
+---
+
+#### [NEW] [MeetingReview.tsx](file:///Users/nguyenducnhat/appcafe/thecoffeelinks-client-ios/src/components/social/MeetingReview.tsx)
+
+Dual-blind review card:
+- Thumbs up/down for quality, value
+- "Would meet again" toggle
+- Optional private note
+- Submit reveals ratings after both complete
+
+---
+
+#### [NEW] [EmptyState.tsx](file:///Users/nguyenducnhat/appcafe/thecoffeelinks-client-ios/src/components/EmptyState.tsx)
+
+Reusable empty state component:
+- Icon, title, description
+- Primary CTA button
+- Consistent across Network, Community, Orders
+
+---
+
+### Modified Files
+
+---
+
+#### [MODIFY] [globals.css](file:///Users/nguyenducnhat/appcafe/thecoffeelinks-client-ios/src/app/globals.css)
+
+- Add intent colors (hiring, learning, collab, open)
+- Add trust badge styles
+- Add onboarding slide styles
+- Enhanced empty state patterns
+
+---
+
+#### [MODIFY] [network/page.tsx](file:///Users/nguyenducnhat/appcafe/thecoffeelinks-client-ios/src/app/network/page.tsx)
+
+Major revision:
+- Add IntentSelector as first step (modal or inline)
+- Replace generic user list with contextual discovery
+- Add time-boxed check-in with CheckInSheet
+- Show intent badges on all users
+- Add TrustBadge to ConnectionCard
+- Improved empty states with guidance
+
+---
+
+#### [MODIFY] [ConnectionCard.tsx](file:///Users/nguyenducnhat/appcafe/thecoffeelinks-client-ios/src/components/social/ConnectionCard.tsx)
+
+- Add intent badge (what they're looking for)
+- Add TrustBadge integration
+- Show table number when checked in
+- "Connect" with optional intro message
+- Time remaining indicator
+
+---
+
+#### [MODIFY] [CommunityBoard.tsx](file:///Users/nguyenducnhat/appcafe/thecoffeelinks-client-ios/src/components/social/CommunityBoard.tsx)
+
+- Limit to 4 post types only
+- Add type filter tabs
+- Distinct color per type
+- Create post with type selection
+- Empty state with first post CTA
+
+---
+
+#### [MODIFY] [socialStore.ts](file:///Users/nguyenducnhat/appcafe/thecoffeelinks-client-ios/src/store/socialStore.ts)
+
+Add new state:
+- `currentIntent`: 'hiring' | 'learning' | 'collab' | 'open' | null
+- `checkInExpiry`: Date | null
+- `pendingReviews`: Meeting[]
+- Actions: setIntent, checkInWithDuration, submitReview
+
+---
+
+#### [MODIFY] [userStore.ts](file:///Users/nguyenducnhat/appcafe/thecoffeelinks-client-ios/src/store/userStore.ts)
+
+Add:
+- `hasCompletedOnboarding`: boolean
+- `trustStats`: { meetingsCompleted, recommendedBy, positiveRate }
+
+---
+
+#### [MODIFY] [page.tsx (Home)](file:///Users/nguyenducnhat/appcafe/thecoffeelinks-client-ios/src/app/page.tsx)
+
+- Add onboarding redirect for new users
+- Welcome message personalization
+
+---
+
+### Database Migrations (Optional - New Features Only)
+
+---
+
+#### [NEW] meetings table (Supabase SQL)
+
+```sql
+CREATE TABLE IF NOT EXISTS public.meetings (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  requester_id UUID REFERENCES auth.users(id) NOT NULL,
+  recipient_id UUID REFERENCES auth.users(id) NOT NULL,
+  scheduled_at TIMESTAMP WITH TIME ZONE,
+  status TEXT CHECK (status IN ('pending', 'confirmed', 'completed', 'cancelled')) DEFAULT 'pending',
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+```
+
+---
+
+#### [NEW] meeting_reviews table (Supabase SQL)
+
+```sql
+CREATE TABLE IF NOT EXISTS public.meeting_reviews (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  meeting_id UUID REFERENCES public.meetings(id) ON DELETE CASCADE,
+  reviewer_id UUID REFERENCES auth.users(id) NOT NULL,
+  quality_positive BOOLEAN,
+  value_positive BOOLEAN,
+  would_meet_again BOOLEAN,
+  private_note TEXT,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  UNIQUE(meeting_id, reviewer_id)
+);
+```
+
+---
+
+## 11. Verification Plan
+
+### Automated Tests
+
+```bash
+npm run build
+npm run lint
+npx tsc --noEmit
+```
+
+### User Flow Testing
+
+- [ ] New user onboarding (3 steps complete)
+- [ ] First order flow
+- [ ] Intent selection → check-in → discover users
+- [ ] Community post creation (4 types)
+- [ ] Connection request with intro message
+- [ ] Meeting scheduling (if implemented)
+- [ ] Dual-blind review submission
+- [ ] Empty states render correctly
+- [ ] Trust badges display properly
+
+### Product Metrics Verification
+
+- [ ] Onboarding completion tracking
+- [ ] Check-in duration logged
+- [ ] Intent selection logged
+- [ ] Review submission rate measurable
+
+---
+
+## 12. Implementation Priority
+
+| Phase | Duration | Focus |
+|-------|----------|-------|
+| **1. Foundation** | Day 1 | Design system, globals.css, EmptyState |
+| **2. Onboarding** | Day 1 | Onboarding flow, welcome flag |
+| **3. Core Ordering** | Day 1-2 | Home, ProductModal, Cart |
+| **4. Networking v2** | Day 2-3 | IntentSelector, CheckIn, contextual discovery |
+| **5. Community v2** | Day 3 | Focused post types, creation flow |
+| **6. Trust System** | Day 4 | TrustBadge, MeetingReview |
+| **7. Polish** | Day 5 | Animations, empty states, testing |
+
+---
+
+> [!IMPORTANT]
+> **Schema Safety**: Core ordering uses existing tables. Meeting/review tables are additive migrations that don't affect current functionality.
+
+> [!TIP]
+> **Progressive Rollout**: Intent-first networking can launch with UI only, backend matching logic added incrementally.
+
+> [!NOTE]
+> **Metrics First**: All new components should fire analytics events for the KPIs defined above.

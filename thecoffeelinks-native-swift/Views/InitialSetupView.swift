@@ -2,7 +2,8 @@
 //  InitialSetupView.swift
 //  thecoffeelinks-native-swift
 //
-//  Created by AppCafe on 2026-01-14.
+//  Receipt-Editorial Design
+//  Aligned with canonical CheckoutView.swift
 //
 
 import SwiftUI
@@ -13,25 +14,25 @@ struct InitialSetupView: View {
     @State private var currentStep = 0
     @State private var selectedTaste: String?
     
-    // Animation states
     @State private var isLocationAuthorized = false
     @State private var isNotificationAuthorized = false
     
     var body: some View {
         ZStack {
-            Color.morningFog.ignoresSafeArea()
+            Color.backgroundPaper.ignoresSafeArea()
             
-            VStack {
+            VStack(spacing: 0) {
                 // Progress Bar
                 HStack(spacing: 4) {
                     Rectangle()
-                        .fill(currentStep >= 0 ? Color.forestCanopy : Color.neutral200)
-                        .frame(height: 4)
+                        .fill(currentStep >= 0 ? Color.primaryEspresso : Color.border)
+                        .frame(height: 2)
                     Rectangle()
-                        .fill(currentStep >= 1 ? Color.forestCanopy : Color.neutral200)
-                        .frame(height: 4)
+                        .fill(currentStep >= 1 ? Color.primaryEspresso : Color.border)
+                        .frame(height: 2)
                 }
-                .padding(.top, 8)
+                .padding(.top, 24)
+                .padding(.horizontal, 24)
                 
                 if currentStep == 0 {
                     permissionsStep
@@ -41,48 +42,47 @@ struct InitialSetupView: View {
                         .transition(.move(edge: .trailing))
                 }
             }
-            .animation(.easeInOut, value: currentStep)
+            .animation(.easeInOut(duration: 0.3), value: currentStep)
         }
     }
     
     // MARK: - Step 1: Permissions
     private var permissionsStep: some View {
-        VStack(spacing: 32) {
+        VStack(spacing: AppLayout.spacingXL) {
             Spacer()
             
-            VStack(spacing: 16) {
-                Text("Enable Full Experience")
-                    .font(.brandSerif(28))
-                    .foregroundStyle(Color.forestCanopy)
+            VStack(alignment: .leading, spacing: AppLayout.spacing) {
+                Text("Permissions")
+                    .textCase(.uppercase)
+                    .font(AppFont.monoBody)
+                    .foregroundStyle(Color.primaryEspresso)
                 
-                Text("To find the nearest spot and never miss a coffee connection, we need a few permissions.")
-                    .font(.brandSans(16))
-                    .multilineTextAlignment(.center)
-                    .foregroundStyle(Color.neutral600)
-                    .padding(.horizontal)
+                Text("Required Access")
+                    .font(AppFont.displayTitle)
+                    .foregroundStyle(Color.textInk)
+                
+                Text("To facilitate localized detection and order updates, the following permissions are required.")
+                    .font(AppFont.body)
+                    .foregroundStyle(Color.textMuted)
             }
+            .padding(.horizontal, 24)
             
-            VStack(spacing: 16) {
-                // Location Permission Tile
+            VStack(spacing: AppLayout.spacing) {
                 PermissionTile(
-                    icon: "location.fill",
-                    title: "Location Access",
-                    subtitle: "Find nearyby cafes & check-in",
-                    isGranted: $isLocationAuthorized
+                    title: "Location Services",
+                    subtitle: "Nearby store detection",
+                    isGranted: isLocationAuthorized,
+                    icon: "location.fill"
                 ) {
-                    // In a real app, we'd call CLLocationManager here
-                    // For now, we simulate authorization
                     withAnimation { isLocationAuthorized = true }
                 }
                 
-                // Notification Permission Tile
                 PermissionTile(
-                    icon: "bell.badge.fill",
                     title: "Notifications",
-                    subtitle: "Order updates & networking invites",
-                    isGranted: $isNotificationAuthorized
+                    subtitle: "Order status updates",
+                    isGranted: isNotificationAuthorized,
+                    icon: "bell.fill"
                 ) {
-                    // Simulate auth
                     withAnimation { isNotificationAuthorized = true }
                 }
             }
@@ -90,56 +90,58 @@ struct InitialSetupView: View {
             
             Spacer()
             
-            LiquidGlassPrimaryButton(
-                "Continue",
-                isDisabled: !(isLocationAuthorized || isNotificationAuthorized) // Require at least one for demo flow? Or just let them pass
-            ) {
+            Button {
                 withAnimation {
                     currentStep = 1
                 }
+            } label: {
+                Text("Continue")
+                    .font(AppFont.monoCTA)
+                    .foregroundStyle(Color.backgroundPaper)
+                    .padding(.vertical, 12)
+                    .frame(maxWidth: .infinity)
+                    .background(Color.accentColor)
+                    .clipShape(RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle))
             }
-            .padding(.horizontal, 24)
-            .padding(.bottom, 48)
+            .padding(24)
+            .padding(.bottom, 24)
         }
     }
     
     // MARK: - Step 2: Taste Quiz
     private var tasteQuizStep: some View {
-        VStack(spacing: 32) {
+        VStack(spacing: AppLayout.spacingXL) {
             Spacer()
             
-            VStack(spacing: 16) {
-                Text("What's Your Taste?")
-                    .font(.brandSerif(28))
-                    .foregroundStyle(Color.forestCanopy)
+            VStack(alignment: .leading, spacing: AppLayout.spacing) {
+                Text("Taste Profile")
+                    .textCase(.uppercase)
+                    .font(AppFont.monoBody)
+                    .foregroundStyle(Color.primaryEspresso)
                 
-                Text("Help us recommend the perfect brew for your productive mornings.")
-                    .font(.brandSans(16))
-                    .multilineTextAlignment(.center)
-                    .foregroundStyle(Color.neutral600)
-                    .padding(.horizontal)
+                Text("Your Preference")
+                    .font(AppFont.displayTitle)
+                    .foregroundStyle(Color.textInk)
+                
+                Text("Help us optimize recommendations for your taste.")
+                    .font(AppFont.body)
+                    .foregroundStyle(Color.textMuted)
             }
+            .padding(.horizontal, 24)
             
-            // Taste Options Grid
-            VStack(spacing: 12) {
-                TasteOptionCard(
+            VStack(spacing: AppLayout.spacing) {
+                SelectableRow(
                     title: "Bold & Strong",
-                    icon: "bolt.fill",
-                    color: .coffeeRich,
                     isSelected: selectedTaste == "Bold"
                 ) { selectedTaste = "Bold" }
                 
-                TasteOptionCard(
+                SelectableRow(
                     title: "Fruity & Floral",
-                    icon: "leaf.fill",
-                    color: .brandAccent,
                     isSelected: selectedTaste == "Fruity"
                 ) { selectedTaste = "Fruity" }
                 
-                TasteOptionCard(
+                SelectableRow(
                     title: "Smooth & Milky",
-                    icon: "drop.fill",
-                    color: .sunRay,
                     isSelected: selectedTaste == "Milky"
                 ) { selectedTaste = "Milky" }
             }
@@ -147,20 +149,24 @@ struct InitialSetupView: View {
             
             Spacer()
             
-            LiquidGlassPrimaryButton(
-                "Complete Setup",
-                isLoading: false,
-                isDisabled: selectedTaste == nil
-            ) {
+            Button {
                 completeSetup()
+            } label: {
+                Text("Complete Setup")
+                    .font(AppFont.monoCTA)
+                    .foregroundStyle(Color.backgroundPaper)
+                    .padding(.vertical, 12)
+                    .frame(maxWidth: .infinity)
+                    .background(selectedTaste == nil ? Color.textMuted : Color.accentColor)
+                    .clipShape(RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle))
             }
-            .padding(.horizontal, 24)
-            .padding(.bottom, 48)
+            .disabled(selectedTaste == nil)
+            .padding(24)
+            .padding(.bottom, 24)
         }
     }
     
     private func completeSetup() {
-        // Save taste preference logic here (e.g. UserDefault or API)
         withAnimation {
             isInitialSetupCompleted = true
         }
@@ -170,99 +176,91 @@ struct InitialSetupView: View {
 // MARK: - Components
 
 struct PermissionTile: View {
-    let icon: String
     let title: String
     let subtitle: String
-    @Binding var isGranted: Bool
+    let isGranted: Bool
+    let icon: String
     let action: () -> Void
     
     var body: some View {
         Button(action: action) {
             HStack(spacing: 16) {
-                ZStack {
-                    Circle()
-                        .fill(isGranted ? Color.successGreen.opacity(0.1) : Color.neutral100)
-                        .frame(width: 48, height: 48)
-                    
-                    Image(systemName: isGranted ? "checkmark" : icon)
-                        .foregroundStyle(isGranted ? Color.successGreen : Color.forestCanopy)
-                }
+                Circle()
+                    .fill(isGranted ? Color.semanticSuccess.opacity(0.1) : Color.surfaceCard)
+                    .frame(width: 44, height: 44)
+                    .overlay {
+                        Image(systemName: isGranted ? "checkmark" : icon)
+                            .font(.system(size: 16))
+                            .foregroundColor(isGranted ? Color.semanticSuccess : Color.textMuted)
+                    }
+                    .overlay(Circle().stroke(isGranted ? Color.semanticSuccess : Color.border, lineWidth: 1))
                 
-                VStack(alignment: .leading, spacing: 4) {
+                VStack(alignment: .leading, spacing: 2) {
                     Text(title)
-                        .font(.brandSans(16).weight(.semibold))
-                        .foregroundStyle(Color.neutral900)
+                        .font(AppFont.headline)
+                        .foregroundStyle(Color.textInk)
                     Text(subtitle)
-                        .font(.brandSans(13))
-                        .foregroundStyle(Color.neutral500)
+                        .font(AppFont.uiCaption)
+                        .foregroundStyle(Color.textMuted)
                 }
                 
                 Spacer()
                 
                 if !isGranted {
-                    Text("Allow")
-                        .font(.brandSans(14).weight(.medium))
-                        .foregroundStyle(Color.forestCanopy)
-                        .padding(.horizontal, 12)
-                        .padding(.vertical, 6)
-                        .background(Color.forestCanopy.opacity(0.1))
-                        .cornerRadius(8)
+                    Text("ALLOW")
+                        .font(AppFont.monoBody)
+                        .padding(.horizontal, 8)
+                        .padding(.vertical, 4)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 4)
+                                .stroke(Color.primaryEspresso, lineWidth: 1)
+                        )
+                        .foregroundColor(Color.primaryEspresso)
                 }
             }
             .padding(16)
-            .background(Color.white)
-            .cornerRadius(16)
+            .background(Color.backgroundPaper)
             .overlay(
-                RoundedRectangle(cornerRadius: 16)
-                    .stroke(isGranted ? Color.successGreen : Color.neutral200, lineWidth: isGranted ? 1.5 : 1)
+                RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle)
+                    .stroke(isGranted ? Color.semanticSuccess : Color.border, lineWidth: 1)
             )
+            .clipShape(RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle))
         }
         .disabled(isGranted)
     }
 }
 
-struct TasteOptionCard: View {
+struct SelectableRow: View {
     let title: String
-    let icon: String
-    let color: Color
     let isSelected: Bool
     let action: () -> Void
     
     var body: some View {
         Button(action: action) {
             HStack {
-                Image(systemName: icon)
-                    .font(.system(size: 20))
-                    .foregroundStyle(isSelected ? .white : color)
-                    .frame(width: 40, height: 40)
-                    .background(isSelected ? Color.white.opacity(0.2) : color.opacity(0.1))
-                    .clipShape(Circle())
-                
                 Text(title)
-                    .font(.brandSans(16).weight(.medium))
-                    .foregroundStyle(isSelected ? .white : .neutral800)
+                    .font(AppFont.body)
+                    .foregroundStyle(Color.textInk)
                 
                 Spacer()
                 
                 if isSelected {
                     Image(systemName: "checkmark.circle.fill")
-                        .foregroundStyle(.white)
+                        .font(.system(size: 20))
+                        .foregroundStyle(Color.primaryEspresso)
+                } else {
+                    Image(systemName: "circle")
+                        .font(.system(size: 20))
+                        .foregroundStyle(Color.border)
                 }
             }
-            .padding(16)
-            .background(isSelected ? color : Color.white)
-            .cornerRadius(12)
-            .shadow(color: isSelected ? color.opacity(0.3) : Color.black.opacity(0.05), radius: 8, y: 4)
+            .padding(AppLayout.spacing)
+            .background(isSelected ? Color.surfaceCard : Color.backgroundPaper)
             .overlay(
-                RoundedRectangle(cornerRadius: 12)
-                    .stroke(isSelected ? Color.clear : Color.neutral200, lineWidth: 1)
+                RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle)
+                    .stroke(isSelected ? Color.primaryEspresso : Color.border, lineWidth: 1)
             )
+            .clipShape(RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle))
         }
-        .scaleEffect(isSelected ? 1.02 : 1.0)
-        .animation(.spring(), value: isSelected)
     }
-}
-
-#Preview {
-    InitialSetupView()
 }
