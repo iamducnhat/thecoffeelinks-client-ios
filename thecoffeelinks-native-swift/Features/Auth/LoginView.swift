@@ -13,27 +13,32 @@ struct LoginView: View {
     @Environment(\.dismiss) var dismiss
     @State private var scrollOffset = CGFloat.zero
     
+    // Default to true to maintain backward compatibility with existing usages
+    var isPresentedModally: Bool = true
+    
     var body: some View {
         ZStack(alignment: .top) {
             Color.backgroundPaper.ignoresSafeArea()
             
-            // Fixed Close Button
-            HStack {
-                Spacer()
-                Button {
-                    authViewModel.authState = .idle
-                    authViewModel.phoneNumber = ""
-                    authViewModel.otpCode = ""
-                    dismiss()
-                } label: {
-                    Image(systemName: "xmark")
-                        .font(AppFont.navIcon)
-                        .foregroundStyle(Color.textInk)
-                        .frame(minWidth: AppLayout.touchTarget, minHeight: AppLayout.touchTarget)
+            // Fixed Close Button (Only show if modal)
+            if isPresentedModally {
+                HStack {
+                    Spacer()
+                    Button {
+                        authViewModel.authState = .idle
+                        authViewModel.phoneNumber = ""
+                        authViewModel.otpCode = ""
+                        dismiss()
+                    } label: {
+                        Image(systemName: "xmark")
+                            .font(AppFont.navIcon)
+                            .foregroundStyle(Color.textInk)
+                            .frame(minWidth: AppLayout.touchTarget, minHeight: AppLayout.touchTarget)
+                    }
                 }
+                .padding(.horizontal, AppLayout.spacing)
+                .padding(.top, AppLayout.spacing)
             }
-            .padding(.horizontal, AppLayout.spacing)
-            .padding(.top, AppLayout.spacing)
             
             VStack(spacing: 0) {
                 ScrollView(.vertical) {

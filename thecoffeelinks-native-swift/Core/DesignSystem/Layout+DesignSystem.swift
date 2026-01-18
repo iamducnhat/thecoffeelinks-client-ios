@@ -91,7 +91,7 @@ struct AppLayout {
     static let spacingEspresso: CGFloat = spacingCompact
     
     /// Legacy: Card gutter
-    static let spacingLatte: CGFloat = spacing
+    static let spacingEditorial: CGFloat = spacing
     
     /// Legacy: Section separation
     static let spacingCappuccino: CGFloat = spacingXL

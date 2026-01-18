@@ -83,11 +83,12 @@ class AuthRepository {
     // MARK: - Phone OTP Authentication
     
     func sendOTP(phoneNumber: String) async throws {
+        print("🚀 [AuthRepo] sendOTP called with \(phoneNumber)")
         struct OTPRequest: Encodable {
             let phone: String
         }
         
-        let _: EmptyResponse = try await networkService.request(
+        try await networkService.requestEmpty(
             "/api/auth/otp/send",
             method: "POST",
             body: OTPRequest(phone: phoneNumber)
@@ -108,11 +109,6 @@ class AuthRepository {
             struct SessionData: Decodable {
                 let accessToken: String
                 let refreshToken: String?
-                
-                enum CodingKeys: String, CodingKey {
-                    case accessToken = "access_token"
-                    case refreshToken = "refresh_token"
-                }
             }
             
              struct SupabaseUser: Decodable {
@@ -124,15 +120,6 @@ class AuthRepository {
                 
                 struct UserMetadata: Decodable {
                     let fullName: String?
-                     enum CodingKeys: String, CodingKey {
-                        case fullName = "full_name"
-                    }
-                }
-                
-                enum CodingKeys: String, CodingKey {
-                    case id, email, phone
-                    case userMetadata = "user_metadata"
-                    case createdAt = "created_at"
                 }
                 
                 func toDomain() -> User {
@@ -150,6 +137,7 @@ class AuthRepository {
                     )
                 }
             }
+
         }
         
         let response: OTPResponse = try await networkService.request(

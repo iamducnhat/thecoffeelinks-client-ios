@@ -97,13 +97,25 @@ class NetworkService: ObservableObject {
         var request = URLRequest(url: url)
         request.httpMethod = method
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.setValue("application/json", forHTTPHeaderField: "Accept")
+        request.setValue("TheCoffeeLinks-iOS/1.0", forHTTPHeaderField: "User-Agent")
         
         if let token = authToken {
             request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
         }
         
         if let body = body {
-            request.httpBody = try encoder.encode(body)
+            do {
+                let bodyData = try encoder.encode(body)
+                request.httpBody = bodyData
+                
+                if let bodyString = String(data: bodyData, encoding: .utf8) {
+                    print("🌐 Request Body:", bodyString)
+                }
+            } catch {
+                print("❌ Failed to encode request body:", error)
+                throw NetworkError.networkFailure(error)
+            }
         }
         
         let (data, response): (Data, URLResponse)
@@ -114,7 +126,13 @@ class NetworkService: ObservableObject {
         }
         
         guard let httpResponse = response as? HTTPURLResponse else {
+            print("❌ Invalid Response (not HTTP)")
             throw NetworkError.unknown
+        }
+        
+        print("📡 Response Status: \(httpResponse.statusCode)")
+        if let responseString = String(data: data, encoding: .utf8) {
+            print("📡 Response Body: \(responseString)")
         }
         
         switch httpResponse.statusCode {
@@ -166,7 +184,13 @@ class NetworkService: ObservableObject {
         }
         
         guard let httpResponse = response as? HTTPURLResponse else {
+            print("❌ Invalid Response (not HTTP)")
             throw NetworkError.unknown
+        }
+        
+        print("📡 Response Status: \(httpResponse.statusCode)")
+        if let responseString = String(data: data, encoding: .utf8) {
+            print("📡 Response Body: \(responseString)")
         }
         
         if !(200...299).contains(httpResponse.statusCode) {
@@ -204,7 +228,14 @@ class NetworkService: ObservableObject {
         } catch {
             throw NetworkError.networkFailure(error)
         }
-        guard let httpResponse = response as? HTTPURLResponse else { throw NetworkError.unknown }
+        guard let httpResponse = response as? HTTPURLResponse else {
+            print("❌ Invalid Response (not HTTP)")
+            throw NetworkError.unknown
+        }
+        print("📡 Response Status: \(httpResponse.statusCode)")
+        if let responseString = String(data: data, encoding: .utf8) {
+            print("📡 Response Body: \(responseString)")
+        }
         switch httpResponse.statusCode {
         case 200...299:
             return data

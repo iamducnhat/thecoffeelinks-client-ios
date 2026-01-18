@@ -8,6 +8,7 @@
 
 import SwiftUI
 import Combine
+import CachedAsyncImage // CHANGED
 
 struct FavoritesView: View {
     @StateObject private var viewModel: FavoritesViewModel
@@ -149,16 +150,32 @@ struct FavoriteItemRow: View {
             VStack(spacing: 0) {
                 HStack(spacing: AppLayout.spacing) {
                     // Image
-                    AsyncImage(url: URL(string: favorite.product.displayImageUrl ?? "")) { image in
-                        image.resizable().aspectRatio(contentMode: .fill)
-                    } placeholder: {
-                        Color.surfaceCard
-                            .overlay {
-                                Text(String(favorite.product.name.prefix(1)))
-                                    .font(AppFont.sectionHeader)
-                                    .foregroundStyle(Color.textMuted)
-                            }
-                    }
+                    // CHANGED: Using CachedAsyncImage
+                    CachedAsyncImage(url: URL(string: favorite.product.displayImageUrl ?? "")) { phase in // CHANGED
+                        switch phase { // CHANGED
+                        case .empty: // CHANGED
+                            Rectangle() // CHANGED
+                                .fill(Color.surfaceCard) // CHANGED
+                                .overlay { // CHANGED
+                                    ProgressView() // CHANGED
+                                        .tint(Color.primaryEspresso) // CHANGED
+                                } // CHANGED
+                        case .success(let image): // CHANGED
+                            image // CHANGED
+                                .resizable() // CHANGED
+                                .aspectRatio(contentMode: .fill) // CHANGED
+                        case .failure: // CHANGED
+                            Rectangle() // CHANGED
+                                .fill(Color.surfaceCard) // CHANGED
+                                .overlay { // CHANGED
+                                    Text(String(favorite.product.name.prefix(1))) // CHANGED
+                                        .font(AppFont.sectionHeader) // CHANGED
+                                        .foregroundStyle(Color.textMuted) // CHANGED
+                                } // CHANGED
+                        @unknown default: // CHANGED
+                            EmptyView() // CHANGED
+                        } // CHANGED
+                    } // CHANGED
                     .frame(width: 70, height: 70)
                     .clipShape(RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle))
                     .overlay(

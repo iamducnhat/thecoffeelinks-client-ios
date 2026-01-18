@@ -7,6 +7,7 @@
 //
 
 import SwiftUI
+import CachedAsyncImage // CHANGED
 
 struct CartView: View {
     @EnvironmentObject private var cartViewModel: CartViewModel
@@ -246,19 +247,32 @@ struct CartItemRow: View {
     var body: some View {
         HStack(spacing: AppLayout.spacingMedium) {
             // Image
-            AsyncImage(url: URL(string: item.product.displayImageUrl ?? "")) { phase in
-                if let image = phase.image {
-                    image.resizable().aspectRatio(contentMode: .fill)
-                } else {
-                    Rectangle()
-                        .fill(Color.textInk.opacity(0.1))
-                        .overlay {
-                            Image(systemName: "photo")
-                                .font(AppFont.productTitle)
-                                .foregroundStyle(Color.textInk)
-                        }
-                }
-            }
+            // CHANGED: Using CachedAsyncImage
+            CachedAsyncImage(url: URL(string: item.product.displayImageUrl ?? "")) { phase in // CHANGED
+                switch phase { // CHANGED
+                case .empty: // CHANGED
+                    Rectangle() // CHANGED
+                        .fill(Color.surfaceCard) // CHANGED
+                        .overlay { // CHANGED
+                            ProgressView() // CHANGED
+                                .tint(Color.primaryEspresso) // CHANGED
+                        } // CHANGED
+                case .success(let image): // CHANGED
+                    image // CHANGED
+                        .resizable() // CHANGED
+                        .aspectRatio(contentMode: .fill) // CHANGED
+                case .failure: // CHANGED
+                    Rectangle() // CHANGED
+                        .fill(Color.textInk.opacity(0.1)) // CHANGED
+                        .overlay { // CHANGED
+                            Image(systemName: "photo") // CHANGED
+                                .font(AppFont.productTitle) // CHANGED
+                                .foregroundStyle(Color.textInk) // CHANGED
+                        } // CHANGED
+                @unknown default: // CHANGED
+                    EmptyView() // CHANGED
+                } // CHANGED
+            } // CHANGED
             .frame(width: AppLayout.productImageSize, height: AppLayout.productImageSize)
             .cornerRadius(AppLayout.cornerRadius)
             
@@ -479,15 +493,29 @@ struct EditCartItemSheet: View {
                     VStack(spacing: AppLayout.spacingXL) {
                         // Product Header
                         HStack(spacing: AppLayout.spacing) {
-                            AsyncImage(url: URL(string: item.product.displayImageUrl ?? "")) { phase in
-                                if let image = phase.image {
-                                    image.resizable().aspectRatio(contentMode: .fill)
-                                } else {
-                                    Color.surfaceCard
-                                }
-                            }
-                            .frame(width: 60, height: 60)
-                            .cornerRadius(AppLayout.cornerRadius)
+                        // CHANGED: Using CachedAsyncImage
+                        CachedAsyncImage(url: URL(string: item.product.displayImageUrl ?? "")) { phase in // CHANGED
+                            switch phase { // CHANGED
+                            case .empty: // CHANGED
+                                Rectangle() // CHANGED
+                                    .fill(Color.surfaceCard) // CHANGED
+                                    .overlay { // CHANGED
+                                        ProgressView() // CHANGED
+                                            .tint(Color.primaryEspresso) // CHANGED
+                                    } // CHANGED
+                            case .success(let image): // CHANGED
+                                image // CHANGED
+                                    .resizable() // CHANGED
+                                    .aspectRatio(contentMode: .fill) // CHANGED
+                            case .failure: // CHANGED
+                                Rectangle() // CHANGED
+                                    .fill(Color.surfaceCard) // CHANGED
+                            @unknown default: // CHANGED
+                                EmptyView() // CHANGED
+                            } // CHANGED
+                        } // CHANGED
+                        .frame(width: 60, height: 60)
+                        .cornerRadius(AppLayout.cornerRadius)
                             
                             Text(item.product.name)
                                 .font(AppFont.sectionHeader)

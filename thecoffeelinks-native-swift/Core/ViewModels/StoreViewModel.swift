@@ -16,6 +16,10 @@ class StoreViewModel: BaseViewModel {
         super.init()
     }
     
+    func requestLocationAuthorization() async {
+        await locationManager.requestAuthorization()
+    }
+    
     func loadStores() {
         withLoading {
             let fetched = try await self.storeRepository.getStores()

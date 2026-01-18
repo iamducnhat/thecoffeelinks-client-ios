@@ -45,7 +45,7 @@ struct ReceiptPrimaryButton: View {
             .foregroundStyle(Color.backgroundPaper)
             .padding(.vertical, 12)
             .frame(maxWidth: .infinity, alignment: .center)
-            .background(Color.accentColor)
+            .background(Color.primaryEspresso)
             .clipShape(RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle))
         }
         .disabled(isDisabled || isLoading)

@@ -7,14 +7,15 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		12777CFB3F8B4F0FB4ECD5AA /* LibreBaskerville-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = B4331C9B483A4F6E99149D4A /* LibreBaskerville-Regular.ttf */; };
 		25544F4E2F1431A0009A6830 /* Auth in Frameworks */ = {isa = PBXBuildFile; productRef = 25544F4D2F1431A0009A6830 /* Auth */; };
 		25544F502F1431A0009A6830 /* PostgREST in Frameworks */ = {isa = PBXBuildFile; productRef = 25544F4F2F1431A0009A6830 /* PostgREST */; };
 		25544F522F1431A0009A6830 /* Realtime in Frameworks */ = {isa = PBXBuildFile; productRef = 25544F512F1431A0009A6830 /* Realtime */; };
 		25544F542F1431A0009A6830 /* Storage in Frameworks */ = {isa = PBXBuildFile; productRef = 25544F532F1431A0009A6830 /* Storage */; };
 		25544F572F14341D009A6830 /* Supabase in Frameworks */ = {isa = PBXBuildFile; productRef = 25544F562F14341D009A6830 /* Supabase */; };
-		12777CFB3F8B4F0FB4ECD5AA /* LibreBaskerville-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = B4331C9B483A4F6E99149D4A /* LibreBaskerville-Regular.ttf */; };
-		F495694AB08C4E538B0A3F32 /* LibreBaskerville-Bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 696376B4AF3B4F08ABC24923 /* LibreBaskerville-Bold.ttf */; };
+		25FC4F5F2F1CB2A90001D920 /* CachedAsyncImage in Frameworks */ = {isa = PBXBuildFile; productRef = 25FC4F5E2F1CB2A90001D920 /* CachedAsyncImage */; };
 		311132BBAFDC4D87A1AEF0E9 /* LibreBaskerville-Italic.ttf in Resources */ = {isa = PBXBuildFile; fileRef = FC02A854467A483D898B0051 /* LibreBaskerville-Italic.ttf */; };
+		F495694AB08C4E538B0A3F32 /* LibreBaskerville-Bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 696376B4AF3B4F08ABC24923 /* LibreBaskerville-Bold.ttf */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -69,6 +70,7 @@
 				25544F572F14341D009A6830 /* Supabase in Frameworks */,
 				25544F542F1431A0009A6830 /* Storage in Frameworks */,
 				25544F522F1431A0009A6830 /* Realtime in Frameworks */,
+				25FC4F5F2F1CB2A90001D920 /* CachedAsyncImage in Frameworks */,
 				25544F502F1431A0009A6830 /* PostgREST in Frameworks */,
 				25544F4E2F1431A0009A6830 /* Auth in Frameworks */,
 			);
@@ -155,6 +157,7 @@
 				25544F512F1431A0009A6830 /* Realtime */,
 				25544F532F1431A0009A6830 /* Storage */,
 				25544F562F14341D009A6830 /* Supabase */,
+				25FC4F5E2F1CB2A90001D920 /* CachedAsyncImage */,
 			);
 			productName = "thecoffeelinks-native-swift";
 			productReference = 25544E6E2F1424F2009A6830 /* thecoffeelinks-native-swift.app */;
@@ -240,6 +243,7 @@
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
 				25544F4C2F1431A0009A6830 /* XCRemoteSwiftPackageReference "supabase-swift" */,
+				25FC4F5D2F1CB2A90001D920 /* XCRemoteSwiftPackageReference "CachedAsyncImage" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 25544E6F2F1424F2009A6830 /* Products */;
@@ -258,11 +262,10 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-			
 				12777CFB3F8B4F0FB4ECD5AA /* LibreBaskerville-Regular.ttf in Resources */,
 				F495694AB08C4E538B0A3F32 /* LibreBaskerville-Bold.ttf in Resources */,
 				311132BBAFDC4D87A1AEF0E9 /* LibreBaskerville-Italic.ttf in Resources */,
-);
+			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 		25544E792F1424F4009A6830 /* Resources */ = {
@@ -659,6 +662,14 @@
 				minimumVersion = 2.5.1;
 			};
 		};
+		25FC4F5D2F1CB2A90001D920 /* XCRemoteSwiftPackageReference "CachedAsyncImage" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/iamducnhat/CachedAsyncImage.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.0.2;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -686,6 +697,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 25544F4C2F1431A0009A6830 /* XCRemoteSwiftPackageReference "supabase-swift" */;
 			productName = Supabase;
+		};
+		25FC4F5E2F1CB2A90001D920 /* CachedAsyncImage */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 25FC4F5D2F1CB2A90001D920 /* XCRemoteSwiftPackageReference "CachedAsyncImage" */;
+			productName = CachedAsyncImage;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

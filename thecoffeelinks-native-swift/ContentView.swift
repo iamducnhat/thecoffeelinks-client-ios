@@ -19,12 +19,17 @@ struct ContentView: View {
             if !isSplashFinished {
                 // 0. Splash Screen (Always First)
                 SplashScreen(isActive: $isSplashFinished)
+            } else if !authViewModel.isAuthenticated {
+                // 1. Mandatory Auth Gate
+                // User MUST be logged in to proceed.
+                LoginView(isPresentedModally: false)
+                    .transition(.opacity)
             } else if !appState.isOnboardingCompleted || !appState.isInitialSetupCompleted {
-                // 1. Onboarding & Setup Flow
-                // Combined flow: Carousel -> Login (if needed) -> Setup
+                // 2. Onboarding & Setup Flow
+                // Combined flow: Carousel -> Setup
                 OnboardingFlowView()
             } else {
-                // 2. Main App
+                // 3. Main App
                 MainTabView()
             }
         }

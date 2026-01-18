@@ -11,6 +11,7 @@ import Combine
 @MainActor
 final class HomeViewModel: ObservableObject {
     @Published var events: [Event] = []
+    @Published var vouchers: [Voucher] = []
     @Published var popularProducts: [PopularProduct] = []
     @Published var favorites: [FavoriteItem] = []
     @Published var predictedCart: PredictedCart?
@@ -23,6 +24,7 @@ final class HomeViewModel: ObservableObject {
     @Published var isDismissedThisSession = false
     
     private let productRepository: ProductRepositoryProtocol
+    private let voucherRepository: VoucherRepositoryProtocol
     private let favoritesRepository: FavoritesRepositoryProtocol
     private let predictionRepository: PredictionRepositoryProtocol
     private let userRepository: UserRepositoryProtocol
@@ -30,10 +32,11 @@ final class HomeViewModel: ObservableObject {
     private let networkService: NetworkServiceProtocol
     private let aiRules = AIDominanceRules()
     
-    init(productRepository: ProductRepositoryProtocol, favoritesRepository: FavoritesRepositoryProtocol,
+    init(productRepository: ProductRepositoryProtocol, voucherRepository: VoucherRepositoryProtocol, favoritesRepository: FavoritesRepositoryProtocol,
          predictionRepository: PredictionRepositoryProtocol, userRepository: UserRepositoryProtocol, 
          analyticsService: AnalyticsServiceProtocol, networkService: NetworkServiceProtocol) {
         self.productRepository = productRepository
+        self.voucherRepository = voucherRepository
         self.favoritesRepository = favoritesRepository
         self.predictionRepository = predictionRepository
         self.userRepository = userRepository
@@ -48,10 +51,11 @@ final class HomeViewModel: ObservableObject {
         await analyticsService.trackScreen("Home")
         
         async let eventsTask = loadEvents()
+        async let vouchersTask = loadVouchers()
         async let populars = loadPopularProducts()
         async let favs = loadFavorites()
         async let prediction = generatePrediction()
-        await eventsTask; await populars; await favs; await prediction
+        await eventsTask; await vouchersTask; await populars; await favs; await prediction
         
         isLoading = false
     }
@@ -63,6 +67,16 @@ final class HomeViewModel: ObservableObject {
         } catch {
             print("⚠️ Events fetch error: \(error)")
             // Events are non-critical, continue with empty
+        }
+    }
+    
+    private func loadVouchers() async {
+        do {
+            let allVouchers = try await voucherRepository.getVouchers()
+            // Only show active vouchers in the banner
+            vouchers = allVouchers.filter { $0.isValid }
+        } catch {
+            print("⚠️ Vouchers fetch error: \(error)")
         }
     }
     

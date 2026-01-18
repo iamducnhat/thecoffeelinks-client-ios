@@ -1,6 +1,15 @@
 {
-  "originHash" : "5f3436049b395fcbc71828c07d82e81a46af698ebe0b146cdc52345a5a60558d",
+  "originHash" : "ba109b33b4fe55ca0fba5be01adeba5dc9078be8081813e3eb13033f7aadb13f",
   "pins" : [
+    {
+      "identity" : "cachedasyncimage",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/iamducnhat/CachedAsyncImage.git",
+      "state" : {
+        "revision" : "6ac2a23c61c230628a845f3c1761ce8c14c64c4b",
+        "version" : "1.0.2"
+      }
+    },
     {
       "identity" : "supabase-swift",
       "kind" : "remoteSourceControl",

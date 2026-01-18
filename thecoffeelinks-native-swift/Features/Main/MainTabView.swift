@@ -16,6 +16,7 @@ struct MainTabView: View {
     )
     @StateObject private var homeViewModel = HomeViewModel(
         productRepository: DependencyContainer.shared.productRepository,
+        voucherRepository: DependencyContainer.shared.voucherRepository,
         favoritesRepository: DependencyContainer.shared.favoritesRepository,
         predictionRepository: DependencyContainer.shared.predictionRepository,
         userRepository: DependencyContainer.shared.userRepository,
@@ -39,19 +40,13 @@ struct MainTabView: View {
         appearance.configureWithOpaqueBackground()
         appearance.backgroundColor = UIColor(Color.backgroundPaper)
         
-        // Normal state
+        // Normal state (icon only)
         appearance.stackedLayoutAppearance.normal.iconColor = UIColor(Color.textMuted)
-        appearance.stackedLayoutAppearance.normal.titleTextAttributes = [
-            .font: UIFont.monospacedSystemFont(ofSize: 10, weight: .regular),
-            .foregroundColor: UIColor(Color.textMuted)
-        ]
+        appearance.stackedLayoutAppearance.normal.titleTextAttributes = [:]
         
-        // Selected state
+        // Selected state (icon only)
         appearance.stackedLayoutAppearance.selected.iconColor = UIColor(Color.textInk)
-        appearance.stackedLayoutAppearance.selected.titleTextAttributes = [
-            .font: UIFont.monospacedSystemFont(ofSize: 10, weight: .medium),
-            .foregroundColor: UIColor(Color.textInk)
-        ]
+        appearance.stackedLayoutAppearance.selected.titleTextAttributes = [:]
         
         UITabBar.appearance().standardAppearance = appearance
         UITabBar.appearance().scrollEdgeAppearance = appearance
@@ -64,7 +59,7 @@ struct MainTabView: View {
                 .environmentObject(menuViewModel)
                 .environmentObject(homeViewModel)
                 .tabItem {
-                    Label("Home", systemImage: "house")
+                    Image("home").renderingMode(.original)
                 }
                 .tag(0)
             
@@ -74,7 +69,7 @@ struct MainTabView: View {
                     .environmentObject(menuViewModel)
             }
             .tabItem {
-                Label("Menu", systemImage: "square.grid.2x2")
+                Image("bag").renderingMode(.original)
             }
             .tag(1)
             
@@ -84,7 +79,7 @@ struct MainTabView: View {
                     .environmentObject(networkViewModel)
             }
             .tabItem {
-                Label("Space", systemImage: "person.3")
+                Image("users").renderingMode(.original)
             }
             .tag(2)
             
@@ -94,7 +89,7 @@ struct MainTabView: View {
                     .environmentObject(profileViewModel)
             }
             .tabItem {
-                Label("Profile", systemImage: "person")
+                Image("user").renderingMode(.original)
             }
             .tag(3)
         }

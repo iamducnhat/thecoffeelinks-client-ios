@@ -3,10 +3,12 @@
 //  thecoffeelinks-native-swift
 //
 //  Receipt-Editorial Design
-//  Aligned with canonical CheckoutView.swift
+//  Strictly aligned with canonical CheckoutView.swift
+//  Section Order: Offers → Popular → Events
 //
 
 import SwiftUI
+import CachedAsyncImage // CHANGED
 
 struct HomeView: View {
     @EnvironmentObject var appState: AppState
@@ -38,27 +40,6 @@ struct HomeView: View {
                             }
                             
                             Spacer()
-                            
-                            // Delivery Toggle
-//                            Button {
-//                                withAnimation { appState.isDeliveryMode.toggle() }
-//                            } label: {
-//                                HStack(spacing: 8) {
-//                                    Image(systemName: appState.isDeliveryMode ? "bicycle" : "cup.and.saucer")
-//                                        .font(AppFont.monoCaption)
-//                                    Text(appState.isDeliveryMode ? "delivery" : "dine-in")
-//                                        .textCase(.uppercase)
-//                                        .font(AppFont.monoBody)
-//                                }
-//                                .padding(AppLayout.spacingMicro)
-//                                .foregroundStyle(appState.isDeliveryMode ? Color.backgroundPaper : Color.textInk)
-//                                .background(appState.isDeliveryMode ? Color.textInk : Color.backgroundPaper)
-//                                .clipShape(RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle))
-//                                .overlay(
-//                                    RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle)
-//                                        .stroke(Color.textInk, lineWidth: appState.isDeliveryMode ? 0 : 1)
-//                                )
-//                            }
                         }
                         
                         Color.secondary.frame(height: 1)
@@ -82,16 +63,18 @@ struct HomeView: View {
                             .padding(.horizontal, AppLayout.spacing)
                         }
                         
-                        // Hero Section (Events)
+                        // SECTION 1: Offers (Image-Only Banner)
+                        if !homeViewModel.vouchers.isEmpty {
+                            OffersSection(vouchers: homeViewModel.vouchers)
+                        }
+                        
+                        // SECTION 2: Popular Items
+                        PopularSection(products: homeViewModel.popularProducts)
+                        
+                        // SECTION 3: Events (Lighter Visual Weight)
                         if !homeViewModel.events.isEmpty {
                             EventsSection(events: homeViewModel.events)
                         }
-                        
-                        // Categories
-                        CategoriesSection(categories: menuViewModel.categories)
-                        
-                        // Popular Products
-                        PopularSection(products: homeViewModel.popularProducts)
                     }
                     .padding(.top, AppLayout.spacing)
                     .padding(.bottom, 100)
@@ -232,7 +215,7 @@ struct AIQuickOrderModal: View {
                         .foregroundStyle(Color.backgroundPaper)
                         .frame(maxWidth: .infinity)
                         .frame(height: 56)
-                        .background(Color.accentColor)
+                        .background(Color.primaryEspresso)
                 }
             }
         }
@@ -244,25 +227,209 @@ struct AIQuickOrderModal: View {
     }
 }
 
-// MARK: - Events Section
+// MARK: - Section 1: Offers (Image-Only Banner)
+
+struct OffersSection: View {
+    let vouchers: [Voucher]
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            TabView {
+                ForEach(vouchers) { voucher in
+                    Button {
+                        // Navigate to offer details
+                    } label: {
+                        CachedAsyncImage(url: URL(string: voucher.imageUrl ?? "")) { phase in
+                            switch phase {
+                            case .empty:
+                                Rectangle()
+                                    .fill(
+                                        LinearGradient(
+                                            colors: [
+                                                Color(hex: "#E8DCC8"),
+                                                Color(hex: "#D4C4AA")
+                                            ],
+                                            startPoint: .topLeading,
+                                            endPoint: .bottomTrailing
+                                        )
+                                    )
+                                    .overlay {
+                                        ProgressView()
+                                            .tint(Color.primaryEspresso)
+                                    }
+                            case .success(let image):
+                                image
+                                    .resizable()
+                                    .aspectRatio(contentMode: .fill)
+                            case .failure:
+                                Rectangle()
+                                    .fill(Color.surfaceCard)
+                                    .overlay {
+                                        VStack(spacing: AppLayout.spacingSmall) {
+                                            Image(systemName: "ticket.fill")
+                                                .font(.system(size: 32))
+                                                .foregroundStyle(Color.primaryEspresso.opacity(0.3))
+                                            Text(voucher.title)
+                                                .font(AppFont.uiCaption)
+                                                .foregroundStyle(Color.textMuted)
+                                        }
+                                    }
+                            @unknown default:
+                                EmptyView()
+                            }
+                        }
+                        .aspectRatio(2/1, contentMode: .fit)
+                        .clipShape(RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle))
+                        .overlay(
+                            RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle)
+                                .stroke(Color.border, lineWidth: 1)
+                        )
+                    }
+                    .padding(.horizontal, AppLayout.spacing)
+                }
+            }
+            .tabViewStyle(.page(indexDisplayMode: .automatic))
+            .aspectRatio(2/1, contentMode: .fit)
+            .padding(.bottom, AppLayout.spacing) // Add spacing for page indicator
+        }
+    }
+}
+
+// MARK: - Section 2: Popular (CheckoutView Hierarchy)
+
+struct PopularSection: View {
+    let products: [PopularProduct]
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: AppLayout.spacing) {
+            Text("Popular drinks")
+                .textCase(.uppercase)
+                .font(AppFont.sectionHeader)
+                .foregroundStyle(Color.textInk)
+                .padding(.horizontal, AppLayout.spacing)
+                .frame(maxWidth: .infinity, alignment: .leading)
+            
+            VStack(spacing: 0) {
+                ForEach(Array(products.prefix(5).enumerated()), id: \.element.id) { index, product in
+                    PopularProductCard(
+                        product: product,
+                        showDivider: index < min(products.count, 5) - 1
+                    )
+                }
+            }
+            .padding(.horizontal, AppLayout.spacing)
+        }
+    }
+}
+
+/// Product card reusing CheckoutView hierarchy
+/// Shows only MEDIUM size, price is informational (not highlighted)
+struct PopularProductCard: View {
+    let product: PopularProduct
+    var showDivider: Bool = true
+    @EnvironmentObject var cartViewModel: CartViewModel
+    
+    var body: some View {
+        VStack(spacing: 0) {
+            HStack(spacing: AppLayout.spacingMedium) {
+                // Square Product Image (increased padding from image to text)
+                // CHANGED: Using CachedAsyncImage
+                CachedAsyncImage(url: URL(string: product.product.displayImageUrl ?? "")) { phase in // CHANGED
+                    switch phase { // CHANGED
+                    case .empty: // CHANGED
+                        Rectangle() // CHANGED
+                            .fill(Color.surfaceCard) // CHANGED
+                            .overlay { // CHANGED
+                                ProgressView() // CHANGED
+                                    .tint(Color.primaryEspresso) // CHANGED
+                            } // CHANGED
+                    case .success(let image): // CHANGED
+                        image // CHANGED
+                            .resizable() // CHANGED
+                            .aspectRatio(contentMode: .fill) // CHANGED
+                    case .failure: // CHANGED
+                        Rectangle() // CHANGED
+                            .fill(Color.textInk.opacity(0.1)) // CHANGED
+                            .overlay { // CHANGED
+                                Image(systemName: "photo") // CHANGED
+                                    .font(AppFont.productTitle) // CHANGED
+                                    .foregroundStyle(Color.textInk.opacity(0.3)) // CHANGED
+                            } // CHANGED
+                    @unknown default: // CHANGED
+                        EmptyView() // CHANGED
+                    } // CHANGED
+                } // CHANGED
+                .frame(width: AppLayout.productImageSize, height: AppLayout.productImageSize)
+                .clipShape(RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle))
+                
+                // Text Block (heavier, more grounded)
+                VStack(alignment: .leading, spacing: 0) {
+                    // Product Name - Primary Visual Anchor
+                    Text(product.product.name)
+                        .font(AppFont.productTitle)
+                        .lineLimit(2)
+                        .foregroundColor(Color.textInk)
+                    
+                    Spacer(minLength: AppLayout.spacingCompact)
+                    
+                    // Meta Row: Size + Price (MEDIUM only, informational)
+                    HStack(spacing: AppLayout.spacingSmall) {
+                        Text("MEDIUM")
+                            .font(AppFont.uiMicro)
+                            .foregroundStyle(Color.textMuted.opacity(0.7))
+                        
+                        Text("•")
+                            .font(AppFont.uiMicro)
+                            .foregroundStyle(Color.textMuted.opacity(0.5))
+                        
+                        Text(product.product.priceRange)
+                            .font(AppFont.monoBody)
+                            .foregroundColor(Color.textMuted.opacity(0.8))
+                    }
+                }
+                .padding(.vertical, AppLayout.spacingCompact)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                
+                Spacer()
+                
+                // Add Button
+                Button {
+                    cartViewModel.addItem(product: product.product, quantity: 1, customization: .default)
+                } label: {
+                    Image(systemName: "plus")
+                        .font(AppFont.body)
+                        .padding(AppLayout.spacingMicro)
+                        .foregroundStyle(Color.backgroundPaper)
+                        .background(Color.primaryEspresso)
+                        .clipShape(RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle))
+                }
+            }
+            .padding(.vertical, AppLayout.spacing)
+            
+            if showDivider {
+                Color.secondary.frame(height: 1)
+            }
+        }
+    }
+}
+
+// MARK: - Section 3: Events (Lighter Visual Weight)
 
 struct EventsSection: View {
     let events: [Event]
     
     var body: some View {
         VStack(alignment: .leading, spacing: AppLayout.spacing) {
-            HStack {
-                Text("Upcoming events")
-                    .textCase(.uppercase)
-                    .font(AppFont.sectionHeader)
-                    .foregroundStyle(Color.textInk)
-                Spacer(minLength: AppLayout.spacing)
-                Color.secondary.frame(height: 1)
-            }
-            .padding(.horizontal, AppLayout.spacing)
+            // Lighter section header
+            Text("Upcoming events")
+                .textCase(.uppercase)
+                .font(AppFont.uiCaption)
+                .foregroundStyle(Color.textMuted)
+                .padding(.horizontal, AppLayout.spacing)
             
+            // Horizontal scroll, editorial tone
             ScrollView(.horizontal, showsIndicators: false) {
-                HStack(spacing: AppLayout.spacing) {
+                HStack(spacing: AppLayout.spacingMedium) {
                     ForEach(events) { event in
                         EventCard(event: event)
                     }
@@ -279,40 +446,51 @@ struct EventCard: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             // Image
-            ZStack(alignment: .bottomLeading) {
-                if let imageUrl = event.imageUrl, let url = URL(string: imageUrl) {
-                    AsyncImage(url: url) { phase in
-                        if let image = phase.image {
-                            image.resizable().aspectRatio(contentMode: .fill)
-                        } else {
-                            Color.surfaceCard
-                        }
-                    }
-                    .frame(width: 300, height: 200)
-                    .clipped()
-                } else {
-                    Rectangle()
-                        .fill(Color.surfaceCard)
-                        .frame(width: 300, height: 200)
-                }
-                
-                Text(event.subtitle ?? "DATA")
-                    .font(AppFont.uiMicro.bold())
-                    .padding(.horizontal, 8)
-                    .padding(.vertical, 4)
-                    .background(Color.primaryEspresso)
-                    .foregroundStyle(Color.backgroundPaper)
-                    .padding(12)
+            // CHANGED: Using CachedAsyncImage
+            if let imageUrl = event.imageUrl, let url = URL(string: imageUrl) {
+                CachedAsyncImage(url: url) { phase in // CHANGED
+                    switch phase { // CHANGED
+                    case .empty: // CHANGED
+                        Rectangle() // CHANGED
+                            .fill(Color.surfaceCard) // CHANGED
+                            .overlay { // CHANGED
+                                ProgressView() // CHANGED
+                                    .tint(Color.primaryEspresso) // CHANGED
+                            } // CHANGED
+                    case .success(let image): // CHANGED
+                        image // CHANGED
+                            .resizable() // CHANGED
+                            .aspectRatio(contentMode: .fill) // CHANGED
+                    case .failure: // CHANGED
+                        Rectangle() // CHANGED
+                            .fill(Color.surfaceCard) // CHANGED
+                    @unknown default: // CHANGED
+                        EmptyView() // CHANGED
+                    } // CHANGED
+                } // CHANGED
+                .frame(width: 240, height: 160)
+                .clipped()
+            } else {
+                Rectangle()
+                    .fill(Color.surfaceCard)
+                    .frame(width: 240, height: 160)
             }
             
-            VStack(alignment: .leading, spacing: 8) {
+            // Text content - minimal, editorial
+            VStack(alignment: .leading, spacing: 6) {
+                if let subtitle = event.subtitle {
+                    Text(subtitle)
+                        .font(AppFont.uiMicro)
+                        .foregroundStyle(Color.primaryEspresso)
+                }
+                
                 Text(event.title)
-                    .font(AppFont.headline)
+                    .font(AppFont.body)
                     .foregroundColor(Color.textInk)
                     .lineLimit(2)
             }
-            .padding(AppLayout.spacing)
-            .frame(width: 300, alignment: .leading)
+            .padding(AppLayout.spacingMedium)
+            .frame(width: 240, alignment: .leading)
             .background(Color.surfaceCard)
         }
         .clipShape(RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle))
@@ -320,127 +498,5 @@ struct EventCard: View {
             RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle)
                 .stroke(Color.border, lineWidth: 1)
         )
-    }
-}
-
-// MARK: - Categories Section
-
-struct CategoriesSection: View {
-    let categories: [Category]
-    @EnvironmentObject var menuViewModel: MenuViewModel
-    @EnvironmentObject var appState: AppState
-    
-    var body: some View {
-        VStack(alignment: .leading, spacing: AppLayout.spacing) {
-            Text("Our categories")
-                .textCase(.uppercase)
-                .font(AppFont.sectionHeader)
-                .foregroundStyle(Color.textInk)
-                .padding(.horizontal, AppLayout.spacing)
-            
-            ScrollView(.horizontal, showsIndicators: false) {
-                HStack(spacing: AppLayout.spacingMedium) {
-                    ForEach(categories) { category in
-                        Button {
-                            menuViewModel.selectCategory(category)
-                            appState.selectedTab = 1
-                        } label: {
-                            Text(category.displayName)
-                                .font(AppFont.monoBody)
-                                .foregroundColor(Color.textInk)
-                                .padding(.horizontal, 16)
-                                .padding(.vertical, 8)
-                                .background(Color.backgroundPaper)
-                                .overlay(
-                                    RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle)
-                                        .stroke(Color.textInk, lineWidth: 1)
-                                )
-                        }
-                    }
-                }
-                .padding(.horizontal, AppLayout.spacing)
-            }
-        }
-    }
-}
-
-// MARK: - Popular Section
-
-struct PopularSection: View {
-    let products: [PopularProduct]
-    
-    var body: some View {
-        VStack(alignment: .leading, spacing: AppLayout.spacing) {
-            Text("Popular drinks")
-                .textCase(.uppercase)
-                .font(AppFont.sectionHeader)
-                .foregroundStyle(Color.textInk)
-                .padding(.horizontal, AppLayout.spacing)
-            
-            VStack(spacing: 0) {
-                ForEach(Array(products.prefix(5).enumerated()), id: \.element.id) { index, product in
-                    ProductRow(
-                        product: product,
-                        showDivider: index < min(products.count, 5) - 1
-                    )
-                }
-            }
-            .padding(.horizontal, AppLayout.spacing)
-        }
-    }
-}
-
-struct ProductRow: View {
-    let product: PopularProduct
-    var showDivider: Bool = true
-    @EnvironmentObject var cartViewModel: CartViewModel
-    
-    var body: some View {
-        VStack(spacing: 0) {
-            HStack(spacing: AppLayout.spacing) {
-                AsyncImage(url: URL(string: product.product.displayImageUrl ?? "")) { phase in
-                    if let image = phase.image {
-                        image.resizable().aspectRatio(contentMode: .fill)
-                    } else {
-                        Rectangle()
-                            .fill(Color.textInk.opacity(0.1))
-                    }
-                }
-                .frame(width: 60, height: 60)
-                .cornerRadius(AppLayout.cornerRadius)
-                .overlay(
-                    RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle)
-                        .stroke(Color.border, lineWidth: 1)
-                )
-                
-                VStack(alignment: .leading, spacing: 4) {
-                    Text(product.product.name)
-                        .font(AppFont.body)
-                        .foregroundColor(Color.textInk)
-                    
-                    Text(product.product.priceRange)
-                        .font(AppFont.monoBody)
-                        .foregroundColor(Color.primaryEspresso)
-                }
-                
-                Spacer()
-                
-                Button {
-                    cartViewModel.addItem(product: product.product, quantity: 1, customization: .default)
-                } label: {
-                    Image(systemName: "plus")
-                        .font(AppFont.body)
-                        .padding(AppLayout.spacingMicro)
-                        .foregroundStyle(Color.backgroundPaper)
-                        .background(Color.textInk)
-                        .clipShape(RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle))
-                }
-            }
-            .padding(.vertical, AppLayout.spacing)
-            
-            if showDivider {
-                Color.secondary.frame(height: 1)
-            }
-        }
     }
 }

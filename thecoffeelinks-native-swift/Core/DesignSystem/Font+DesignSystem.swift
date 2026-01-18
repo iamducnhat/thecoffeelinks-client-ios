@@ -34,15 +34,15 @@ struct AppFont {
     }
     
     /// Section header: "ORDER TYPE", "VOUCHER"
-    /// Font: System Serif, Title3 size, Semibold weight
+    /// Font: System Serif, Title3 size, Medium weight
     static var sectionHeader: Font {
-        .system(.title3, design: .serif).weight(.semibold)
+        .system(.title3, design: .serif).weight(.medium)
     }
     
     /// Total label: "TOTAL"
-    /// Font: System Serif, Title size, Semibold weight
+    /// Font: System Serif, Title size, Medium weight
     static var totalLabel: Font {
-        .system(.title, design: .serif).weight(.semibold)
+        .system(.title, design: .serif).weight(.medium)
     }
     
     // MARK: - Monospaced Tokens (Prices, Quantities, Codes)
@@ -54,15 +54,15 @@ struct AppFont {
     }
     
     /// Quantity display: "1"
-    /// Font: System Mono, Headline size
+    /// Font: System Mono, Headline size, Medium weight
     static var monoHeadline: Font {
-        .system(.headline, design: .monospaced)
+        .system(.headline, design: .monospaced).weight(.medium)
     }
     
     /// Total price: "12.000.000₫"
-    /// Font: System Mono, Title size, Semibold weight
+    /// Font: System Mono, Title size, Medium weight
     static var monoTitle: Font {
-        .system(.title, design: .monospaced).weight(.semibold)
+        .system(.title, design: .monospaced).weight(.medium)
     }
     
     /// CTA button text: "Place Order"
@@ -86,9 +86,9 @@ struct AppFont {
     }
     
     /// Product name in list
-    /// Font: System Default, Headline size
+    /// Font: System Default, Headline size, Medium weight
     static var headline: Font {
-        .system(.headline, design: .default)
+        .system(.headline, design: .default).weight(.medium)
     }
     
     /// Navigation title (back button weight)
@@ -97,10 +97,10 @@ struct AppFont {
         .system(.title2).weight(.medium)
     }
     
-    /// Semibold body for product titles
-    /// Font: System Default, Title size, Semibold weight
+    /// Editorial Product Title
+    /// Font: Libre Baskerville Bold, Size: AppLayout.unit (18pt)
     static var productTitle: Font {
-        .system(.title, design: .monospaced).weight(.semibold)
+        .custom(serifBoldFontName, size: AppLayout.unit)
     }
     
     // MARK: - Legacy Aliases (Compatibility)

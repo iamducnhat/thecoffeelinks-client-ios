@@ -7,6 +7,7 @@
 //
 
 import SwiftUI
+import CachedAsyncImage // CHANGED
 
 struct ProfileView: View {
     @EnvironmentObject var authViewModel: AuthViewModel
@@ -187,13 +188,32 @@ struct ProfileView: View {
                     )
                 
                 if let avatarUrl = profileViewModel.userProfile?.avatarUrl, let url = URL(string: avatarUrl) {
-                    AsyncImage(url: url) { image in
-                        image.resizable().aspectRatio(contentMode: .fill)
-                    } placeholder: {
-                        Text(String(profileViewModel.userProfile?.displayName.prefix(1) ?? "U"))
-                            .font(.system(size: 32, weight: .bold))
-                            .foregroundStyle(Color.textInk)
-                    }
+                    // CHANGED: Using CachedAsyncImage
+                    CachedAsyncImage(url: url) { phase in // CHANGED
+                        switch phase { // CHANGED
+                        case .empty: // CHANGED
+                            Rectangle() // CHANGED
+                                .fill(Color.surfaceCard) // CHANGED
+                                .overlay { // CHANGED
+                                    ProgressView() // CHANGED
+                                        .tint(Color.primaryEspresso) // CHANGED
+                                } // CHANGED
+                        case .success(let image): // CHANGED
+                            image // CHANGED
+                                .resizable() // CHANGED
+                                .aspectRatio(contentMode: .fill) // CHANGED
+                        case .failure: // CHANGED
+                            Rectangle() // CHANGED
+                                .fill(Color.surfaceCard) // CHANGED
+                                .overlay { // CHANGED
+                                    Text(String(profileViewModel.userProfile?.displayName.prefix(1) ?? "U")) // CHANGED
+                                        .font(.system(size: 32, weight: .bold)) // CHANGED
+                                        .foregroundStyle(Color.textInk) // CHANGED
+                                } // CHANGED
+                        @unknown default: // CHANGED
+                            EmptyView() // CHANGED
+                        } // CHANGED
+                    } // CHANGED
                 } else {
                     Text(String(profileViewModel.userProfile?.displayName.prefix(1) ?? "U"))
                         .font(.system(size: 32, weight: .bold))

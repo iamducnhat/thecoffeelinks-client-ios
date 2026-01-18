@@ -7,6 +7,7 @@
 //
 
 import SwiftUI
+import CachedAsyncImage // CHANGED
 
 struct StoresView: View {
     @StateObject var viewModel: StoresViewModel
@@ -161,18 +162,32 @@ struct StoreCard: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             // Store Image
-            AsyncImage(url: URL(string: store.imageUrl ?? "")) { phase in
-                if let image = phase.image {
-                    image.resizable().aspectRatio(contentMode: .fill)
-                } else {
-                    Color.surfaceCard
-                        .overlay {
-                            Text(String(store.name.prefix(1)))
-                                .font(AppFont.displayTitle)
-                                .foregroundStyle(Color.textMuted)
-                        }
-                }
-            }
+            // CHANGED: Using CachedAsyncImage
+            CachedAsyncImage(url: URL(string: store.imageUrl ?? "")) { phase in // CHANGED
+                switch phase { // CHANGED
+                case .empty: // CHANGED
+                    Rectangle() // CHANGED
+                        .fill(Color.surfaceCard) // CHANGED
+                        .overlay { // CHANGED
+                            ProgressView() // CHANGED
+                                .tint(Color.primaryEspresso) // CHANGED
+                        } // CHANGED
+                case .success(let image): // CHANGED
+                    image // CHANGED
+                        .resizable() // CHANGED
+                        .aspectRatio(contentMode: .fill) // CHANGED
+                case .failure: // CHANGED
+                    Rectangle() // CHANGED
+                        .fill(Color.surfaceCard) // CHANGED
+                        .overlay { // CHANGED
+                            Text(String(store.name.prefix(1))) // CHANGED
+                                .font(AppFont.displayTitle) // CHANGED
+                                .foregroundStyle(Color.textMuted) // CHANGED
+                        } // CHANGED
+                @unknown default: // CHANGED
+                    EmptyView() // CHANGED
+                } // CHANGED
+            } // CHANGED
             .frame(height: 160)
             .clipped()
             

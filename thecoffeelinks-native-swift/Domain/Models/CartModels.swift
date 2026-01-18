@@ -105,6 +105,7 @@ struct Voucher: Codable, Identifiable, Sendable {
     let code: String
     let title: String
     let description: String?
+    let imageUrl: String? // Voucher banner image
     let discountType: DiscountType
     let discountValue: Double
     let minOrderAmount: Double?

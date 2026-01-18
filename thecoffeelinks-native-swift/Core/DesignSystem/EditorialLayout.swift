@@ -48,7 +48,6 @@ struct Editorial {
     
     struct Colors {
         static let primaryEspresso = Color.primaryEspresso
-        static let secondaryLatte = Color.secondaryLatte
         static let backgroundPaper = Color.backgroundPaper
         static let surfaceCard = Color.surfaceCard
         static let textInk = Color.textInk
@@ -158,11 +157,8 @@ struct EditorialCard<Content: View>: View {
         content
             .padding(Editorial.Spacing.gutter)
             .background(Color.surfaceCard)
-            .overlay(
-                RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle)
-                    .stroke(Color.border, lineWidth: AppLayout.borderWidth)
-            )
-            .cornerRadius(AppLayout.cornerRadius)
+            .border(Color.border, width: AppLayout.borderWidth)
+            .clipShape(RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle))
     }
 }
 
@@ -368,7 +364,7 @@ struct EditorialCategoryPill: View {
                     RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle)
                         .stroke(Color.primaryEspresso, lineWidth: AppLayout.borderWidth)
                 )
-                .cornerRadius(AppLayout.cornerRadius)
+                .clipShape(RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle))
         }
     }
 }
@@ -386,8 +382,8 @@ struct SummaryRow: View {
                 .foregroundStyle(isTotal ? Color.textInk : Color.textMuted)
             Spacer()
             Text(value)
-                .font(isTotal ? AppFont.headline : AppFont.uiCaption)
-                .foregroundStyle(valueColor)
+                .font(isTotal ? AppFont.monoTitle : AppFont.monoBody)
+                .foregroundStyle(isTotal ? Color.primaryEspresso : valueColor)
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 12)

@@ -7,6 +7,7 @@
 //
 
 import SwiftUI
+import CachedAsyncImage // CHANGED
 
 struct ViewOffsetKey: PreferenceKey {
     typealias Value = CGFloat
@@ -142,7 +143,7 @@ struct CheckoutView: View {
                                         }
                                         .padding(AppLayout.spacingMicro)
                                         .foregroundStyle(Color.backgroundPaper)
-                                        .background(Color.textInk)
+                                        .background(Color.primaryEspresso)
                                         .clipShape(RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle))
                                     }
                                     .animation(.none, value: cartViewModel.cart.mode)
@@ -172,25 +173,38 @@ struct CheckoutView: View {
                             ForEach(cartViewModel.cart.items) { item in
                                 HStack(spacing: AppLayout.spacingMedium) {
                                     // Image Placeholder
-                                    AsyncImage(url: URL(string: item.product.displayImageUrl ?? "")) { phase in
-                                        if let image = phase.image {
-                                            image.resizable().aspectRatio(contentMode: .fill)
-                                        } else {
-                                            Rectangle()
-                                                .fill(Color.textInk.opacity(0.1))
-                                                .overlay {
-                                                    Image(systemName: "photo")
-                                                        .font(AppFont.productTitle)
-                                                        .foregroundStyle(Color.textInk)
-                                                }
-                                        }
-                                    }
-                                    .frame(width: AppLayout.productImageSize, height: AppLayout.productImageSize)
-                                    .cornerRadius(AppLayout.cornerRadius)
+                                // CHANGED: Using CachedAsyncImage
+                                CachedAsyncImage(url: URL(string: item.product.displayImageUrl ?? "")) { phase in // CHANGED
+                                    switch phase { // CHANGED
+                                    case .empty: // CHANGED
+                                        Rectangle() // CHANGED
+                                            .fill(Color.surfaceCard) // CHANGED
+                                            .overlay { // CHANGED
+                                                ProgressView() // CHANGED
+                                                    .tint(Color.primaryEspresso) // CHANGED
+                                            } // CHANGED
+                                    case .success(let image): // CHANGED
+                                        image // CHANGED
+                                            .resizable() // CHANGED
+                                            .aspectRatio(contentMode: .fill) // CHANGED
+                                    case .failure: // CHANGED
+                                        Rectangle() // CHANGED
+                                            .fill(Color.textInk.opacity(0.1)) // CHANGED
+                                            .overlay { // CHANGED
+                                                Image(systemName: "photo") // CHANGED
+                                                    .font(AppFont.productTitle) // CHANGED
+                                                    .foregroundStyle(Color.textInk) // CHANGED
+                                            } // CHANGED
+                                    @unknown default: // CHANGED
+                                        EmptyView() // CHANGED
+                                    } // CHANGED
+                                } // CHANGED
+                                .frame(width: AppLayout.productImageSize, height: AppLayout.productImageSize)
+                                .cornerRadius(AppLayout.cornerRadius)
                                     
                                     VStack(alignment: .leading, spacing: 0) {
                                         Text(item.product.name)
-                                            .font(AppFont.headline)
+                                            .font(AppFont.productTitle)
                                             .lineLimit(3)
                                             .foregroundColor(Color.textInk)
                                         
@@ -207,7 +221,7 @@ struct CheckoutView: View {
                                                 .font(AppFont.monoBody)
                                                 .lineLimit(1)
                                                 .minimumScaleFactor(0.5)
-                                                .foregroundColor(Color.textMuted)
+                                                .foregroundColor(Color.primaryEspresso)
                                             
                                             Spacer(minLength: 0)
                                             
@@ -224,7 +238,7 @@ struct CheckoutView: View {
                                                         .font(AppFont.body)
                                                         .padding(AppLayout.spacingMicro)
                                                         .foregroundStyle(Color.backgroundPaper)
-                                                        .background(Color.textInk)
+                                                        .background(Color.primaryEspresso)
                                                         .clipShape(RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle))
                                                 }
                                                 .disabled(item.quantity <= 1)
@@ -241,7 +255,7 @@ struct CheckoutView: View {
                                                         .font(AppFont.body)
                                                         .padding(AppLayout.spacingMicro)
                                                         .foregroundStyle(Color.backgroundPaper)
-                                                        .background(Color.textInk)
+                                                        .background(Color.primaryEspresso)
                                                         .clipShape(RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle))
                                                 }
                                             }
@@ -293,7 +307,7 @@ struct CheckoutView: View {
                                     +
                                     Text("How to get more points?")
                                         .underline(pattern: .dot)
-                                        .foregroundColor(Color.accentColor)
+                                        .foregroundColor(Color.primaryEspresso)
                                 )
                                 .font(AppFont.body)
                                 
@@ -334,7 +348,7 @@ struct CheckoutView: View {
                                                 .padding(.vertical, 12)
                                                 .padding(.horizontal, 16)
                                                 .frame(minWidth: 100)
-                                                .background(checkoutViewModel.paymentMethod == method ? Color.textInk : Color.clear)
+                                                .background(checkoutViewModel.paymentMethod == method ? Color.primaryEspresso : Color.clear)
                                                 .foregroundColor(checkoutViewModel.paymentMethod == method ? Color.backgroundPaper : Color.textInk)
                                                 .overlay(
                                                     RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle)
@@ -418,7 +432,7 @@ struct CheckoutView: View {
                                 .foregroundColor(Color.backgroundPaper)
                                 .padding(.vertical, 12)
                                 .frame(maxWidth: .infinity, alignment: .center)
-                                .background(Color.accentColor)
+                                .background(Color.primaryEspresso)
                                 .clipShape(RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle))
                         }
                         .disabled(checkoutViewModel.isPlacingOrder)
@@ -502,7 +516,7 @@ struct CheckoutEmptyState: View {
                     .foregroundColor(Color.backgroundPaper)
                     .padding(.vertical, 12)
                     .frame(width: 200)
-                    .background(Color.accentColor)
+                    .background(Color.primaryEspresso)
                     .clipShape(RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle))
             }
         }

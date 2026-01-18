@@ -7,6 +7,7 @@
 //
 
 import SwiftUI
+import CachedAsyncImage // CHANGED
 
 // MARK: - Product Detail Sheet
 
@@ -106,14 +107,28 @@ struct ProductDetailSheet: View {
                         .padding(.bottom, -AppLayout.spacing)
                         
                         // Image Section
+                        // CHANGED: Using CachedAsyncImage
                         if let imageUrl = product.displayImageUrl, let url = URL(string: imageUrl) {
-                            AsyncImage(url: url) { phase in
-                                if let image = phase.image {
-                                    image.resizable().aspectRatio(contentMode: .fit)
-                                } else {
-                                    Color.surfaceCard
-                                }
-                            }
+                            CachedAsyncImage(url: url) { phase in // CHANGED
+                                switch phase { // CHANGED
+                                case .empty: // CHANGED
+                                    Rectangle() // CHANGED
+                                        .fill(Color.surfaceCard) // CHANGED
+                                        .overlay { // CHANGED
+                                            ProgressView() // CHANGED
+                                                .tint(Color.primaryEspresso) // CHANGED
+                                        } // CHANGED
+                                case .success(let image): // CHANGED
+                                    image // CHANGED
+                                        .resizable() // CHANGED
+                                        .aspectRatio(contentMode: .fit) // CHANGED
+                                case .failure: // CHANGED
+                                    Rectangle() // CHANGED
+                                        .fill(Color.surfaceCard) // CHANGED
+                                @unknown default: // CHANGED
+                                    EmptyView() // CHANGED
+                                } // CHANGED
+                            } // CHANGED
                             .frame(height: 240)
                             .frame(maxWidth: .infinity)
                             .background(Color.surfaceCard)
@@ -162,11 +177,11 @@ struct ProductDetailSheet: View {
                                             }
                                             .padding(.vertical, 12)
                                             .frame(maxWidth: .infinity)
-                                            .background(selectedSize == option.size ? Color.accentColor : Color.backgroundPaper)
+                                            .background(selectedSize == option.size ? Color.primaryEspresso : Color.backgroundPaper)
                                             .foregroundColor(selectedSize == option.size ? Color.backgroundPaper : Color.textInk)
                                             .overlay(
                                                 RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle)
-                                                    .stroke(selectedSize == option.size ? Color.accentColor : Color.border, lineWidth: 1)
+                                                    .stroke(selectedSize == option.size ? Color.primaryEspresso : Color.border, lineWidth: 1)
                                             )
                                             .clipShape(RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle))
                                         }

@@ -164,7 +164,7 @@ struct OrderTabButton: View {
                 .foregroundColor(isSelected ? Color.backgroundPaper : Color.textInk)
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 12)
-                .background(isSelected ? Color.textInk : Color.backgroundPaper)
+                .background(isSelected ? Color.primaryEspresso : Color.backgroundPaper)
         }
     }
 }

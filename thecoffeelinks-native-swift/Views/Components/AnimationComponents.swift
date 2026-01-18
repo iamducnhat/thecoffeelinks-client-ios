@@ -22,7 +22,7 @@ struct ConfettiView: View {
     @State private var pieces: [ConfettiPiece] = []
     @State private var isAnimating = false
     
-    let colors: [Color] = [Editorial.Colors.secondaryLatte, Editorial.Colors.semanticSuccess, .red, .orange, .blue, .green]
+    let colors: [Color] = [Editorial.Colors.primaryEspresso, Editorial.Colors.semanticSuccess, .red, .orange, .blue, .green]
     
     var body: some View {
         GeometryReader { geometry in

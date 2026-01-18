@@ -7,6 +7,7 @@
 //
 
 import SwiftUI
+import CachedAsyncImage // CHANGED
 
 struct MenuView: View {
     @EnvironmentObject var menuViewModel: MenuViewModel
@@ -84,16 +85,17 @@ struct MenuView: View {
                     } else if menuViewModel.filteredProducts.isEmpty {
                         EmptyMenuState()
                     } else {
-                        LazyVGrid(columns: [GridItem(.adaptive(minimum: 160), spacing: AppLayout.spacing)], spacing: AppLayout.spacing) {
+                        LazyVGrid(columns: [GridItem(.flexible(), spacing: AppLayout.spacing), GridItem(.flexible(), spacing: AppLayout.spacing)], spacing: AppLayout.spacingLarge) {
                             ForEach(menuViewModel.filteredProducts) { product in
-                                ProductNode(product: product)
+                                ProductCard(product: product)
                                     .onTapGesture {
                                         selectedProduct = product
                                     }
                             }
                         }
-                        .padding(AppLayout.spacing)
-                        .padding(.bottom, cartViewModel.isEmpty ? 20 : 120)
+                        .padding(.horizontal, AppLayout.spacing)
+                        .padding(.bottom, cartViewModel.isEmpty ? AppLayout.spacingLarge : AppLayout.spacing * 8)
+                        .padding(.top, AppLayout.spacing)
                     }
                 }
                 .refreshable {
@@ -138,52 +140,90 @@ struct CategoryNode: View {
     }
 }
 
-struct ProductNode: View {
+struct ProductCard: View {
     let product: Product
+    
+    // REDESIGN: Vertical Grid, minimal, receipt-inspired
+    // Constraints: Image on top (square), ONLY Medium price
+    // Spacing: Derived from 18pt system (Unit: 18, Half: 9)
     
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
-            // Image
-            if let imageUrl = product.displayImageUrl, let url = URL(string: imageUrl) {
-                AsyncImage(url: url) { phase in
-                    if let image = phase.image {
-                        image.resizable().aspectRatio(contentMode: .fill)
-                    } else {
-                        Color.surfaceCard
-                    }
+            // Image (perfect square using GeometryReader)
+            GeometryReader { geo in
+                let size = geo.size.width
+                // CHANGED: Using CachedAsyncImage
+                CachedAsyncImage(url: URL(string: product.displayImageUrl ?? "")) { phase in // CHANGED
+                    switch phase { // CHANGED
+                    case .empty: // CHANGED
+                        Rectangle() // CHANGED
+                            .fill(Color.surfaceCard) // CHANGED
+                            .overlay { // CHANGED
+                                ProgressView() // CHANGED
+                                    .tint(Color.primaryEspresso) // CHANGED
+                            } // CHANGED
+                    case .success(let image): // CHANGED
+                        image // CHANGED
+                            .resizable() // CHANGED
+                            .aspectRatio(contentMode: .fill) // CHANGED
+                    case .failure: // CHANGED
+                        Rectangle() // CHANGED
+                            .fill(Color.surfaceCard) // CHANGED
+                            .overlay { // CHANGED
+                                Image(systemName: "photo") // CHANGED
+                                    .font(AppFont.monoCaption) // CHANGED
+                                    .foregroundStyle(Color.textMuted) // CHANGED
+                            } // CHANGED
+                    @unknown default: // CHANGED
+                        EmptyView() // CHANGED
+                    } // CHANGED
+                } // CHANGED
+                .frame(width: size, height: size)
+                .clipShape(RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle))
+                .overlay {
+                    RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle)
+                        .stroke(Color.border.opacity(0.3), lineWidth: 1)
                 }
-                .frame(height: 160)
-                .clipped()
-            } else {
-                Rectangle()
-                    .fill(Color.surfaceCard)
-                    .frame(height: 160)
-                    .overlay {
-                        Image(systemName: "photo")
-                            .font(AppFont.productTitle)
-                            .foregroundStyle(Color.textMuted)
-                    }
             }
+            .aspectRatio(1, contentMode: .fit)
             
-            VStack(alignment: .leading, spacing: 8) {
+            VStack(alignment: .leading, spacing: AppLayout.spacingSmall) {
+                // Name (Primary Anchor - Libre Baskerville Bold)
+                // Limited to 1 line for a punchier, single-row alignment
                 Text(product.name)
-                    .font(AppFont.body)
+                    .font(AppFont.productTitle)
+                    .tracking(0.3)
                     .foregroundColor(Color.textInk)
-                    .lineLimit(2)
+                    .lineLimit(1)
+                    .multilineTextAlignment(.leading)
+                    .minimumScaleFactor(0.85)
                 
-                Text(product.priceRange)
-                    .font(AppFont.monoBody)
-                    .foregroundColor(Color.primaryEspresso)
+                // Meta Row (Size · Price)
+                let mediumPrice = product.sizeOptions.first(where: { $0.size == .medium })?.price ?? product.basePrice
+                
+                HStack(spacing: 6) {
+                    Text("MEDIUM")
+                        .font(AppFont.monoCaption)
+                        .tracking(1.0)
+                        .foregroundColor(Color.textInk.opacity(0.6))
+                    
+                    Text("·")
+                        .font(AppFont.monoCaption)
+                        .foregroundColor(Color.primaryEspresso)
+                    
+                    // Price: 85% opacity, [price]₫ format
+                    Text("\(Int(mediumPrice).formatted())₫")
+                        .font(AppFont.monoBody)
+                        .foregroundColor(Color.textInk.opacity(0.85))
+                }
+                .textCase(.uppercase)
             }
-            .padding(AppLayout.spacingMedium)
+            .padding(.top, AppLayout.spacingMedium) // 12pt grounded gap
+            .padding(.bottom, AppLayout.spacingCompact)
             .frame(maxWidth: .infinity, alignment: .leading)
-            .background(Color.surfaceCard)
         }
-        .clipShape(RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle))
-        .overlay(
-            RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle)
-                .stroke(Color.border, lineWidth: 1)
-        )
+        .padding(0)
+        .background(Color.backgroundPaper)
     }
 }
 
@@ -216,7 +256,6 @@ struct CartMonitor: View {
                 RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle)
                     .stroke(Color.border, lineWidth: 1)
             )
-            .shadow(color: Color.black.opacity(0.05), radius: 10, y: 5)
             .padding(AppLayout.spacing)
         }
         .fullScreenCover(isPresented: $showCheckout) {
@@ -229,27 +268,23 @@ struct CartMonitor: View {
 
 struct ProductGridSkeleton: View {
     var body: some View {
-        LazyVGrid(columns: [GridItem(.adaptive(minimum: 160), spacing: AppLayout.spacing)], spacing: AppLayout.spacing) {
+        LazyVGrid(columns: [GridItem(.flexible(), spacing: AppLayout.spacing), GridItem(.flexible(), spacing: AppLayout.spacing)], spacing: AppLayout.spacingLarge) {
             ForEach(0..<6, id: \.self) { _ in
                 VStack(alignment: .leading, spacing: 0) {
                     Rectangle()
                         .fill(Color.surfaceCard)
-                        .frame(height: 160)
+                        .aspectRatio(1, contentMode: .fit)
+                        .clipShape(RoundedRectangle(cornerRadius: AppLayout.cornerRadius))
                     
-                    VStack(alignment: .leading, spacing: 8) {
-                        Rectangle().fill(Color.border).frame(height: 14)
-                        Rectangle().fill(Color.border).frame(width: 60, height: 12)
+                    VStack(alignment: .leading, spacing: AppLayout.spacingSmall) {
+                        Rectangle().fill(Color.border).frame(height: 18)
+                        Rectangle().fill(Color.border).frame(width: 80, height: 14)
                     }
-                    .padding(AppLayout.spacingMedium)
+                    .padding(.top, AppLayout.halfUnit)
                 }
-                .clipShape(RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle))
-                .overlay(
-                    RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle)
-                        .stroke(Color.border, lineWidth: 1)
-                )
             }
         }
-        .padding(AppLayout.spacing)
+        .padding(.horizontal, AppLayout.spacing)
     }
 }
 

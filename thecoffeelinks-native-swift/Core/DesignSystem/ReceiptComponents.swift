@@ -257,7 +257,7 @@ struct ReceiptItemRow: View {
             
             VStack(alignment: .leading, spacing: 0) {
                 Text(name)
-                    .font(AppFont.headline)
+                    .font(AppFont.productTitle)
                     .lineLimit(3)
                     .foregroundStyle(Color.textInk)
                 
@@ -268,7 +268,7 @@ struct ReceiptItemRow: View {
                         .font(AppFont.monoBody)
                         .lineLimit(1)
                         .minimumScaleFactor(0.5)
-                        .foregroundStyle(Color.textMuted)
+                        .foregroundStyle(Color.primaryEspresso)
                     
                     Spacer(minLength: 0)
                     
@@ -410,60 +410,127 @@ struct ReceiptLoadingLog: View {
     }
 }
 
-// MARK: - Voucher Card (Legacy)
+// MARK: - Voucher Card (With Image Support)
 
 struct VoucherCard: View {
     let voucher: Voucher
+    var showApplyButton: Bool = true
     let action: () -> Void
     
     var body: some View {
-        VStack(alignment: .leading, spacing: AppLayout.spacingMedium) {
-            HStack(alignment: .top) {
-                VStack(alignment: .leading, spacing: 4) {
-                    Text(voucher.title)
-                        .font(AppFont.headline)
-                        .foregroundStyle(Color.textInk)
-                    if let description = voucher.description {
-                        Text(description)
-                            .font(AppFont.uiCaption)
-                            .foregroundStyle(Color.textMuted)
+        VStack(alignment: .leading, spacing: 0) {
+            // Full-width image banner (16:9 aspect ratio)
+            if let imageUrl = voucher.imageUrl, let url = URL(string: imageUrl) {
+                AsyncImage(url: url) { phase in
+                    if let image = phase.image {
+                        image
+                            .resizable()
+                            .aspectRatio(contentMode: .fill)
+                    } else if phase.error != nil {
+                        // Error placeholder
+                        voucherImagePlaceholder
+                    } else {
+                        // Loading placeholder
+                        voucherImagePlaceholder
                     }
                 }
-                Spacer()
-                Text(voucher.displayValue)
-                    .font(AppFont.monoBody.bold())
-                    .foregroundStyle(Color.primaryEspresso)
+                .frame(maxWidth: .infinity)
+                .aspectRatio(16/9, contentMode: .fit)
+                .clipped()
+            } else {
+                // No image URL - show colored placeholder
+                voucherImagePlaceholder
+                    .aspectRatio(16/9, contentMode: .fit)
             }
             
             Color.secondary.frame(height: 1)
             
-            HStack {
-                VStack(alignment: .leading, spacing: 2) {
-                    Text("Code: \(voucher.code)")
-                        .font(AppFont.uiMicro)
-                    Text("Valid until: \(voucher.validUntil.formatted(.dateTime.month().day().year()))")
-                        .font(AppFont.uiMicro)
+            // Voucher details
+            VStack(alignment: .leading, spacing: AppLayout.spacingMedium) {
+                HStack(alignment: .top) {
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text(voucher.title)
+                            .font(AppFont.headline)
+                            .foregroundStyle(Color.textInk)
+                        if let description = voucher.description {
+                            Text(description)
+                                .font(AppFont.uiCaption)
+                                .foregroundStyle(Color.textMuted)
+                        }
+                    }
+                    Spacer()
+                    Text(voucher.displayValue)
+                        .font(AppFont.monoBody.bold())
+                        .foregroundStyle(Color.primaryEspresso)
                 }
-                .foregroundStyle(Color.textMuted)
                 
-                Spacer()
+                Color.secondary.frame(height: 1)
                 
-                Button(action: action) {
-                    Text("Apply")
-                        .font(AppFont.monoBody)
-                        .foregroundStyle(Color.backgroundPaper)
-                        .padding(.horizontal, 16)
-                        .padding(.vertical, 8)
-                        .background(Color.accentColor)
-                        .clipShape(RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle))
+                HStack {
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("Code: \(voucher.code)")
+                            .font(AppFont.uiMicro)
+                        Text("Valid until: \(voucher.validUntil.formatted(.dateTime.month().day().year()))")
+                            .font(AppFont.uiMicro)
+                    }
+                    .foregroundStyle(Color.textMuted)
+                    
+                    Spacer()
+                    
+                    if showApplyButton {
+                        Button(action: action) {
+                            Text("Apply")
+                                .font(AppFont.monoBody)
+                                .foregroundStyle(Color.backgroundPaper)
+                                .padding(.horizontal, 16)
+                                .padding(.vertical, 8)
+                                .background(Color.primaryEspresso)
+                                .clipShape(RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle))
+                        }
+                    } else {
+                        Text("Used")
+                            .font(AppFont.uiMicro)
+                            .foregroundStyle(Color.textMuted)
+                            .padding(.horizontal, 16)
+                            .padding(.vertical, 8)
+                            .background(Color.surfaceCard)
+                            .overlay(
+                                RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle)
+                                    .stroke(Color.border, lineWidth: 1)
+                            )
+                    }
                 }
             }
+            .padding(AppLayout.spacing)
         }
-        .padding(AppLayout.spacing)
         .background(Color.backgroundPaper)
+        .clipShape(RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle))
         .overlay(
             RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle)
                 .stroke(Color.border, lineWidth: 1)
         )
+    }
+    
+    private var voucherImagePlaceholder: some View {
+        Rectangle()
+            .fill(
+                LinearGradient(
+                    colors: [
+                        Color.primaryEspresso.opacity(0.15),
+                        Color.primaryEspresso.opacity(0.08)
+                    ],
+                    startPoint: .topLeading,
+                    endPoint: .bottomTrailing
+                )
+            )
+            .overlay(
+                VStack {
+                    Spacer()
+                    Image(systemName: "ticket.fill")
+                        .font(.system(size: 40))
+                        .foregroundStyle(Color.primaryEspresso.opacity(0.3))
+                    Spacer()
+                }
+            )
     }
 }

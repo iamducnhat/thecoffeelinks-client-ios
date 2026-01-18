@@ -37,16 +37,37 @@ class AuthViewModel: BaseViewModel {
     // MARK: - Phone OTP Authentication
     
     func sendOTP(phoneNumber: String) {
-        self.phoneNumber = phoneNumber // Cache for verification step
+        self.phoneNumber = phoneNumber // Cache raw input for UI/verification step
+        let formattedNumber = formatPhoneNumber(phoneNumber)
+        
         withLoading {
             do {
-                try await self.authRepository.sendOTP(phoneNumber: phoneNumber)
-                print("✅ OTP sent to \(phoneNumber)")
+                try await self.authRepository.sendOTP(phoneNumber: formattedNumber)
+                print("✅ OTP sent to \(formattedNumber)")
                 await MainActor.run {
                     self.authState = .otpSent
                     self.error = nil
                 }
             } catch {
+                print("❌ [AuthViewModel] sendOTP Error: \(error)")
+                if let decodingError = error as? DecodingError {
+                     print("❌ [AuthViewModel] It is a DecodingError: \(decodingError)")
+                     switch decodingError {
+                     case .dataCorrupted(let context):
+                         print("Context: \(context)")
+                     case .keyNotFound(let key, let context):
+                         print("Key '\(key)' not found:", context.debugDescription)
+                         print("codingPath:", context.codingPath)
+                     case .valueNotFound(let value, let context):
+                         print("Value '\(value)' not found:", context.debugDescription)
+                         print("codingPath:", context.codingPath)
+                     case .typeMismatch(let type, let context):
+                         print("Type '\(type)' mismatch:", context.debugDescription)
+                         print("codingPath:", context.codingPath)
+                     @unknown default:
+                         break
+                     }
+                }
                 await MainActor.run {
                     self.error = error.localizedDescription
                     self.authState = .error
@@ -62,9 +83,11 @@ class AuthViewModel: BaseViewModel {
             return
         }
         
+        let formattedNumber = formatPhoneNumber(self.phoneNumber)
+        
         withLoading {
             do {
-                let user = try await self.authRepository.verifyOTP(code: code, phoneNumber: self.phoneNumber)
+                let user = try await self.authRepository.verifyOTP(code: code, phoneNumber: formattedNumber)
                 await MainActor.run {
                     self.currentUser = user
                     self.isAuthenticated = true
@@ -72,6 +95,25 @@ class AuthViewModel: BaseViewModel {
                     self.error = nil
                 }
             } catch {
+                print("❌ [AuthViewModel] verifyOTP Error: \(error)")
+                if let decodingError = error as? DecodingError {
+                     print("❌ [AuthViewModel] It is a DecodingError: \(decodingError)")
+                     switch decodingError {
+                     case .dataCorrupted(let context):
+                         print("Context: \(context)")
+                     case .keyNotFound(let key, let context):
+                         print("Key '\(key)' not found:", context.debugDescription)
+                         print("codingPath:", context.codingPath)
+                     case .valueNotFound(let value, let context):
+                         print("Value '\(value)' not found:", context.debugDescription)
+                         print("codingPath:", context.codingPath)
+                     case .typeMismatch(let type, let context):
+                         print("Type '\(type)' mismatch:", context.debugDescription)
+                         print("codingPath:", context.codingPath)
+                     @unknown default:
+                         break
+                     }
+                }
                 await MainActor.run {
                     self.error = error.localizedDescription
                     self.authState = .error
@@ -81,9 +123,10 @@ class AuthViewModel: BaseViewModel {
     }
     
     func bypassOTP(phoneNumber: String) {
+        let formattedNumber = formatPhoneNumber(phoneNumber)
         withLoading {
             do {
-                let user = try await self.authRepository.bypassOTP(phoneNumber: phoneNumber)
+                let user = try await self.authRepository.bypassOTP(phoneNumber: formattedNumber)
                 await MainActor.run {
                     self.currentUser = user
                     self.isAuthenticated = true
@@ -150,6 +193,14 @@ class AuthViewModel: BaseViewModel {
                 self.currentUser = user
             }
         }
+    }
+    private func formatPhoneNumber(_ number: String) -> String {
+        var formatted = number.replacingOccurrences(of: " ", with: "")
+        // Simple E.164 conversion for VN
+        if formatted.hasPrefix("0") {
+            formatted = "+84" + formatted.dropFirst()
+        }
+        return formatted
     }
 }
 

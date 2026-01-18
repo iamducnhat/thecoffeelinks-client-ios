@@ -30,8 +30,12 @@ class AppState: ObservableObject {
     @Published var userName: String = "Nhat"
     
     // MARK: - App Flow Persistence (AUTH GATES)
-    @AppStorage("isOnboardingCompleted") var isOnboardingCompleted: Bool = false
-    @AppStorage("isInitialSetupCompleted") var isInitialSetupCompleted: Bool = false
+    @AppStorage("isOnboardingCompleted") var isOnboardingCompleted: Bool = false {
+        willSet { objectWillChange.send() }
+    }
+    @AppStorage("isInitialSetupCompleted") var isInitialSetupCompleted: Bool = false {
+        willSet { objectWillChange.send() }
+    }
     
     // MARK: - Tab Selection (for MainTabView)
     @Published var selectedTab: Int = 0

@@ -48,31 +48,27 @@ extension Color {
     
     // MARK: - Text Colors
     
-    /// Primary text - Deep brown (light) / Warm white (dark)
+    /// Primary text - Very dark chocolate brown (light) / Warm white (dark)
     static var textInk: Color {
-        Color(light: "#1A1512", dark: "#F5F2EE")
+        Color(light: "#1A110D", dark: "#F5F2EE")
     }
     
-    /// Secondary text - Muted brown (light) / Muted cream (dark)
+    /// Secondary text - Warm cocoa brown (light) / Muted cream (dark)
     static var textMuted: Color {
-        Color(light: "#5C4D42", dark: "#B8ADA2")
+        Color(light: "#4D3A31", dark: "#B8ADA2")
     }
     
-    /// Tertiary text - Light brown (light) / Muted tan (dark)
+    /// Tertiary text - Light coffee-stain tone (light) / Muted tan (dark)
     static var textTertiary: Color {
-        Color(light: "#8B7B6E", dark: "#7A7068")
+        Color(light: "#8C7368", dark: "#7A7068")
     }
     
     // MARK: - Accent Colors
     
-    /// Primary accent (CTA ONLY) - Moss green (light) / Mint (dark)
+    /// Primary accent (SINGLE ACCENT) - Moss green (light) / Mint (dark)
+    /// Used for: primary actions, prices, selection states.
     static var primaryEspresso: Color {
         Color(light: "#3B5D48", dark: "#6E8F78")
-    }
-    
-    /// Secondary accent - Sage (light) / Muted sage (dark)
-    static var secondaryLatte: Color {
-        Color(light: "#6E8F78", dark: "#4A5E4D")
     }
     
     // MARK: - Border Colors

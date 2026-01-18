@@ -8,6 +8,7 @@
 
 import SwiftUI
 import MapKit
+import CachedAsyncImage // CHANGED
 
 struct StoreDetailView: View {
     let store: Store
@@ -93,16 +94,32 @@ struct StoreDetailView: View {
                     LazyVStack(spacing: AppLayout.spacingXL) {
                         // Store Header
                         VStack(spacing: AppLayout.spacing) {
-                            AsyncImage(url: URL(string: store.imageUrl ?? "")) { image in
-                                image.resizable().aspectRatio(contentMode: .fill)
-                            } placeholder: {
-                                Color.surfaceCard
-                                    .overlay {
-                                        Text(String(store.name.prefix(1)))
-                                            .font(AppFont.displayTitle)
-                                            .foregroundStyle(Color.textMuted)
-                                    }
-                            }
+                            // CHANGED: Using CachedAsyncImage
+                            CachedAsyncImage(url: URL(string: store.imageUrl ?? "")) { phase in // CHANGED
+                                switch phase { // CHANGED
+                                case .empty: // CHANGED
+                                    Rectangle() // CHANGED
+                                        .fill(Color.surfaceCard) // CHANGED
+                                        .overlay { // CHANGED
+                                            ProgressView() // CHANGED
+                                                .tint(Color.primaryEspresso) // CHANGED
+                                        } // CHANGED
+                                case .success(let image): // CHANGED
+                                    image // CHANGED
+                                        .resizable() // CHANGED
+                                        .aspectRatio(contentMode: .fill) // CHANGED
+                                case .failure: // CHANGED
+                                    Rectangle() // CHANGED
+                                        .fill(Color.surfaceCard) // CHANGED
+                                        .overlay { // CHANGED
+                                            Text(String(store.name.prefix(1))) // CHANGED
+                                                .font(AppFont.displayTitle) // CHANGED
+                                                .foregroundStyle(Color.textMuted) // CHANGED
+                                        } // CHANGED
+                                @unknown default: // CHANGED
+                                    EmptyView() // CHANGED
+                                } // CHANGED
+                            } // CHANGED
                             .frame(height: 200)
                             .clipped()
                             

@@ -10,7 +10,8 @@ import SwiftUI
 import CoreLocation
 
 struct InitialSetupView: View {
-    @AppStorage("isInitialSetupCompleted") private var isInitialSetupCompleted: Bool = false
+    @EnvironmentObject private var appState: AppState
+    @EnvironmentObject private var storeViewModel: StoreViewModel
     @State private var currentStep = 0
     @State private var selectedTaste: String?
     
@@ -36,13 +37,33 @@ struct InitialSetupView: View {
                 
                 if currentStep == 0 {
                     permissionsStep
-                        .transition(.move(edge: .leading))
+                        .transition(.asymmetric(insertion: .move(edge: .trailing), removal: .move(edge: .leading)))
                 } else {
                     tasteQuizStep
-                        .transition(.move(edge: .trailing))
+                        .transition(.asymmetric(insertion: .move(edge: .trailing), removal: .move(edge: .leading)))
                 }
             }
             .animation(.easeInOut(duration: 0.3), value: currentStep)
+        }
+        .onAppear {
+            checkCurrentPermissions()
+        }
+        .onReceive(NotificationCenter.default.publisher(for: UIApplication.didBecomeActiveNotification)) { _ in
+            checkCurrentPermissions()
+        }
+    }
+    
+    private func checkCurrentPermissions() {
+        // Use CLLocationManager authorizationStatus directly for accuracy
+        let status = CLLocationManager().authorizationStatus
+        DispatchQueue.main.async {
+            self.isLocationAuthorized = (status == .authorizedWhenInUse || status == .authorizedAlways)
+        }
+        
+        UNUserNotificationCenter.current().getNotificationSettings { settings in
+            DispatchQueue.main.async {
+                self.isNotificationAuthorized = (settings.authorizationStatus == .authorized)
+            }
         }
     }
     
@@ -74,7 +95,7 @@ struct InitialSetupView: View {
                     isGranted: isLocationAuthorized,
                     icon: "location.fill"
                 ) {
-                    withAnimation { isLocationAuthorized = true }
+                    requestLocationPermission()
                 }
                 
                 PermissionTile(
@@ -83,7 +104,7 @@ struct InitialSetupView: View {
                     isGranted: isNotificationAuthorized,
                     icon: "bell.fill"
                 ) {
-                    withAnimation { isNotificationAuthorized = true }
+                    requestNotificationPermission()
                 }
             }
             .padding(.horizontal, 24)
@@ -105,6 +126,26 @@ struct InitialSetupView: View {
             }
             .padding(24)
             .padding(.bottom, 24)
+        }
+    }
+    
+    private func requestLocationPermission() {
+        Task {
+            await storeViewModel.requestLocationAuthorization()
+            // The system prompt logic is handled by iOS. 
+            // We refresh when the app returns from the prompt.
+            DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+                checkCurrentPermissions()
+            }
+        }
+    }
+    
+    private func requestNotificationPermission() {
+        UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .badge, .sound]) { granted, _ in
+            DispatchQueue.main.async {
+                self.isNotificationAuthorized = granted
+                checkCurrentPermissions()
+            }
         }
     }
     
@@ -168,7 +209,9 @@ struct InitialSetupView: View {
     
     private func completeSetup() {
         withAnimation {
-            isInitialSetupCompleted = true
+            // Both must be true for ContentView to proceed to MainTabView
+            appState.isOnboardingCompleted = true
+            appState.isInitialSetupCompleted = true
         }
     }
 }
