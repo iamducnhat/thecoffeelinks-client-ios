@@ -54,7 +54,7 @@ struct HomeView: View {
                         self.scrollOffset = $0
                     }
                     
-                    LazyVStack(spacing: AppLayout.spacingXL) {
+                    LazyVStack(spacing: AppLayout.spacing) {
                         // AI Quick Order Prompt
                         if let cart = homeViewModel.predictedCart, !homeViewModel.isDismissedThisSession {
                             AIQuickOrderPrompt(cart: cart) {
@@ -66,17 +66,19 @@ struct HomeView: View {
                         // SECTION 1: Offers (Image-Only Banner)
                         if !homeViewModel.vouchers.isEmpty {
                             OffersSection(vouchers: homeViewModel.vouchers)
+                            Divider().hidden()
                         }
                         
                         // SECTION 2: Popular Items
                         PopularSection(products: homeViewModel.popularProducts)
+                        Divider().hidden()
                         
                         // SECTION 3: Events (Lighter Visual Weight)
                         if !homeViewModel.events.isEmpty {
                             EventsSection(events: homeViewModel.events)
                         }
                     }
-                    .padding(.top, AppLayout.spacing)
+                    //.padding(.top, AppLayout.spacing)
                     .padding(.bottom, 100)
                 }
                 .coordinateSpace(name: "scroll")
@@ -290,7 +292,7 @@ struct OffersSection: View {
             }
             .tabViewStyle(.page(indexDisplayMode: .automatic))
             .aspectRatio(2/1, contentMode: .fit)
-            .padding(.bottom, AppLayout.spacing) // Add spacing for page indicator
+            //.padding(.bottom, -AppLayout.spacing) // Add spacing for page indicator
         }
     }
 }
@@ -404,7 +406,7 @@ struct PopularProductCard: View {
                         .clipShape(RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle))
                 }
             }
-            .padding(.vertical, AppLayout.spacing)
+            //.padding(.vertical, AppLayout.spacing)
             
             if showDivider {
                 Color.secondary.frame(height: 1)
@@ -423,9 +425,10 @@ struct EventsSection: View {
             // Lighter section header
             Text("Upcoming events")
                 .textCase(.uppercase)
-                .font(AppFont.uiCaption)
-                .foregroundStyle(Color.textMuted)
+                .font(AppFont.sectionHeader)
+                .foregroundStyle(Color.textInk)
                 .padding(.horizontal, AppLayout.spacing)
+                .frame(maxWidth: .infinity, alignment: .leading)
             
             // Horizontal scroll, editorial tone
             ScrollView(.horizontal, showsIndicators: false) {
@@ -445,7 +448,7 @@ struct EventCard: View {
     
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
-            // Image
+            // Image (Square)
             // CHANGED: Using CachedAsyncImage
             if let imageUrl = event.imageUrl, let url = URL(string: imageUrl) {
                 CachedAsyncImage(url: url) { phase in // CHANGED
@@ -468,35 +471,52 @@ struct EventCard: View {
                         EmptyView() // CHANGED
                     } // CHANGED
                 } // CHANGED
-                .frame(width: 240, height: 160)
-                .clipped()
+                .frame(width: 200, height: 200) // Fixed width, square aspect ratio
+                .clipShape(RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle))
+                .overlay {
+                    RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle)
+                        .stroke(Color.border.opacity(0.3), lineWidth: 1)
+                }
             } else {
                 Rectangle()
                     .fill(Color.surfaceCard)
-                    .frame(width: 240, height: 160)
+                    .frame(width: 200, height: 200)
+                    .clipShape(RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle))
             }
             
             // Text content - minimal, editorial
-            VStack(alignment: .leading, spacing: 6) {
-                if let subtitle = event.subtitle {
-                    Text(subtitle)
-                        .font(AppFont.uiMicro)
-                        .foregroundStyle(Color.primaryEspresso)
-                }
-                
+            VStack(alignment: .leading, spacing: AppLayout.spacingSmall) {
+                // Title (Product Title Font)
                 Text(event.title)
-                    .font(AppFont.body)
+                    .font(AppFont.productTitle)
                     .foregroundColor(Color.textInk)
-                    .lineLimit(2)
+                    .lineLimit(1)
+                
+                // Meta Row: EVENT · Subtitle
+                HStack(spacing: 6) {
+                    Text("EVENT")
+                        .font(AppFont.monoCaption)
+                        .tracking(1.0)
+                        .foregroundColor(Color.textInk.opacity(0.6))
+                    
+                    Text("·")
+                        .font(AppFont.monoCaption)
+                        .foregroundColor(Color.primaryEspresso)
+                    
+                    if let subtitle = event.subtitle {
+                        Text(subtitle)
+                            .font(AppFont.monoBody)
+                            .foregroundColor(Color.textInk.opacity(0.85))
+                            .lineLimit(1)
+                    }
+                }
+                .textCase(.uppercase)
             }
-            .padding(AppLayout.spacingMedium)
-            .frame(width: 240, alignment: .leading)
-            .background(Color.surfaceCard)
+            .padding(.top, AppLayout.spacingMedium)
+            .padding(.bottom, AppLayout.spacingCompact)
+            .frame(width: 200, alignment: .leading)
+            // Removed background(Color.surfaceCard)
         }
-        .clipShape(RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle))
-        .overlay(
-            RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle)
-                .stroke(Color.border, lineWidth: 1)
-        )
+        // Removed outer clipShape and overlay/border
     }
 }

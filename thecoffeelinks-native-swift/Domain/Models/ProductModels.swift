@@ -7,7 +7,13 @@
 
 import Foundation
 
+// Retrigger check
 // MARK: - Product
+//
+// struct Product: Codable, Identifiable, Hashable, Sendable { ... }
+// This file was confirmed Sendable in previous step.
+// The error likely comes from OrderModels.swift references.
+// I will wait for OrderModels view.
 
 struct Product: Codable, Identifiable, Hashable, Sendable {
     let id: String
@@ -27,6 +33,72 @@ struct Product: Codable, Identifiable, Hashable, Sendable {
     let tags: [String]
     let nutritionInfo: NutritionInfo?
     let allergens: [String]
+    
+    enum CodingKeys: String, CodingKey {
+        case id, name, description, categoryId, categoryName, imageUrl, basePrice, sizeOptions, availableToppings, isPopular, isNew, isActive, isDeliverable, deliveryPrepMinutes, tags, nutritionInfo, allergens
+    }
+    
+    init(id: String, name: String, description: String?, categoryId: String, categoryName: String?, imageUrl: String?, basePrice: Double, sizeOptions: [SizeOption], availableToppings: [String], isPopular: Bool, isNew: Bool, isActive: Bool, isDeliverable: Bool, deliveryPrepMinutes: Int?, tags: [String], nutritionInfo: NutritionInfo?, allergens: [String]) {
+        self.id = id
+        self.name = name
+        self.description = description
+        self.categoryId = categoryId
+        self.categoryName = categoryName
+        self.imageUrl = imageUrl
+        self.basePrice = basePrice
+        self.sizeOptions = sizeOptions
+        self.availableToppings = availableToppings
+        self.isPopular = isPopular
+        self.isNew = isNew
+        self.isActive = isActive
+        self.isDeliverable = isDeliverable
+        self.deliveryPrepMinutes = deliveryPrepMinutes
+        self.tags = tags
+        self.nutritionInfo = nutritionInfo
+        self.allergens = allergens
+    }
+    
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        id = try container.decode(String.self, forKey: .id)
+        name = try container.decode(String.self, forKey: .name)
+        description = try container.decodeIfPresent(String.self, forKey: .description)
+        categoryId = try container.decode(String.self, forKey: .categoryId)
+        categoryName = try container.decodeIfPresent(String.self, forKey: .categoryName)
+        imageUrl = try container.decodeIfPresent(String.self, forKey: .imageUrl)
+        basePrice = try container.decode(Double.self, forKey: .basePrice)
+        sizeOptions = try container.decode([SizeOption].self, forKey: .sizeOptions)
+        availableToppings = try container.decode([String].self, forKey: .availableToppings)
+        isPopular = try container.decode(Bool.self, forKey: .isPopular)
+        isNew = try container.decode(Bool.self, forKey: .isNew)
+        isActive = try container.decode(Bool.self, forKey: .isActive)
+        isDeliverable = try container.decode(Bool.self, forKey: .isDeliverable)
+        deliveryPrepMinutes = try container.decodeIfPresent(Int.self, forKey: .deliveryPrepMinutes)
+        tags = try container.decode([String].self, forKey: .tags)
+        nutritionInfo = try container.decodeIfPresent(NutritionInfo.self, forKey: .nutritionInfo)
+        allergens = try container.decode([String].self, forKey: .allergens)
+    }
+    
+    nonisolated func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(id, forKey: .id)
+        try container.encode(name, forKey: .name)
+        try container.encodeIfPresent(description, forKey: .description)
+        try container.encode(categoryId, forKey: .categoryId)
+        try container.encodeIfPresent(categoryName, forKey: .categoryName)
+        try container.encodeIfPresent(imageUrl, forKey: .imageUrl)
+        try container.encode(basePrice, forKey: .basePrice)
+        try container.encode(sizeOptions, forKey: .sizeOptions)
+        try container.encode(availableToppings, forKey: .availableToppings)
+        try container.encode(isPopular, forKey: .isPopular)
+        try container.encode(isNew, forKey: .isNew)
+        try container.encode(isActive, forKey: .isActive)
+        try container.encode(isDeliverable, forKey: .isDeliverable)
+        try container.encodeIfPresent(deliveryPrepMinutes, forKey: .deliveryPrepMinutes)
+        try container.encode(tags, forKey: .tags)
+        try container.encodeIfPresent(nutritionInfo, forKey: .nutritionInfo)
+        try container.encode(allergens, forKey: .allergens)
+    }
     
     var canBeDelivered: Bool { isDeliverable && isActive }
     var price: Double { basePrice } // UI Compatibility
@@ -161,6 +233,36 @@ struct PopularProduct: Codable, Identifiable, Sendable {
     let orderCount: Int
     let rank: Int
     let trend: PopularityTrend
+    
+    enum CodingKeys: String, CodingKey {
+        case id, product, orderCount, rank, trend
+    }
+    
+    init(id: String, product: Product, orderCount: Int, rank: Int, trend: PopularityTrend) {
+        self.id = id
+        self.product = product
+        self.orderCount = orderCount
+        self.rank = rank
+        self.trend = trend
+    }
+    
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        id = try container.decode(String.self, forKey: .id)
+        product = try container.decode(Product.self, forKey: .product)
+        orderCount = try container.decode(Int.self, forKey: .orderCount)
+        rank = try container.decode(Int.self, forKey: .rank)
+        trend = try container.decode(PopularityTrend.self, forKey: .trend)
+    }
+    
+    nonisolated func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(id, forKey: .id)
+        try container.encode(product, forKey: .product)
+        try container.encode(orderCount, forKey: .orderCount)
+        try container.encode(rank, forKey: .rank)
+        try container.encode(trend, forKey: .trend)
+    }
 }
 
 enum PopularityTrend: String, Codable, Sendable {

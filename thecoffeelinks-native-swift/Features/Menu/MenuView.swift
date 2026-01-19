@@ -80,9 +80,11 @@ struct MenuView: View {
                 
                 // Product Grid
                 ScrollView {
-                    if menuViewModel.isLoading {
+                    // Stale-While-Revalidate: Only show skeleton if we have NO data and are loading.
+                    // If we have data, show it even if refreshing.
+                    if menuViewModel.isLoading && menuViewModel.filteredProducts.isEmpty {
                         ProductGridSkeleton()
-                    } else if menuViewModel.filteredProducts.isEmpty {
+                    } else if menuViewModel.filteredProducts.isEmpty && !menuViewModel.isLoading {
                         EmptyMenuState()
                     } else {
                         LazyVGrid(columns: [GridItem(.flexible(), spacing: AppLayout.spacing), GridItem(.flexible(), spacing: AppLayout.spacing)], spacing: AppLayout.spacingLarge) {
@@ -105,7 +107,7 @@ struct MenuView: View {
             
 
         }
-        .fullScreenCover(item: $selectedProduct) { product in
+        .sheet(item: $selectedProduct) { product in
             ProductDetailSheet(product: product)
         }
         .onAppear {

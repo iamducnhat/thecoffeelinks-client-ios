@@ -12,8 +12,16 @@ import CoreImage.CIFilterBuiltins
 struct DigitalCardView: View {
     @Environment(\.dismiss) private var dismiss
     
-    private let userName = "Member"
-    private let memberId = "000000"
+    @EnvironmentObject private var authRepository: AuthRepository
+    
+    // Fallback to placeholder if shortId is missing (shouldn't happen for logged in users)
+    private var memberId: String {
+        authRepository.currentUser?.shortId ?? "******"
+    }
+    
+    private var userName: String {
+        authRepository.currentUser?.displayName ?? "Member"
+    }
     
     var body: some View {
         ZStack(alignment: .top) {
@@ -64,6 +72,7 @@ struct DigitalCardView: View {
                             Color.secondary.frame(height: 1)
                             
                             // QR Code
+                            // Use memberId for QR code
                             QRCodeView(string: memberId)
                                 .frame(width: 160, height: 160)
                                 .background(Color.white)

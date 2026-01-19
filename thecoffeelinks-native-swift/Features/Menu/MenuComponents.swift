@@ -22,9 +22,11 @@ private struct ProductOffsetKey: PreferenceKey {
 
 struct ProductDetailSheet: View {
     let product: Product
+    var cartItem: CartItem? = nil // Support for editing
     @Environment(\.dismiss) var dismiss
     @EnvironmentObject var cartViewModel: CartViewModel
     @EnvironmentObject var menuViewModel: MenuViewModel
+    
     
     @State private var quantity = 1
     @State private var selectedSize: ProductSize = .medium
@@ -33,6 +35,24 @@ struct ProductDetailSheet: View {
     @State private var sugarLevel: SugarLevel = .full
     @State private var iceLevel: IceLevel = .normal
     @State private var scrollOffset = CGFloat.zero
+    
+    // Initialize state from cart item if editing
+    init(product: Product, cartItem: CartItem? = nil) {
+        self.product = product
+        self.cartItem = cartItem
+        
+        if let item = cartItem {
+            _quantity = State(initialValue: item.quantity)
+            _selectedSize = State(initialValue: item.customization.size)
+            
+            let toppingIds = Set(item.customization.toppings.map { $0.id })
+            _selectedToppings = State(initialValue: toppingIds)
+            
+            _notes = State(initialValue: item.customization.notes ?? "")
+            _sugarLevel = State(initialValue: item.customization.sugar ?? .full)
+            _iceLevel = State(initialValue: item.customization.ice ?? .normal)
+        }
+    }
     
     var body: some View {
         ZStack(alignment: .top) {
@@ -288,7 +308,7 @@ struct ProductDetailSheet: View {
                 ReceiptTotalBar(
                     totalLabel: "TOTAL",
                     totalValue: (calculateTotal() * Double(quantity)).formattedCurrency,
-                    ctaTitle: "Add to Cart",
+                    ctaTitle: cartItem != nil ? "Update Order" : "Add to Cart",
                     action: {
                         let allToppings = menuViewModel.toppings
                         let toppingSelections = allToppings.filter { selectedToppings.contains($0.id) }.map {
@@ -302,7 +322,12 @@ struct ProductDetailSheet: View {
                             toppings: toppingSelections,
                             notes: notes.isEmpty ? nil : notes
                         )
-                        cartViewModel.addItem(product: product, quantity: quantity, customization: customization)
+                        
+                        if let existingItem = cartItem {
+                            cartViewModel.updateItem(id: existingItem.id, quantity: quantity, customization: customization)
+                        } else {
+                            cartViewModel.addItem(product: product, quantity: quantity, customization: customization)
+                        }
                         dismiss()
                     }
                 )

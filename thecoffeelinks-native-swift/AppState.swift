@@ -39,6 +39,7 @@ class AppState: ObservableObject {
     
     // MARK: - Tab Selection (for MainTabView)
     @Published var selectedTab: Int = 0
+    @Published var showCheckout: Bool = false
     
     // MARK: - Delivery Mode Toggle
     @Published var isDeliveryMode: Bool = false

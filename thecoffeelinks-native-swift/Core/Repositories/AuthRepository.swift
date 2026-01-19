@@ -66,18 +66,18 @@ class AuthRepository {
     }
     
     // Updates local user profile
-    func updateProfile(name: String?, bio: String?, interests: [String]?) async throws -> User {
+    func updateProfile(name: String?, bio: String?) async throws -> User {
         struct UpdateProfileRequest: Encodable {
             let name: String?
             let bio: String?
-            let interests: [String]?
         }
         
-        return try await networkService.request(
+        let response: UserResponse = try await networkService.request(
             "/api/user/profile",
             method: "PUT",
-            body: UpdateProfileRequest(name: name, bio: bio, interests: interests)
+            body: UpdateProfileRequest(name: name, bio: bio)
         )
+        return response.user
     }
 
     // MARK: - Phone OTP Authentication
@@ -133,8 +133,7 @@ class AuthRepository {
                         membershipTier: .bronze,
                         points: 0,
                         createdAt: Date(),
-                        preferences: .default,
-                        interests: nil
+                        preferences: .default
                     )
                 }
             }
@@ -209,8 +208,7 @@ class AuthRepository {
             membershipTier: .bronze,
             points: 0,
             createdAt: Date(),
-            preferences: .default,
-            interests: nil
+            preferences: .default
         )
     }
 }

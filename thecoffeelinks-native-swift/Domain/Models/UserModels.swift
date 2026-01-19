@@ -11,6 +11,8 @@ import Foundation
 
 struct User: Codable, Identifiable, Hashable, Sendable {
     let id: String
+    let shortId: String?
+    let shortIdVersion: Int?
     let email: String?
     let phone: String?
     let displayName: String
@@ -19,7 +21,6 @@ struct User: Codable, Identifiable, Hashable, Sendable {
     let points: Int
     let createdAt: Date
     var preferences: UserPreferences
-    var interests: [String]?
     
     var fullName: String { displayName } // UI Compatibility
     var bio: String? { nil } // UI Compatibility (Phase 6 Profile)
@@ -27,20 +28,24 @@ struct User: Codable, Identifiable, Hashable, Sendable {
     var linkedinProfile: String? { nil } // UI Compatibility
     
     enum CodingKeys: String, CodingKey {
-        case id, email, phone
+        case id
+        case shortId = "short_id"
+        case shortIdVersion = "short_id_version"
+        case email, phone
         case displayName = "name"
         case avatarUrl = "avatar_url"
         case membershipTier = "membership_tier"
         case points
         case createdAt = "member_since"
         case preferences
-        case interests
     }
     
-    init(id: String, email: String?, phone: String?, displayName: String,
+    init(id: String, shortId: String? = nil, shortIdVersion: Int? = 1, email: String?, phone: String?, displayName: String,
          avatarUrl: String?, membershipTier: MembershipTier, points: Int,
-         createdAt: Date, preferences: UserPreferences, interests: [String]?) {
+         createdAt: Date, preferences: UserPreferences) {
         self.id = id
+        self.shortId = shortId
+        self.shortIdVersion = shortIdVersion
         self.email = email
         self.phone = phone
         self.displayName = displayName
@@ -49,12 +54,13 @@ struct User: Codable, Identifiable, Hashable, Sendable {
         self.points = points
         self.createdAt = createdAt
         self.preferences = preferences
-        self.interests = interests
     }
     
     init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         id = try container.decode(String.self, forKey: .id)
+        shortId = try container.decodeIfPresent(String.self, forKey: .shortId)
+        shortIdVersion = try container.decodeIfPresent(Int.self, forKey: .shortIdVersion)
         email = try container.decodeIfPresent(String.self, forKey: .email)
         let rawName = try container.decode(String.self, forKey: .displayName)
         phone = try container.decodeIfPresent(String.self, forKey: .phone)
@@ -91,16 +97,15 @@ struct User: Codable, Identifiable, Hashable, Sendable {
         // Safe decoding for enums/objects that might be missing
         membershipTier = try container.decodeIfPresent(MembershipTier.self, forKey: .membershipTier) ?? .bronze
         preferences = try container.decodeIfPresent(UserPreferences.self, forKey: .preferences) ?? .default
-        interests = try container.decodeIfPresent([String].self, forKey: .interests)
     }
     
     static func == (lhs: User, rhs: User) -> Bool { lhs.id == rhs.id }
     func hash(into hasher: inout Hasher) { hasher.combine(id) }
     
     static var placeholder: User {
-        User(id: "placeholder", email: nil, phone: nil, displayName: "User",
+        User(id: "placeholder", shortId: "123456", shortIdVersion: 1, email: nil, phone: nil, displayName: "User",
              avatarUrl: nil, membershipTier: .bronze, points: 0,
-             createdAt: Date(), preferences: .default, interests: nil)
+             createdAt: Date(), preferences: .default)
     }
 }
 

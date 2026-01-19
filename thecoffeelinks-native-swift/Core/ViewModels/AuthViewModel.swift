@@ -186,9 +186,9 @@ class AuthViewModel: BaseViewModel {
         }
     }
     
-    func updateProfile(name: String, bio: String, interests: [String]) {
+    func updateProfile(name: String, bio: String) {
         withLoading {
-            let user = try await self.authRepository.updateProfile(name: name, bio: bio, interests: interests)
+            let user = try await self.authRepository.updateProfile(name: name, bio: bio)
              await MainActor.run {
                 self.currentUser = user
             }

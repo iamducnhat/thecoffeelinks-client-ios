@@ -14,7 +14,6 @@ struct EditProfileView: View {
     // Form State
     @State private var name: String = ""
     @State private var bio: String = ""
-    @State private var interests: String = "" // Comma separated
     
     init() {}
     
@@ -64,21 +63,6 @@ struct EditProfileView: View {
                             
                             AppInput(title: "Bio", text: $bio, placeholder: "Tell us about yourself")
                         }
-                        
-                        // Section 2: Interests
-                        VStack(alignment: .leading, spacing: AppLayout.spacing) {
-                            Text("INTERESTS")
-                                .font(AppFont.uiCaption)
-                                .foregroundStyle(Color.textMuted)
-                                .padding(.horizontal, AppLayout.spacingCompact)
-                            
-                            AppInput(title: "Interests", text: $interests, placeholder: "Coffee, Reading, Coding (comma separated)")
-                            
-                            Text("These help us recommend products and events you might like.")
-                                .font(AppFont.uiMicro)
-                                .foregroundStyle(Color.textMuted)
-                                .padding(.horizontal, AppLayout.spacingCompact)
-                        }
                     }
                     .padding(AppLayout.spacing)
                 }
@@ -103,15 +87,11 @@ struct EditProfileView: View {
         if let user = authViewModel.currentUser {
             name = user.displayName
             bio = user.bio ?? ""
-            if let userInterests = user.interests {
-                interests = userInterests.joined(separator: ", ")
-            }
         }
     }
     
     private func saveProfile() {
-        let interestList = interests.split(separator: ",").map { String($0).trimmingCharacters(in: .whitespaces) }
-        authViewModel.updateProfile(name: name, bio: bio, interests: interestList)
+        authViewModel.updateProfile(name: name, bio: bio)
         dismiss()
     }
 }

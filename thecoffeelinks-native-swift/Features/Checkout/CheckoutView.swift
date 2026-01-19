@@ -32,6 +32,9 @@ struct CheckoutView: View {
     @State private var orderError: String?
     @State private var orderLog: [String] = []
     
+    @State private var showEditSheet = false
+    @State private var itemToEdit: CartItem? // For editing in sheet
+    
     init() {
         let container = DependencyContainer.shared
         _checkoutViewModel = StateObject(wrappedValue: CheckoutViewModel(
@@ -267,6 +270,11 @@ struct CheckoutView: View {
                                     .frame(maxWidth: .infinity, alignment: .leading)
                                 }
                                 .fixedSize(horizontal: false, vertical: true)
+                                .contentShape(Rectangle()) // Make entire row tappable
+                                .onTapGesture {
+                                    itemToEdit = item
+                                    showEditSheet = true
+                                }
                                 
                                 Divider()
                             }
@@ -456,6 +464,11 @@ struct CheckoutView: View {
                     }
                 }
                 .zIndex(-Double.infinity+1)
+            }
+        }
+        .sheet(isPresented: $showEditSheet) {
+            if let item = itemToEdit {
+                ProductDetailSheet(product: item.product, cartItem: item)
             }
         }
         .fullScreenCover(isPresented: $showSuccess) {

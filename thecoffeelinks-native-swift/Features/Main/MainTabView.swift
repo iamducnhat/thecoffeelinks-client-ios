@@ -49,7 +49,7 @@ struct MainTabView: View {
         appearance.stackedLayoutAppearance.normal.titleTextAttributes = [:]
         
         // Selected state (icon only)
-        appearance.stackedLayoutAppearance.selected.iconColor = UIColor(Color.textInk)
+        appearance.stackedLayoutAppearance.selected.iconColor = UIColor(Color.primaryEspresso)
         appearance.stackedLayoutAppearance.selected.titleTextAttributes = [:]
         
         UITabBar.appearance().standardAppearance = appearance
@@ -62,6 +62,7 @@ struct MainTabView: View {
             tabContent
                 .tabViewBottomAccessory(isEnabled: !cartViewModel.isEmpty) {
                     CartMonitor()
+                        .environmentObject(menuViewModel)
                 }
                 .tabBarMinimizeBehavior(.onScrollDown)
                 .task {
@@ -83,6 +84,8 @@ struct MainTabView: View {
                 // Global Floating Cart (Fallback)
                 if !cartViewModel.isEmpty {
                     CartMonitor()
+                        .id("CartMonitor")
+                        .environmentObject(menuViewModel)
                         .padding(.bottom, 50) // Lift above TabBar (approx 49pt standard height)
                         .transition(.move(edge: .bottom).combined(with: .opacity))
                         .zIndex(10)
@@ -103,7 +106,7 @@ struct MainTabView: View {
                 .environmentObject(menuViewModel)
                 .environmentObject(homeViewModel)
                 .tabItem {
-                    Image("home").renderingMode(.original)
+                    Image("home").renderingMode(.template)
                 }
                 .tag(0)
             
@@ -113,7 +116,7 @@ struct MainTabView: View {
                     .environmentObject(menuViewModel)
             }
             .tabItem {
-                Image("bag").renderingMode(.original)
+                Image("bag").renderingMode(.template)
             }
             .tag(1)
             
@@ -123,7 +126,7 @@ struct MainTabView: View {
                     .environmentObject(storesViewModel)
             }
             .tabItem {
-                 Image(systemName: "storefront")
+                 Image("store").renderingMode(.template)
             }
             .tag(2)
             
@@ -131,7 +134,7 @@ struct MainTabView: View {
             PromotionsView()
                 .environmentObject(profileViewModel)
             .tabItem {
-                Image(systemName: "ticket")
+                Image("gift").renderingMode(.template)
             }
             .tag(3)
             
@@ -141,10 +144,14 @@ struct MainTabView: View {
                     .environmentObject(profileViewModel)
             }
             .tabItem {
-                Image("user").renderingMode(.original)
+                Image("menu").renderingMode(.template)
             }
             .tag(4)
         }
-        .tint(Color.textInk)
+        .tint(Color.primaryEspresso)
+        .fullScreenCover(isPresented: $appState.showCheckout) {
+            CheckoutView()
+                .environmentObject(menuViewModel)
+        }
     }
 }

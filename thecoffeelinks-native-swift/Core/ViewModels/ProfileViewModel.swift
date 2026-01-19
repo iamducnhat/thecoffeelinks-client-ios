@@ -12,7 +12,6 @@ class ProfileViewModel: BaseViewModel {
     @Published var connections: [User] = []
     @Published var editMode: Bool = false
     @Published var editName: String = ""
-    @Published var editInterests: [String] = [] // Kept for UI state even if User model doesn't store it yet
     
     init(userRepository: UserRepository, voucherRepository: VoucherRepository, socialRepository: SocialRepository, authRepository: AuthRepository) {
         self.userRepository = userRepository

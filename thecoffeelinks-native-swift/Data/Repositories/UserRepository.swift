@@ -17,19 +17,26 @@ final class UserRepository: UserRepositoryProtocol, @unchecked Sendable {
     }
     
     func getCachedUser() async -> User? {
-        await cacheService.get(userCacheKey)
+        guard let data: Data = await cacheService.get(userCacheKey) else { return nil }
+        return try? JSONDecoder().decode(User.self, from: data)
     }
     
     func refreshUser() async throws -> User {
         let response: UserResponse = try await networkService.get("/api/user/profile", queryItems: nil)
-        await cacheService.set(userCacheKey, value: response.user, ttl: 86400)
+        
+        if let data = try? JSONEncoder().encode(response.user) {
+            await cacheService.set(userCacheKey, value: data, ttl: 86400)
+        }
+        
         return response.user
     }
     
     func getCurrentUser() async throws -> User {
         let response: UserResponse = try await networkService.get("/api/user/profile", queryItems: nil)
         // Store in cache for next time
-        await cacheService.set(userCacheKey, value: response.user, ttl: 86400)
+        if let data = try? JSONEncoder().encode(response.user) {
+            await cacheService.set(userCacheKey, value: data, ttl: 86400)
+        }
         return response.user
     }
     
@@ -44,7 +51,8 @@ final class UserRepository: UserRepositoryProtocol, @unchecked Sendable {
     }
     
     func getCachedStores() async -> [Store]? {
-        await cacheService.get("stores_list")
+        guard let data: Data = await cacheService.get("stores_list") else { return nil }
+        return try? JSONDecoder().decode([Store].self, from: data)
     }
     
     func refreshStores(latitude: Double?, longitude: Double?) async throws -> [Store] {
@@ -54,12 +62,19 @@ final class UserRepository: UserRepositoryProtocol, @unchecked Sendable {
             queryItems.append(URLQueryItem(name: "longitude", value: String(lon)))
         }
         let response: StoresResponse = try await networkService.get("/api/stores", queryItems: queryItems.isEmpty ? nil : queryItems)
-        await cacheService.set("stores_list", value: response.stores, ttl: 86400)
+        
+        if let data = try? JSONEncoder().encode(response.stores) {
+            await cacheService.set("stores_list", value: data, ttl: 86400)
+        }
+        
         return response.stores
     }
     
     func getStores(latitude: Double?, longitude: Double?) async throws -> [Store] {
-        if let cached = await getCachedStores() { return cached }
+        if let data: Data = await cacheService.get("stores_list"),
+           let cached = try? JSONDecoder().decode([Store].self, from: data) {
+            return cached
+        }
         return try await refreshStores(latitude: latitude, longitude: longitude)
     }
     
@@ -100,17 +115,26 @@ final class FavoritesRepository: FavoritesRepositoryProtocol, @unchecked Sendabl
     }
     
     func getCachedFavorites() async -> [FavoriteItem]? {
-        await cacheService.get(favoritesCacheKey)
+        guard let data: Data = await cacheService.get(favoritesCacheKey) else { return nil }
+        return try? JSONDecoder().decode([FavoriteItem].self, from: data)
     }
     
     func refreshFavorites() async throws -> [FavoriteItem] {
         let response: FavoritesResponse = try await networkService.get("/api/user/favorites", queryItems: nil)
-        await cacheService.set(favoritesCacheKey, value: response.favorites, ttl: 86400)
+        
+        if let data = try? JSONEncoder().encode(response.favorites) {
+            await cacheService.set(favoritesCacheKey, value: data, ttl: 86400)
+        }
+        
         return response.favorites
     }
     
     func getFavorites() async throws -> [FavoriteItem] {
-        if let cached = await getCachedFavorites() { return cached }
+        // Use locally decoded data if available
+        if let data: Data = await cacheService.get(favoritesCacheKey),
+           let cached = try? JSONDecoder().decode([FavoriteItem].self, from: data) {
+            return cached
+        }
         return try await refreshFavorites()
     }
     
@@ -152,12 +176,17 @@ final class VoucherRepository: VoucherRepositoryProtocol, @unchecked Sendable {
     }
     
     func getCachedVouchers() async -> [Voucher]? {
-        await cacheService.get(vouchersCacheKey)
+        guard let data: Data = await cacheService.get(vouchersCacheKey) else { return nil }
+        return try? JSONDecoder().decode([Voucher].self, from: data)
     }
     
     func refreshVouchers() async throws -> [Voucher] {
         let response: VouchersResponse = try await networkService.get("/api/vouchers", queryItems: nil)
-        await cacheService.set(vouchersCacheKey, value: response.vouchers, ttl: 86400)
+        
+        if let data = try? JSONEncoder().encode(response.vouchers) {
+             await cacheService.set(vouchersCacheKey, value: data, ttl: 86400)
+        }
+        
         return response.vouchers
     }
     

@@ -291,15 +291,6 @@ struct ModeOptionCard: View {
     }
 }
 
-// MARK: - Extensions & Validation
-
-extension Product {
-    var isAvailableForDelivery: Bool {
-        isDeliverable && isActive
-    }
-}
-
-
 struct DeliveryValidation {
     static func validateForCheckout(cart: Cart, availability: DeliveryAvailability?) -> DeliveryCheckoutValidation {
         guard cart.mode == .delivery else {
@@ -326,7 +317,8 @@ struct DeliveryValidation {
         }
         
         // Check for non-deliverable items
-        let nonDeliverableItems = cart.items.filter { !$0.product.isDeliverable }
+        // Use property from ProductModels.swift
+        let nonDeliverableItems = cart.items.filter { !$0.product.canBeDelivered }
         if !nonDeliverableItems.isEmpty {
             errors.append("\(nonDeliverableItems.count) item(s) cannot be delivered")
         }

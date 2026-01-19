@@ -8,15 +8,15 @@
 import SwiftUI
 
 struct CartMonitor: View {
+    @EnvironmentObject var appState: AppState
     @EnvironmentObject var cartViewModel: CartViewModel
-    @State private var showCheckout = false
     
     // iOS 26/Modern Floating Style
     // Using a clear material background or floating pill
     
     var body: some View {
         Button {
-            showCheckout = true
+            appState.showCheckout = true
         } label: {
             HStack(spacing: AppLayout.spacingSmall) {
                 Text("\(cartViewModel.itemCount) item\(cartViewModel.itemCount == 1 ? "" : "s")")
@@ -30,9 +30,6 @@ struct CartMonitor: View {
             .foregroundColor(Color.textInk)
             //.padding(.vertical, 8)
             .padding(.horizontal, AppLayout.spacing)
-        }
-        .fullScreenCover(isPresented: $showCheckout) {
-            CheckoutView()
         }
     }
 }

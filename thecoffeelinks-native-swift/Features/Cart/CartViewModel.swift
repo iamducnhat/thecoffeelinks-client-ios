@@ -70,6 +70,16 @@ final class CartViewModel: ObservableObject {
         addItem(item)
     }
     
+    func updateItem(id: UUID, quantity: Int, customization: OrderCustomization) {
+        if let index = cart.items.firstIndex(where: { $0.id == id }) {
+            var item = cart.items[index]
+            item.quantity = quantity
+            item.customization = customization
+            cart.items[index] = item
+            Task { await hapticService.selection() }
+        }
+    }
+    
     func updateQuantity(for itemId: UUID, delta: Int) {
         cart.updateQuantity(for: itemId, delta: delta)
         Task { await hapticService.selection() }
