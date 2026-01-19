@@ -12,139 +12,14 @@ import CoreImage.CIFilterBuiltins
 struct DigitalCardView: View {
     @Environment(\.dismiss) private var dismiss
     
-    @EnvironmentObject private var authViewModel: AuthViewModel
-    @EnvironmentObject private var profileViewModel: ProfileViewModel
-    
-    // QR Manager responsible for fetching signed payload
-    @StateObject private var qrManager = QRPayloadManager()
-    
-    // Selection state for vouchers
-    @State private var selectedVoucher: UserVoucher? = nil
-    
     var body: some View {
         ZStack(alignment: .top) {
             Color.backgroundPaper.ignoresSafeArea()
             
             // Main Content
             ScrollView {
-                VStack(spacing: AppLayout.spacingXL) {
-                    
-                    // 1. Context Header
-                    VStack(spacing: 4) {
-                        Text("THE COFFEE LINKS")
-                            .font(AppFont.sectionHeader)
-                            .foregroundColor(Color.textInk)
-                        
-                        Text("DIGITAL CREDENTIAL")
-                            .font(AppFont.uiMicro)
-                            .textCase(.uppercase)
-                            .kerning(1.5)
-                            .foregroundColor(Color.textMuted)
-                    }
-                    .padding(.top, AppLayout.spacingLarge)
-                    
-                    // 2. QR Code & State
-                    VStack(spacing: AppLayout.spacing) {
-                        // QR
-                        QRCodeView(string: qrManager.currentPayload ?? "loading")
-                            .frame(width: 240, height: 240)
-                            .background(Color.white)
-                            .clipShape(RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle))
-                            .padding(AppLayout.spacing)
-                            .background(Color.surfaceCard)
-                            .clipShape(RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle))
-                            .opacity(qrManager.currentPayload == nil ? 0.3 : 1.0)
-                            .overlay {
-                                if qrManager.isLoading && qrManager.currentPayload == nil {
-                                    ProgressView()
-                                }
-                            }
-                        
-                        // State Indicator
-                        Text(qrStateText)
-                            .font(AppFont.uiCaption)
-                            .foregroundColor(selectedVoucher != nil ? Color.accentMoss : Color.textMuted)
-                            .animation(.easeInOut, value: selectedVoucher)
-                            .id(selectedVoucher?.id ?? "none") // Force redraw for animation clarity
-                    }
-                    
-                    // 3. Identity Block
-                    VStack(spacing: 4) {
-                        Text(authViewModel.currentUser?.displayName ?? "Member")
-                            .font(AppFont.displayTitle)
-                            .foregroundColor(Color.textInk)
-                            .multilineTextAlignment(.center)
-                        
-                        HStack(spacing: 8) {
-                            Text(authViewModel.currentUser?.membershipTier.displayName ?? "Bronze")
-                            Text("·")
-                            Text(authViewModel.currentUser?.shortId ?? "******")
-                                .font(AppFont.monoBody)
-                        }
-                        .font(AppFont.body)
-                        .foregroundColor(Color.primaryEspresso)
-                    }
-                    
-                    DividerLine()
-                    
-                    // 4. Voucher Section (Conditional)
-                    if !profileViewModel.userVouchers.isEmpty {
-                        VStack(alignment: .leading, spacing: AppLayout.spacing) {
-                            Text("AVAILABLE VOUCHERS")
-                                .font(AppFont.uiMicro)
-                                .textCase(.uppercase)
-                                .kerning(1.5)
-                                .foregroundColor(Color.textMuted)
-                                .frame(maxWidth: .infinity, alignment: .center)
-                            
-                            ForEach(profileViewModel.userVouchers.prefix(5)) { uv in // Limit listed
-                                if uv.status == .active {
-                                    VoucherRow(userVoucher: uv, isSelected: selectedVoucher?.id == uv.id)
-                                        .onTapGesture {
-                                            withAnimation {
-                                                if selectedVoucher?.id == uv.id {
-                                                    selectedVoucher = nil // Deselect
-                                                } else {
-                                                    selectedVoucher = uv
-                                                }
-                                            }
-                                        }
-                                }
-                            }
-                        }
-                        .padding(.horizontal, AppLayout.spacingLarge)
-                        
-                        DividerLine()
-                    }
-                    
-                    // 5. Stats Section
-                    VStack(spacing: AppLayout.spacing) {
-                        StatRow(label: "POINTS", value: "\(authViewModel.currentUser?.points ?? 0)")
-                        StatRow(label: "VOUCHERS", value: "\(profileViewModel.userVouchers.filter { $0.status == .active }.count)")
-                        StatRow(label: "ORDERS", value: "\(profileViewModel.orderCount)")
-                    }
-                    .padding(.horizontal, AppLayout.spacingLarge)
-                    
-                    DividerLine()
-                    
-                    // 6. Actions
-                    HStack(spacing: AppLayout.spacingXL) {
-                        ActionButton(icon: "doc.on.doc", title: "Copy ID") {
-                            if let mid = authViewModel.currentUser?.shortId {
-                                UIPasteboard.general.string = mid
-                                let generator = UIImpactFeedbackGenerator(style: .medium)
-                                generator.impactOccurred()
-                            }
-                        }
-                        
-                        ActionButton(icon: "arrow.clockwise", title: "Refresh") {
-                            profileViewModel.loadProfile()
-                            qrManager.refreshQR()
-                        }
-                    }
-                    .padding(.bottom, AppLayout.spacingXL)
-                }
-                .padding(AppLayout.spacing)
+                DigitalCredentialContent()
+                    .padding(AppLayout.spacing)
             }
             .scrollIndicators(.hidden)
             
@@ -162,6 +37,139 @@ struct DigitalCardView: View {
                 .padding(.horizontal, AppLayout.spacing)
                 Spacer()
             }
+        }
+    }
+}
+
+// MARK: - Reusable Content View
+
+struct DigitalCredentialContent: View {
+    @EnvironmentObject private var authViewModel: AuthViewModel
+    @EnvironmentObject private var profileViewModel: ProfileViewModel
+    
+    // QR Manager responsible for fetching signed payload
+    @StateObject private var qrManager = QRPayloadManager()
+    
+    // Selection state for vouchers
+    @State private var selectedVoucher: UserVoucher? = nil
+    
+    var body: some View {
+        VStack(spacing: AppLayout.spacingXL) {
+            
+            // 1. Context Header
+            VStack(spacing: 4) {
+                Text("THE COFFEE LINKS")
+                    .font(AppFont.sectionHeader)
+                    .foregroundColor(Color.textInk)
+                
+                Text("DIGITAL CREDENTIAL")
+                    .font(AppFont.uiMicro)
+                    .textCase(.uppercase)
+                    .kerning(1.5)
+                    .foregroundColor(Color.textMuted)
+            }
+            .padding(.top, AppLayout.spacingLarge)
+            
+            // 2. QR Code & State
+            VStack(spacing: AppLayout.spacing) {
+                // QR
+                QRCodeView(string: qrManager.currentPayload ?? "loading")
+                    .frame(width: 240, height: 240)
+                    .background(Color.white)
+                    .clipShape(RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle))
+                    .padding(AppLayout.spacing)
+                    .background(Color.surfaceCard)
+                    .clipShape(RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle))
+                    .opacity(qrManager.currentPayload == nil ? 0.3 : 1.0)
+                    .overlay {
+                        if qrManager.isLoading && qrManager.currentPayload == nil {
+                            ProgressView()
+                        }
+                    }
+                
+                // State Indicator
+                Text(qrStateText)
+                    .font(AppFont.uiCaption)
+                    .foregroundColor(selectedVoucher != nil ? Color.accentMoss : Color.textMuted)
+                    .animation(.easeInOut, value: selectedVoucher)
+                    .id(selectedVoucher?.id ?? "none") // Force redraw for animation clarity
+            }
+            
+            // 3. Identity Block
+            VStack(spacing: 4) {
+                Text(authViewModel.currentUser?.displayName ?? "Member")
+                    .font(AppFont.displayTitle)
+                    .foregroundColor(Color.textInk)
+                    .multilineTextAlignment(.center)
+                
+                HStack(spacing: 8) {
+                    Text(authViewModel.currentUser?.membershipTier.displayName ?? "Bronze")
+                    Text("·")
+                    Text(authViewModel.currentUser?.shortId ?? "******")
+                        .font(AppFont.monoBody)
+                }
+                .font(AppFont.body)
+                .foregroundColor(Color.primaryEspresso)
+            }
+            
+            DividerLine()
+            
+            // 4. Voucher Section (Conditional)
+            if !profileViewModel.userVouchers.isEmpty {
+                VStack(alignment: .leading, spacing: AppLayout.spacing) {
+                    Text("AVAILABLE VOUCHERS")
+                        .font(AppFont.uiMicro)
+                        .textCase(.uppercase)
+                        .kerning(1.5)
+                        .foregroundColor(Color.textMuted)
+                        .frame(maxWidth: .infinity, alignment: .center)
+                    
+                    ForEach(profileViewModel.userVouchers.prefix(5)) { uv in // Limit listed
+                        if uv.status == .active {
+                            VoucherRow(userVoucher: uv, isSelected: selectedVoucher?.id == uv.id)
+                                .onTapGesture {
+                                    withAnimation {
+                                        if selectedVoucher?.id == uv.id {
+                                            selectedVoucher = nil // Deselect
+                                        } else {
+                                            selectedVoucher = uv
+                                        }
+                                    }
+                                }
+                        }
+                    }
+                }
+                .padding(.horizontal, AppLayout.spacingLarge)
+                
+                DividerLine()
+            }
+            
+            // 5. Stats Section
+            VStack(spacing: AppLayout.spacing) {
+                StatRow(label: "POINTS", value: "\(authViewModel.currentUser?.points ?? 0)")
+                StatRow(label: "VOUCHERS", value: "\(profileViewModel.userVouchers.filter { $0.status == .active }.count)")
+                StatRow(label: "ORDERS", value: "\(profileViewModel.orderCount)")
+            }
+            .padding(.horizontal, AppLayout.spacingLarge)
+            
+            DividerLine()
+            
+            // 6. Actions
+            HStack(spacing: AppLayout.spacingXL) {
+                ActionButton(icon: "doc.on.doc", title: "Copy ID") {
+                    if let mid = authViewModel.currentUser?.shortId {
+                        UIPasteboard.general.string = mid
+                        let generator = UIImpactFeedbackGenerator(style: .medium)
+                        generator.impactOccurred()
+                    }
+                }
+                
+                ActionButton(icon: "arrow.clockwise", title: "Refresh") {
+                    profileViewModel.loadProfile()
+                    qrManager.refreshQR()
+                }
+            }
+            .padding(.bottom, AppLayout.spacingXL)
         }
         .onAppear {
             qrManager.startRotation()
