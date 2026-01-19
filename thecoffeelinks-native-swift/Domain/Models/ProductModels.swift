@@ -106,10 +106,10 @@ struct Product: Codable, Identifiable, Hashable, Sendable {
     var priceRange: String {
         guard let minPrice = sizeOptions.min(by: { $0.price < $1.price })?.price,
               let maxPrice = sizeOptions.max(by: { $0.price < $1.price })?.price else {
-            return basePrice.formattedCurrency
+            return basePrice.formattedVND
         }
-        if minPrice == maxPrice { return minPrice.formattedCurrency }
-        return "\(minPrice.formattedCurrency) - \(maxPrice.formattedCurrency)"
+        if minPrice == maxPrice { return minPrice.formattedVND }
+        return "\(minPrice.formattedVND) - \(maxPrice.formattedVND)"
     }
     
     func price(for size: ProductSize) -> Double {
@@ -404,15 +404,33 @@ struct APIMenuResponse: Codable {
 
 // MARK: - Currency Formatting
 
+extension NumberFormatter {
+    static let vndTight: NumberFormatter = {
+        let f = NumberFormatter()
+        f.numberStyle = .currency
+        f.locale = Locale(identifier: "vi_VN")
+        f.currencyCode = "VND"
+        f.maximumFractionDigits = 0
+        return f
+    }()
+}
+
 extension Double {
-    var formattedCurrency: String {
-        let formatter = NumberFormatter()
-        formatter.numberStyle = .currency
-        formatter.currencyCode = "VND"
-        formatter.currencySymbol = "₫"
-        formatter.maximumFractionDigits = 0
-        return formatter.string(from: NSNumber(value: self)) ?? "\(Int(self))₫"
+
+    /// Vietnamese Dong, symbol attached tightly to number (e.g. 10.000₫)
+    var formattedVND: String {
+        let raw = NumberFormatter.vndTight
+            .string(from: NSNumber(value: self)) ?? "\(Int(self))₫"
+        
+        // Remove all spaces (including non-breaking space)
+        return raw.replacingOccurrences(
+            of: "\\s+",
+            with: "",
+            options: .regularExpression
+        )
     }
-    
-    func toVND() -> String { formattedCurrency }
+
+    func toVND() -> String {
+        formattedVND
+    }
 }

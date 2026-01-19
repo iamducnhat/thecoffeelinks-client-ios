@@ -24,7 +24,7 @@ struct CartMonitor: View {
                 
                 Spacer()
                 
-                Text(cartViewModel.total.formattedCurrency)
+                Text(cartViewModel.total.formattedVND)
                     .font(AppFont.monoBody.bold())
             }
             .foregroundColor(Color.textInk)

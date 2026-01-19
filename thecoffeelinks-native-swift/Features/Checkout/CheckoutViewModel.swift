@@ -116,7 +116,7 @@ enum CheckoutError: LocalizedError {
         switch self {
         case .noStoreSelected: return "Please select a store"
         case .deliveryAddressRequired: return "Please select a delivery address"
-        case .minimumNotMet(let amount): return "Minimum order amount is \(amount.formattedCurrency)"
+        case .minimumNotMet(let amount): return "Minimum order amount is \(amount.formattedVND)"
         case .paymentFailed: return "Payment failed. Please try again."
         }
     }

@@ -221,7 +221,7 @@ struct CheckoutView: View {
                                         Spacer(minLength: AppLayout.spacing)
                                         
                                         HStack(spacing: 0) {
-                                            Text(item.totalPrice.formattedCurrency)
+                                            Text(item.totalPrice.formattedVND)
                                                 .font(AppFont.monoBody)
                                                 .lineLimit(1)
                                                 .minimumScaleFactor(0.5)
@@ -428,7 +428,7 @@ struct CheckoutView: View {
                             
                             Spacer(minLength: AppLayout.spacing)
                             
-                            Text(cartViewModel.total.formattedCurrency)
+                            Text(cartViewModel.total.formattedVND)
                                 .font(AppFont.monoTitle)
                                 .foregroundColor(Color.textInk)
                         }

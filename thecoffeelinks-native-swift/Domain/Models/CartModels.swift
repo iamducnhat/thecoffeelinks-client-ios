@@ -198,7 +198,7 @@ struct Voucher: Codable, Identifiable, Sendable {
     var displayValue: String {
         switch discountType {
         case .percentage: return "\(Int(discountValue))% OFF"
-        case .fixed, .discount: return discountValue.formattedCurrency + " OFF"
+        case .fixed, .discount: return discountValue.formattedVND + " OFF"
         case .freeDelivery: return "Free Delivery"
         }
     }
@@ -222,9 +222,35 @@ struct VouchersResponse: Codable, Sendable {
     let vouchers: [Voucher]
 }
 
+
 struct VoucherValidationResponse: Codable, Sendable {
     let success: Bool
     let validation: VoucherValidation
+}
+
+// MARK: - User Voucher
+
+struct UserVoucher: Codable, Identifiable, Sendable {
+    let id: String
+    let userId: String
+    let voucherId: String
+    let status: VoucherStatus
+    let redeemedAt: Date?
+    let createdAt: Date
+    let voucher: Voucher?
+    
+    enum VoucherStatus: String, Codable, Sendable {
+        case active, redeemed, expired
+    }
+    
+    enum CodingKeys: String, CodingKey {
+        case id, status
+        case userId = "user_id"
+        case voucherId = "voucher_id"
+        case redeemedAt = "redeemed_at"
+        case createdAt = "created_at"
+        case voucher = "vouchers"
+    }
 }
 
 

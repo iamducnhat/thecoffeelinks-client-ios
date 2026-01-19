@@ -161,7 +161,7 @@ struct ProductDetailSheet: View {
                                     .font(AppFont.uiCaption)
                                     .foregroundStyle(Color.textMuted)
                                 Spacer()
-                                Text(calculateTotal().formattedCurrency)
+                                Text(calculateTotal().formattedVND)
                                     .font(AppFont.monoBody.bold())
                                     .foregroundStyle(Color.primaryEspresso)
                             }
@@ -192,7 +192,7 @@ struct ProductDetailSheet: View {
                                             VStack(spacing: 4) {
                                                 Text(option.size.displayName)
                                                     .font(AppFont.monoBody)
-                                                Text(option.price.formattedCurrency)
+                                                Text(option.price.formattedVND)
                                                     .font(AppFont.uiMicro)
                                             }
                                             .padding(.vertical, 12)
@@ -302,7 +302,7 @@ struct ProductDetailSheet: View {
                                                 
                                                 Spacer()
                                                 
-                                                Text("+\(topping.price.formattedCurrency)")
+                                                Text("+\(topping.price.formattedVND)")
                                                     .font(AppFont.monoBody)
                                                     .foregroundStyle(Color.primaryEspresso)
                                             }
@@ -369,7 +369,7 @@ struct ProductDetailSheet: View {
                 // Total Bar
                 ReceiptTotalBar(
                     totalLabel: "TOTAL",
-                    totalValue: (calculateTotal() * Double(quantity)).formattedCurrency,
+                    totalValue: (calculateTotal() * Double(quantity)).formattedVND,
                     ctaTitle: cartItem != nil ? "Update Order" : "Add to Cart",
                     action: {
                         let allToppings = menuViewModel.toppings

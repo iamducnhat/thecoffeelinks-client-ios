@@ -158,7 +158,7 @@ struct DeliveryInfoCard: View {
                         .font(AppFont.uiMicro)
                         .foregroundStyle(Color.textMuted)
                     Spacer()
-                    Text(minOrder.formattedCurrency)
+                    Text(minOrder.formattedVND)
                         .font(AppFont.uiMicro)
                         .foregroundStyle(Color.textInk)
                 }
@@ -313,7 +313,7 @@ struct DeliveryValidation {
         }
         
         if let minOrder = availability.minOrderAmount, cart.subtotal < minOrder {
-            errors.append("Minimum order: \(minOrder.formattedCurrency)")
+            errors.append("Minimum order: \(minOrder.formattedVND)")
         }
         
         // Check for non-deliverable items

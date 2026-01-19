@@ -189,7 +189,7 @@ struct AIQuickOrderModal: View {
                             .font(AppFont.body)
                             .foregroundColor(Color.textInk)
                         Spacer()
-                        Text(item.product.price.formattedCurrency)
+                        Text(item.product.price.formattedVND)
                             .font(AppFont.monoBody)
                             .foregroundColor(Color.primaryEspresso)
                     }
@@ -365,26 +365,18 @@ struct PopularProductCard: View {
                 .clipShape(RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle))
                 
                 // Text Block (heavier, more grounded)
-                VStack(alignment: .leading, spacing: 0) {
+                VStack(alignment: .leading, spacing: AppLayout.spacing) {
                     // Product Name - Primary Visual Anchor
                     Text(product.product.name)
                         .font(AppFont.productTitle)
                         .lineLimit(2)
                         .foregroundColor(Color.textInk)
                     
-                    Spacer(minLength: AppLayout.spacingCompact)
+                    // Spacer(minLength: AppLayout.spacingCompact)
                     
                     // Meta Row: Size + Price (MEDIUM only, informational)
                     HStack(spacing: AppLayout.spacingSmall) {
-                        Text("MEDIUM")
-                            .font(AppFont.uiMicro)
-                            .foregroundStyle(Color.textMuted.opacity(0.7))
-                        
-                        Text("•")
-                            .font(AppFont.uiMicro)
-                            .foregroundStyle(Color.textMuted.opacity(0.5))
-                        
-                        Text(product.product.priceRange)
+                        Text(product.product.price(for: .medium).toVND())
                             .font(AppFont.monoBody)
                             .foregroundColor(Color.textMuted.opacity(0.8))
                     }
@@ -493,24 +485,13 @@ struct EventCard: View {
                     .lineLimit(1)
                 
                 // Meta Row: EVENT · Subtitle
-                HStack(spacing: 6) {
-                    Text("EVENT")
+                if let subtitle = event.subtitle {
+                    Text(subtitle)
                         .font(AppFont.monoCaption)
                         .tracking(1.0)
                         .foregroundColor(Color.textInk.opacity(0.6))
-                    
-                    Text("·")
-                        .font(AppFont.monoCaption)
-                        .foregroundColor(Color.primaryEspresso)
-                    
-                    if let subtitle = event.subtitle {
-                        Text(subtitle)
-                            .font(AppFont.monoBody)
-                            .foregroundColor(Color.textInk.opacity(0.85))
-                            .lineLimit(1)
-                    }
+                        .textCase(.uppercase)
                 }
-                .textCase(.uppercase)
             }
             .padding(.top, AppLayout.spacingMedium)
             .padding(.bottom, AppLayout.spacingCompact)

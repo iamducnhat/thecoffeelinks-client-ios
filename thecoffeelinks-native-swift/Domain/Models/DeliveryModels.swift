@@ -125,7 +125,7 @@ struct DeliveryFee: Codable, Sendable {
     let isSurge: Bool
     let surgeMultiplier: Double?
     
-    var displayAmount: String { amount.formattedCurrency }
+    var displayAmount: String { amount.formattedVND }
     
     var breakdown: [(String, Double)] {
         var items: [(String, Double)] = [("Base fee", baseFee), ("Distance", distanceFee)]

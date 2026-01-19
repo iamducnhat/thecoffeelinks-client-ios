@@ -107,7 +107,7 @@ struct OrderHistoryRow: View {
                 Spacer()
                 
                 VStack(alignment: .trailing, spacing: 4) {
-                    Text(order.totalAmount.formattedCurrency)
+                    Text(order.totalAmount.formattedVND)
                         .font(AppFont.monoBody)
                         .foregroundStyle(Color.primaryEspresso)
                     

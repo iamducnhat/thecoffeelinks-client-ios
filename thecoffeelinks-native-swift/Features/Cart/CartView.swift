@@ -126,7 +126,7 @@ struct CartView: View {
                                             .font(AppFont.body)
                                             .foregroundStyle(Color.textMuted)
                                         Spacer()
-                                        Text(cartViewModel.subtotal.formattedCurrency)
+                                        Text(cartViewModel.subtotal.formattedVND)
                                             .font(AppFont.monoBody)
                                             .foregroundStyle(Color.textInk)
                                     }
@@ -137,7 +137,7 @@ struct CartView: View {
                                                 .font(AppFont.body)
                                                 .foregroundStyle(Color.textMuted)
                                             Spacer()
-                                            Text(cartViewModel.deliveryFee.formattedCurrency)
+                                            Text(cartViewModel.deliveryFee.formattedVND)
                                                 .font(AppFont.monoBody)
                                                 .foregroundStyle(Color.textInk)
                                         }
@@ -149,7 +149,7 @@ struct CartView: View {
                                                 .font(AppFont.body)
                                                 .foregroundStyle(Color.semanticSuccess)
                                             Spacer()
-                                            Text("-\(cartViewModel.summary.discount.formattedCurrency)")
+                                            Text("-\(cartViewModel.summary.discount.formattedVND)")
                                                 .font(AppFont.monoBody)
                                                 .foregroundStyle(Color.semanticSuccess)
                                         }
@@ -181,7 +181,7 @@ struct CartView: View {
                             
                             Spacer(minLength: AppLayout.spacing)
                             
-                            Text(cartViewModel.total.formattedCurrency)
+                            Text(cartViewModel.total.formattedVND)
                                 .font(AppFont.monoTitle)
                                 .foregroundStyle(Color.textInk)
                         }
@@ -306,7 +306,7 @@ struct CartItemRow: View {
                 Spacer(minLength: AppLayout.spacing)
                 
                 HStack(spacing: 0) {
-                    Text(item.totalPrice.formattedCurrency)
+                    Text(item.totalPrice.formattedVND)
                         .font(AppFont.monoBody)
                         .lineLimit(1)
                         .minimumScaleFactor(0.5)

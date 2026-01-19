@@ -181,7 +181,7 @@ struct OrderRow: View {
                     .font(AppFont.monoBody.bold())
                     .foregroundStyle(Color.textInk)
                 Spacer()
-                Text(order.totalAmount.formattedCurrency)
+                Text(order.totalAmount.formattedVND)
                     .font(AppFont.monoBody)
                     .foregroundStyle(Color.primaryEspresso)
             }

@@ -310,7 +310,7 @@ struct APIOrdersResponse: Codable {
         let status: String
         let type: String
         let table_id: String?
-        let total_amount: Double
+        let total_amount: Double?
         let payment_method: String
         let payment_status: String
         let payment_token: String?
@@ -425,10 +425,10 @@ struct APIOrdersResponse: Codable {
                 mode: orderingMode,
                 paymentMethod: paymentMethod,
                 items: items,
-                subtotal: apiOrder.total_amount - apiOrder.delivery_fee,
+                subtotal: (apiOrder.total_amount ?? 0.0) - apiOrder.delivery_fee,
                 deliveryFee: apiOrder.delivery_fee,
                 discount: 0,
-                totalAmount: apiOrder.total_amount, // Note: totalAmount includes deliveryFee
+                totalAmount: apiOrder.total_amount ?? 0.0, // Note: totalAmount includes deliveryFee
                 tableId: apiOrder.table_id,
                 deliveryAddress: nil, // API doesn't return full DeliveryAddress object, only string
                 deliveryNotes: apiOrder.delivery_notes,

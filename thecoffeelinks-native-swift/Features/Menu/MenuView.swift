@@ -211,7 +211,7 @@ struct ProductCard: View {
                         .foregroundColor(Color.primaryEspresso)
                     
                     // Price: 85% opacity, [price]₫ format
-                    Text("\(Int(mediumPrice).formatted())₫")
+                    Text(mediumPrice.toVND())
                         .font(AppFont.monoBody)
                         .foregroundColor(Color.textInk.opacity(0.85))
                 }

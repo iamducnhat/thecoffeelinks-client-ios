@@ -32,6 +32,7 @@ struct ProfileView: View {
                             .padding(.top, AppLayout.spacing)
                         
                         Color.secondary.frame(height: 1)
+                            .padding(.horizontal, -AppLayout.spacing)
                     }
                     .padding(.horizontal, AppLayout.spacing)
                     .background(GeometryReader {

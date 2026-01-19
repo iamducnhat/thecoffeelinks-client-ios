@@ -161,9 +161,9 @@ struct OrderDetailView: View {
                         
                         // Total Section
                         VStack(spacing: 0) {
-                            ReceiptSummaryRow(label: "Subtotal", value: order.totalAmount.formattedCurrency)
-                            ReceiptSummaryRow(label: "Tax & fees", value: (0.0).formattedCurrency)
-                            ReceiptSummaryRow(label: "Total", value: order.totalAmount.formattedCurrency, isTotal: true)
+                            ReceiptSummaryRow(label: "Subtotal", value: order.totalAmount.formattedVND)
+                            ReceiptSummaryRow(label: "Tax & fees", value: (0.0).formattedVND)
+                            ReceiptSummaryRow(label: "Total", value: order.totalAmount.formattedVND, isTotal: true)
                         }
                         .background(Color.backgroundPaper)
                         .overlay(
@@ -297,7 +297,7 @@ struct OrderItemRow: View {
             
             Spacer()
             
-            Text(item.totalPrice.formattedCurrency)
+            Text(item.totalPrice.formattedVND)
                 .font(AppFont.monoBody)
                 .foregroundStyle(Color.textInk)
         }
