@@ -90,7 +90,7 @@ struct DigitalCredentialContent: View {
                 // State Indicator
                 Text(qrStateText)
                     .font(AppFont.uiCaption)
-                    .foregroundColor(selectedVoucher != nil ? Color.accentMoss : Color.textMuted)
+                    .foregroundColor(selectedVoucher != nil ? Color.primaryEspresso : Color.textMuted)
                     .animation(.easeInOut, value: selectedVoucher)
                     .id(selectedVoucher?.id ?? "none") // Force redraw for animation clarity
             }
@@ -204,7 +204,7 @@ struct VoucherRow: View {
         HStack {
             // Checkbox style indicator
             Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")
-                .foregroundColor(isSelected ? Color.accentMoss : Color.textMuted)
+                .foregroundColor(isSelected ? Color.primaryEspresso : Color.textMuted)
                 .font(.system(size: 20))
             
             VStack(alignment: .leading, spacing: 2) {
@@ -230,8 +230,8 @@ struct VoucherRow: View {
         .padding(AppLayout.spacing)
         .background(
             RoundedRectangle(cornerRadius: AppLayout.cornerRadius)
-                .strokeBorder(isSelected ? Color.accentMoss : Color.textMuted.opacity(0.2), lineWidth: 1)
-                .background(isSelected ? Color.accentMoss.opacity(0.05) : Color.clear)
+                .strokeBorder(isSelected ? Color.primaryEspresso : Color.textMuted.opacity(0.2), lineWidth: 1)
+                .background(isSelected ? Color.primaryEspresso.opacity(0.05) : Color.clear)
         )
         .contentShape(Rectangle())
     }

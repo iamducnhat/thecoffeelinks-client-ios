@@ -251,6 +251,11 @@ struct UserVoucher: Codable, Identifiable, Sendable {
         case createdAt = "created_at"
         case voucher = "vouchers"
     }
+
+    static func == (lhs: UserVoucher, rhs: UserVoucher) -> Bool { lhs.id == rhs.id }
+    func hash(into hasher: inout Hasher) { hasher.combine(id) }
 }
+
+extension UserVoucher: Equatable, Hashable {}
 
 
