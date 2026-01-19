@@ -15,6 +15,7 @@ struct ProfileView: View {
     @State private var showSettings = false
     @State private var showOrderHistory = false
     @State private var showLogin = false
+    @State private var showEditProfile = false
     @State private var scrollOffset = CGFloat.zero
     
     var body: some View {
@@ -101,7 +102,7 @@ struct ProfileView: View {
                                 .foregroundStyle(Color.textInk)
                             
                             VStack(spacing: 0) {
-                                ActionRow(title: "Edit profile", icon: "person") { if authViewModel.isAuthenticated { /* edit */ } else { showLogin = true } }
+                                ActionRow(title: "Edit profile", icon: "person") { if authViewModel.isAuthenticated { showEditProfile = true } else { showLogin = true } }
                                 ActionRow(title: "Security", icon: "lock.shield") { if authViewModel.isAuthenticated { showSettings = true } else { showLogin = true } }
                                 ActionRow(title: "Notifications", icon: "bell") { }
                             }
@@ -170,6 +171,9 @@ struct ProfileView: View {
         }
         .fullScreenCover(isPresented: $showLogin) {
             LoginView()
+        }
+        .sheet(isPresented: $showEditProfile) {
+            EditProfileView()
         }
     }
     

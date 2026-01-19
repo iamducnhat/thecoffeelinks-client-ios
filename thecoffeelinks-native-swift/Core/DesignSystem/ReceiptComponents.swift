@@ -449,7 +449,7 @@ struct VoucherCard: View {
             VStack(alignment: .leading, spacing: AppLayout.spacingMedium) {
                 HStack(alignment: .top) {
                     VStack(alignment: .leading, spacing: 4) {
-                        Text(voucher.title)
+                        Text(voucher.displayTitle)
                             .font(AppFont.headline)
                             .foregroundStyle(Color.textInk)
                         if let description = voucher.description {
@@ -470,8 +470,13 @@ struct VoucherCard: View {
                     VStack(alignment: .leading, spacing: 2) {
                         Text("Code: \(voucher.code)")
                             .font(AppFont.uiMicro)
-                        Text("Valid until: \(voucher.validUntil.formatted(.dateTime.month().day().year()))")
-                            .font(AppFont.uiMicro)
+                        if let validUntil = voucher.validUntil {
+                            Text("Valid until: \(validUntil.formatted(.dateTime.month().day().year()))")
+                                .font(AppFont.uiMicro)
+                        } else {
+                            Text("No expiration")
+                                .font(AppFont.uiMicro)
+                        }
                     }
                     .foregroundStyle(Color.textMuted)
                     

@@ -269,7 +269,7 @@ struct OffersSection: View {
                                             Image(systemName: "ticket.fill")
                                                 .font(.system(size: 32))
                                                 .foregroundStyle(Color.primaryEspresso.opacity(0.3))
-                                            Text(voucher.title)
+                                            Text(voucher.displayTitle)
                                                 .font(AppFont.uiCaption)
                                                 .foregroundStyle(Color.textMuted)
                                         }

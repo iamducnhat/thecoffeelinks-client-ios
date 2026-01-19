@@ -68,7 +68,7 @@ class AuthRepository {
     // Updates local user profile
     func updateProfile(name: String?, bio: String?, interests: [String]?) async throws -> User {
         struct UpdateProfileRequest: Encodable {
-            let fullName: String?
+            let name: String?
             let bio: String?
             let interests: [String]?
         }
@@ -76,7 +76,7 @@ class AuthRepository {
         return try await networkService.request(
             "/api/user/profile",
             method: "PUT",
-            body: UpdateProfileRequest(fullName: name, bio: bio, interests: interests)
+            body: UpdateProfileRequest(name: name, bio: bio, interests: interests)
         )
     }
 
@@ -133,7 +133,8 @@ class AuthRepository {
                         membershipTier: .bronze,
                         points: 0,
                         createdAt: Date(),
-                        preferences: .default
+                        preferences: .default,
+                        interests: nil
                     )
                 }
             }
@@ -208,7 +209,8 @@ class AuthRepository {
             membershipTier: .bronze,
             points: 0,
             createdAt: Date(),
-            preferences: .default
+            preferences: .default,
+            interests: nil
         )
     }
 }

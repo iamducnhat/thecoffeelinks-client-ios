@@ -10,7 +10,7 @@ import SwiftUI
 import CachedAsyncImage // CHANGED
 
 struct StoresView: View {
-    @StateObject var viewModel: StoresViewModel
+    @EnvironmentObject var viewModel: StoresViewModel
     @State private var selectedStore: Store?
     @State private var viewMode: StoreViewMode = .list
     @State private var scrollOffset = CGFloat.zero
@@ -96,11 +96,7 @@ struct StoresView: View {
                     }
                     
                     // Content
-                    if viewModel.isLoading {
-                        StoreListSkeleton()
-                    } else if viewModel.filteredStores.isEmpty {
-                        EmptyStoresState()
-                    } else {
+                    if !viewModel.filteredStores.isEmpty {
                         switch viewMode {
                         case .list:
                             StoreListContent(
@@ -116,6 +112,14 @@ struct StoresView: View {
                             .frame(height: 400)
                             .padding(.horizontal, AppLayout.spacing)
                         }
+                    } else if viewModel.isLoading {
+                         // Initial load (no cache) - Show clean state (no skeleton)
+                         // Alternatively, show a minimal "Locating..." text if desired, but requirements say "no loading indicators"
+                         // We will render nothing until content arrives, or EmptyStoreState if it finishes empty. 
+                         // To avoid looking broken, we might want a simple spacer.
+                         Spacer().frame(height: 200)
+                    } else {
+                        EmptyStoresState()
                     }
                 }
                 .coordinateSpace(name: "scroll")

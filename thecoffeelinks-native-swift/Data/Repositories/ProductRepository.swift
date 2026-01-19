@@ -16,22 +16,21 @@ final class ProductRepository: ProductRepositoryProtocol, @unchecked Sendable {
         self.cacheService = cacheService
     }
     
+    func getCachedMenu() async -> Menu? {
+        await cacheService.get(menuCacheKey)
+    }
+    
+    func refreshMenu() async throws -> Menu {
+        let response: APIMenuResponse = try await networkService.get("/api/menu", queryItems: nil)
+        let menu = response.toMenu()
+        await cacheService.set(menuCacheKey, value: menu, ttl: menuCacheTTL)
+        return menu
+    }
+    
     func getMenu() async throws -> Menu {
-        if let cached: Menu = await cacheService.get(menuCacheKey) { return cached }
-        
-        do {
-            let response: APIMenuResponse = try await networkService.get("/api/menu", queryItems: nil)
-            let menu = response.toMenu()
-            await cacheService.set(menuCacheKey, value: menu, ttl: menuCacheTTL)
-            return menu
-        } catch {
-            print("❌ Menu fetch error: \(error)")
-            if let data = (error as NSError).userInfo["responseData"] as? Data,
-               let json = String(data: data, encoding: .utf8) {
-                print("📄 Raw response: \(json.prefix(500))")
-            }
-            throw error
-        }
+        // Fallback for legacy calls: Try cache first, then refresh
+        if let cached = await getCachedMenu() { return cached }
+        return try await refreshMenu()
     }
     
     func getProducts(categoryId: String?) async throws -> [Product] {
@@ -57,10 +56,46 @@ final class ProductRepository: ProductRepositoryProtocol, @unchecked Sendable {
         return response.toppings
     }
     
-    func getPopularProducts(period: String, limit: Int) async throws -> [PopularProduct] {
+    // MARK: - Popular Products
+    
+    private func getPopularCacheKey(period: String) -> String { "popular_\(period)" }
+    
+    func getCachedPopularProducts() async -> [PopularProduct]? {
+        await cacheService.get(getPopularCacheKey(period: "daily")) // Default to daily for cache check
+    }
+    
+    func refreshPopularProducts(period: String, limit: Int) async throws -> [PopularProduct] {
         let queryItems = [URLQueryItem(name: "period", value: period), URLQueryItem(name: "limit", value: String(limit))]
-        let response: PopularProductsResponse = try await networkService.get("/api/products/popular", queryItems: queryItems)
-        return response.products
+        
+        // 1. Fetch raw API response with IDs
+        let response: APIPopularProductsResponse = try await networkService.get("/api/products/popular", queryItems: queryItems)
+        
+        // 2. Ensure we have the full menu
+        // We use cache fallback here to avoid double-fetch if possible, but for refresh we might want fresh menu
+        // But popular products refresh is separate. Let's use getMenu() which is cache-first safe.
+        let menu = try await getMenu()
+        
+        // 3. Map responses
+        let populars = response.products.enumerated().compactMap { index, item -> PopularProduct? in
+            guard let fullProduct = menu.products.first(where: { $0.id == item.id }) else { return nil }
+            return PopularProduct(
+                id: UUID().uuidString,
+                product: fullProduct,
+                orderCount: item.orderCount ?? 0,
+                rank: index + 1,
+                trend: .stable
+            )
+        }
+        
+        await cacheService.set(getPopularCacheKey(period: period), value: populars, ttl: menuCacheTTL)
+        return populars
+    }
+    
+    func getPopularProducts(period: String, limit: Int) async throws -> [PopularProduct] {
+        if let cached = await cacheService.get(getPopularCacheKey(period: period)) as [PopularProduct]? {
+            return cached
+        }
+        return try await refreshPopularProducts(period: period, limit: limit)
     }
     
     func searchProducts(query: String) async throws -> [Product] {

@@ -22,11 +22,15 @@ protocol OrderRepositoryProtocol: Sendable {
 
 protocol ProductRepositoryProtocol: Sendable {
     func getMenu() async throws -> Menu
+    func getCachedMenu() async -> Menu?
+    func refreshMenu() async throws -> Menu
     func getProducts(categoryId: String?) async throws -> [Product]
     func getProduct(id: String) async throws -> Product
     func getCategories() async throws -> [Category]
     func getToppings() async throws -> [Topping]
     func getPopularProducts(period: String, limit: Int) async throws -> [PopularProduct]
+    func getCachedPopularProducts() async -> [PopularProduct]?
+    func refreshPopularProducts(period: String, limit: Int) async throws -> [PopularProduct]
     func searchProducts(query: String) async throws -> [Product]
 }
 
@@ -50,6 +54,8 @@ protocol UserRepositoryProtocol: Sendable {
     func updateUser(_ user: User) async throws -> User
     func updatePreferences(_ preferences: UserPreferences) async throws -> UserPreferences
     func getStores(latitude: Double?, longitude: Double?) async throws -> [Store]
+    func getCachedStores() async -> [Store]?
+    func refreshStores(latitude: Double?, longitude: Double?) async throws -> [Store]
     func getStore(id: String) async throws -> Store
 }
 
@@ -57,6 +63,8 @@ protocol UserRepositoryProtocol: Sendable {
 
 protocol FavoritesRepositoryProtocol: Sendable {
     func getFavorites() async throws -> [FavoriteItem]
+    func getCachedFavorites() async -> [FavoriteItem]?
+    func refreshFavorites() async throws -> [FavoriteItem]
     func addFavorite(product: Product, customization: OrderCustomization, nickname: String?, notes: String?) async throws -> FavoriteItem
     func updateFavorite(_ favorite: FavoriteItem) async throws -> FavoriteItem
     func removeFavorite(id: String) async throws
@@ -78,6 +86,8 @@ protocol AuthRepositoryProtocol: Sendable {
 
 protocol VoucherRepositoryProtocol: Sendable {
     func getVouchers() async throws -> [Voucher]
+    func getCachedVouchers() async -> [Voucher]?
+    func refreshVouchers() async throws -> [Voucher]
     func validateVoucher(code: String, subtotal: Double, mode: OrderingMode) async throws -> VoucherValidation
 }
 

@@ -19,6 +19,7 @@ struct User: Codable, Identifiable, Hashable, Sendable {
     let points: Int
     let createdAt: Date
     var preferences: UserPreferences
+    var interests: [String]?
     
     var fullName: String { displayName } // UI Compatibility
     var bio: String? { nil } // UI Compatibility (Phase 6 Profile)
@@ -33,11 +34,12 @@ struct User: Codable, Identifiable, Hashable, Sendable {
         case points
         case createdAt = "member_since"
         case preferences
+        case interests
     }
     
     init(id: String, email: String?, phone: String?, displayName: String,
          avatarUrl: String?, membershipTier: MembershipTier, points: Int,
-         createdAt: Date, preferences: UserPreferences) {
+         createdAt: Date, preferences: UserPreferences, interests: [String]?) {
         self.id = id
         self.email = email
         self.phone = phone
@@ -47,14 +49,26 @@ struct User: Codable, Identifiable, Hashable, Sendable {
         self.points = points
         self.createdAt = createdAt
         self.preferences = preferences
+        self.interests = interests
     }
     
     init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         id = try container.decode(String.self, forKey: .id)
         email = try container.decodeIfPresent(String.self, forKey: .email)
+        let rawName = try container.decode(String.self, forKey: .displayName)
         phone = try container.decodeIfPresent(String.self, forKey: .phone)
-        displayName = try container.decode(String.self, forKey: .displayName)
+        
+        // Fix for "Hello, User" issue:
+        // If the name is generic "User" (case-insensitive) or empty, and we have a phone number,
+        // prefer showing the phone number to match the initial login experience.
+        if (rawName.isEmpty || rawName.caseInsensitiveCompare("user") == .orderedSame),
+           let phoneIdx = phone, !phoneIdx.isEmpty {
+            displayName = phoneIdx
+        } else {
+            displayName = rawName
+        }
+        
         avatarUrl = try container.decodeIfPresent(String.self, forKey: .avatarUrl)
         points = try container.decodeIfPresent(Int.self, forKey: .points) ?? 0
         
@@ -77,6 +91,7 @@ struct User: Codable, Identifiable, Hashable, Sendable {
         // Safe decoding for enums/objects that might be missing
         membershipTier = try container.decodeIfPresent(MembershipTier.self, forKey: .membershipTier) ?? .bronze
         preferences = try container.decodeIfPresent(UserPreferences.self, forKey: .preferences) ?? .default
+        interests = try container.decodeIfPresent([String].self, forKey: .interests)
     }
     
     static func == (lhs: User, rhs: User) -> Bool { lhs.id == rhs.id }
@@ -85,7 +100,7 @@ struct User: Codable, Identifiable, Hashable, Sendable {
     static var placeholder: User {
         User(id: "placeholder", email: nil, phone: nil, displayName: "User",
              avatarUrl: nil, membershipTier: .bronze, points: 0,
-             createdAt: Date(), preferences: .default)
+             createdAt: Date(), preferences: .default, interests: nil)
     }
 }
 

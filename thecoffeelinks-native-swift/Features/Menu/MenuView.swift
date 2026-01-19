@@ -103,10 +103,7 @@ struct MenuView: View {
                 }
             }
             
-            // Cart Monitor (Floating)
-            if !cartViewModel.isEmpty {
-                CartMonitor()
-            }
+
         }
         .fullScreenCover(item: $selectedProduct) { product in
             ProductDetailSheet(product: product)
@@ -227,42 +224,7 @@ struct ProductCard: View {
     }
 }
 
-struct CartMonitor: View {
-    @EnvironmentObject var cartViewModel: CartViewModel
-    @State private var showCheckout = false
-    
-    var body: some View {
-        Button {
-            showCheckout = true
-        } label: {
-            HStack {
-                Text("\(cartViewModel.itemCount) item\(cartViewModel.itemCount == 1 ? "" : "s") in your cart")
-                    .font(AppFont.body)
-                    .foregroundColor(Color.textInk)
-                
-                Spacer()
-                
-                Text(cartViewModel.total.formattedCurrency)
-                    .font(AppFont.monoBody.bold())
-                    .foregroundStyle(Color.backgroundPaper)
-                    .padding(.horizontal, 12)
-                    .padding(.vertical, 4)
-                    .background(Color.accentColor)
-                    .clipShape(RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle))
-            }
-            .padding(AppLayout.spacing)
-            .background(Color.surfaceCard)
-            .overlay(
-                RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle)
-                    .stroke(Color.border, lineWidth: 1)
-            )
-            .padding(AppLayout.spacing)
-        }
-        .fullScreenCover(isPresented: $showCheckout) {
-            CheckoutView()
-        }
-    }
-}
+
 
 // MARK: - Utilities
 

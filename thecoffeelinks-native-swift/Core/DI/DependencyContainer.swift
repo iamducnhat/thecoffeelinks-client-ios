@@ -12,6 +12,7 @@ class DependencyContainer: ObservableObject {
     private(set) lazy var hapticManager = HapticManager()
     private(set) lazy var locationManager = LocationManager()
     private(set) lazy var imageCache = ImageCache()
+    private(set) lazy var refreshCoordinator = ContentRefreshCoordinator()
     private(set) lazy var logger = Logger()
     
     // MARK: - Repositories
@@ -22,8 +23,8 @@ class DependencyContainer: ObservableObject {
     private(set) lazy var storeRepository = StoreRepository(networkService: networkService)
     private(set) lazy var socialRepository = SocialRepository(networkService: networkService)
     private(set) lazy var userRepository = UserRepository(networkService: networkService)
-    private(set) lazy var voucherRepository = VoucherRepository(networkService: networkService)
-    private(set) lazy var favoritesRepository = FavoritesRepository(networkService: networkService)
+    private(set) lazy var voucherRepository = VoucherRepository(networkService: networkService, cacheService: cacheService)
+    private(set) lazy var favoritesRepository = FavoritesRepository(networkService: networkService, cacheService: cacheService)
     private(set) lazy var predictionRepository = PredictionRepository()
     
     // MARK: - Services

@@ -23,51 +23,51 @@ class ProfileViewModel: BaseViewModel {
     }
     
     func loadProfile() {
-        withLoading {
-            // Sequential loading to ensure closure captures
-            // Note: Parallel fetching could be done with task group but simple sequential is fine for now
+        // Fire and forget task to keep signature but run async logic
+        Task {
+            await loadCachedProfile()
+            await performProfileRefresh()
+        }
+    }
+    
+    private func loadCachedProfile() async {
+        // Load cached user
+        if let cachedUser = await userRepository.getCachedUser() {
+            await MainActor.run { self.userProfile = cachedUser; self.editName = cachedUser.fullName }
+        }
+        
+        // Load cached vouchers
+        if let cachedVouchers = await voucherRepository.getCachedVouchers() {
+            await MainActor.run { self.vouchers = cachedVouchers }
+        }
+    }
+    
+    private func performProfileRefresh() async {
+        do {
+            async let userTask = userRepository.refreshUser()
+            async let vouchersTask = voucherRepository.refreshVouchers()
+            async let connectionsTask = socialRepository.getConnections()
             
-            // 1. Get Current User
-            let current: User? = try await self.authRepository.getCurrentUser()
-            
-            // 2. Get Vouchers
-            let myVouchers: [Voucher] = try await self.voucherRepository.getVouchers()
-            
-            // 3. Get Connections (Mapped from SocialRepository)
-            // Assuming socialRepository has getConnections() or similar method returning [Connection] with friend info
-            // If getConnections doesn't exist, we skip or use empty. 
-            // Previous error logs implied socialRepository.getConnections() existed or was used.
-            // If it DOESN'T exist, we'll verify via previous logs. 
-            // Step 627 modified "getConnection" usage.
-            // Wait, previous file content showed `async let conns = socialRepository.getConnections()`.
-            // Let's assume it exists. If not, I'll need to check SocialRepository.
-            // SocialRepository (Data/Repositories) was created recently.
-            // If I see a compilation error about getConnections, I will stub it. 
-            // For now, I'll assume it returns [Connection].
-            
-            let myConnections: [Connection] = try await self.socialRepository.getConnections()
+            let (updatedUser, updatedVouchers, updatedConnections) = try await (userTask, vouchersTask, connectionsTask)
             
             await MainActor.run {
-                self.userProfile = current
-                self.vouchers = myVouchers
-                
-                // Map Connection to User
-                self.connections = myConnections.map { conn in
-                    User(id: conn.friendId,
-                         email: nil,
-                         phone: nil,
-                         displayName: conn.friendName,
-                         avatarUrl: conn.friendAvatar,
-                         membershipTier: .bronze,
-                         points: 0,
-                         createdAt: conn.connectedAt,
-                         preferences: .default)
+                self.userProfile = updatedUser
+                self.vouchers = updatedVouchers
+                self.connections = updatedConnections.map { conn in
+                     User(id: conn.friendId,
+                          email: nil,
+                          phone: nil,
+                          displayName: conn.friendName,
+                          avatarUrl: conn.friendAvatar,
+                          membershipTier: .bronze,
+                          points: 0,
+                          createdAt: conn.connectedAt,
+                          preferences: .default)
                 }
-                
-                if let u = current {
-                    self.editName = u.fullName
-                }
+                self.editName = updatedUser.fullName
             }
+        } catch {
+            print("Profile refresh failed: \(error)")
         }
     }
     

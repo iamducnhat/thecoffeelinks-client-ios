@@ -18,11 +18,13 @@ final class StoresViewModel: ObservableObject {
     
     private let userRepository: UserRepositoryProtocol
     private let locationService: LocationServiceProtocol
+    private let refreshCoordinator: ContentRefreshCoordinator
     private var cancellables = Set<AnyCancellable>()
     
-    init(userRepository: UserRepositoryProtocol, locationService: LocationServiceProtocol) {
+    init(userRepository: UserRepositoryProtocol, locationService: LocationServiceProtocol, refreshCoordinator: ContentRefreshCoordinator) {
         self.userRepository = userRepository
         self.locationService = locationService
+        self.refreshCoordinator = refreshCoordinator
         loadLastSelectedStore()
         setupSearch()
     }
@@ -36,11 +38,24 @@ final class StoresViewModel: ObservableObject {
     }
     
     func load() async {
+        // 1. Cache
+        if let cached = await userRepository.getCachedStores() {
+            self.stores = cached
+            await loadNearbyStores()
+        }
+        
+        // 2. Refresh
+        await refreshCoordinator.schedule(id: "stores_refresh", priority: .medium) { [weak self] in
+            await self?.performRefresh()
+        }
+    }
+    
+    private func performRefresh() async {
         isLoading = true
         error = nil
         do {
             let location = await locationService.currentLocation
-            stores = try await userRepository.getStores(
+            stores = try await userRepository.refreshStores(
                 latitude: location?.latitude,
                 longitude: location?.longitude
             )

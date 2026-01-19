@@ -82,6 +82,7 @@ protocol AnalyticsServiceProtocol: Sendable {
 
 protocol CacheServiceProtocol: Sendable {
     func get<T: Codable>(_ key: String) async -> T?
+    func getEntry<T: Codable>(_ key: String) async -> (value: T, isExpired: Bool)?
     func set<T: Codable>(_ key: String, value: T, ttl: TimeInterval?) async
     func remove(_ key: String) async
     func clear() async

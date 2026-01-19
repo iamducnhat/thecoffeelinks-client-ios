@@ -187,6 +187,18 @@ struct MenuResponse: Codable, Sendable {
     let menu: Menu
 }
 
+struct APIPopularProductsResponse: Codable {
+    let products: [APIPopularProductItem]
+    let period: String?
+    let count: Int?
+}
+
+struct APIPopularProductItem: Codable {
+    let id: String
+    let orderCount: Int?
+    let period: String?
+}
+
 // MARK: - API Response DTOs (simplified to match API directly)
 
 struct APIMenuResponse: Codable {

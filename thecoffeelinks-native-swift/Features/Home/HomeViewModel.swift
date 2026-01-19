@@ -31,10 +31,12 @@ final class HomeViewModel: ObservableObject {
     private let analyticsService: AnalyticsServiceProtocol
     private let networkService: NetworkServiceProtocol
     private let aiRules = AIDominanceRules()
+    private let refreshCoordinator: ContentRefreshCoordinator
     
     init(productRepository: ProductRepositoryProtocol, voucherRepository: VoucherRepositoryProtocol, favoritesRepository: FavoritesRepositoryProtocol,
          predictionRepository: PredictionRepositoryProtocol, userRepository: UserRepositoryProtocol, 
-         analyticsService: AnalyticsServiceProtocol, networkService: NetworkServiceProtocol) {
+         analyticsService: AnalyticsServiceProtocol, networkService: NetworkServiceProtocol,
+         refreshCoordinator: ContentRefreshCoordinator) {
         self.productRepository = productRepository
         self.voucherRepository = voucherRepository
         self.favoritesRepository = favoritesRepository
@@ -42,22 +44,51 @@ final class HomeViewModel: ObservableObject {
         self.userRepository = userRepository
         self.analyticsService = analyticsService
         self.networkService = networkService
+        self.refreshCoordinator = refreshCoordinator
     }
     
     func load() async {
-        guard !isLoading else { return }
-        isLoading = true
-        error = nil
-        await analyticsService.trackScreen("Home")
+        // 1. Immediate Cache Load (Synchronous-like)
+        await loadCachedContent()
         
+        // 2. Background Refresh (Non-blocking)
+        await refreshCoordinator.schedule(id: "home_refresh", priority: .high) { [weak self] in
+            await self?.performRefresh()
+        }
+        
+        await analyticsService.trackScreen("Home")
+    }
+    
+    private func loadCachedContent() async {
+        // Load cached popular products
+        if let cachedPopulars = await productRepository.getCachedPopularProducts() {
+            self.popularProducts = cachedPopulars
+        }
+        
+        // Load cached vouchers
+        if let cachedVouchers = await voucherRepository.getCachedVouchers() {
+            self.vouchers = cachedVouchers.filter { $0.isValid }
+        }
+        
+        // Load cached favorites
+        if let cachedFavs = await favoritesRepository.getCachedFavorites() {
+            self.favorites = cachedFavs
+        }
+        
+        // For now, prediction is local DB so we load it
+        await generatePrediction()
+    }
+    
+    private func performRefresh() async {
+        isRefreshing = true
         async let eventsTask = loadEvents()
         async let vouchersTask = loadVouchers()
-        async let populars = loadPopularProducts()
-        async let favs = loadFavorites()
-        async let prediction = generatePrediction()
-        await eventsTask; await vouchersTask; await populars; await favs; await prediction
+        async let popularsTask = loadPopularProducts()
+        async let favsTask = loadFavorites()
+        async let predictionTask = generatePrediction()
         
-        isLoading = false
+        _ = await (eventsTask, vouchersTask, popularsTask, favsTask, predictionTask)
+        isRefreshing = false
     }
     
     private func loadEvents() async {
@@ -66,13 +97,12 @@ final class HomeViewModel: ObservableObject {
             events = response.events
         } catch {
             print("⚠️ Events fetch error: \(error)")
-            // Events are non-critical, continue with empty
         }
     }
     
     private func loadVouchers() async {
         do {
-            let allVouchers = try await voucherRepository.getVouchers()
+            let allVouchers = try await voucherRepository.refreshVouchers()
             // Only show active vouchers in the banner
             vouchers = allVouchers.filter { $0.isValid }
         } catch {
@@ -104,12 +134,12 @@ final class HomeViewModel: ObservableObject {
     func resetSession() { isDismissedThisSession = false }
     
     private func loadPopularProducts() async {
-        do { popularProducts = try await productRepository.getPopularProducts(period: "daily", limit: 10) }
+        do { popularProducts = try await productRepository.refreshPopularProducts(period: "daily", limit: 10) }
         catch { self.error = error }
     }
     
     private func loadFavorites() async {
-        do { favorites = try await favoritesRepository.getFavorites() }
+        do { favorites = try await favoritesRepository.refreshFavorites() }
         catch { self.error = error }
     }
     

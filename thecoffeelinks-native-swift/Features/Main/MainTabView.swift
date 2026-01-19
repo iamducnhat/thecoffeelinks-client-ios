@@ -12,8 +12,10 @@ struct MainTabView: View {
     @EnvironmentObject var appState: AppState
     @StateObject private var menuViewModel = MenuViewModel(
         productRepository: DependencyContainer.shared.productRepository,
-        cacheService: DependencyContainer.shared.cacheService
+        cacheService: DependencyContainer.shared.cacheService,
+        refreshCoordinator: DependencyContainer.shared.refreshCoordinator
     )
+    @EnvironmentObject var cartViewModel: CartViewModel
     @StateObject private var homeViewModel = HomeViewModel(
         productRepository: DependencyContainer.shared.productRepository,
         voucherRepository: DependencyContainer.shared.voucherRepository,
@@ -21,7 +23,8 @@ struct MainTabView: View {
         predictionRepository: DependencyContainer.shared.predictionRepository,
         userRepository: DependencyContainer.shared.userRepository,
         analyticsService: DependencyContainer.shared.analyticsService,
-        networkService: DependencyContainer.shared.networkService
+        networkService: DependencyContainer.shared.networkService,
+        refreshCoordinator: DependencyContainer.shared.refreshCoordinator
     )
     @StateObject private var profileViewModel = ProfileViewModel(
         userRepository: DependencyContainer.shared.userRepository,
@@ -29,9 +32,10 @@ struct MainTabView: View {
         socialRepository: DependencyContainer.shared.socialRepository,
         authRepository: DependencyContainer.shared.authRepository
     )
-    @StateObject var networkViewModel = NetworkViewModel(
-        socialRepository: DependencyContainer.shared.socialRepository,
-        locationManager: DependencyContainer.shared.locationManager
+    @StateObject private var storesViewModel = StoresViewModel(
+        userRepository: DependencyContainer.shared.userRepository,
+        locationService: DependencyContainer.shared.locationManager,
+        refreshCoordinator: DependencyContainer.shared.refreshCoordinator
     )
     
     init() {
@@ -53,6 +57,46 @@ struct MainTabView: View {
     }
     
     var body: some View {
+        // Conditional Support for iOS 26 Bottom Accessory
+        if #available(iOS 26.1, *) {
+            tabContent
+                .tabViewBottomAccessory(isEnabled: !cartViewModel.isEmpty) {
+                    CartMonitor()
+                }
+                .tabBarMinimizeBehavior(.onScrollDown)
+                .task {
+                    // Startup Priority Queue
+                    // 1. Home (High) - Already triggered by HomeView.onAppear/task, but we ensure it here
+                    await homeViewModel.load()
+                    
+                    // 2. Menu (Medium) - Must refresh even if not opened
+                     Task(priority: .medium) {
+                        await menuViewModel.load()
+                     }
+                     
+                     // 3. Pre-warm others if needed
+                }
+        } else {
+            ZStack(alignment: .bottom) {
+                tabContent
+                
+                // Global Floating Cart (Fallback)
+                if !cartViewModel.isEmpty {
+                    CartMonitor()
+                        .padding(.bottom, 50) // Lift above TabBar (approx 49pt standard height)
+                        .transition(.move(edge: .bottom).combined(with: .opacity))
+                        .zIndex(10)
+                }
+            }
+            .task {
+                await homeViewModel.load()
+                Task(priority: .medium) { await menuViewModel.load() }
+            }
+        }
+    }
+    
+    @ViewBuilder
+    var tabContent: some View {
         TabView(selection: $appState.selectedTab) {
             // Home Tab
             HomeView()
@@ -73,15 +117,23 @@ struct MainTabView: View {
             }
             .tag(1)
             
-            // Network Tab
+            // Stores Tab
             NavigationStack {
-                NetworkView()
-                    .environmentObject(networkViewModel)
+                StoresView()
+                    .environmentObject(storesViewModel)
             }
             .tabItem {
-                Image("users").renderingMode(.original)
+                 Image(systemName: "storefront")
             }
             .tag(2)
+            
+            // Promotions Tab
+            PromotionsView()
+                .environmentObject(profileViewModel)
+            .tabItem {
+                Image(systemName: "ticket")
+            }
+            .tag(3)
             
             // Profile Tab
             NavigationStack {
@@ -91,7 +143,7 @@ struct MainTabView: View {
             .tabItem {
                 Image("user").renderingMode(.original)
             }
-            .tag(3)
+            .tag(4)
         }
         .tint(Color.textInk)
     }

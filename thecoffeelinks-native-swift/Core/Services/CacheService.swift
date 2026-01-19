@@ -1,38 +1,114 @@
 import Foundation
 
 final class CacheService: CacheServiceProtocol, @unchecked Sendable {
-    private let cache = NSCache<NSString, CacheEntry>()
+    private let memoryCache = NSCache<NSString, MemoryEntry>()
+    private let fileManager = FileManager.default
+    private let queue = DispatchQueue(label: "com.thecoffeelinks.cache.disk", attributes: .concurrent)
+    
+    private var cacheDirectory: URL? {
+        fileManager.urls(for: .cachesDirectory, in: .userDomainMask).first?.appendingPathComponent("AppContentCache")
+    }
     
     init() {
-        cache.countLimit = 100
+        memoryCache.countLimit = 50
+        createCacheDirectory()
+    }
+    
+    private func createCacheDirectory() {
+        guard let url = cacheDirectory else { return }
+        if !fileManager.fileExists(atPath: url.path) {
+            try? fileManager.createDirectory(at: url, withIntermediateDirectories: true)
+        }
     }
     
     func get<T: Codable>(_ key: String) async -> T? {
-        guard let entry = cache.object(forKey: key as NSString) else { return nil }
-        
-        if let ttl = entry.ttl, Date() > entry.expiryDate(ttl: ttl) {
-             cache.removeObject(forKey: key as NSString)
-             return nil
+        guard let entry = await getEntry(key) as (value: T, isExpired: Bool)? else { return nil }
+        return entry.isExpired ? nil : entry.value
+    }
+    
+    func getEntry<T: Codable>(_ key: String) async -> (value: T, isExpired: Bool)? {
+        // 1. Check L1 Memory Cache
+        if let memEntry = memoryCache.object(forKey: key as NSString) {
+            // Validate type safely
+            if let value = memEntry.value as? T {
+                let isExpired: Bool
+                if let ttl = memEntry.ttl {
+                    isExpired = Date() > memEntry.createdAt.addingTimeInterval(ttl)
+                } else {
+                    isExpired = false
+                }
+                return (value, isExpired)
+            }
         }
         
-        return entry.value as? T
+        // 2. Check L2 Disk Cache
+        return await Task.detached(priority: .userInitiated) { [weak self] in
+            guard let self = self, let cacheDir = self.cacheDirectory else { return nil }
+            let fileURL = cacheDir.appendingPathComponent(key.addingPercentEncoding(withAllowedCharacters: .alphanumerics) ?? key)
+            
+            guard self.fileManager.fileExists(atPath: fileURL.path),
+                  let data = try? Data(contentsOf: fileURL),
+                  let diskEntry = try? JSONDecoder().decode(DiskEntry<T>.self, from: data)
+            else { return nil }
+            
+            // Populate L1
+            let memEntry = MemoryEntry(value: diskEntry.value, ttl: diskEntry.ttl, createdAt: diskEntry.createdAt)
+            self.memoryCache.setObject(memEntry, forKey: key as NSString)
+            
+            let isExpired: Bool
+            if let ttl = diskEntry.ttl {
+                 isExpired = Date() > diskEntry.createdAt.addingTimeInterval(ttl)
+            } else {
+                isExpired = false
+            }
+            
+            return (diskEntry.value, isExpired)
+        }.value
     }
     
     func set<T: Codable>(_ key: String, value: T, ttl: TimeInterval?) async {
-        let entry = CacheEntry(value: value, ttl: ttl, createdAt: Date())
-        cache.setObject(entry, forKey: key as NSString)
+        let now = Date()
+        
+        // 1. Write to L1 Memory
+        let memEntry = MemoryEntry(value: value, ttl: ttl, createdAt: now)
+        memoryCache.setObject(memEntry, forKey: key as NSString)
+        
+        // 2. Write to L2 Disk
+        Task.detached(priority: .background) { [weak self] in
+            guard let self = self, let cacheDir = self.cacheDirectory else { return }
+            let fileURL = cacheDir.appendingPathComponent(key.addingPercentEncoding(withAllowedCharacters: .alphanumerics) ?? key)
+            
+            let diskEntry = DiskEntry(value: value, ttl: ttl, createdAt: now)
+            if let data = try? JSONEncoder().encode(diskEntry) {
+                try? data.write(to: fileURL, options: .atomic)
+            }
+        }
     }
     
     func remove(_ key: String) async {
-        cache.removeObject(forKey: key as NSString)
+        memoryCache.removeObject(forKey: key as NSString)
+        
+        Task.detached(priority: .background) { [weak self] in
+            guard let self = self, let cacheDir = self.cacheDirectory else { return }
+            let fileURL = cacheDir.appendingPathComponent(key.addingPercentEncoding(withAllowedCharacters: .alphanumerics) ?? key)
+            try? self.fileManager.removeItem(at: fileURL)
+        }
     }
     
     func clear() async {
-        cache.removeAllObjects()
+        memoryCache.removeAllObjects()
+        
+        Task.detached(priority: .background) { [weak self] in
+            guard let self = self, let cacheDir = self.cacheDirectory else { return }
+            try? self.fileManager.removeItem(at: cacheDir)
+            self.createCacheDirectory()
+        }
     }
 }
 
-private class CacheEntry: NSObject {
+// MARK: - Internal Models
+
+private class MemoryEntry: NSObject {
     let value: Any
     let ttl: TimeInterval?
     let createdAt: Date
@@ -42,8 +118,10 @@ private class CacheEntry: NSObject {
         self.ttl = ttl
         self.createdAt = createdAt
     }
-    
-    func expiryDate(ttl: TimeInterval) -> Date {
-        createdAt.addingTimeInterval(ttl)
-    }
+}
+
+private struct DiskEntry<T: Codable>: Codable {
+    let value: T
+    let ttl: TimeInterval?
+    let createdAt: Date
 }

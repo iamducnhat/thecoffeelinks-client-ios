@@ -7,11 +7,29 @@ import Foundation
 
 final class UserRepository: UserRepositoryProtocol, @unchecked Sendable {
     private let networkService: NetworkServiceProtocol
+    private let cacheService: CacheServiceProtocol // Assuming CacheServiceProtocol is available in this scope
+    private let userCacheKey = "user_profile"
     
-    init(networkService: NetworkServiceProtocol) { self.networkService = networkService }
+    init(networkService: NetworkServiceProtocol, cacheService: CacheServiceProtocol? = nil) {
+        self.networkService = networkService
+        // Fallback for circular dependency risks or if cache not passed
+        self.cacheService = cacheService ?? DependencyContainer.shared.cacheService
+    }
+    
+    func getCachedUser() async -> User? {
+        await cacheService.get(userCacheKey)
+    }
+    
+    func refreshUser() async throws -> User {
+        let response: UserResponse = try await networkService.get("/api/user/profile", queryItems: nil)
+        await cacheService.set(userCacheKey, value: response.user, ttl: 86400)
+        return response.user
+    }
     
     func getCurrentUser() async throws -> User {
         let response: UserResponse = try await networkService.get("/api/user/profile", queryItems: nil)
+        // Store in cache for next time
+        await cacheService.set(userCacheKey, value: response.user, ttl: 86400)
         return response.user
     }
     
@@ -25,14 +43,24 @@ final class UserRepository: UserRepositoryProtocol, @unchecked Sendable {
         return response.preferences
     }
     
-    func getStores(latitude: Double?, longitude: Double?) async throws -> [Store] {
+    func getCachedStores() async -> [Store]? {
+        await cacheService.get("stores_list")
+    }
+    
+    func refreshStores(latitude: Double?, longitude: Double?) async throws -> [Store] {
         var queryItems: [URLQueryItem] = []
         if let lat = latitude, let lon = longitude {
             queryItems.append(URLQueryItem(name: "latitude", value: String(lat)))
             queryItems.append(URLQueryItem(name: "longitude", value: String(lon)))
         }
         let response: StoresResponse = try await networkService.get("/api/stores", queryItems: queryItems.isEmpty ? nil : queryItems)
+        await cacheService.set("stores_list", value: response.stores, ttl: 86400)
         return response.stores
+    }
+    
+    func getStores(latitude: Double?, longitude: Double?) async throws -> [Store] {
+        if let cached = await getCachedStores() { return cached }
+        return try await refreshStores(latitude: latitude, longitude: longitude)
     }
     
     func getStore(id: String) async throws -> Store {
@@ -63,28 +91,51 @@ private struct ClaimResponse: Codable, Sendable { let success: Bool; let treat: 
 
 final class FavoritesRepository: FavoritesRepositoryProtocol, @unchecked Sendable {
     private let networkService: NetworkServiceProtocol
+    private let cacheService: CacheServiceProtocol
+    private let favoritesCacheKey = "user_favorites"
     
-    init(networkService: NetworkServiceProtocol) { self.networkService = networkService }
+    init(networkService: NetworkServiceProtocol, cacheService: CacheServiceProtocol) {
+        self.networkService = networkService
+        self.cacheService = cacheService
+    }
+    
+    func getCachedFavorites() async -> [FavoriteItem]? {
+        await cacheService.get(favoritesCacheKey)
+    }
+    
+    func refreshFavorites() async throws -> [FavoriteItem] {
+        let response: FavoritesResponse = try await networkService.get("/api/user/favorites", queryItems: nil)
+        await cacheService.set(favoritesCacheKey, value: response.favorites, ttl: 86400)
+        return response.favorites
+    }
     
     func getFavorites() async throws -> [FavoriteItem] {
-        let response: FavoritesResponse = try await networkService.get("/api/user/favorites", queryItems: nil)
-        return response.favorites
+        if let cached = await getCachedFavorites() { return cached }
+        return try await refreshFavorites()
     }
     
     func addFavorite(product: Product, customization: OrderCustomization, nickname: String?, notes: String?) async throws -> FavoriteItem {
         let response: FavoriteResponse = try await networkService.post("/api/user/favorites", body: AddFavoriteRequest(productId: product.id, customization: customization, nickname: nickname, notes: notes))
+        // Invalidate cache or optimistically update? For now, invalidate/refresh next time.
+        // Or better: update cache if possible. Simple invalidation is safer.
+        await cacheService.remove(favoritesCacheKey)
         return response.favorite
     }
     
     func updateFavorite(_ favorite: FavoriteItem) async throws -> FavoriteItem {
         let response: FavoriteResponse = try await networkService.put("/api/user/favorites/\(favorite.id)", body: favorite)
+        await cacheService.remove(favoritesCacheKey)
         return response.favorite
     }
     
-    func removeFavorite(id: String) async throws { try await networkService.delete("/api/user/favorites/\(id)", queryItems: nil) }
+    func removeFavorite(id: String) async throws {
+        try await networkService.delete("/api/user/favorites/\(id)", queryItems: nil)
+        await cacheService.remove(favoritesCacheKey)
+    }
     
     func reorderFavorites(ids: [String]) async throws {
         let _: EmptyResponse = try await networkService.put("/api/user/favorites/reorder", body: ReorderRequest(ids: ids))
+        await cacheService.remove(favoritesCacheKey)
     }
 }
 
@@ -92,12 +143,27 @@ final class FavoritesRepository: FavoritesRepositoryProtocol, @unchecked Sendabl
 
 final class VoucherRepository: VoucherRepositoryProtocol, @unchecked Sendable {
     private let networkService: NetworkServiceProtocol
+    private let cacheService: CacheServiceProtocol
+    private let vouchersCacheKey = "user_vouchers"
     
-    init(networkService: NetworkServiceProtocol) { self.networkService = networkService }
+    init(networkService: NetworkServiceProtocol, cacheService: CacheServiceProtocol) {
+        self.networkService = networkService
+        self.cacheService = cacheService
+    }
+    
+    func getCachedVouchers() async -> [Voucher]? {
+        await cacheService.get(vouchersCacheKey)
+    }
+    
+    func refreshVouchers() async throws -> [Voucher] {
+        let response: VouchersResponse = try await networkService.get("/api/vouchers", queryItems: nil)
+        await cacheService.set(vouchersCacheKey, value: response.vouchers, ttl: 86400)
+        return response.vouchers
+    }
     
     func getVouchers() async throws -> [Voucher] {
-        let response: VouchersListResponse = try await networkService.get("/api/vouchers", queryItems: nil)
-        return response.vouchers
+        if let cached = await getCachedVouchers() { return cached }
+        return try await refreshVouchers()
     }
     
     func validateVoucher(code: String, subtotal: Double, mode: OrderingMode) async throws -> VoucherValidation {

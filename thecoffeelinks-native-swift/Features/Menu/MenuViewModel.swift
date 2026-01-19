@@ -25,11 +25,13 @@ final class MenuViewModel: ObservableObject {
     
     private let productRepository: ProductRepositoryProtocol
     private let cacheService: CacheServiceProtocol
+    private let refreshCoordinator: ContentRefreshCoordinator
     private var cancellables = Set<AnyCancellable>()
     
-    init(productRepository: ProductRepositoryProtocol, cacheService: CacheServiceProtocol) {
+    init(productRepository: ProductRepositoryProtocol, cacheService: CacheServiceProtocol, refreshCoordinator: ContentRefreshCoordinator) {
         self.productRepository = productRepository
         self.cacheService = cacheService
+        self.refreshCoordinator = refreshCoordinator
         setupSearchDebounce()
     }
     
@@ -40,19 +42,34 @@ final class MenuViewModel: ObservableObject {
     }
     
     func load() async {
+        // 1. Load Cache
+        if let cachedMenu = await productRepository.getCachedMenu() {
+            self.updateMenu(cachedMenu)
+        }
+        
+        // 2. Schedule Refresh
+        await refreshCoordinator.schedule(id: "menu_refresh", priority: .high) { [weak self] in
+            await self?.performRefresh()
+        }
+    }
+    
+    private func performRefresh() async {
         isLoading = true; error = nil
         do {
-            menu = try await productRepository.getMenu()
-            if let menu = menu {
-                categories = menu.categories.filter { $0.isActive }.sorted { $0.sortOrder < $1.sortOrder }
-                products = menu.products
-                toppings = menu.toppings
-            }
+            let menu = try await productRepository.refreshMenu()
+            updateMenu(menu)
         } catch { self.error = error }
         isLoading = false
     }
     
-    func refresh() async { await cacheService.remove("menu_cache"); await load() }
+    private func updateMenu(_ menu: Menu) {
+        self.menu = menu
+        self.categories = menu.categories.filter { $0.isActive }.sorted { $0.sortOrder < $1.sortOrder }
+        self.products = menu.products
+        self.toppings = menu.toppings
+    }
+    
+    func refresh() async { await load() }
     func selectCategory(_ category: Category?) { selectedCategory = category }
     
     private func setupSearchDebounce() {

@@ -131,7 +131,9 @@ struct CheckoutView: View {
                                         let modes: [OrderingMode] = [.pickup, .dineIn, .delivery]
                                         if let currentIdx = modes.firstIndex(of: cartViewModel.cart.mode) {
                                             let nextIdx = (currentIdx + 1) % modes.count
-                                            cartViewModel.cart.mode = modes[nextIdx]
+                                            withAnimation(nil) {
+                                                cartViewModel.cart.mode = modes[nextIdx]
+                                            }
                                         }
                                     } label: {
                                         HStack(spacing: 8) {
@@ -146,7 +148,6 @@ struct CheckoutView: View {
                                         .background(Color.primaryEspresso)
                                         .clipShape(RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle))
                                     }
-                                    .animation(.none, value: cartViewModel.cart.mode)
                                 }
                                 
                                 // Address/Location Selection

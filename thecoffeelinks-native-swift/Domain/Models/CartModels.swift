@@ -103,7 +103,6 @@ struct CartSummary: Sendable {
 struct Voucher: Codable, Identifiable, Sendable {
     let id: String
     let code: String
-    let title: String
     let description: String?
     let imageUrl: String? // Voucher banner image
     let discountType: DiscountType
@@ -111,7 +110,7 @@ struct Voucher: Codable, Identifiable, Sendable {
     let minOrderAmount: Double?
     let maxDiscount: Double?
     let validFrom: Date
-    let validUntil: Date
+    let validUntil: Date?
     let usageLimit: Int?
     let usedCount: Int
     let isActive: Bool
@@ -119,13 +118,66 @@ struct Voucher: Codable, Identifiable, Sendable {
     let applicableModes: [OrderingMode]?
     
     enum DiscountType: String, Codable, Sendable {
-        case percentage, fixed
+        case percentage, fixed, discount
         case freeDelivery = "free_delivery"
     }
     
+    enum CodingKeys: String, CodingKey {
+        case id, code, description, imageUrl
+        case discountType = "type"
+        case discountValue = "value"
+        case minOrderAmount = "minSpend"
+        case validUntil = "expiresAt"
+        case isActive = "isUsed" // Note: API has isUsed, we'll invert this
+    }
+    
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        
+        id = try container.decode(String.self, forKey: .id)
+        code = try container.decode(String.self, forKey: .code)
+        description = try container.decodeIfPresent(String.self, forKey: .description)
+        imageUrl = try container.decodeIfPresent(String.self, forKey: .imageUrl)
+        discountType = try container.decode(DiscountType.self, forKey: .discountType)
+        discountValue = try container.decode(Double.self, forKey: .discountValue)
+        minOrderAmount = try container.decodeIfPresent(Double.self, forKey: .minOrderAmount)
+        validUntil = try container.decodeIfPresent(Date.self, forKey: .validUntil)
+        
+        // Fields not in API - use defaults
+        maxDiscount = nil
+        validFrom = Date.distantPast
+        usageLimit = nil
+        usedCount = 0
+        
+        // isActive is derived from isUsed (inverted) and expiresAt
+        let isUsed = try container.decodeIfPresent(Bool.self, forKey: .isActive) ?? false
+        isActive = !isUsed
+        
+        applicableProducts = nil
+        applicableModes = nil
+    }
+    
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        
+        try container.encode(id, forKey: .id)
+        try container.encode(code, forKey: .code)
+        try container.encodeIfPresent(description, forKey: .description)
+        try container.encodeIfPresent(imageUrl, forKey: .imageUrl)
+        try container.encode(discountType, forKey: .discountType)
+        try container.encode(discountValue, forKey: .discountValue)
+        try container.encodeIfPresent(minOrderAmount, forKey: .minOrderAmount)
+        try container.encodeIfPresent(validUntil, forKey: .validUntil)
+        try container.encode(!isActive, forKey: .isActive) // Encode as isUsed
+    }
+    
     var isValid: Bool {
+        guard isActive else { return false }
         let now = Date()
-        return isActive && now >= validFrom && now <= validUntil
+        if let expiry = validUntil {
+            return now <= expiry
+        }
+        return true // If no expiry, it's valid
     }
     
     func calculateDiscount(for subtotal: Double) -> Double {
@@ -135,7 +187,7 @@ struct Voucher: Codable, Identifiable, Sendable {
         var discount: Double
         switch discountType {
         case .percentage: discount = subtotal * (discountValue / 100)
-        case .fixed: discount = discountValue
+        case .fixed, .discount: discount = discountValue
         case .freeDelivery: return 0
         }
         
@@ -146,9 +198,14 @@ struct Voucher: Codable, Identifiable, Sendable {
     var displayValue: String {
         switch discountType {
         case .percentage: return "\(Int(discountValue))% OFF"
-        case .fixed: return discountValue.formattedCurrency + " OFF"
+        case .fixed, .discount: return discountValue.formattedCurrency + " OFF"
         case .freeDelivery: return "Free Delivery"
         }
+    }
+    
+    // Computed property for display title (since API doesn't provide one)
+    var displayTitle: String {
+        description ?? code
     }
 }
 
@@ -161,12 +218,13 @@ struct VoucherValidation: Codable, Sendable {
     let message: String?
 }
 
+struct VouchersResponse: Codable, Sendable {
+    let vouchers: [Voucher]
+}
+
 struct VoucherValidationResponse: Codable, Sendable {
     let success: Bool
     let validation: VoucherValidation
 }
 
-struct VouchersListResponse: Codable, Sendable {
-    let success: Bool
-    let vouchers: [Voucher]
-}
+

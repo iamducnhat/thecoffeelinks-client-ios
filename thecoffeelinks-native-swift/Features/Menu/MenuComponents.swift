@@ -137,7 +137,7 @@ struct ProductDetailSheet: View {
                         // Metadata Section
                         VStack(alignment: .leading, spacing: AppLayout.spacing) {
                             HStack {
-                                Text("Price")
+                                Text("\(product.name)")
                                     .font(AppFont.uiCaption)
                                     .foregroundStyle(Color.textMuted)
                                 Spacer()
