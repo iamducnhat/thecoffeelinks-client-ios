@@ -213,6 +213,68 @@ struct ProductDetailSheet: View {
                         
                         Divider().hidden()
                         
+                        // Sugar Level
+                        VStack(alignment: .leading, spacing: AppLayout.spacing) {
+                            Text("Sugar")
+                                .textCase(.uppercase)
+                                .font(AppFont.sectionHeader)
+                                .foregroundStyle(Color.textInk)
+                            
+                            HStack(spacing: AppLayout.spacingMedium) {
+                                ForEach(SugarLevel.allCases, id: \.self) { level in
+                                    Button {
+                                        sugarLevel = level
+                                    } label: {
+                                        Text(level.rawValue)
+                                            .font(AppFont.monoBody)
+                                            .padding(.vertical, 12)
+                                            .frame(maxWidth: .infinity)
+                                            .background(sugarLevel == level ? Color.primaryEspresso : Color.backgroundPaper)
+                                            .foregroundColor(sugarLevel == level ? Color.backgroundPaper : Color.textInk)
+                                            .overlay(
+                                                RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle)
+                                                    .stroke(sugarLevel == level ? Color.primaryEspresso : Color.border, lineWidth: 1)
+                                            )
+                                            .clipShape(RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle))
+                                    }
+                                }
+                            }
+                        }
+                        .padding(.horizontal, AppLayout.spacing)
+                        
+                        Divider().hidden()
+                        
+                        // Ice Level
+                        VStack(alignment: .leading, spacing: AppLayout.spacing) {
+                            Text("Ice")
+                                .textCase(.uppercase)
+                                .font(AppFont.sectionHeader)
+                                .foregroundStyle(Color.textInk)
+                            
+                            HStack(spacing: AppLayout.spacingMedium) {
+                                ForEach(IceLevel.allCases, id: \.self) { level in
+                                    Button {
+                                        iceLevel = level
+                                    } label: {
+                                        Text(level.rawValue.capitalized)
+                                            .font(AppFont.monoBody)
+                                            .padding(.vertical, 12)
+                                            .frame(maxWidth: .infinity)
+                                            .background(iceLevel == level ? Color.primaryEspresso : Color.backgroundPaper)
+                                            .foregroundColor(iceLevel == level ? Color.backgroundPaper : Color.textInk)
+                                            .overlay(
+                                                RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle)
+                                                    .stroke(iceLevel == level ? Color.primaryEspresso : Color.border, lineWidth: 1)
+                                            )
+                                            .clipShape(RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle))
+                                    }
+                                }
+                            }
+                        }
+                        .padding(.horizontal, AppLayout.spacing)
+                        
+                        Divider().hidden()
+                        
                         // Toppings
                         if !product.availableToppings.isEmpty {
                             VStack(alignment: .leading, spacing: AppLayout.spacing) {

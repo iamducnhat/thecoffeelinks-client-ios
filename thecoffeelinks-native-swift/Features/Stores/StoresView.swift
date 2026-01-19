@@ -23,108 +23,106 @@ struct StoresView: View {
     var body: some View {
         ZStack(alignment: .top) {
             Color.backgroundPaper.ignoresSafeArea()
-            
-            VStack(spacing: 0) {
-                ScrollView(.vertical) {
-                    // Header
-                    VStack(alignment: .leading, spacing: AppLayout.spacing) {
-                        Text("Find a Store")
-                            .font(AppFont.displayTitle)
-                            .foregroundColor(Color.textInk)
-                            .padding(.top, AppLayout.spacing)
+            ScrollView(.vertical) { LazyVStack(alignment: .leading, spacing: AppLayout.spacing) {
+                // Header
+                VStack(alignment: .leading, spacing: AppLayout.spacing) {
+                    Text("Find a Store")
+                        .font(AppFont.displayTitle)
+                        .foregroundColor(Color.textInk)
+                        .padding(.top, AppLayout.spacing)
+                    
+                    // Search
+                    HStack(spacing: AppLayout.spacingMedium) {
+                        Image(systemName: "magnifyingglass")
+                            .font(AppFont.body)
+                            .foregroundStyle(Color.textMuted)
                         
-                        // Search
-                        HStack(spacing: AppLayout.spacingMedium) {
-                            Image(systemName: "magnifyingglass")
-                                .font(AppFont.body)
-                                .foregroundStyle(Color.textMuted)
-                            
-                            TextField("Search by name or address...", text: $viewModel.searchQuery)
-                                .textFieldStyle(PlainTextFieldStyle())
-                                .font(AppFont.body)
-                                .foregroundStyle(Color.textInk)
-                            
-                            if !viewModel.searchQuery.isEmpty {
-                                Button {
-                                    viewModel.searchQuery = ""
-                                } label: {
-                                    Image(systemName: "xmark.circle.fill")
-                                        .font(AppFont.body)
-                                        .foregroundStyle(Color.textMuted)
-                                }
+                        TextField("Search by name or address...", text: $viewModel.searchQuery)
+                            .textFieldStyle(PlainTextFieldStyle())
+                            .font(AppFont.body)
+                            .foregroundStyle(Color.textInk)
+                        
+                        if !viewModel.searchQuery.isEmpty {
+                            Button {
+                                viewModel.searchQuery = ""
+                            } label: {
+                                Image(systemName: "xmark.circle.fill")
+                                    .font(AppFont.body)
+                                    .foregroundStyle(Color.textMuted)
                             }
                         }
-                        .padding(.horizontal, 8)
-                        .padding(.vertical, 6)
-                        .overlay {
-                            RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle)
-                                .stroke(Color.borderTertiary, style: StrokeStyle(lineWidth: 1, dash: AppLayout.dashedPattern))
-                        }
-                        
-                        // View Mode Toggle
-                        HStack(spacing: 0) {
-                            ForEach(StoreViewMode.allCases, id: \.self) { mode in
-                                Button {
-                                    withAnimation(.easeInOut(duration: 0.2)) {
-                                        viewMode = mode
-                                    }
-                                } label: {
-                                    Text(mode.rawValue.uppercased())
-                                        .font(AppFont.monoBody)
-                                        .foregroundStyle(viewMode == mode ? Color.backgroundPaper : Color.textMuted)
-                                        .frame(maxWidth: .infinity)
-                                        .frame(height: 36)
-                                        .background(viewMode == mode ? Color.textInk : Color.clear)
-                                        .contentShape(Rectangle())
-                                }
-                            }
-                        }
-                        .overlay(
-                            RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle)
-                                .stroke(Color.textInk, lineWidth: 1)
-                        )
-                        .clipShape(RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle))
-                        
-                        Color.secondary.frame(height: 1)
                     }
-                    .padding(.horizontal, AppLayout.spacing)
-                    .background(GeometryReader {
-                        Color.clear.preference(key: ViewOffsetKey.self, value: -$0.frame(in: .named("scroll")).origin.y)
-                    })
-                    .onPreferenceChange(ViewOffsetKey.self) {
-                        self.scrollOffset = $0
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 6)
+                    .overlay {
+                        RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle)
+                            .stroke(Color.borderTertiary, style: StrokeStyle(lineWidth: 1, dash: AppLayout.dashedPattern))
                     }
                     
-                    // Content
-                    if !viewModel.filteredStores.isEmpty {
-                        switch viewMode {
-                        case .list:
-                            StoreListContent(
-                                stores: viewModel.filteredStores,
-                                viewModel: viewModel,
-                                selectedStore: $selectedStore
-                            )
-                        case .map:
-                            StoreMapView(
-                                stores: viewModel.filteredStores,
-                                selectedStore: $selectedStore
-                            )
-                            .frame(height: 400)
-                            .padding(.horizontal, AppLayout.spacing)
+                    // View Mode Toggle
+                    HStack(spacing: 0) {
+                        ForEach(StoreViewMode.allCases, id: \.self) { mode in
+                            Button {
+                                withAnimation(.easeInOut(duration: 0.2)) {
+                                    viewMode = mode
+                                }
+                            } label: {
+                                Text(mode.rawValue.uppercased())
+                                    .font(AppFont.monoBody)
+                                    .foregroundStyle(viewMode == mode ? Color.backgroundPaper : Color.textMuted)
+                                    .frame(maxWidth: .infinity)
+                                    .frame(height: 36)
+                                    .background(viewMode == mode ? Color.textInk : Color.clear)
+                                    .contentShape(Rectangle())
+                            }
                         }
-                    } else if viewModel.isLoading {
-                         // Initial load (no cache) - Show clean state (no skeleton)
-                         // Alternatively, show a minimal "Locating..." text if desired, but requirements say "no loading indicators"
-                         // We will render nothing until content arrives, or EmptyStoreState if it finishes empty. 
-                         // To avoid looking broken, we might want a simple spacer.
-                         Spacer().frame(height: 200)
-                    } else {
-                        EmptyStoresState()
                     }
+                    .overlay(
+                        RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle)
+                            .stroke(Color.textInk, lineWidth: 1)
+                    )
+                    .clipShape(RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle))
+                    
+                    Color.secondary.frame(height: 1)
+                        .padding(.horizontal, -AppLayout.spacing)
                 }
-                .coordinateSpace(name: "scroll")
-                .scrollIndicators(.hidden)
-            }
+                .padding(.horizontal, AppLayout.spacing)
+                .background(GeometryReader {
+                    Color.clear.preference(key: ViewOffsetKey.self, value: -$0.frame(in: .named("scroll")).origin.y)
+                })
+                .onPreferenceChange(ViewOffsetKey.self) {
+                    self.scrollOffset = $0
+                }
+                
+                // Content
+                if !viewModel.filteredStores.isEmpty {
+                    switch viewMode {
+                    case .list:
+                        StoreListContent(
+                            stores: viewModel.filteredStores,
+                            viewModel: viewModel,
+                            selectedStore: $selectedStore
+                        )
+                    case .map:
+                        StoreMapView(
+                            stores: viewModel.filteredStores,
+                            selectedStore: $selectedStore
+                        )
+                        .frame(height: 400)
+                        .padding(.horizontal, AppLayout.spacing)
+                    }
+                } else if viewModel.isLoading {
+                    // Initial load (no cache) - Show clean state (no skeleton)
+                    // Alternatively, show a minimal "Locating..." text if desired, but requirements say "no loading indicators"
+                    // We will render nothing until content arrives, or EmptyStoreState if it finishes empty.
+                    // To avoid looking broken, we might want a simple spacer.
+                    Spacer().frame(height: 200)
+                } else {
+                    EmptyStoresState()
+                }
+            }}
+            .coordinateSpace(name: "scroll")
+            .scrollIndicators(.hidden)
         }
         .fullScreenCover(item: $selectedStore) { store in
             StoreDetailView(store: store, viewModel: viewModel)

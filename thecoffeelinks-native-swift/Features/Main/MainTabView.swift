@@ -30,7 +30,8 @@ struct MainTabView: View {
         userRepository: DependencyContainer.shared.userRepository,
         voucherRepository: DependencyContainer.shared.voucherRepository,
         socialRepository: DependencyContainer.shared.socialRepository,
-        authRepository: DependencyContainer.shared.authRepository
+        authRepository: DependencyContainer.shared.authRepository,
+        orderRepository: DependencyContainer.shared.orderRepository
     )
     @StateObject private var storesViewModel = StoresViewModel(
         userRepository: DependencyContainer.shared.userRepository,

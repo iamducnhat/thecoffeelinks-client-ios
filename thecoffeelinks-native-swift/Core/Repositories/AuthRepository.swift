@@ -113,10 +113,20 @@ class AuthRepository {
             
              struct SupabaseUser: Decodable {
                 let id: String
+                let shortId: String?
+                let shortIdVersion: Int?
                 let email: String?
                 let phone: String?
                 let userMetadata: UserMetadata?
                 let createdAt: String?
+                
+                enum CodingKeys: String, CodingKey {
+                    case id, email, phone
+                    case shortId = "short_id"
+                    case shortIdVersion = "short_id_version"
+                    case userMetadata = "user_metadata"
+                    case createdAt = "created_at"
+                }
                 
                 struct UserMetadata: Decodable {
                     let fullName: String?
@@ -126,6 +136,8 @@ class AuthRepository {
                     let display = userMetadata?.fullName ?? phone ?? "User"
                     return User(
                         id: id,
+                        shortId: shortId,
+                        shortIdVersion: shortIdVersion,
                         email: email,
                         phone: phone,
                         displayName: display,

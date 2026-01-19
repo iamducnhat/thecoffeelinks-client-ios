@@ -304,7 +304,7 @@ struct APIOrdersResponse: Codable {
     
     struct APIOrder: Codable {
         let id: String
-        let user_id: String
+        let user_id: String?
         let store_id: String?
         let voucher_id: String?
         let status: String
@@ -419,7 +419,7 @@ struct APIOrdersResponse: Codable {
             
             return Order(
                 id: apiOrder.id,
-                userId: apiOrder.user_id,
+                userId: apiOrder.user_id ?? "",
                 storeId: apiOrder.store_id ?? "",
                 status: orderStatus,
                 mode: orderingMode,
@@ -428,7 +428,7 @@ struct APIOrdersResponse: Codable {
                 subtotal: apiOrder.total_amount - apiOrder.delivery_fee,
                 deliveryFee: apiOrder.delivery_fee,
                 discount: 0,
-                totalAmount: apiOrder.total_amount,
+                totalAmount: apiOrder.total_amount, // Note: totalAmount includes deliveryFee
                 tableId: apiOrder.table_id,
                 deliveryAddress: nil, // API doesn't return full DeliveryAddress object, only string
                 deliveryNotes: apiOrder.delivery_notes,

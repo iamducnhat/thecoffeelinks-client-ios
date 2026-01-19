@@ -166,6 +166,11 @@ class AuthViewModel: BaseViewModel {
     func logout() {
         Task {
             await self.authRepository.logout()
+            
+            // Clear all caches
+            await DependencyContainer.shared.cacheService.clear()
+            URLCache.shared.removeAllCachedResponses()
+            
             await MainActor.run {
                 self.currentUser = nil
                 self.isAuthenticated = false

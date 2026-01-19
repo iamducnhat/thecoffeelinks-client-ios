@@ -25,6 +25,10 @@ struct thecoffeelinks_native_swiftApp: App {
     // Use shared instance for repositories if they are singletons or created once
     private let dependencyContainer = DependencyContainer.shared
     
+    init() {
+        checkFreshInstall()
+    }
+    
     var body: some Scene {
         WindowGroup {
             ContentView()
@@ -36,6 +40,26 @@ struct thecoffeelinks_native_swiftApp: App {
                 .environmentObject(deliveryViewModel)
                 .environmentObject(dependencyContainer.userPreferences) // Inject preferences
                 //.preferredColorScheme(.dark)
+        }
+    }
+    
+    private func checkFreshInstall() {
+        let userDefaults = UserDefaults.standard
+        let hasRunBeforeKey = "hasRunBefore_v1.0"
+        
+        if !userDefaults.bool(forKey: hasRunBeforeKey) {
+            print("🚨 Fresh Install Detected! Cleaning up...")
+            
+            // 1. Clear Keychain (Auth Token)
+            dependencyContainer.keychainManager.deleteAccessToken()
+            
+            // 2. Clear Disk Cache (CacheService)
+            Task {
+                await dependencyContainer.cacheService.clear()
+            }
+            
+            // 3. Set Flag
+            userDefaults.set(true, forKey: hasRunBeforeKey)
         }
     }
 }

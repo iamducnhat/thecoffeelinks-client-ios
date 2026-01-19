@@ -2,8 +2,8 @@
 //  DigitalCardView.swift
 //  thecoffeelinks-native-swift
 //
-//  Receipt-Editorial Design
-//  Aligned with canonical CheckoutView.swift
+//  Receipt-Editorial Design / Boarding Pass Style
+//  Aligned with design goals: Calm, authoritative, editorial.
 //
 
 import SwiftUI
@@ -12,149 +12,189 @@ import CoreImage.CIFilterBuiltins
 struct DigitalCardView: View {
     @Environment(\.dismiss) private var dismiss
     
-    @EnvironmentObject private var authRepository: AuthRepository
-    
-    // Fallback to placeholder if shortId is missing (shouldn't happen for logged in users)
-    private var memberId: String {
-        authRepository.currentUser?.shortId ?? "******"
-    }
-    
-    private var userName: String {
-        authRepository.currentUser?.displayName ?? "Member"
-    }
+    @EnvironmentObject private var authViewModel: AuthViewModel
+    @EnvironmentObject private var profileViewModel: ProfileViewModel
     
     var body: some View {
         ZStack(alignment: .top) {
             Color.backgroundPaper.ignoresSafeArea()
             
-            VStack(spacing: 0) {
-                // Header
+            // Main Content
+            ScrollView {
+                DigitalCredentialContent(
+                    memberId: authViewModel.currentUser?.shortId ?? "******",
+                     userName: authViewModel.currentUser?.displayName ?? "Member",
+                     tier: authViewModel.currentUser?.membershipTier.displayName ?? "Member",
+                     points: authViewModel.currentUser?.points ?? 0,
+                     vouchersCount: profileViewModel.vouchers.count,
+                     ordersCount: profileViewModel.orderCount,
+                     onRefresh: {
+                         profileViewModel.loadProfile()
+                     }
+                )
+                .padding(AppLayout.spacing)
+            }
+            
+            // Close Button
+            VStack {
                 HStack {
+                    Spacer()
                     Button { dismiss() } label: {
                         Image(systemName: "xmark")
                             .font(AppFont.navIcon)
-                            .foregroundStyle(Color.textInk)
+                            .foregroundStyle(Color.textMuted)
                             .frame(minWidth: AppLayout.touchTarget, minHeight: AppLayout.touchTarget)
                     }
-                    
-                    Spacer()
-                    
-                    Text("Member Card")
-                        .font(AppFont.displayTitle)
-                        .foregroundStyle(Color.textInk)
-                    
-                    Spacer()
-                    
-                    Color.clear.frame(width: AppLayout.touchTarget, height: AppLayout.touchTarget)
                 }
                 .padding(.horizontal, AppLayout.spacing)
-                .padding(.top, AppLayout.spacing)
-                
-                Color.secondary.frame(height: 1)
-                    .padding(.top, AppLayout.spacing)
-                
-                ScrollView {
-                    VStack(spacing: AppLayout.spacingXL) {
-                        // Card
-                        VStack(spacing: AppLayout.spacing) {
-                            // Brand
-                            VStack(spacing: 4) {
-                                Text("THE COFFEE LINKS")
-                                    .font(AppFont.uiMicro)
-                                    .kerning(2)
-                                    .foregroundColor(Color.primaryEspresso)
-                                
-                                Text("Digital Member Card")
-                                    .font(AppFont.sectionHeader)
-                                    .foregroundColor(Color.textInk)
-                            }
-                            
-                            Color.secondary.frame(height: 1)
-                            
-                            // QR Code
-                            // Use memberId for QR code
-                            QRCodeView(string: memberId)
-                                .frame(width: 160, height: 160)
-                                .background(Color.white)
-                                .overlay(
-                                    RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle)
-                                        .stroke(Color.border, lineWidth: 1)
-                                )
-                                .clipShape(RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle))
-                            
-                            // Member Info
-                            VStack(spacing: 4) {
-                                Text(userName)
-                                    .font(AppFont.headline)
-                                    .foregroundColor(Color.textInk)
-                                
-                                Text("Gold Member")
-                                    .font(AppFont.uiCaption)
-                                    .foregroundColor(Color.primaryEspresso)
-                                
-                                Text("ID: \(memberId)")
-                                    .font(AppFont.monoBody)
-                                    .foregroundColor(Color.textMuted)
-                            }
-                            
-                            Color.secondary.frame(height: 1)
-                            
-                            // Stats
-                            HStack(spacing: AppLayout.spacing) {
-                                StatItem(value: "2,450", label: "Points")
-                                StatItem(value: "47", label: "Orders")
-                                StatItem(value: "12", label: "Rewards")
-                            }
-                        }
-                        .padding(AppLayout.spacing)
-                        .background(Color.surfaceCard)
-                        .overlay(
-                            RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle)
-                                .stroke(Color.border, lineWidth: 1)
-                        )
-                        .clipShape(RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle))
-                        
-                        // Action Buttons
-                        HStack(spacing: AppLayout.spacing) {
-                            CardActionButton(icon: "square.and.arrow.up", title: "Share") { }
-                            
-                            CardActionButton(icon: "doc.on.doc", title: "Copy ID") {
-                                UIPasteboard.general.string = memberId
-                                let generator = UIImpactFeedbackGenerator(style: .medium)
-                                generator.impactOccurred()
-                            }
-                            
-                            CardActionButton(icon: "arrow.down.to.line", title: "Save") { }
-                        }
-                    }
-                    .padding(AppLayout.spacing)
-                    .padding(.bottom, 40)
-                }
+                Spacer()
             }
         }
     }
 }
 
-// MARK: - Stat Item
+// MARK: - Reusable Content View
 
-struct StatItem: View {
-    let value: String
-    let label: String
+struct DigitalCredentialContent: View {
+    let memberId: String
+    let userName: String
+    let tier: String
+    let points: Int
+    let vouchersCount: Int
+    let ordersCount: Int
+    let onRefresh: () -> Void
     
     var body: some View {
-        VStack(spacing: 2) {
-            Text(value)
-                .font(AppFont.monoBody)
-                .foregroundColor(Color.textInk)
-            Text(label)
-                .font(AppFont.uiMicro)
-                .foregroundColor(Color.textMuted)
+        VStack(spacing: AppLayout.spacingXL) {
+            
+            // 1. Context Header
+            VStack(spacing: 4) {
+                Text("THE COFFEE LINKS")
+                    .font(AppFont.sectionHeader) // Serif
+                    .foregroundColor(Color.textInk)
+                
+                Text("DIGITAL MEMBER")
+                    .font(AppFont.uiMicro)
+                    .textCase(.uppercase)
+                    .kerning(1.5)
+                    .foregroundColor(Color.textMuted)
+            }
+            .padding(.top, AppLayout.spacingLarge)
+            
+            // 2. QR Code (Visual Focus)
+            VStack {
+                QRCodeView(string: memberId)
+                    .frame(width: 240, height: 240) // Larger size
+                    .background(Color.white)
+                    .clipShape(RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle))
+                    // Minimal container
+                    .padding(AppLayout.spacing)
+                    .background(Color.surfaceCard)
+                    .clipShape(RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle))
+            }
+            
+            // 3. User Identity Block
+            VStack(spacing: 4) {
+                Text(userName)
+                    .font(AppFont.displayTitle) // Serif, Semibold
+                    .foregroundColor(Color.textInk)
+                    .multilineTextAlignment(.center)
+                
+                HStack(spacing: 8) {
+                    Text(tier)
+                    Text("·")
+                    Text(memberId)
+                        .font(AppFont.monoBody)
+                }
+                .font(AppFont.body)
+                .foregroundColor(Color.primaryEspresso)
+            }
+            
+            DividerLine()
+            
+            // 4. Stats Section (Receipt-style vertical list)
+            VStack(spacing: AppLayout.spacing) {
+                StatRow(label: "POINTS", value: "\(points)")
+                StatRow(label: "VOUCHERS", value: "\(vouchersCount)")
+                StatRow(label: "ORDERS", value: "\(ordersCount)")
+            }
+            .padding(.horizontal, AppLayout.spacingLarge)
+            
+            DividerLine()
+            
+            // 5. Actions
+            HStack(spacing: AppLayout.spacingXL) {
+                ActionButton(icon: "doc.on.doc", title: "Copy ID") {
+                    UIPasteboard.general.string = memberId
+                    let generator = UIImpactFeedbackGenerator(style: .medium)
+                    generator.impactOccurred()
+                }
+                
+                ActionButton(icon: "arrow.clockwise", title: "Refresh") {
+                    onRefresh()
+                }
+            }
+            .padding(.bottom, AppLayout.spacing)
+            
         }
-        .frame(maxWidth: .infinity)
     }
 }
 
-// MARK: - QR Code
+// MARK: - Subviews
+
+struct DividerLine: View {
+    var body: some View {
+        Rectangle()
+            .fill(Color.textMuted.opacity(0.2))
+            .frame(height: 1)
+            .padding(.horizontal, AppLayout.spacingLarge)
+    }
+}
+
+struct StatRow: View {
+    let label: String
+    let value: String
+    
+    var body: some View {
+        HStack {
+            Text(label)
+                .font(AppFont.sectionHeader) // Serif
+                .foregroundColor(Color.textInk)
+                .font(.system(size: 14)) // Override size slightly for list? 
+                // Request: "Label on left... Serif for titles and labels"
+                // Let's use sectionHeader but maybe smaller scale if needed? 
+                // sectionHeader is title3 (.medium).
+            
+            Spacer()
+            
+            // Dotted leader simulation? Or just space.
+            // Request: "Points ...... Value" (Dotted usually implying leader)
+            // But "Vertical list... Label on left, value on right"
+            
+            Text(value)
+                .font(AppFont.monoHeadline) // Monospaced for values
+                .foregroundColor(Color.textInk)
+        }
+    }
+}
+
+struct ActionButton: View {
+    let icon: String
+    let title: String
+    let action: () -> Void
+    
+    var body: some View {
+        Button(action: action) {
+            HStack(spacing: 8) {
+                Image(systemName: icon)
+                Text(title)
+            }
+            .font(AppFont.uiButton) // Or Mono?
+            // Request: "Inline buttons or text buttons... No card background"
+            .foregroundColor(Color.primaryEspresso)
+        }
+    }
+}
 
 struct QRCodeView: View {
     let string: String
@@ -165,7 +205,6 @@ struct QRCodeView: View {
                 .interpolation(.none)
                 .resizable()
                 .aspectRatio(1, contentMode: .fit)
-                .padding(AppLayout.spacingMedium)
         } else {
             Rectangle()
                 .fill(Color.surfaceCard)
@@ -176,7 +215,7 @@ struct QRCodeView: View {
         let context = CIContext()
         let filter = CIFilter.qrCodeGenerator()
         filter.message = Data(string.utf8)
-        filter.correctionLevel = "M"
+        filter.correctionLevel = "H" // High for better scanning
         
         guard let outputImage = filter.outputImage else { return nil }
         
@@ -188,34 +227,7 @@ struct QRCodeView: View {
     }
 }
 
-// MARK: - Action Button
-
-struct CardActionButton: View {
-    let icon: String
-    let title: String
-    let action: () -> Void
-    
-    var body: some View {
-        Button(action: action) {
-            VStack(spacing: 6) {
-                Image(systemName: icon)
-                    .font(.system(size: 18))
-                Text(title)
-                    .font(AppFont.uiMicro)
-            }
-            .foregroundColor(Color.textInk)
-            .frame(maxWidth: .infinity)
-            .padding(.vertical, AppLayout.spacing)
-            .background(Color.surfaceCard)
-            .overlay(
-                RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle)
-                    .stroke(Color.border, lineWidth: 1)
-            )
-            .clipShape(RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle))
-        }
-    }
-}
-
-#Preview {
-    DigitalCardView()
-}
+//#Preview {
+//    DigitalCardView()
+//        .environmentObject(AuthViewModel(authRepository: <#AuthRepository#>))
+//}

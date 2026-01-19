@@ -59,7 +59,65 @@ struct User: Codable, Identifiable, Hashable, Sendable {
     init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         id = try container.decode(String.self, forKey: .id)
-        shortId = try container.decodeIfPresent(String.self, forKey: .shortId)
+        
+        // Helper Key for dynamic lookup
+        struct AnyKey: CodingKey {
+            var stringValue: String
+            init?(stringValue: String) { self.stringValue = stringValue }
+            var intValue: Int?
+            init?(intValue: Int) { return nil }
+        }
+        
+        // 1. Try decoding shortId from top-level (String or Int) via standard Key (short_id)
+        var mainShortId: String? = try container.decodeIfPresent(String.self, forKey: .shortId)
+        if mainShortId == nil {
+            if let intId = try? container.decodeIfPresent(Int.self, forKey: .shortId) {
+                mainShortId = String(intId)
+            }
+        }
+        
+        // 1b. Fallback: Try top-level "shortId" (camelCase) if "short_id" was missing
+        if mainShortId == nil {
+            if let anyContainer = try? decoder.container(keyedBy: AnyKey.self) {
+                if let sidCamel = try? anyContainer.decodeIfPresent(String.self, forKey: AnyKey(stringValue: "shortId")!) {
+                    mainShortId = sidCamel
+                } else if let sidCamelInt = try? anyContainer.decodeIfPresent(Int.self, forKey: AnyKey(stringValue: "shortId")!) {
+                    mainShortId = String(sidCamelInt)
+                }
+            }
+        }
+        
+        // 2. If nil, try decoding from user_metadata
+        if let sid = mainShortId {
+            shortId = sid
+        } else {
+            var foundShortId: String? = nil
+            
+            if let paramsContainer = try? decoder.container(keyedBy: AnyKey.self) {
+                 if let metaKey = AnyKey(stringValue: "user_metadata"),
+                    let metaContainer = try? paramsContainer.nestedContainer(keyedBy: AnyKey.self, forKey: metaKey) {
+                    
+                    // Try short_id (String then Int)
+                    if let sid = try? metaContainer.decodeIfPresent(String.self, forKey: AnyKey(stringValue: "short_id")!) {
+                        foundShortId = sid
+                    } else if let sidInt = try? metaContainer.decodeIfPresent(Int.self, forKey: AnyKey(stringValue: "short_id")!) {
+                        foundShortId = String(sidInt)
+                    }
+                    
+                    // Try shortId (String then Int)
+                    if foundShortId == nil {
+                        if let sidCamel = try? metaContainer.decodeIfPresent(String.self, forKey: AnyKey(stringValue: "shortId")!) {
+                            foundShortId = sidCamel
+                        } else if let sidCamelInt = try? metaContainer.decodeIfPresent(Int.self, forKey: AnyKey(stringValue: "shortId")!) {
+                            foundShortId = String(sidCamelInt)
+                        }
+                    }
+                }
+            }
+            
+            shortId = foundShortId
+        }
+        
         shortIdVersion = try container.decodeIfPresent(Int.self, forKey: .shortIdVersion)
         email = try container.decodeIfPresent(String.self, forKey: .email)
         let rawName = try container.decode(String.self, forKey: .displayName)
