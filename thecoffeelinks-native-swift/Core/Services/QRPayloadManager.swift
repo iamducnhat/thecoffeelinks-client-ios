@@ -7,6 +7,7 @@
 
 import Foundation
 import Combine
+import Supabase
 
 @MainActor
 class QRPayloadManager: ObservableObject {
@@ -18,11 +19,14 @@ class QRPayloadManager: ObservableObject {
     // MARK: - Properties
     private var timer: Timer?
     private var currentVoucherId: String?
-    private let networkService: NetworkServiceProtocol
+    private let supabase: SupabaseClient
+    private let keychainManager: KeychainManager
     
     // MARK: - Initialization
-    init(networkService: NetworkServiceProtocol = DependencyContainer.shared.networkService) {
-        self.networkService = networkService
+    init(supabase: SupabaseClient = DependencyContainer.shared.supabase,
+         keychainManager: KeychainManager = DependencyContainer.shared.keychainManager) {
+        self.supabase = supabase
+        self.keychainManager = keychainManager
     }
     
     // MARK: - Public API
@@ -73,6 +77,7 @@ class QRPayloadManager: ObservableObject {
         }
     }
     
+    // Define Response structure matching Edge Function output
     private struct GenerateQRResponse: Decodable {
         let qrCode: String
         
@@ -82,10 +87,22 @@ class QRPayloadManager: ObservableObject {
     }
     
     private func generateQR(voucherId: String?) async throws -> String {
+        guard let token = keychainManager.getAccessToken() else {
+            throw NSError(domain: "QRPayloadManager", code: 401, userInfo: [NSLocalizedDescriptionKey: "User not logged in"])
+        }
+        
         let body = GenerateQRRequest(voucherId: voucherId)
-        // Calling Edge Function via NetworkService
-        // Assumes API_BASE_URL points to Supabase or proxy that routes /functions/v1/...
-        let response: GenerateQRResponse = try await networkService.post("/functions/v1/generate-qr", body: body)
+        
+        // Invoke Edge Function directly via Supabase Client
+        // We manually construct the Authorization header with the user's token
+        let response: GenerateQRResponse = try await supabase.functions.invoke(
+            "generate-qr",
+            options: FunctionInvokeOptions(
+                headers: ["Authorization": "Bearer \(token)"],
+                body: body
+            )
+        )
+        
         return response.qrCode
     }
 }
