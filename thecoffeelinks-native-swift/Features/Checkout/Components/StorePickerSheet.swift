@@ -92,7 +92,7 @@ struct StoreCardSimple: View {
                     .foregroundStyle(Color.textInk)
                 
                 Text(store.address)
-                    .font(AppFont.caption)
+                    .font(AppFont.uiCaption)
                     .foregroundStyle(Color.textMuted)
                     .lineLimit(2)
                 

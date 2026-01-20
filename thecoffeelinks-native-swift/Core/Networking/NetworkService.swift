@@ -43,9 +43,9 @@ class NetworkService: ObservableObject {
     private var encoder: JSONEncoder
     private let keychainManager: KeychainManager
     
-    private var decoder: JSONDecoder
-    private var encoder: JSONEncoder
-    private let keychainManager: KeychainManager
+//    private var decoder: JSONDecoder
+//    private var encoder: JSONEncoder
+//    private let keychainManager: KeychainManager
     
     @Published var authToken: String?
     private var refreshToken: String?
