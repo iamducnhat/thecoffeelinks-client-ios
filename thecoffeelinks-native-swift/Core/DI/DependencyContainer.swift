@@ -39,7 +39,8 @@ class DependencyContainer: ObservableObject {
         
         // Check auth state
         if let token = keychainManager.getAccessToken() {
-            await networkService.setAuthToken(token)
+            let refreshToken = keychainManager.getRefreshToken()
+            await networkService.setAuthSession(accessToken: token, refreshToken: refreshToken)
         }
     }
 }
