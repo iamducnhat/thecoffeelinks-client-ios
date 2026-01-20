@@ -10,7 +10,6 @@ class ProfileViewModel: BaseViewModel {
     
     @Published var userProfile: User?
     @Published var vouchers: [Voucher] = []
-    @Published var userVouchers: [UserVoucher] = []
     @Published var connections: [User] = []
     @Published var orderCount: Int = 0
     @Published var editMode: Bool = false
@@ -49,11 +48,10 @@ class ProfileViewModel: BaseViewModel {
         do {
             async let userTask = userRepository.refreshUser()
             async let vouchersTask = voucherRepository.refreshVouchers()
-            async let myVouchersTask = voucherRepository.getUserVouchers()
             async let connectionsTask = socialRepository.getConnections()
             async let ordersTask = orderRepository.getOrders(status: nil, limit: 100, offset: 0)
             
-            let (updatedUser, updatedVouchers, updatedMyVouchers, updatedConnections, updatedOrders) = try await (userTask, vouchersTask, myVouchersTask, connectionsTask, ordersTask)
+            let (updatedUser, updatedVouchers, updatedConnections, updatedOrders) = try await (userTask, vouchersTask, connectionsTask, ordersTask)
             
             await MainActor.run {
                 // Fix for ID 000000:
@@ -83,7 +81,6 @@ class ProfileViewModel: BaseViewModel {
                 
                 self.userProfile = finalUser
                 self.vouchers = updatedVouchers
-                self.userVouchers = updatedMyVouchers
                 self.connections = updatedConnections.map { conn in
                      User(id: conn.friendId,
                           email: nil,

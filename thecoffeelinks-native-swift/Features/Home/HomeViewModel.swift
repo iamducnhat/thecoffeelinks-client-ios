@@ -81,11 +81,11 @@ final class HomeViewModel: ObservableObject {
     
     private func performRefresh() async {
         isRefreshing = true
-        async let eventsTask = loadEvents()
-        async let vouchersTask = loadVouchers()
-        async let popularsTask = loadPopularProducts()
-        async let favsTask = loadFavorites()
-        async let predictionTask = generatePrediction()
+        async let eventsTask: () = loadEvents()
+        async let vouchersTask: () = loadVouchers()
+        async let popularsTask: () = loadPopularProducts()
+        async let favsTask: () = loadFavorites()
+        async let predictionTask: () = generatePrediction()
         
         _ = await (eventsTask, vouchersTask, popularsTask, favsTask, predictionTask)
         isRefreshing = false

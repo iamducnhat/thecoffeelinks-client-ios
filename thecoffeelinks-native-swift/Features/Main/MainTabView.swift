@@ -77,6 +77,11 @@ struct MainTabView: View {
                      }
                      
                      // 3. Pre-warm others if needed
+                     Task(priority: .background) {
+                        if let user = try? await DependencyContainer.shared.authRepository.getCurrentUser() {
+                            _ = try? await DependencyContainer.shared.voucherRepository.fetchAndDistributeVouchers(userId: user.id)
+                        }
+                     }
                 }
         } else {
             ZStack(alignment: .bottom) {
@@ -95,6 +100,11 @@ struct MainTabView: View {
             .task {
                 await homeViewModel.load()
                 Task(priority: .medium) { await menuViewModel.load() }
+                Task(priority: .background) {
+                    if let user = try? await DependencyContainer.shared.authRepository.getCurrentUser() {
+                        _ = try? await DependencyContainer.shared.voucherRepository.fetchAndDistributeVouchers(userId: user.id)
+                    }
+                }
             }
         }
     }

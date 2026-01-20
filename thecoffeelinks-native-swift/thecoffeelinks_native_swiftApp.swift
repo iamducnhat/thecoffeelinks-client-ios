@@ -40,9 +40,6 @@ struct thecoffeelinks_native_swiftApp: App {
                 .environmentObject(deliveryViewModel)
                 .environmentObject(dependencyContainer.userPreferences) // Inject preferences
                 //.preferredColorScheme(.dark)
-                .task {
-                    await dependencyContainer.initialize()
-                }
         }
     }
     

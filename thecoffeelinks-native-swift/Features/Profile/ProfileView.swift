@@ -7,7 +7,7 @@
 //
 
 import SwiftUI
-import CachedAsyncImage // CHANGED
+import CachedAsyncImage
 
 struct ProfileView: View {
     @EnvironmentObject var authViewModel: AuthViewModel

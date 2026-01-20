@@ -127,6 +127,7 @@ struct Voucher: Codable, Identifiable, Sendable {
         case discountType = "type"
         case discountValue = "value"
         case minOrderAmount = "minSpend"
+        case maxDiscount = "maxDiscount" // Added mapping
         case validUntil = "expiresAt"
         case isActive = "isUsed" // Note: API has isUsed, we'll invert this
     }
@@ -141,10 +142,10 @@ struct Voucher: Codable, Identifiable, Sendable {
         discountType = try container.decode(DiscountType.self, forKey: .discountType)
         discountValue = try container.decode(Double.self, forKey: .discountValue)
         minOrderAmount = try container.decodeIfPresent(Double.self, forKey: .minOrderAmount)
+        maxDiscount = try container.decodeIfPresent(Double.self, forKey: .maxDiscount) // Decode maxDiscount
         validUntil = try container.decodeIfPresent(Date.self, forKey: .validUntil)
         
         // Fields not in API - use defaults
-        maxDiscount = nil
         validFrom = Date.distantPast
         usageLimit = nil
         usedCount = 0
@@ -222,40 +223,9 @@ struct VouchersResponse: Codable, Sendable {
     let vouchers: [Voucher]
 }
 
-
 struct VoucherValidationResponse: Codable, Sendable {
     let success: Bool
     let validation: VoucherValidation
 }
-
-// MARK: - User Voucher
-
-struct UserVoucher: Codable, Identifiable, Sendable {
-    let id: String
-    let userId: String
-    let voucherId: String
-    let status: VoucherStatus
-    let redeemedAt: Date?
-    let createdAt: Date
-    let voucher: Voucher?
-    
-    enum VoucherStatus: String, Codable, Sendable {
-        case active, redeemed, expired
-    }
-    
-    enum CodingKeys: String, CodingKey {
-        case id, status
-        case userId = "user_id"
-        case voucherId = "voucher_id"
-        case redeemedAt = "redeemed_at"
-        case createdAt = "created_at"
-        case voucher = "vouchers"
-    }
-
-    static func == (lhs: UserVoucher, rhs: UserVoucher) -> Bool { lhs.id == rhs.id }
-    func hash(into hasher: inout Hasher) { hasher.combine(id) }
-}
-
-extension UserVoucher: Equatable, Hashable {}
 
 

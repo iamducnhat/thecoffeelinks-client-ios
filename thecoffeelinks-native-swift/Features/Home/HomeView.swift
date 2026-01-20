@@ -137,7 +137,7 @@ struct AIQuickOrderPrompt: View {
                         .font(AppFont.uiCaption)
                         .foregroundStyle(Color.primaryEspresso)
                     
-                    Text(cart.reason.displayText ?? "Resume your ritual?")
+                    Text(cart.reason.displayText)
                         .font(AppFont.headline)
                         .foregroundStyle(Color.textInk)
                 }
@@ -171,7 +171,7 @@ struct AIQuickOrderModal: View {
                     .font(AppFont.uiCaption)
                     .foregroundStyle(Color.primaryEspresso)
                 
-                Text(cart.reason.displayText ?? "Intelligence Prediction")
+                Text(cart.reason.displayText)
                     .font(AppFont.sectionHeader)
                     .foregroundStyle(Color.textInk)
             }
@@ -233,13 +233,14 @@ struct AIQuickOrderModal: View {
 
 struct OffersSection: View {
     let vouchers: [Voucher]
+    @State private var selectedVoucher: Voucher?
     
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             TabView {
                 ForEach(vouchers) { voucher in
                     Button {
-                        // Navigate to offer details
+                        selectedVoucher = voucher
                     } label: {
                         CachedAsyncImage(url: URL(string: voucher.imageUrl ?? "")) { phase in
                             switch phase {
@@ -293,6 +294,9 @@ struct OffersSection: View {
             .tabViewStyle(.page(indexDisplayMode: .automatic))
             .aspectRatio(2/1, contentMode: .fit)
             //.padding(.bottom, -AppLayout.spacing) // Add spacing for page indicator
+        }
+        .sheet(item: $selectedVoucher) { voucher in
+            VoucherRedemptionSheet(voucher: voucher)
         }
     }
 }

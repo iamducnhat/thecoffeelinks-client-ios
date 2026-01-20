@@ -200,27 +200,17 @@ final class VoucherRepository: VoucherRepositoryProtocol, @unchecked Sendable {
             let code: String
             let orderTotal: Double
         }
-
+        // Server uses POST /api/vouchers for validation if code and orderTotal are present
         let response: VoucherValidationResponse = try await networkService.post("/api/vouchers", body: ValidateRequest(code: code, orderTotal: subtotal))
         return response.validation
     }
     
-    func getUserVouchers() async throws -> [UserVoucher] {
-        struct UserVouchersResponse: Codable {
-            let success: Bool
-            let vouchers: [UserVoucher]
-        }
-        
-        // Check cache first
-        if let data: Data = await cacheService.get("my_user_vouchers"),
-           let cached = try? JSONDecoder().decode([UserVoucher].self, from: data) {
-            return cached
-        }
-        
-        let response: UserVouchersResponse = try await networkService.get("/api/user/vouchers", queryItems: nil)
+    func fetchAndDistributeVouchers(userId: String) async throws -> [Voucher] {
+        struct DistributeRequest: Encodable { let userId: String }
+        let response: VouchersResponse = try await networkService.post("/api/vouchers/distribute", body: DistributeRequest(userId: userId))
         
         if let data = try? JSONEncoder().encode(response.vouchers) {
-            await cacheService.set("my_user_vouchers", value: data, ttl: 300)
+             await cacheService.set(vouchersCacheKey, value: data, ttl: 86400)
         }
         
         return response.vouchers

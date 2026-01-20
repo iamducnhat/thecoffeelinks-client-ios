@@ -35,6 +35,25 @@ struct CheckoutView: View {
     @State private var showEditSheet = false
     @State private var itemToEdit: CartItem? // For editing in sheet
     
+    @State private var showDeliverySheet = false
+    @State private var showStoreSheet = false
+    
+    private var locationDisplayString: String {
+        if cartViewModel.cart.mode == .delivery {
+            return deliveryViewModel.selectedAddress?.shortAddress ?? "Select Delivery Address"
+        } else {
+            return storeViewModel.selectedStore?.name ?? "Select Store"
+        }
+    }
+    
+    private var isLocationSelected: Bool {
+        if cartViewModel.cart.mode == .delivery {
+            return deliveryViewModel.selectedAddress != nil
+        } else {
+            return storeViewModel.selectedStore != nil
+        }
+    }
+    
     init() {
         let container = DependencyContainer.shared
         _checkoutViewModel = StateObject(wrappedValue: CheckoutViewModel(
@@ -155,18 +174,35 @@ struct CheckoutView: View {
                                 
                                 // Address/Location Selection
                                 Button {
-                                    // Show address picker
+                                    if cartViewModel.cart.mode == .delivery {
+                                        showDeliverySheet = true
+                                    } else {
+                                        showStoreSheet = true
+                                    }
                                 } label: {
-                                    Text(cartViewModel.cart.mode == .delivery ? "Delivery Address" : storeViewModel.selectedStore?.name ?? "Select Location")
-                                        .frame(maxWidth: .infinity, alignment: .leading)
-                                        .font(AppFont.body)
-                                        .foregroundStyle(Color.textTertiary)
-                                        .padding(.horizontal, 8)
-                                        .padding(.vertical, 6)
-                                        .overlay {
-                                            RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle)
-                                                .stroke(Color.borderTertiary, style: StrokeStyle(lineWidth: 1, dash: AppLayout.dashedPattern))
+                                    HStack {
+                                        VStack(alignment: .leading, spacing: 2) {
+                                            Text(cartViewModel.cart.mode == .delivery ? "DELIVERY ADDRESS" : "STORE LOCATION")
+                                                .font(AppFont.uiMicro)
+                                                .foregroundStyle(Color.textMuted)
+                                            
+                                            Text(locationDisplayString)
+                                                .font(AppFont.body)
+                                                .foregroundStyle(isLocationSelected ? Color.textInk : Color.textTertiary)
+                                                .lineLimit(1)
                                         }
+                                        
+                                        Spacer()
+                                        
+                                        Image(systemName: "chevron.right")
+                                            .font(.system(size: 14))
+                                            .foregroundStyle(Color.textMuted)
+                                    }
+                                    .padding(12)
+                                    .overlay {
+                                        RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle)
+                                            .stroke(isLocationSelected ? Color.border : Color.borderTertiary, style: StrokeStyle(lineWidth: 1, dash: isLocationSelected ? [] : AppLayout.dashedPattern))
+                                    }
                                 }
                             }
                             .frame(maxWidth: .infinity, alignment: .leading)
@@ -476,6 +512,14 @@ struct CheckoutView: View {
                 showSuccess = false
                 dismiss()
             }
+        }
+        .sheet(isPresented: $showDeliverySheet) {
+            DeliveryAddressSheet()
+                .environmentObject(deliveryViewModel)
+        }
+        .sheet(isPresented: $showStoreSheet) {
+            StorePickerSheet()
+                .environmentObject(storeViewModel)
         }
     }
     

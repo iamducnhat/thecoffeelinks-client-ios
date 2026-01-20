@@ -1,26 +1,10 @@
 import Foundation
 import Combine
-import Supabase
 
 class DependencyContainer: ObservableObject {
     static let shared = DependencyContainer()
     
-    // MARK: - Configuration
-    private var config: NSDictionary? {
-        guard let configPath = Bundle.main.path(forResource: "Config", ofType: "plist") else { return nil }
-        return NSDictionary(contentsOfFile: configPath)
-    }
-    
     // MARK: - Core Services
-    lazy var supabase: SupabaseClient = {
-        guard let url = config?["SUPABASE_URL"] as? String,
-              let key = config?["SUPABASE_ANON_KEY"] as? String,
-              let supabaseURL = URL(string: url) else {
-            fatalError("❌ Supabase Configuration Missing in Config.plist")
-        }
-        return SupabaseClient(supabaseURL: supabaseURL, supabaseKey: key)
-    }()
-    
     private(set) lazy var keychainManager = KeychainManager()
     private(set) lazy var userPreferences = UserPreferencesManager()
     private(set) lazy var networkService = NetworkService(keychainManager: keychainManager)
@@ -52,8 +36,6 @@ class DependencyContainer: ObservableObject {
         // Pre-warm services
         _ = keychainManager
         _ = networkService
-        // Initialize Supabase early to fail fast if config is bad
-        _ = supabase
         
         // Check auth state
         if let token = keychainManager.getAccessToken() {

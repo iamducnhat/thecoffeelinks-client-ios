@@ -71,14 +71,24 @@ struct PromotionsView: View {
     }
     
     private var memberCard: some View {
-        DigitalCredentialContent()
-            .padding(AppLayout.spacing)
-            .background(Color.surfaceCard)
-            .clipShape(RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle))
-            .overlay(
-                 RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle)
-                     .stroke(Color.border, lineWidth: 1)
-            )
+        DigitalCredentialContent(
+            memberId: profileViewModel.userProfile?.shortId ?? "******",
+            userName: profileViewModel.userProfile?.fullName ?? "Member",
+            tier: profileViewModel.userProfile?.membershipTier.displayName ?? "Member",
+            points: profileViewModel.userProfile?.points ?? 0,
+            vouchersCount: profileViewModel.vouchers.count,
+            ordersCount: profileViewModel.orderCount,
+            onRefresh: {
+                profileViewModel.loadProfile()
+            }
+        )
+        .padding(AppLayout.spacing)
+        .background(Color.surfaceCard) // Optional: If we want a card background for the inline version
+        .clipShape(RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle))
+        .overlay(
+             RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle)
+                 .stroke(Color.border, lineWidth: 1)
+        )
     }
     
     private var guestState: some View {

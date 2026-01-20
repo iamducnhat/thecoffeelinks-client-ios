@@ -89,6 +89,7 @@ protocol VoucherRepositoryProtocol: Sendable {
     func getCachedVouchers() async -> [Voucher]?
     func refreshVouchers() async throws -> [Voucher]
     func validateVoucher(code: String, subtotal: Double, mode: OrderingMode) async throws -> VoucherValidation
+    func fetchAndDistributeVouchers(userId: String) async throws -> [Voucher]
 }
 
 // MARK: - Social Repository
