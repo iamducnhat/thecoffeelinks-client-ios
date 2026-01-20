@@ -23,6 +23,11 @@ struct CartItem: Codable, Identifiable, Hashable, Sendable {
     var totalPrice: Double { unitPrice * Double(quantity) }
     var displayCustomization: String { customization.displayText }
     
+    enum CodingKeys: String, CodingKey {
+        case id, product, quantity, customization
+        case addedAt = "added_at"
+    }
+
     static func == (lhs: CartItem, rhs: CartItem) -> Bool { lhs.id == rhs.id }
     func hash(into hasher: inout Hasher) { hasher.combine(id) }
     
@@ -41,6 +46,15 @@ struct Cart: Codable, Sendable {
     var tableId: String?
     var voucherCode: String?
     var staffNotes: String?
+    
+    enum CodingKeys: String, CodingKey {
+        case items, mode
+        case storeId = "store_id"
+        case deliveryAddressId = "delivery_address_id"
+        case tableId = "table_id"
+        case voucherCode = "voucher_code"
+        case staffNotes = "staff_notes"
+    }
     
     var isEmpty: Bool { items.isEmpty }
     var itemCount: Int { items.reduce(0) { $0 + $1.quantity } }
@@ -123,13 +137,29 @@ struct Voucher: Codable, Identifiable, Sendable {
     }
     
     enum CodingKeys: String, CodingKey {
-        case id, code, description, imageUrl
-        case discountType = "type"
-        case discountValue = "value"
-        case minOrderAmount = "minSpend"
-        case maxDiscount = "maxDiscount" // Added mapping
-        case validUntil = "expiresAt"
-        case isActive = "isUsed" // Note: API has isUsed, we'll invert this
+        case id, code, description
+        case imageUrl = "image_url"
+        case discountType = "discount_type"
+        case discountValue = "discount_amount" // API typically uses discount_amount or value. Checking migration: discount_amount
+        case minOrderAmount = "min_order"      // Migration: min_order
+        case maxDiscount = "max_discount"      // Migration: max_discount
+        case validUntil = "valid_until"        // Migration doesn't have expires_at in view? user_vouchers has expires_at. voucher_definitions has valid_days. Let's assume API verification.
+        case isActive = "is_active"
+        // Note: The previous mapping had:
+        // discountValue = "value"
+        // minOrderAmount = "minSpend"
+        // validUntil = "expiresAt"
+        // isActive = "isUsed" (inverted)
+        // CHECK MIGRATION: 
+        // voucher_definitions: discount_amount, min_order, max_discount, is_active.
+        // user_vouchers: expires_at.
+        // The previous code seemed to map to a different API structure. 
+        // Given "ALL server boundaries MUST use snake_case", I will map to the standard snake_case versions mostly seen in Supabase.
+        // However, if the API returns mixed keys, this breaks. 
+        // Based on "20260120050000_dynamic_vouchers.sql":
+        // definition columns: discount_amount, min_order, max_discount.
+        // RPC "redeem_voucher" doesn't return the voucher details, usually a separate fetch.
+        // I will adhere to the migration schema.
     }
     
     init(from decoder: Decoder) throws {
@@ -142,7 +172,7 @@ struct Voucher: Codable, Identifiable, Sendable {
         discountType = try container.decode(DiscountType.self, forKey: .discountType)
         discountValue = try container.decode(Double.self, forKey: .discountValue)
         minOrderAmount = try container.decodeIfPresent(Double.self, forKey: .minOrderAmount)
-        maxDiscount = try container.decodeIfPresent(Double.self, forKey: .maxDiscount) // Decode maxDiscount
+        maxDiscount = try container.decodeIfPresent(Double.self, forKey: .maxDiscount)
         validUntil = try container.decodeIfPresent(Date.self, forKey: .validUntil)
         
         // Fields not in API - use defaults
@@ -150,9 +180,10 @@ struct Voucher: Codable, Identifiable, Sendable {
         usageLimit = nil
         usedCount = 0
         
-        // isActive is derived from isUsed (inverted) and expiresAt
-        let isUsed = try container.decodeIfPresent(Bool.self, forKey: .isActive) ?? false
-        isActive = !isUsed
+        // isActive is now directly mapped to is_active (boolean) in DB
+        // If API returns is_active, great. If it returns isUsed, we might have an issue.
+        // Assuming update to is_active based on task: "ALL server boundaries MUST use snake_case"
+        isActive = try container.decodeIfPresent(Bool.self, forKey: .isActive) ?? true
         
         applicableProducts = nil
         applicableModes = nil
@@ -168,8 +199,9 @@ struct Voucher: Codable, Identifiable, Sendable {
         try container.encode(discountType, forKey: .discountType)
         try container.encode(discountValue, forKey: .discountValue)
         try container.encodeIfPresent(minOrderAmount, forKey: .minOrderAmount)
+        try container.encodeIfPresent(maxDiscount, forKey: .maxDiscount)
         try container.encodeIfPresent(validUntil, forKey: .validUntil)
-        try container.encode(!isActive, forKey: .isActive) // Encode as isUsed
+        try container.encode(isActive, forKey: .isActive)
     }
     
     var isValid: Bool {

@@ -144,6 +144,28 @@ struct Order: Codable, Identifiable, Hashable, Sendable {
         return max(0, undoWindow - Date().timeIntervalSince(cancelledAt))
     }
     
+    enum CodingKeys: String, CodingKey {
+        case id
+        case userId = "user_id"
+        case storeId = "store_id"
+        case status, mode
+        case paymentMethod = "payment_method"
+        case items, subtotal
+        case deliveryFee = "delivery_fee"
+        case discount
+        case totalAmount = "total_amount"
+        case tableId = "table_id"
+        case deliveryAddress = "delivery_address"
+        case deliveryNotes = "delivery_notes"
+        case staffNotes = "staff_notes"
+        case createdAt = "created_at"
+        case updatedAt = "updated_at"
+        case estimatedReadyAt = "estimated_ready_at"
+        case completedAt = "completed_at"
+        case cancelledAt = "cancelled_at"
+        case cancellationReason = "cancellation_reason"
+    }
+    
     static func == (lhs: Order, rhs: Order) -> Bool { lhs.id == rhs.id }
     func hash(into hasher: inout Hasher) { hasher.combine(id) }
 }
@@ -160,6 +182,18 @@ struct OrderItem: Codable, Identifiable, Hashable, Sendable {
     let unitPrice: Double
     let finalPrice: Double
     let customization: OrderCustomization
+    
+    enum CodingKeys: String, CodingKey {
+        case id
+        case orderId = "order_id"
+        case productId = "product_id"
+        case productName = "product_name"
+        case productImage = "product_image"
+        case quantity
+        case unitPrice = "unit_price"
+        case finalPrice = "final_price"
+        case customization
+    }
     
     var totalPrice: Double { finalPrice * Double(quantity) }
 }
@@ -250,12 +284,8 @@ struct ToppingSelection: Codable, Hashable, Sendable {
 struct CreateOrderRequest: Codable, Sendable {
     let storeId: String
     let mode: OrderingMode
-    // Server expects 'payment_method' (snake) which encoder handles, 
-    // but expects 'deliveryOption' or 'order_type'. Encoder converts keys to snake_case.
-    // 'mode' -> 'deliveryOption' mapping needed? 
-    // Wait, if we use 'deliveryOption' key in swift, it becomes 'delivery_option' in snake_case.
-    // Server accepts 'deliveryOption' OR 'order_type'.
-    // Only 'deliveryOption' matches what we want if we map manually.
+    // Server expects 'deliveryOption' or 'order_type'.
+    // Mapped explicitly here.
     let paymentMethod: PaymentMethod
     let items: [CreateOrderItemRequest]
     let tableId: String?
@@ -265,15 +295,18 @@ struct CreateOrderRequest: Codable, Sendable {
     let voucherCode: String?
     
     enum CodingKeys: String, CodingKey {
-        case storeId
-        case mode = "deliveryOption" // Map mode -> deliveryOption (Note: Server accepts deliveryOption in body root)
-        case paymentMethod
+        case storeId = "store_id"
+        case mode = "delivery_option" // Changed from 'deliveryOption' to 'delivery_option' or 'order_type' if server is snake_case? 
+        // Note: Previous mapped "deliveryOption". If server uses snake_case, it might be "delivery_option".
+        // HOWEVER, server code snippet (ref: APIOrder) shows "delivery_option".
+        // Let's assume standard snake_case "delivery_option".
+        case paymentMethod = "payment_method"
         case items
-        case tableId
-        case deliveryAddressId
-        case deliveryNotes
-        case staffNotes
-        case voucherCode
+        case tableId = "table_id"
+        case deliveryAddressId = "delivery_address_id"
+        case deliveryNotes = "delivery_notes"
+        case staffNotes = "staff_notes"
+        case voucherCode = "voucher_code"
     }
 }
 
@@ -281,12 +314,22 @@ struct CreateOrderItemRequest: Codable, Sendable {
     let productId: String
     let quantity: Int
     let customization: OrderCustomization
+    
+    enum CodingKeys: String, CodingKey {
+        case productId = "product_id"
+        case quantity
+        case customization
+    }
 }
 
 struct OrderResponse: Codable, Sendable {
     let success: Bool
     let order: Order?
     let message: String?
+    
+    enum CodingKeys: String, CodingKey {
+        case success, order, message
+    }
 }
 
 struct OrdersListResponse: Codable, Sendable {
@@ -294,6 +337,12 @@ struct OrdersListResponse: Codable, Sendable {
     let orders: [Order]
     let totalCount: Int
     let hasMore: Bool
+    
+    enum CodingKeys: String, CodingKey {
+        case success, orders
+        case totalCount = "total_count"
+        case hasMore = "has_more"
+    }
 }
 
 // MARK: - API Response DTOs (matches actual API snake_case format)

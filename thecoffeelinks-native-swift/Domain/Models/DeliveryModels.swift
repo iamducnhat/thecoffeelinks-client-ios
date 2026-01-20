@@ -9,6 +9,8 @@ import Foundation
 
 // MARK: - Delivery Address
 
+// MARK: - Delivery Address
+
 struct DeliveryAddress: Codable, Identifiable, Hashable, Sendable {
     let id: String
     var label: String
@@ -25,6 +27,17 @@ struct DeliveryAddress: Codable, Identifiable, Hashable, Sendable {
     struct Coordinates: Codable, Hashable, Sendable {
         let latitude: Double
         let longitude: Double
+    }
+    
+    enum CodingKeys: String, CodingKey {
+        case id, label
+        case streetAddress = "street_address"
+        case buildingInfo = "building_info"
+        case city, district, coordinates
+        case isDefault = "is_default"
+        case usageCount = "usage_count"
+        case lastUsedAt = "last_used_at"
+        case createdAt = "created_at"
     }
     
     var fullAddress: String {
@@ -63,6 +76,15 @@ struct DeliveryZone: Codable, Identifiable, Sendable {
         let longitude: Double
     }
     
+    enum CodingKeys: String, CodingKey {
+        case id, name, polygon
+        case storeId = "store_id"
+        case baseFee = "base_fee"
+        case perKmFee = "per_km_fee"
+        case estimatedMinutes = "estimated_minutes"
+        case isActive = "is_active"
+    }
+    
     func contains(latitude: Double, longitude: Double) -> Bool {
         let point = (latitude, longitude)
         var inside = false
@@ -96,6 +118,14 @@ struct DeliveryAvailability: Codable, Sendable {
     let unavailableReason: UnavailableReason?
     let unavailableProducts: [String]?
     
+    enum CodingKeys: String, CodingKey {
+        case available, zone, fee, eta
+        case storeId = "store_id"
+        case minOrderAmount = "min_order_amount"
+        case unavailableReason = "unavailable_reason"
+        case unavailableProducts = "unavailable_products"
+    }
+    
     enum UnavailableReason: String, Codable, Sendable {
         case outOfZone = "out_of_zone"
         case storeClosed = "store_closed"
@@ -125,6 +155,15 @@ struct DeliveryFee: Codable, Sendable {
     let isSurge: Bool
     let surgeMultiplier: Double?
     
+    enum CodingKeys: String, CodingKey {
+        case amount
+        case baseFee = "base_fee"
+        case distanceFee = "distance_fee"
+        case surgeFee = "surge_fee"
+        case isSurge = "is_surge"
+        case surgeMultiplier = "surge_multiplier"
+    }
+    
     var displayAmount: String { amount.formattedVND }
     
     var breakdown: [(String, Double)] {
@@ -143,6 +182,15 @@ struct DeliveryETA: Codable, Sendable {
     let prepMinutes: Int
     let transitMinutes: Int
     let calculatedAt: Date
+    
+    enum CodingKeys: String, CodingKey {
+        case minutes
+        case minMinutes = "min_minutes"
+        case maxMinutes = "max_minutes"
+        case prepMinutes = "prep_minutes"
+        case transitMinutes = "transit_minutes"
+        case calculatedAt = "calculated_at"
+    }
     
     var displayRange: String { "\(minMinutes)-\(maxMinutes) min" }
     
@@ -171,11 +219,27 @@ struct DeliveryTracking: Codable, Identifiable, Sendable {
     let updates: [TrackingUpdate]
     let estimatedArrival: Date?
     
+    enum CodingKeys: String, CodingKey {
+        case id, status, updates
+        case orderId = "order_id"
+        case driverName = "driver_name"
+        case driverPhone = "driver_phone"
+        case driverPhoto = "driver_photo"
+        case vehicleType = "vehicle_type"
+        case currentLocation = "current_location"
+        case estimatedArrival = "estimated_arrival"
+    }
+    
     struct Location: Codable, Sendable {
         let latitude: Double
         let longitude: Double
         let heading: Double?
         let updatedAt: Date
+        
+        enum CodingKeys: String, CodingKey {
+            case latitude, longitude, heading
+            case updatedAt = "updated_at"
+        }
     }
     
     enum VehicleType: String, Codable, Sendable {
@@ -210,6 +274,10 @@ struct TrackingUpdate: Codable, Identifiable, Sendable {
     let status: DeliveryTrackingStatus
     let message: String
     let timestamp: Date
+    
+    // Note: 'timestamp' is generic, aligning with 'created_at' is safer if server uses that
+    // but assuming 'timestamp' for now if API uses that. 
+    // If standard supabase timestamps, it's usually created_at.
 }
 
 // MARK: - API Responses
@@ -233,6 +301,11 @@ struct SaveAddressResponse: Codable, Sendable {
     let success: Bool
     let address: DeliveryAddress
     let alreadyExists: Bool?
+    
+    enum CodingKeys: String, CodingKey {
+        case success, address
+        case alreadyExists = "already_exists"
+    }
 }
 
 struct DeliveryTrackingResponse: Codable, Sendable {

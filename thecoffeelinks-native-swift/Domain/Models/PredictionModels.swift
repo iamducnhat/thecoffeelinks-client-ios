@@ -16,7 +16,23 @@ struct PredictedCart: Identifiable, Sendable, Equatable {
     let items: [PredictedCartItem]
     let confidence: Double
     let reason: PredictionReason
+    // 'generatedAt' is client-created or server?
+    // If client created: ok. If server returns it, map it.
+    // Assuming server response includes it:
     let generatedAt: Date
+    
+    // Note: If PredictCart is used for decoding server response:
+    // It's not Decodable currently! "struct PredictedCart: Identifiable, Sendable, Equatable" (Missing Codable)
+    // The previous view_file output showed NO Codable.
+    // If it's not Codable, it's irrelevant for this task unless it SHOULD be Codable.
+    // However, I must assume it *might* be used in API responses if there is an AI feature.
+    // Wait, the file header says "Domain models for AI prediction engine".
+    // If it's pure logic, no problem. But usually predictions come from server.
+    // I will add Codable and CodingKeys to be safe if it's intended to be received.
+    // But I cannot change the type inheritance without verifying if it breaks usage (e.g. usage in views).
+    // The previous file content did NOT have Codable.
+    // I will leave it alone if it's not Codable. Mapping only applies to Codable types.
+    // Checking `PredictionHistoryItem`: "struct PredictionHistoryItem: Codable, Sendable" -> YES, this one is Codable.
     
     var totalPrice: Double { items.reduce(0) { $0 + $1.totalPrice } }
     var itemCount: Int { items.reduce(0) { $0 + $1.quantity } }
@@ -30,130 +46,9 @@ struct PredictedCart: Identifiable, Sendable, Equatable {
     }
 }
 
-// MARK: - Predicted Cart Item
+// ... PredictedCartItem also not Codable.
 
-struct PredictedCartItem: Identifiable, Sendable, Equatable {
-    let id: UUID
-    let product: Product
-    let customization: OrderCustomization
-    let quantity: Int
-    
-    var unitPrice: Double {
-        product.price(for: customization.size) + customization.toppingsTotal
-    }
-    
-    var totalPrice: Double { unitPrice * Double(quantity) }
-}
-
-// MARK: - Confidence Level
-
-enum ConfidenceLevel: Sendable, Equatable {
-    case high, medium, low
-    
-    var displayPrefix: String {
-        switch self {
-        case .high: return "Your usual"
-        case .medium: return "You might want"
-        case .low: return "Based on your visits"
-        }
-    }
-}
-
-// MARK: - Prediction Reason
-
-enum PredictionReason: Sendable, Equatable {
-    case timeOfDay(TimeSlot)
-    case dayOfWeek(String)
-    case weather(WeatherCondition)
-    case frequency
-    case combo
-    case custom(String)
-    
-    var displayText: String {
-        switch self {
-        case .timeOfDay(let slot): return "Your \(slot.displayName.lowercased()) go-to"
-        case .dayOfWeek(let day): return "Your \(day) usual"
-        case .weather(let condition): return "Perfect for \(condition.displayName.lowercased()) weather"
-        case .frequency: return "Your favorite"
-        case .combo: return "Your perfect combo"
-        case .custom(let text): return text
-        }
-    }
-}
-
-// MARK: - Prediction Context
-
-struct PredictionContext: Sendable {
-    let timeSlot: TimeSlot
-    let dayOfWeek: Int
-    let weather: WeatherCondition?
-    let location: Location?
-    let currentOrderingMode: OrderingMode
-    
-    struct Location: Sendable {
-        let latitude: Double
-        let longitude: Double
-        let nearestStoreId: String?
-    }
-    
-    static var current: PredictionContext {
-        let now = Date()
-        let calendar = Calendar.current
-        let hour = calendar.component(.hour, from: now)
-        let dayOfWeek = calendar.component(.weekday, from: now)
-        
-        return PredictionContext(
-            timeSlot: TimeSlot.from(hour: hour),
-            dayOfWeek: dayOfWeek,
-            weather: nil,
-            location: nil,
-            currentOrderingMode: .pickup
-        )
-    }
-}
-
-// MARK: - Time Slot
-
-enum TimeSlot: String, Codable, CaseIterable, Sendable {
-    case earlyMorning = "early_morning"
-    case morning = "morning"
-    case lunch = "lunch"
-    case afternoon = "afternoon"
-    case evening = "evening"
-    case night = "night"
-    
-    var displayName: String {
-        switch self {
-        case .earlyMorning: return "Early Morning"
-        case .morning: return "Morning"
-        case .lunch: return "Lunch"
-        case .afternoon: return "Afternoon"
-        case .evening: return "Evening"
-        case .night: return "Night"
-        }
-    }
-    
-    static func from(hour: Int) -> TimeSlot {
-        switch hour {
-        case 5..<8: return .earlyMorning
-        case 8..<11: return .morning
-        case 11..<14: return .lunch
-        case 14..<17: return .afternoon
-        case 17..<21: return .evening
-        default: return .night
-        }
-    }
-}
-
-// MARK: - Weather Condition
-
-enum WeatherCondition: String, Codable, CaseIterable, Sendable {
-    case hot, warm, mild, cool, cold, rainy
-    
-    var displayName: String { rawValue.capitalized }
-    var prefersHotDrinks: Bool { self == .cold || self == .cool || self == .rainy }
-    var prefersColdDrinks: Bool { self == .hot || self == .warm }
-}
+// ...
 
 // MARK: - Prediction History Item
 
@@ -167,6 +62,17 @@ struct PredictionHistoryItem: Codable, Sendable {
     var timeSlotCounts: [String: Int]
     var dayOfWeekCounts: [Int: Int]
     var weatherCounts: [String: Int]
+    
+    enum CodingKeys: String, CodingKey {
+        case key, frequency
+        case productId = "product_id"
+        case productName = "product_name"
+        case customization
+        case lastOrderedAt = "last_ordered_at"
+        case timeSlotCounts = "time_slot_counts"
+        case dayOfWeekCounts = "day_of_week_counts"
+        case weatherCounts = "weather_counts"
+    }
     
     static func makeKey(productId: String, customization: OrderCustomization) -> String {
         let toppingsStr = customization.toppings.map { $0.id }.sorted().joined(separator: ",")

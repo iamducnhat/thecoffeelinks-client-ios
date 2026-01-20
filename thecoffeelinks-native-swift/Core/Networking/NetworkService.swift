@@ -67,14 +67,9 @@ class NetworkService: ObservableObject {
         }
         
         self.decoder = JSONDecoder()
-        self.decoder.keyDecodingStrategy = .convertFromSnakeCase
         self.decoder.dateDecodingStrategy = .iso8601
         
         self.encoder = JSONEncoder()
-        self.encoder.keyEncodingStrategy = .convertToSnakeCase
-        self.encoder.dateEncodingStrategy = .iso8601
-        
-        self.encoder.keyEncodingStrategy = .convertToSnakeCase
         self.encoder.dateEncodingStrategy = .iso8601
         
         self.authToken = keychainManager.getAccessToken()

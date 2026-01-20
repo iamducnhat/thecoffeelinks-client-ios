@@ -35,7 +35,21 @@ struct Product: Codable, Identifiable, Hashable, Sendable {
     let allergens: [String]
     
     enum CodingKeys: String, CodingKey {
-        case id, name, description, categoryId, categoryName, imageUrl, basePrice, sizeOptions, availableToppings, isPopular, isNew, isActive, isDeliverable, deliveryPrepMinutes, tags, nutritionInfo, allergens
+        case id, name, description
+        case categoryId = "category_id"
+        case categoryName = "category_name"
+        case imageUrl = "image_url"
+        case basePrice = "base_price"
+        case sizeOptions = "size_options"
+        case availableToppings = "available_toppings"
+        case isPopular = "is_popular"
+        case isNew = "is_new"
+        case isActive = "is_active"
+        case isDeliverable = "is_deliverable"
+        case deliveryPrepMinutes = "delivery_prep_minutes"
+        case tags
+        case nutritionInfo = "nutrition_info"
+        case allergens
     }
     
     init(id: String, name: String, description: String?, categoryId: String, categoryName: String?, imageUrl: String?, basePrice: Double, sizeOptions: [SizeOption], availableToppings: [String], isPopular: Bool, isNew: Bool, isActive: Bool, isDeliverable: Bool, deliveryPrepMinutes: Int?, tags: [String], nutritionInfo: NutritionInfo?, allergens: [String]) {
@@ -168,6 +182,16 @@ struct Category: Codable, Identifiable, Hashable, Sendable {
     let isActive: Bool
     let productCount: Int?
     
+    enum CodingKeys: String, CodingKey {
+        case id, name
+        case displayName = "display_name"
+        case iconName = "icon_name"
+        case imageUrl = "image_url"
+        case sortOrder = "sort_order"
+        case isActive = "is_active"
+        case productCount = "product_count"
+    }
+
     static func == (lhs: Category, rhs: Category) -> Bool { lhs.id == rhs.id }
     func hash(into hasher: inout Hasher) { hasher.combine(id) }
 }
@@ -181,6 +205,13 @@ struct Topping: Codable, Identifiable, Hashable, Sendable {
     let isAvailable: Bool
     let maxQuantity: Int
     let categoryId: String?
+    
+    enum CodingKeys: String, CodingKey {
+        case id, name, price
+        case isAvailable = "is_available"
+        case maxQuantity = "max_quantity"
+        case categoryId = "category_id"
+    }
     
     static func == (lhs: Topping, rhs: Topping) -> Bool { lhs.id == rhs.id }
     func hash(into hasher: inout Hasher) { hasher.combine(id) }
@@ -235,7 +266,8 @@ struct PopularProduct: Codable, Identifiable, Sendable {
     let trend: PopularityTrend
     
     enum CodingKeys: String, CodingKey {
-        case id, product, orderCount, rank, trend
+        case id, product, rank, trend
+        case orderCount = "order_count"
     }
     
     init(id: String, product: Product, orderCount: Int, rank: Int, trend: PopularityTrend) {

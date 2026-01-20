@@ -205,7 +205,18 @@ struct UserPreferences: Codable, Hashable, Sendable {
     var notificationsEnabled: Bool
     var orderUpdatesEnabled: Bool
     var promotionsEnabled: Bool
-    var presenceMode: PresenceMode
+    enum CodingKeys: String, CodingKey {
+        case defaultOrderingMode = "default_ordering_mode"
+        case defaultStoreId = "default_store_id"
+        case defaultPaymentMethod = "default_payment_method"
+        case defaultSize = "default_size"
+        case defaultSugar = "default_sugar"
+        case defaultIce = "default_ice"
+        case notificationsEnabled = "notifications_enabled"
+        case orderUpdatesEnabled = "order_updates_enabled"
+        case promotionsEnabled = "promotions_enabled"
+        case presenceMode = "presence_mode"
+    }
     
     static var `default`: UserPreferences {
         UserPreferences(
@@ -266,6 +277,15 @@ struct FavoriteItem: Codable, Identifiable, Hashable, Sendable {
     
     var displayName: String { nickname ?? product.name }
     
+    enum CodingKeys: String, CodingKey {
+        case id
+        case userId = "user_id"
+        case product, customization, nickname, notes
+        case orderCount = "order_count"
+        case lastOrderedAt = "last_ordered_at"
+        case createdAt = "created_at"
+    }
+    
     static func == (lhs: FavoriteItem, rhs: FavoriteItem) -> Bool { lhs.id == rhs.id }
     func hash(into hasher: inout Hasher) { hasher.combine(id) }
 }
@@ -289,6 +309,20 @@ struct Store: Codable, Identifiable, Hashable, Sendable {
     let deliveryAvailable: Bool?
     let pickupAvailable: Bool?
     let dineInAvailable: Bool?
+    
+    enum CodingKeys: String, CodingKey {
+        case id, name, address, latitude, longitude, phone
+        case imageUrl = "image_url"
+        case layoutMapUrl = "layout_map_url"
+        case openingHours = "opening_hours"
+        case amenities
+        case isOpen = "is_open"
+        case isBusy = "is_busy"
+        case currentWaitMinutes = "current_wait_minutes"
+        case deliveryAvailable = "delivery_available"
+        case pickupAvailable = "pickup_available"
+        case dineInAvailable = "dine_in_available"
+    }
     
     var isCurrentlyOpen: Bool {
         guard let openingHours = openingHours else { return false }
@@ -314,6 +348,12 @@ struct OpeningHour: Codable, Hashable, Sendable {
     
     private func formatMinutes(_ minutes: Int) -> String {
         String(format: "%02d:%02d", minutes / 60, minutes % 60)
+    }
+    
+    enum CodingKeys: String, CodingKey {
+        case dayOfWeek = "day_of_week"
+        case openMinutes = "open_minutes"
+        case closeMinutes = "close_minutes"
     }
 }
 
@@ -354,6 +394,13 @@ struct AuthSession: Codable, Sendable {
     let refreshToken: String
     let expiresAt: Date
     let user: User
+    
+    enum CodingKeys: String, CodingKey {
+        case accessToken = "access_token"
+        case refreshToken = "refresh_token"
+        case expiresAt = "expires_at"
+        case user
+    }
     
     var isExpired: Bool { Date() >= expiresAt }
     var shouldRefresh: Bool { Date().addingTimeInterval(5 * 60) >= expiresAt }
