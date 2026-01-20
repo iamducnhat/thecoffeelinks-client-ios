@@ -134,12 +134,12 @@ class NetworkService: ObservableObject {
         }
     }
     
-    func request<T: Decodable>(_ endpoint: String, method: String = "GET", body: Encodable? = nil, queryItems: [URLQueryItem]? = nil) async throws -> T {
+    func request<T: Decodable>(_ endpoint: String, method: String = "GET", body: Encodable? = nil, queryItems: [URLQueryItem]? = nil, encoder: JSONEncoder? = nil) async throws -> T {
         do {
-            return try await _performRequest(endpoint, method: method, body: body, queryItems: queryItems)
+            return try await _performRequest(endpoint, method: method, body: body, queryItems: queryItems, encoder: encoder)
         } catch NetworkError.unauthorized {
             if await refreshAuthToken() {
-                return try await _performRequest(endpoint, method: method, body: body, queryItems: queryItems)
+                return try await _performRequest(endpoint, method: method, body: body, queryItems: queryItems, encoder: encoder)
             } else {
                 throw NetworkError.unauthorized
             }
@@ -148,7 +148,7 @@ class NetworkService: ObservableObject {
         }
     }
 
-    private func _performRequest<T: Decodable>(_ endpoint: String, method: String = "GET", body: Encodable? = nil, queryItems: [URLQueryItem]? = nil, isRetry: Bool = false) async throws -> T {
+    private func _performRequest<T: Decodable>(_ endpoint: String, method: String = "GET", body: Encodable? = nil, queryItems: [URLQueryItem]? = nil, isRetry: Bool = false, encoder: JSONEncoder? = nil) async throws -> T {
         var urlComponents = URLComponents(string: baseURL + endpoint)
         urlComponents?.queryItems = queryItems
         
@@ -169,7 +169,8 @@ class NetworkService: ObservableObject {
         
         if let body = body {
             do {
-                let bodyData = try encoder.encode(body)
+                let actualEncoder = encoder ?? self.encoder
+                let bodyData = try actualEncoder.encode(body)
                 request.httpBody = bodyData
                 
                 if let bodyString = String(data: bodyData, encoding: .utf8) {
@@ -350,8 +351,8 @@ extension NetworkService: NetworkServiceProtocol {
         try await request(endpoint, method: "GET", body: nil as String?, queryItems: queryItems)
     }
     
-    func post<T: Decodable, U: Encodable>(_ endpoint: String, body: U) async throws -> T {
-        try await request(endpoint, method: "POST", body: body)
+    func post<T: Decodable, U: Encodable>(_ endpoint: String, body: U, encoder: JSONEncoder? = nil) async throws -> T {
+        try await request(endpoint, method: "POST", body: body, encoder: encoder)
     }
     
     func put<T: Decodable, U: Encodable>(_ endpoint: String, body: U) async throws -> T {

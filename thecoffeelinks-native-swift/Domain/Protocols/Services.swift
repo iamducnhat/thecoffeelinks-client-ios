@@ -11,10 +11,16 @@ import Foundation
 
 protocol NetworkServiceProtocol: Sendable {
     func get<T: Decodable>(_ endpoint: String, queryItems: [URLQueryItem]?) async throws -> T
-    func post<T: Decodable, U: Encodable>(_ endpoint: String, body: U) async throws -> T
+    func post<T: Decodable, U: Encodable>(_ endpoint: String, body: U, encoder: JSONEncoder?) async throws -> T
     func put<T: Decodable, U: Encodable>(_ endpoint: String, body: U) async throws -> T
     func patch<T: Decodable, U: Encodable>(_ endpoint: String, body: U) async throws -> T
     func delete(_ endpoint: String, queryItems: [URLQueryItem]?) async throws
+}
+
+extension NetworkServiceProtocol {
+    func post<T: Decodable, U: Encodable>(_ endpoint: String, body: U) async throws -> T {
+        try await post(endpoint, body: body, encoder: nil)
+    }
 }
 
 // MARK: - Auth Service

@@ -174,9 +174,14 @@ struct VoucherRedemptionSheet: View {
         fetchError = nil
         
         do {
+            // Use strict encoder to preserve camelCase "voucherId"
+            let strictEncoder = JSONEncoder()
+            strictEncoder.keyEncodingStrategy = .useDefaultKeys
+            
             let response: SignVoucherResponse = try await networkService.post(
                 "/api/vouchers/sign",
-                body: SignedQRRequest(voucherId: voucher.id)
+                body: SignedQRRequest(voucherId: voucher.id),
+                encoder: strictEncoder
             )
             
             withAnimation {
