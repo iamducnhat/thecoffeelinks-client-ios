@@ -9,10 +9,24 @@
 import SwiftUI
 import UniformTypeIdentifiers
 
+// Response model for signing (internal)
+struct SignVoucherResponse: Decodable {
+    let signedQr: String
+}
+
+struct SignedQRRequest: Encodable {
+    let voucherId: String
+}
+
 struct VoucherRedemptionSheet: View {
     let voucher: Voucher
     @Environment(\.dismiss) private var dismiss
+    @EnvironmentObject var networkService: NetworkService
+    
     @State private var hasCopied = false
+    @State private var signedQrCode: String?
+    @State private var isLoadingQR = true
+    @State private var fetchError: String?
     
     var body: some View {
         ZStack(alignment: .top) {
@@ -64,65 +78,57 @@ struct VoucherRedemptionSheet: View {
                         .padding(.top, AppLayout.spacingXL)
                         
                         // 3. QR Code (Centered, Large)
-                        QRRenderView(payload: voucher.code)
-                            .frame(width: 280, height: 280) // Larger size
-                            .background(Color.white)
-                            .clipShape(RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle))
-                            .shadow(color: Color.black.opacity(0.1), radius: 12, x: 0, y: 6)
+                        ZStack {
+                            if let qrString = signedQrCode {
+                                QRRenderView(payload: qrString)
+                                    .frame(width: 280, height: 280) // Larger size
+                            } else if isLoadingQR {
+                                ProgressView()
+                                    .frame(width: 280, height: 280)
+                            } else {
+                                VStack(spacing: 8) {
+                                    Image(systemName: "exclamationmark.triangle")
+                                        .font(.largeTitle)
+                                        .foregroundColor(.red)
+                                    Text("Failed to load QR")
+                                        .font(AppFont.uiCaption)
+                                    if let err = fetchError {
+                                        Text(err)
+                                            .font(.caption2)
+                                            .foregroundColor(.secondary)
+                                            .multilineTextAlignment(.center)
+                                            .padding(.horizontal)
+                                    }
+                                    Button("Retry") {
+                                        Task { await fetchSignedQR() }
+                                    }
+                                    .buttonStyle(.bordered)
+                                }
+                                .frame(width: 280, height: 280)
+                            }
+                        }
+                        .background(Color.white)
+                        .clipShape(RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle))
+                        .shadow(color: Color.black.opacity(0.1), radius: 12, x: 0, y: 6)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle)
+                                .stroke(Color.border.opacity(0.5), lineWidth: 1)
+                        )
                         
-                        // 4. Voucher Code Section
+                        // 4. Warning (Dynamic Code)
+                        // We removed the static code display because it's no longer useful for redemption
+                        // Only show if we need a fallback, but for security we hide the raw code usually.
+                        // However, keeping the "ID" might be useful for support.
+                        
                         VStack(spacing: AppLayout.spacingSmall) {
-                            Text("VOUCHER CODE")
+                            Text("SECURITY ID")
                                 .font(AppFont.uiMicro)
                                 .textCase(.uppercase)
                                 .foregroundStyle(Color.textMuted)
-                                .tracking(1)
                             
-                            HStack(spacing: AppLayout.spacingMedium) {
-                                Text(voucher.code)
-                                    .font(.system(.title3, design: .monospaced, weight: .bold))
-                                    .foregroundStyle(Color.textInk)
-                                    .tracking(2)
-                                
-                                Button {
-                                    UIPasteboard.general.setValue(voucher.code, forPasteboardType: UTType.plainText.identifier)
-                                    withAnimation {
-                                        hasCopied = true
-                                    }
-                                    
-                                    // Reset copy state after 2 seconds
-                                    DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
-                                        withAnimation {
-                                            hasCopied = false
-                                        }
-                                    }
-                                } label: {
-                                    if hasCopied {
-                                        Label("Copied", systemImage: "checkmark")
-                                            .font(AppFont.uiCaption)
-                                            .foregroundStyle(Color.semanticSuccess)
-                                            .padding(.horizontal, 12)
-                                            .padding(.vertical, 6)
-                                            .background(Color.semanticSuccess.opacity(0.1))
-                                            .clipShape(Capsule())
-                                    } else {
-                                        Image(systemName: "doc.on.doc")
-                                            .font(.system(size: 18))
-                                            .foregroundStyle(Color.primaryEspresso)
-                                            .frame(width: 44, height: 44)
-                                            .background(Color.primaryEspresso.opacity(0.1))
-                                            .clipShape(Circle())
-                                    }
-                                }
-                            }
-                            .padding(.vertical, 8)
-                            .padding(.horizontal, 24)
-                            .background(Color.surfaceCard)
-                            .clipShape(RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle))
-                            .overlay(
-                                RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle)
-                                    .stroke(Color.border.opacity(0.5), lineWidth: 1)
-                            )
+                             Text(voucher.id.prefix(8).uppercased())
+                                .font(.system(.body, design: .monospaced))
+                                .foregroundStyle(Color.textMuted)
                         }
                         
                         // 5. Metadata
@@ -144,6 +150,9 @@ struct VoucherRedemptionSheet: View {
                 }
             }
         }
+        .task {
+            await fetchSignedQR()
+        }
     }
     
     // Helper for metadata
@@ -159,4 +168,28 @@ struct VoucherRedemptionSheet: View {
                 .foregroundStyle(Color.textInk)
         }
     }
+    
+    private func fetchSignedQR() async {
+        isLoadingQR = true
+        fetchError = nil
+        
+        do {
+            let response: SignVoucherResponse = try await networkService.post(
+                "/api/vouchers/sign",
+                body: SignedQRRequest(voucherId: voucher.id)
+            )
+            
+            withAnimation {
+                signedQrCode = response.signedQr
+                isLoadingQR = false
+            }
+        } catch {
+            print("QR Fetch Error: \(error.localizedDescription)")
+            withAnimation {
+                fetchError = "Secure connection failed"
+                isLoadingQR = false
+            }
+        }
+    }
 }
+
