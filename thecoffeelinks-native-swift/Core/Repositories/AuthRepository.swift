@@ -158,7 +158,7 @@ class AuthRepository {
             body: OTPVerifyRequest(code: code, phone: phoneNumber)
         )
         
-        await networkService.setAuthToken(response.session.accessToken)
+        await networkService.setAuthSession(accessToken: response.session.accessToken, refreshToken: response.session.refreshToken)
         return response.user.toDomain()
     }
     
@@ -204,12 +204,15 @@ class AuthRepository {
              let session: SessionToken
              let user: DevUser
              
-             struct SessionToken: Decodable { let accessToken: String }
+             struct SessionToken: Decodable { 
+                 let accessToken: String
+                 let refreshToken: String?
+             }
              struct DevUser: Decodable { let id: String; let phone: String? }
         }
         
         let response = try decoder.decode(DevResponse.self, from: rawData)
-        await networkService.setAuthToken(response.session.accessToken)
+        await networkService.setAuthSession(accessToken: response.session.accessToken, refreshToken: response.session.refreshToken)
         
         return User(
             id: response.user.id,

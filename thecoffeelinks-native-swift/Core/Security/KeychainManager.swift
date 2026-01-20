@@ -18,6 +18,19 @@ final class KeychainManager: SecureStorage, @unchecked Sendable {
         remove("accessToken")
     }
     
+    // MARK: - Refresh Token
+    func saveRefreshToken(_ token: String) {
+        set("refreshToken", value: token)
+    }
+    
+    func getRefreshToken() -> String? {
+        get("refreshToken")
+    }
+    
+    func deleteRefreshToken() {
+        remove("refreshToken")
+    }
+    
     // MARK: - SecureStorage Protocol
     
     func set(_ key: String, value: String) {

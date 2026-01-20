@@ -43,7 +43,13 @@ class NetworkService: ObservableObject {
     private var encoder: JSONEncoder
     private let keychainManager: KeychainManager
     
+    private var decoder: JSONDecoder
+    private var encoder: JSONEncoder
+    private let keychainManager: KeychainManager
+    
     @Published var authToken: String?
+    private var refreshToken: String?
+    private var isRefreshing = false
     
     init(keychainManager: KeychainManager) {
         let config = URLSessionConfiguration.default
@@ -68,24 +74,81 @@ class NetworkService: ObservableObject {
         self.encoder.keyEncodingStrategy = .convertToSnakeCase
         self.encoder.dateEncodingStrategy = .iso8601
         
+        self.encoder.keyEncodingStrategy = .convertToSnakeCase
+        self.encoder.dateEncodingStrategy = .iso8601
+        
         self.authToken = keychainManager.getAccessToken()
+        self.refreshToken = keychainManager.getRefreshToken()
     }
     
-    func setAuthToken(_ token: String) async {
+    func setAuthSession(accessToken: String, refreshToken: String?) async {
         await MainActor.run {
-            self.authToken = token
-            self.keychainManager.saveAccessToken(token)
+            self.authToken = accessToken
+            self.keychainManager.saveAccessToken(accessToken)
+            
+            if let refresh = refreshToken {
+                self.refreshToken = refresh
+                self.keychainManager.saveRefreshToken(refresh)
+            }
         }
     }
     
     func clearAuthToken() async {
         await MainActor.run {
             self.authToken = nil
+            self.refreshToken = nil
             self.keychainManager.deleteAccessToken()
+            self.keychainManager.deleteRefreshToken()
+        }
+    }
+    
+    private func refreshAuthToken() async -> Bool {
+        guard let currentRefreshToken = refreshToken, !isRefreshing else { return false }
+        isRefreshing = true
+        defer { isRefreshing = false }
+        
+        struct RefreshRequest: Encodable {
+            let refresh_token: String
+        }
+        
+        struct RefreshResponse: Decodable {
+            let success: Bool?
+            let session: SessionData
+            
+            struct SessionData: Decodable {
+                let access_token: String
+                let refresh_token: String
+            }
+        }
+        
+        do {
+            // We use a raw request here to avoid infinite loops if this fails with 401
+            let response: RefreshResponse = try await _performRequest("/api/auth/refresh", method: "POST", body: RefreshRequest(refresh_token: currentRefreshToken), isRetry: true)
+            
+            await setAuthSession(accessToken: response.session.access_token, refreshToken: response.session.refresh_token)
+            return true
+        } catch {
+            print("❌ Token Refresh Failed: \(error)")
+            await clearAuthToken()
+            return false
         }
     }
     
     func request<T: Decodable>(_ endpoint: String, method: String = "GET", body: Encodable? = nil, queryItems: [URLQueryItem]? = nil) async throws -> T {
+        do {
+            return try await _performRequest(endpoint, method: method, body: body, queryItems: queryItems)
+        } catch NetworkError.unauthorized {
+            if await refreshAuthToken() {
+                return try await _performRequest(endpoint, method: method, body: body, queryItems: queryItems)
+            } else {
+                throw NetworkError.unauthorized
+            }
+        } catch {
+            throw error
+        }
+    }
+
+    private func _performRequest<T: Decodable>(_ endpoint: String, method: String = "GET", body: Encodable? = nil, queryItems: [URLQueryItem]? = nil, isRetry: Bool = false) async throws -> T {
         var urlComponents = URLComponents(string: baseURL + endpoint)
         urlComponents?.queryItems = queryItems
         
@@ -122,40 +185,61 @@ class NetworkService: ObservableObject {
         do {
             (data, response) = try await session.data(for: request)
         } catch {
-            throw NetworkError.networkFailure(error)
+             throw NetworkError.networkFailure(error)
         }
         
         guard let httpResponse = response as? HTTPURLResponse else {
             print("❌ Invalid Response (not HTTP)")
-            throw NetworkError.unknown
+             throw NetworkError.unknown
         }
         
         print("📡 Response Status: \(httpResponse.statusCode)")
         if let responseString = String(data: data, encoding: .utf8) {
-            print("📡 Response Body: \(responseString)")
+             print("📡 Response Body: \(responseString)")
         }
         
         switch httpResponse.statusCode {
         case 200...299:
             return try decoder.decode(T.self, from: data)
         case 401:
-            await clearAuthToken()
+            // Do not clear token here, let the caller handle it (try refresh)
+            // unless it's already a retry
+            if isRetry {
+                 await clearAuthToken()
+             }
             throw NetworkError.unauthorized
         case 403:
-            throw NetworkError.forbidden
+             throw NetworkError.forbidden
         case 404:
-            throw NetworkError.notFound
+             throw NetworkError.notFound
         default:
             // Try to decode error message from server
-            if let errorResponse = try? decoder.decode(ErrorResponse.self, from: data) {
-                throw NetworkError.serverError(errorResponse.message)
+             if let errorResponse = try? decoder.decode(ErrorResponse.self, from: data) {
+                 throw NetworkError.serverError(errorResponse.message)
             }
-            throw NetworkError.serverError("Server returned code \(httpResponse.statusCode)")
+             throw NetworkError.serverError("Server returned code \(httpResponse.statusCode)")
         }
     }
     
     // Helper specifically for empty response bodies (e.g. 204 No Content or simple 200 OK)
     func requestEmpty(_ endpoint: String, method: String = "POST", body: Encodable? = nil, queryItems: [URLQueryItem]? = nil) async throws {
+        do {
+             // We can reuse _performRequest but we need it to return Data or Void.
+             // Easier to just replicate the retry logic here or adapt _performRequest to Generic but T could be Void? Swift doesn't like that.
+             // I'll make a _performRequestEmpty
+             try await _performRequestEmpty(endpoint, method: method, body: body, queryItems: queryItems)
+        } catch NetworkError.unauthorized {
+            if await refreshAuthToken() {
+                 try await _performRequestEmpty(endpoint, method: method, body: body, queryItems: queryItems)
+            } else {
+                throw NetworkError.unauthorized
+            }
+        } catch {
+             throw error
+        }
+    }
+    
+    private func _performRequestEmpty(_ endpoint: String, method: String = "POST", body: Encodable? = nil, queryItems: [URLQueryItem]? = nil, isRetry: Bool = false) async throws {
          var urlComponents = URLComponents(string: baseURL + endpoint)
          urlComponents?.queryItems = queryItems
         
@@ -196,7 +280,7 @@ class NetworkService: ObservableObject {
         if !(200...299).contains(httpResponse.statusCode) {
              switch httpResponse.statusCode {
             case 401:
-                await clearAuthToken()
+                 if isRetry { await clearAuthToken() }
                 throw NetworkError.unauthorized
             default:
                 throw NetworkError.serverError("Server returned code \(httpResponse.statusCode)")
