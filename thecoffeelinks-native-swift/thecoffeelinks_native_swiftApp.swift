@@ -39,6 +39,7 @@ struct thecoffeelinks_native_swiftApp: App {
                 .environmentObject(storeViewModel)
                 .environmentObject(deliveryViewModel)
                 .environmentObject(dependencyContainer.userPreferences) // Inject preferences
+                .environmentObject(dependencyContainer.networkService) // Inject NetworkService
                 //.preferredColorScheme(.dark)
         }
     }
