@@ -343,6 +343,12 @@ struct APIMenuResponse: Codable {
     let sugarOptions: [ConfigOption]?
     let iceOptions: [ConfigOption]?
     
+    enum CodingKeys: String, CodingKey {
+        case categories, products, toppings, sizes
+        case sugarOptions = "sugar_options"
+        case iceOptions = "ice_options"
+    }
+    
     struct MenuCategory: Codable {
         let id: String
         let name: String
@@ -360,6 +366,16 @@ struct APIMenuResponse: Codable {
         let isAvailable: Bool
         let availableToppings: [String]
         let sizeOptions: APIProductSizeOptions
+        
+        enum CodingKeys: String, CodingKey {
+            case id, name, description, category, image
+            case categoryId = "category_id"
+            case isPopular = "is_popular"
+            case isNew = "is_new"
+            case isAvailable = "is_available"
+            case availableToppings = "available_toppings"
+            case sizeOptions = "size_options"
+        }
     }
     
     struct APITopping: Codable {
@@ -368,6 +384,12 @@ struct APIMenuResponse: Codable {
         let price: Double
         let isAvailable: Bool
         let createdAt: String?
+        
+        enum CodingKeys: String, CodingKey {
+            case id, name, price
+            case isAvailable = "is_available"
+            case createdAt = "created_at"
+        }
     }
     
     struct SizeInfo: Codable {

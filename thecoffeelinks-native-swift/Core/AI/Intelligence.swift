@@ -3,6 +3,8 @@ import Combine
 
 // MARK: - AI Models
 
+
+
 struct ContextSignal: Codable {
     let timeSlot: TimeSlot
     let dayOfWeek: Int // 1 = Sunday

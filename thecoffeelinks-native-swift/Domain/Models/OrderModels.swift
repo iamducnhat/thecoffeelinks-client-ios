@@ -391,7 +391,7 @@ struct APIOrdersResponse: Codable {
             let is_favorite: Bool
             let product_name: String
             let product_image: String?
-            let options_snapshot_json: APIOrderCustomization
+            let options_snapshot_json: APIOrderCustomization?
             
             struct APIOrderCustomization: Codable {
                 let ice: String?
@@ -411,7 +411,7 @@ struct APIOrdersResponse: Codable {
             let items = apiOrder.order_items.map { apiItem in
                 // Parse size
                 let size: ProductSize
-                if let sizeStr = apiItem.options_snapshot_json.size?.lowercased() {
+                if let sizeStr = apiItem.options_snapshot_json?.size?.lowercased() {
                     size = sizeStr.contains("small") ? .small :
                            sizeStr.contains("large") ? .large : .medium
                 } else {
@@ -420,7 +420,7 @@ struct APIOrdersResponse: Codable {
                 
                 // Parse sugar
                 let sugar: SugarLevel
-                if let sugarStr = apiItem.options_snapshot_json.sugar {
+                if let sugarStr = apiItem.options_snapshot_json?.sugar {
                     if sugarStr.contains("0") { sugar = .none }
                     else if sugarStr.contains("25") { sugar = .quarter }
                     else if sugarStr.contains("50") { sugar = .half }
@@ -432,7 +432,7 @@ struct APIOrdersResponse: Codable {
                 
                 // Parse ice
                 let ice: IceLevel
-                if let iceStr = apiItem.options_snapshot_json.ice?.lowercased() {
+                if let iceStr = apiItem.options_snapshot_json?.ice?.lowercased() {
                     if iceStr.contains("no") { ice = .none }
                     else if iceStr.contains("less") { ice = .less }
                     else if iceStr.contains("extra") { ice = .extra }

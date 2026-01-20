@@ -205,6 +205,7 @@ struct UserPreferences: Codable, Hashable, Sendable {
     var notificationsEnabled: Bool
     var orderUpdatesEnabled: Bool
     var promotionsEnabled: Bool
+    var presenceMode: PresenceMode
     enum CodingKeys: String, CodingKey {
         case defaultOrderingMode = "default_ordering_mode"
         case defaultStoreId = "default_store_id"

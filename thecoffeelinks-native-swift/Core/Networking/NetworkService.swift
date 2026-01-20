@@ -49,7 +49,7 @@ class NetworkService: ObservableObject {
     
     @Published var authToken: String?
     private var refreshToken: String?
-    private var isRefreshing = false
+    private var refreshTask: Task<Bool, Never>?
     
     init(keychainManager: KeychainManager) {
         let config = URLSessionConfiguration.default
@@ -97,36 +97,46 @@ class NetworkService: ObservableObject {
         }
     }
     
+    // Thread-safe token refresh with task deduplication
     private func refreshAuthToken() async -> Bool {
-        guard let currentRefreshToken = refreshToken, !isRefreshing else { return false }
-        isRefreshing = true
-        defer { isRefreshing = false }
-        
-        struct RefreshRequest: Encodable {
-            let refresh_token: String
+        if let existingTask = refreshTask {
+            return await existingTask.value
         }
         
-        struct RefreshResponse: Decodable {
-            let success: Bool?
-            let session: SessionData
+        let task = Task<Bool, Never> {
+            guard let currentRefreshToken = self.refreshToken else { return false }
             
-            struct SessionData: Decodable {
-                let access_token: String
+            struct RefreshRequest: Encodable {
                 let refresh_token: String
+            }
+            
+            struct RefreshResponse: Decodable {
+                let success: Bool?
+                let session: SessionData
+                
+                struct SessionData: Decodable {
+                    let access_token: String
+                    let refresh_token: String
+                }
+            }
+            
+            do {
+                // We use a raw request here to avoid infinite loops if this fails with 401
+                let response: RefreshResponse = try await _performRequest("/api/auth/refresh", method: "POST", body: RefreshRequest(refresh_token: currentRefreshToken), isRetry: true)
+                
+                await setAuthSession(accessToken: response.session.access_token, refreshToken: response.session.refresh_token)
+                return true
+            } catch {
+                print("❌ Token Refresh Failed: \(error)")
+                await clearAuthToken()
+                return false
             }
         }
         
-        do {
-            // We use a raw request here to avoid infinite loops if this fails with 401
-            let response: RefreshResponse = try await _performRequest("/api/auth/refresh", method: "POST", body: RefreshRequest(refresh_token: currentRefreshToken), isRetry: true)
-            
-            await setAuthSession(accessToken: response.session.access_token, refreshToken: response.session.refresh_token)
-            return true
-        } catch {
-            print("❌ Token Refresh Failed: \(error)")
-            await clearAuthToken()
-            return false
-        }
+        self.refreshTask = task
+        let result = await task.value
+        self.refreshTask = nil
+        return result
     }
     
     func request<T: Decodable>(_ endpoint: String, method: String = "GET", body: Encodable? = nil, queryItems: [URLQueryItem]? = nil, encoder: JSONEncoder? = nil) async throws -> T {
@@ -150,7 +160,6 @@ class NetworkService: ObservableObject {
         guard let url = urlComponents?.url else {
             throw NetworkError.invalidURL
         }
-        print("🌐 Request →", method, url.absoluteString)
         
         var request = URLRequest(url: url)
         request.httpMethod = method
@@ -169,9 +178,11 @@ class NetworkService: ObservableObject {
                 request.httpBody = bodyData
                 
                 if let bodyString = String(data: bodyData, encoding: .utf8) {
+                    print("🌐 Request →", method, url.absoluteString)
                     print("🌐 Request Body:", bodyString)
                 }
             } catch {
+                print("🌐 Request →", method, url.absoluteString)
                 print("❌ Failed to encode request body:", error)
                 throw NetworkError.networkFailure(error)
             }
@@ -184,14 +195,14 @@ class NetworkService: ObservableObject {
              throw NetworkError.networkFailure(error)
         }
         
+        print("🌐 Request →", method, url.absoluteString)
         guard let httpResponse = response as? HTTPURLResponse else {
             print("❌ Invalid Response (not HTTP)")
              throw NetworkError.unknown
         }
-        
         print("📡 Response Status: \(httpResponse.statusCode)")
         if let responseString = String(data: data, encoding: .utf8) {
-             print("📡 Response Body: \(responseString)")
+            print("📡 Response Body: \(responseString.prefix(200))")
         }
         
         switch httpResponse.statusCode {
@@ -263,14 +274,14 @@ class NetworkService: ObservableObject {
             throw NetworkError.networkFailure(error)
         }
         
+        print("🌐 Request →", method, url.absoluteString)
         guard let httpResponse = response as? HTTPURLResponse else {
             print("❌ Invalid Response (not HTTP)")
             throw NetworkError.unknown
         }
-        
         print("📡 Response Status: \(httpResponse.statusCode)")
         if let responseString = String(data: data, encoding: .utf8) {
-            print("📡 Response Body: \(responseString)")
+            print("📡 Response Body: \(responseString.prefix(200))")
         }
         
         if !(200...299).contains(httpResponse.statusCode) {
@@ -290,7 +301,6 @@ class NetworkService: ObservableObject {
         urlComponents?.queryItems = queryItems
         
         guard let url = urlComponents?.url else { throw NetworkError.invalidURL }
-        print("🌐 Request →", method, url.absoluteString)
         
         var request = URLRequest(url: url)
         request.httpMethod = method
@@ -308,13 +318,15 @@ class NetworkService: ObservableObject {
         } catch {
             throw NetworkError.networkFailure(error)
         }
+        
+        print("🌐 Request →", method, url.absoluteString)
         guard let httpResponse = response as? HTTPURLResponse else {
             print("❌ Invalid Response (not HTTP)")
             throw NetworkError.unknown
         }
         print("📡 Response Status: \(httpResponse.statusCode)")
         if let responseString = String(data: data, encoding: .utf8) {
-            print("📡 Response Body: \(responseString)")
+            print("📡 Response Body: \(responseString.prefix(200))")
         }
         switch httpResponse.statusCode {
         case 200...299:

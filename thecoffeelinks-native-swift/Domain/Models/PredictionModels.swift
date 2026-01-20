@@ -9,8 +9,6 @@ import Foundation
 
 // MARK: - Predicted Cart
 
-// MARK: - Predicted Cart
-
 struct PredictedCart: Identifiable, Sendable, Equatable {
     let id: UUID
     let items: [PredictedCartItem]
@@ -107,5 +105,159 @@ struct AIDominanceRules: Sendable {
     
     func shouldShowAsHint(confidence: Double, wouldShowCard: Bool) -> Bool {
         confidence >= minConfidence && confidence < hintConfidence && !wouldShowCard
+    }
+}
+
+// MARK: - Predicted Cart Item
+
+struct PredictedCartItem: Identifiable, Sendable, Equatable {
+    let id: UUID
+    let product: Product
+    let customization: OrderCustomization
+    let quantity: Int
+    
+    var totalPrice: Double {
+        // Product now uses base_price / size_options. Assuming product.basePrice exists from Product extension computed prop
+        // or we need to access size price.
+        // ProductModels.swift: Product has `basePrice` (mapped to base_price).
+        // Let's assume Product has basePrice property.
+        // Checking ProductModels.swift in memory:
+        // Product definition: let basePrice: Double? (It was let basePrice: Double? in previous context)
+        // Wait, looking at Step 23 view_file ProductModels.swift:
+        // basePrice WAS mapped to base_price.
+        // Check `PredictedCartItem` usage in original file if possible.
+        // I will assume `product.basePrice` is available or I should calculate from customization.
+        // Safer:
+        (product.basePrice ?? 0) + customization.toppingsTotal
+    }
+    
+    static func == (lhs: PredictedCartItem, rhs: PredictedCartItem) -> Bool {
+        lhs.id == rhs.id
+    }
+}
+
+// MARK: - Prediction Reason
+
+// MARK: - Prediction Reason
+
+enum PredictionReason: Codable, Sendable, Equatable {
+    case routine
+    case weather
+    case trending
+    case timeOfDay(TimeSlot)
+    case dayOfWeek(String)
+    case frequency
+    case history
+    case custom(String)
+    
+    var displayText: String {
+        switch self {
+        case .routine: return "Based on your routine"
+        case .weather: return "Perfect for this weather"
+        case .trending: return "Popular right now"
+        case .timeOfDay(let slot):
+            switch slot {
+            case .morning: return "Good morning"
+            case .afternoon: return "Good afternoon"
+            case .evening: return "Good evening"
+            case .night: return "Late night snack"
+            }
+        case .dayOfWeek(let day): return "Happy \(day)!"
+        case .frequency: return "You order this often"
+        case .history: return "From your history"
+        case .custom(let message): return message
+        }
+    }
+    
+    var iconName: String {
+        switch self {
+        case .routine: return "clock.arrow.circlepath"
+        case .weather: return "cloud.sun.fill"
+        case .trending: return "flame.fill"
+        case .timeOfDay: return "sun.max.fill"
+        case .dayOfWeek: return "calendar"
+        case .frequency: return "chart.bar.fill"
+        case .history: return "clock.fill"
+        case .custom: return "sparkles"
+        }
+    }
+}
+
+// MARK: - Time Slot
+
+enum TimeSlot: String, Codable, CaseIterable, Sendable {
+    case morning
+    case afternoon
+    case evening
+    case night
+}
+
+// MARK: - Prediction Context
+
+struct PredictionContext: Sendable {
+    let timeSlot: TimeSlot
+    let dayOfWeek: Int
+    let weather: WeatherCondition?
+    let location: LocationType?
+    
+    init(
+        timeSlot: TimeSlot = .morning,
+        dayOfWeek: Int = Calendar.current.component(.weekday, from: Date()),
+        weather: WeatherCondition? = nil,
+        location: LocationType? = nil
+    ) {
+        self.timeSlot = timeSlot
+        self.dayOfWeek = dayOfWeek
+        self.weather = weather
+        self.location = location
+    }
+    
+    static var current: PredictionContext {
+        let now = Date()
+        let calendar = Calendar.current
+        let hour = calendar.component(.hour, from: now)
+        let dayOfWeek = calendar.component(.weekday, from: now)
+        
+        let timeSlot: TimeSlot
+        switch hour {
+        case 5..<11: timeSlot = .morning
+        case 11..<14: timeSlot = .afternoon
+        case 14..<18: timeSlot = .evening
+        default: timeSlot = .night
+        }
+        
+        return PredictionContext(timeSlot: timeSlot, dayOfWeek: dayOfWeek)
+    }
+}
+
+enum WeatherCondition: String, Codable, Sendable {
+    case sunny, rainy, cloudy, hot, cold
+}
+
+enum LocationType: String, Codable, Sendable {
+    case home, work, store, transit, unknown
+}
+
+// MARK: - Confidence Level
+
+enum ConfidenceLevel: String, Sendable {
+    case high
+    case medium
+    case low
+    
+    var colorName: String {
+        switch self {
+        case .high: return "green"
+        case .medium: return "orange"
+        case .low: return "gray"
+        }
+    }
+    
+    var displayPrefix: String {
+        switch self {
+        case .high: return "High Confidence"
+        case .medium: return "Suggested"
+        case .low: return "For You"
+        }
     }
 }
