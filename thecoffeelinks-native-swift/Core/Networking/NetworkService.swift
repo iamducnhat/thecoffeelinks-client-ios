@@ -202,7 +202,7 @@ class NetworkService: ObservableObject {
         }
         print("📡 Response Status: \(httpResponse.statusCode)")
         if let responseString = String(data: data, encoding: .utf8) {
-            print("📡 Response Body: \(responseString.prefix(200))")
+            print("📡 Response Body: \(responseString)")
         }
         
         switch httpResponse.statusCode {
@@ -281,7 +281,7 @@ class NetworkService: ObservableObject {
         }
         print("📡 Response Status: \(httpResponse.statusCode)")
         if let responseString = String(data: data, encoding: .utf8) {
-            print("📡 Response Body: \(responseString.prefix(200))")
+            print("📡 Response Body: \(responseString)")
         }
         
         if !(200...299).contains(httpResponse.statusCode) {
@@ -326,7 +326,7 @@ class NetworkService: ObservableObject {
         }
         print("📡 Response Status: \(httpResponse.statusCode)")
         if let responseString = String(data: data, encoding: .utf8) {
-            print("📡 Response Body: \(responseString.prefix(200))")
+            print("📡 Response Body: \(responseString)")
         }
         switch httpResponse.statusCode {
         case 200...299:

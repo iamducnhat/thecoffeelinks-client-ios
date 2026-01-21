@@ -10,11 +10,13 @@ class StoreRepository {
     }
     
     func getStores() async throws -> [Store] {
-        return try await networkService.request("/api/stores")
+        let response: StoresResponse = try await networkService.request("/api/stores")
+        return response.stores
     }
     
     func getStore(id: String) async throws -> Store {
-        return try await networkService.request("/api/stores/\(id)")
+        let response: StoreResponse = try await networkService.request("/api/stores/\(id)")
+        return response.store
     }
     
     func getNearestStore(latitude: Double, longitude: Double) async throws -> Store? {

@@ -312,7 +312,8 @@ struct Store: Codable, Identifiable, Hashable, Sendable {
     let dineInAvailable: Bool?
     
     enum CodingKeys: String, CodingKey {
-        case id, name, address, latitude, longitude, phone
+        case id, name, address, latitude, longitude
+        case phone = "phone_number"
         case imageUrl = "image_url"
         case layoutMapUrl = "layout_map_url"
         case openingHours = "opening_hours"
