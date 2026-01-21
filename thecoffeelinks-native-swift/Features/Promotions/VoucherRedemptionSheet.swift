@@ -116,32 +116,74 @@ struct VoucherRedemptionSheet: View {
                                 .stroke(Color.border.opacity(0.5), lineWidth: 1)
                         )
                         
-                        // 4. Warning (Dynamic Code)
-                        // We removed the static code display because it's no longer useful for redemption
-                        // Only show if we need a fallback, but for security we hide the raw code usually.
-                        // However, keeping the "ID" might be useful for support.
-                        
+                        // 4. Voucher Code (Copyable)
                         VStack(spacing: AppLayout.spacingSmall) {
-                            Text("SECURITY ID")
+                            Text("VOUCHER CODE")
                                 .font(AppFont.uiMicro)
                                 .textCase(.uppercase)
                                 .foregroundStyle(Color.textMuted)
                             
-                             Text(voucher.id.prefix(8).uppercased())
-                                .font(.system(.body, design: .monospaced))
-                                .foregroundStyle(Color.textMuted)
+                            HStack(spacing: 12) {
+                                Text(voucher.code)
+                                    .font(.system(.title2, design: .monospaced))
+                                    .fontWeight(.bold)
+                                    .foregroundStyle(Color.primaryEspresso)
+                                
+                                Button {
+                                    UIPasteboard.general.string = voucher.code
+                                    withAnimation(.spring()) {
+                                        hasCopied = true
+                                    }
+                                    FeedbackGenerator.shared.success()
+                                    
+                                    // Reset after 2s
+                                    DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+                                        withAnimation {
+                                            hasCopied = false
+                                        }
+                                    }
+                                } label: {
+                                    HStack(spacing: 4) {
+                                        Image(systemName: hasCopied ? "checkmark.circle.fill" : "doc.on.doc")
+                                        if hasCopied {
+                                            Text("Copied")
+                                                .font(AppFont.uiMicro)
+                                        }
+                                    }
+                                    .font(.system(size: 14, weight: .semibold))
+                                    .foregroundStyle(hasCopied ? .green : Color.primaryEspresso)
+                                    .padding(.horizontal, 12)
+                                    .padding(.vertical, 6)
+                                    .background(hasCopied ? Color.green.opacity(0.1) : Color.primaryEspresso.opacity(0.1))
+                                    .clipShape(Capsule())
+                                }
+                            }
                         }
                         
-                        // 5. Metadata
+                        // 5. Metadata Grid
                         VStack(spacing: AppLayout.spacing) {
-                            HStack(spacing: 32) {
+                            LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 20) {
                                 if let validUntil = voucher.validUntil {
                                     metadataItem(label: "EXPIRES", value: validUntil.formatted(date: .abbreviated, time: .omitted))
                                 }
                                 
-                                // Usage limit fallback since it's commonly 1
-                                metadataItem(label: "USAGE", value: (voucher.usageLimit == 1) ? "One-time" : "Unlimited")
+                                // Enhanced Usage logic
+                                let remaining = max(0, voucher.maxUsesPerUser - voucher.userUsesCount)
+                                let usageValue = voucher.maxUsesPerUser > 1 
+                                    ? "\(remaining) of \(voucher.maxUsesPerUser) left" 
+                                    : "One-time"
+                                
+                                metadataItem(label: "USAGE", value: usageValue)
+                                
+                                if let minOrder = voucher.minOrderAmount, minOrder > 0 {
+                                    metadataItem(label: "MIN ORDER", value: minOrder.formattedVND)
+                                }
+                                
+                                if let maxDiscount = voucher.maxDiscount, maxDiscount > 0 {
+                                    metadataItem(label: "MAX SAVING", value: maxDiscount.formattedVND)
+                                }
                             }
+                            .padding(.horizontal, 40)
                         }
                         .padding(.top, AppLayout.spacing)
                         
