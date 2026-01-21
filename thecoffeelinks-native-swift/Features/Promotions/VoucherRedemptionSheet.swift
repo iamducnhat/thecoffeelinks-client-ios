@@ -65,7 +65,7 @@ struct VoucherRedemptionSheet: View {
                         // 2. Discount Display
                         VStack(spacing: 4) {
                             Text(voucher.displayValue) // e.g. "50% OFF"
-                                .font(.system(size: 40, weight: .bold, design: .rounded))
+                                .font(AppFont.displayH1)
                                 .foregroundStyle(Color.primaryEspresso)
                             
                             // Subtitle logic (using description or generic fallback)
@@ -81,6 +81,7 @@ struct VoucherRedemptionSheet: View {
                         ZStack {
                             if let qrString = signedQrCode {
                                 QRRenderView(payload: qrString)
+                                    .scaledToFit()
                                     .frame(width: 280, height: 280) // Larger size
                             } else if isLoadingQR {
                                 ProgressView()

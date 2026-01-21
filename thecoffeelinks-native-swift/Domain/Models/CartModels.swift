@@ -128,6 +128,8 @@ struct Voucher: Codable, Identifiable, Sendable {
     let usageLimit: Int?
     let usedCount: Int
     let isActive: Bool
+    let maxUsesPerUser: Int
+    let userUsesCount: Int
     let applicableProducts: [String]?
     let applicableModes: [OrderingMode]?
     
@@ -140,26 +142,13 @@ struct Voucher: Codable, Identifiable, Sendable {
         case id, code, description
         case imageUrl = "image_url"
         case discountType = "discount_type"
-        case discountValue = "discount_amount" // API typically uses discount_amount or value. Checking migration: discount_amount
-        case minOrderAmount = "min_order"      // Migration: min_order
-        case maxDiscount = "max_discount"      // Migration: max_discount
-        case validUntil = "valid_until"        // Migration doesn't have expires_at in view? user_vouchers has expires_at. voucher_definitions has valid_days. Let's assume API verification.
+        case discountValue = "discount_amount"
+        case minOrderAmount = "min_order"
+        case maxDiscount = "max_discount"
+        case validUntil = "valid_until"
         case isActive = "is_active"
-        // Note: The previous mapping had:
-        // discountValue = "value"
-        // minOrderAmount = "minSpend"
-        // validUntil = "expiresAt"
-        // isActive = "isUsed" (inverted)
-        // CHECK MIGRATION: 
-        // voucher_definitions: discount_amount, min_order, max_discount, is_active.
-        // user_vouchers: expires_at.
-        // The previous code seemed to map to a different API structure. 
-        // Given "ALL server boundaries MUST use snake_case", I will map to the standard snake_case versions mostly seen in Supabase.
-        // However, if the API returns mixed keys, this breaks. 
-        // Based on "20260120050000_dynamic_vouchers.sql":
-        // definition columns: discount_amount, min_order, max_discount.
-        // RPC "redeem_voucher" doesn't return the voucher details, usually a separate fetch.
-        // I will adhere to the migration schema.
+        case maxUsesPerUser = "max_uses_per_user"
+        case userUsesCount = "user_uses_count"
     }
     
     init(from decoder: Decoder) throws {
@@ -174,6 +163,8 @@ struct Voucher: Codable, Identifiable, Sendable {
         minOrderAmount = try container.decodeIfPresent(Double.self, forKey: .minOrderAmount)
         maxDiscount = try container.decodeIfPresent(Double.self, forKey: .maxDiscount)
         validUntil = try container.decodeIfPresent(Date.self, forKey: .validUntil)
+        maxUsesPerUser = try container.decodeIfPresent(Int.self, forKey: .maxUsesPerUser) ?? 1
+        userUsesCount = try container.decodeIfPresent(Int.self, forKey: .userUsesCount) ?? 0
         
         // Fields not in API - use defaults
         validFrom = Date.distantPast
@@ -202,6 +193,8 @@ struct Voucher: Codable, Identifiable, Sendable {
         try container.encodeIfPresent(maxDiscount, forKey: .maxDiscount)
         try container.encodeIfPresent(validUntil, forKey: .validUntil)
         try container.encode(isActive, forKey: .isActive)
+        try container.encode(maxUsesPerUser, forKey: .maxUsesPerUser)
+        try container.encode(userUsesCount, forKey: .userUsesCount)
     }
     
     var isValid: Bool {
