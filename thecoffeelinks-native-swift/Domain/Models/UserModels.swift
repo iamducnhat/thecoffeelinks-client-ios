@@ -424,6 +424,11 @@ struct AuthResponse: Codable, Sendable {
     let session: AuthSession?
     let message: String?
     let requiresVerification: Bool?
+    
+    enum CodingKeys: String, CodingKey {
+        case success, session, message
+        case requiresVerification = "requires_verification"
+    }
 }
 
 // MARK: - API Responses

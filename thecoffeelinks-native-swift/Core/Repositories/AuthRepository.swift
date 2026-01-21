@@ -24,7 +24,12 @@ class AuthRepository {
         struct AuthResponse: Decodable {
             let success: Bool
             let user: User
-            let auth_url: String? 
+            let authUrl: String? 
+            
+            enum CodingKeys: String, CodingKey {
+                case success, user
+                case authUrl = "auth_url"
+            }
         }
         
         // This endpoint returns success=true and a 'user' object (partial) and an 'auth_url' magic link
@@ -109,6 +114,11 @@ class AuthRepository {
             struct SessionData: Decodable {
                 let accessToken: String
                 let refreshToken: String?
+                
+                enum CodingKeys: String, CodingKey {
+                    case accessToken = "access_token"
+                    case refreshToken = "refresh_token"
+                }
             }
             
              struct SupabaseUser: Decodable {
