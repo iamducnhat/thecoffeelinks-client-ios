@@ -8,12 +8,14 @@ import Foundation
 final class ProductRepository: ProductRepositoryProtocol, @unchecked Sendable {
     private let networkService: NetworkServiceProtocol
     private let cacheService: CacheServiceProtocol
+    private let syncManager: SyncManager
     private let menuCacheKey = "menu_cache"
     private let menuCacheTTL: TimeInterval = 300
     
-    init(networkService: NetworkServiceProtocol, cacheService: CacheServiceProtocol) {
+    init(networkService: NetworkServiceProtocol, cacheService: CacheServiceProtocol, syncManager: SyncManager) {
         self.networkService = networkService
         self.cacheService = cacheService
+        self.syncManager = syncManager
     }
     
     func getCachedMenu() async -> Menu? {
@@ -29,16 +31,29 @@ final class ProductRepository: ProductRepositoryProtocol, @unchecked Sendable {
             await cacheService.set(menuCacheKey, value: data, ttl: menuCacheTTL)
         }
         
+        // Update local version if we have a server version from sync manager
+        if let serverVersion = syncManager.serverVersion(for: "menu") {
+            syncManager.updateLocalVersion(key: "menu", version: serverVersion)
+        }
+        
         return menu
     }
     
     func getMenu() async throws -> Menu {
-        // Fallback for legacy calls: Try cache first, then refresh
-        // Use locally decoded data if available
+        // 1. Try to get from cache
         if let data: Data = await cacheService.get(menuCacheKey),
            let cached = try? JSONDecoder().decode(Menu.self, from: data) {
+            
+            // 2. Check if stale
+            if let serverVersion = syncManager.serverVersion(for: "menu") {
+                if syncManager.isStale(key: "menu", serverVersion: serverVersion) {
+                    return try await refreshMenu()
+                }
+            }
             return cached
         }
+        
+        // 3. Not in cache or version unknown (first time), fetch and update
         return try await refreshMenu()
     }
     

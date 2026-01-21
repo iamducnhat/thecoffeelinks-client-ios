@@ -60,6 +60,9 @@ class AppState: ObservableObject {
     
     init() {
         determineTimeMode()
+        Task {
+            await DependencyContainer.shared.initialize()
+        }
     }
     
     func determineTimeMode() {

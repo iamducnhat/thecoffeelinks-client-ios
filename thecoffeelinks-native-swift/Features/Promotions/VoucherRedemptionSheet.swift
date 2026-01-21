@@ -134,7 +134,7 @@ struct VoucherRedemptionSheet: View {
                                     withAnimation(.spring()) {
                                         hasCopied = true
                                     }
-                                    FeedbackGenerator.shared.success()
+                                    UINotificationFeedbackGenerator().notificationOccurred(.success)
                                     
                                     // Reset after 2s
                                     DispatchQueue.main.asyncAfter(deadline: .now() + 2) {

@@ -168,11 +168,13 @@ final class FavoritesRepository: FavoritesRepositoryProtocol, @unchecked Sendabl
 final class VoucherRepository: VoucherRepositoryProtocol, @unchecked Sendable {
     private let networkService: NetworkServiceProtocol
     private let cacheService: CacheServiceProtocol
+    private let syncManager: SyncManager
     private let vouchersCacheKey = "user_vouchers"
     
-    init(networkService: NetworkServiceProtocol, cacheService: CacheServiceProtocol) {
+    init(networkService: NetworkServiceProtocol, cacheService: CacheServiceProtocol, syncManager: SyncManager) {
         self.networkService = networkService
         self.cacheService = cacheService
+        self.syncManager = syncManager
     }
     
     func getCachedVouchers() async -> [Voucher]? {
@@ -187,11 +189,24 @@ final class VoucherRepository: VoucherRepositoryProtocol, @unchecked Sendable {
              await cacheService.set(vouchersCacheKey, value: data, ttl: 86400)
         }
         
+        // Update local version if we have a server version from sync manager
+        if let serverVersion = syncManager.serverVersion(for: "vouchers") {
+            syncManager.updateLocalVersion(key: "vouchers", version: serverVersion)
+        }
+        
         return response.vouchers
     }
     
     func getVouchers() async throws -> [Voucher] {
-        if let cached = await getCachedVouchers() { return cached }
+        if let cached = await getCachedVouchers() {
+            // Check if stale
+            if let serverVersion = syncManager.serverVersion(for: "vouchers") {
+                if syncManager.isStale(key: "vouchers", serverVersion: serverVersion) {
+                    return try await refreshVouchers()
+                }
+            }
+            return cached
+        }
         return try await refreshVouchers()
     }
     
