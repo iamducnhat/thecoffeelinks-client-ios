@@ -105,7 +105,7 @@ final class BootstrapService: @unchecked Sendable {
     
     /// Fetch app bootstrap data using optimized RPC
     /// Returns profile, vouchers, versions, and recent points in single query
-    func getBootstrapData() async throws -> BootstrapResponse {
+    nonisolated func getBootstrapData() async throws -> BootstrapResponse {
         // Try cache first
         if let cached: BootstrapResponse = await cacheService.get(cacheKey) {
             print("✅ Using cached bootstrap data")
@@ -156,7 +156,7 @@ final class BootstrapService: @unchecked Sendable {
     }
     
     /// Clear cached bootstrap data (call on logout or refresh)
-    func clearCache() async {
+    nonisolated func clearCache() async {
         await cacheService.remove(cacheKey)
     }
 }
