@@ -8,10 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		12777CFB3F8B4F0FB4ECD5AA /* LibreBaskerville-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = B4331C9B483A4F6E99149D4A /* LibreBaskerville-Regular.ttf */; };
-		25544F4E2F1431A0009A6830 /* Auth in Frameworks */ = {isa = PBXBuildFile; productRef = 25544F4D2F1431A0009A6830 /* Auth */; };
-		25544F502F1431A0009A6830 /* PostgREST in Frameworks */ = {isa = PBXBuildFile; productRef = 25544F4F2F1431A0009A6830 /* PostgREST */; };
 		25544F522F1431A0009A6830 /* Realtime in Frameworks */ = {isa = PBXBuildFile; productRef = 25544F512F1431A0009A6830 /* Realtime */; };
-		25544F542F1431A0009A6830 /* Storage in Frameworks */ = {isa = PBXBuildFile; productRef = 25544F532F1431A0009A6830 /* Storage */; };
 		25544F572F14341D009A6830 /* Supabase in Frameworks */ = {isa = PBXBuildFile; productRef = 25544F562F14341D009A6830 /* Supabase */; };
 		25FC4F5F2F1CB2A90001D920 /* CachedAsyncImage in Frameworks */ = {isa = PBXBuildFile; productRef = 25FC4F5E2F1CB2A90001D920 /* CachedAsyncImage */; };
 		311132BBAFDC4D87A1AEF0E9 /* LibreBaskerville-Italic.ttf in Resources */ = {isa = PBXBuildFile; fileRef = FC02A854467A483D898B0051 /* LibreBaskerville-Italic.ttf */; };
@@ -68,11 +65,8 @@
 			buildActionMask = 2147483647;
 			files = (
 				25544F572F14341D009A6830 /* Supabase in Frameworks */,
-				25544F542F1431A0009A6830 /* Storage in Frameworks */,
 				25544F522F1431A0009A6830 /* Realtime in Frameworks */,
 				25FC4F5F2F1CB2A90001D920 /* CachedAsyncImage in Frameworks */,
-				25544F502F1431A0009A6830 /* PostgREST in Frameworks */,
-				25544F4E2F1431A0009A6830 /* Auth in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -152,10 +146,7 @@
 			);
 			name = "thecoffeelinks-native-swift";
 			packageProductDependencies = (
-				25544F4D2F1431A0009A6830 /* Auth */,
-				25544F4F2F1431A0009A6830 /* PostgREST */,
 				25544F512F1431A0009A6830 /* Realtime */,
-				25544F532F1431A0009A6830 /* Storage */,
 				25544F562F14341D009A6830 /* Supabase */,
 				25FC4F5E2F1CB2A90001D920 /* CachedAsyncImage */,
 			);
@@ -673,25 +664,10 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		25544F4D2F1431A0009A6830 /* Auth */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 25544F4C2F1431A0009A6830 /* XCRemoteSwiftPackageReference "supabase-swift" */;
-			productName = Auth;
-		};
-		25544F4F2F1431A0009A6830 /* PostgREST */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 25544F4C2F1431A0009A6830 /* XCRemoteSwiftPackageReference "supabase-swift" */;
-			productName = PostgREST;
-		};
 		25544F512F1431A0009A6830 /* Realtime */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = 25544F4C2F1431A0009A6830 /* XCRemoteSwiftPackageReference "supabase-swift" */;
 			productName = Realtime;
-		};
-		25544F532F1431A0009A6830 /* Storage */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 25544F4C2F1431A0009A6830 /* XCRemoteSwiftPackageReference "supabase-swift" */;
-			productName = Storage;
 		};
 		25544F562F14341D009A6830 /* Supabase */ = {
 			isa = XCSwiftPackageProductDependency;
