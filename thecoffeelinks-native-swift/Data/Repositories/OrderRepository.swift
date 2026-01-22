@@ -13,9 +13,8 @@ final class OrderRepository: OrderRepositoryProtocol, @unchecked Sendable {
     }
     
     func createOrder(_ request: CreateOrderRequest) async throws -> Order {
-        let response: OrderResponse = try await networkService.post("/api/orders", body: request)
-        guard let order = response.order else { throw OrderError.creationFailed(response.message ?? "Failed to create order") }
-        return order
+        let response: CreateOrderResponse = try await networkService.post("/api/orders", body: request)
+        return response.toOrder()
     }
     
     func getOrder(id: String) async throws -> Order {

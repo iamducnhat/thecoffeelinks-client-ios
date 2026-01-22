@@ -28,6 +28,7 @@ struct Product: Codable, Identifiable, Hashable, Sendable {
     let isPopular: Bool
     let isNew: Bool
     let isActive: Bool
+    let isHotSupported: Bool
     let isDeliverable: Bool
     let deliveryPrepMinutes: Int?
     let tags: [String]
@@ -45,6 +46,7 @@ struct Product: Codable, Identifiable, Hashable, Sendable {
         case isPopular = "is_popular"
         case isNew = "is_new"
         case isActive = "is_active"
+        case isHotSupported = "is_hot_supported"
         case isDeliverable = "is_deliverable"
         case deliveryPrepMinutes = "delivery_prep_minutes"
         case tags
@@ -52,7 +54,7 @@ struct Product: Codable, Identifiable, Hashable, Sendable {
         case allergens
     }
     
-    init(id: String, name: String, description: String?, categoryId: String, categoryName: String?, imageUrl: String?, basePrice: Double, sizeOptions: [SizeOption], availableToppings: [String], isPopular: Bool, isNew: Bool, isActive: Bool, isDeliverable: Bool, deliveryPrepMinutes: Int?, tags: [String], nutritionInfo: NutritionInfo?, allergens: [String]) {
+    init(id: String, name: String, description: String?, categoryId: String, categoryName: String?, imageUrl: String?, basePrice: Double, sizeOptions: [SizeOption], availableToppings: [String], isPopular: Bool, isNew: Bool, isActive: Bool, isHotSupported: Bool, isDeliverable: Bool, deliveryPrepMinutes: Int?, tags: [String], nutritionInfo: NutritionInfo?, allergens: [String]) {
         self.id = id
         self.name = name
         self.description = description
@@ -65,6 +67,7 @@ struct Product: Codable, Identifiable, Hashable, Sendable {
         self.isPopular = isPopular
         self.isNew = isNew
         self.isActive = isActive
+        self.isHotSupported = isHotSupported
         self.isDeliverable = isDeliverable
         self.deliveryPrepMinutes = deliveryPrepMinutes
         self.tags = tags
@@ -86,6 +89,7 @@ struct Product: Codable, Identifiable, Hashable, Sendable {
         isPopular = try container.decode(Bool.self, forKey: .isPopular)
         isNew = try container.decode(Bool.self, forKey: .isNew)
         isActive = try container.decode(Bool.self, forKey: .isActive)
+        isHotSupported = try container.decodeIfPresent(Bool.self, forKey: .isHotSupported) ?? false
         isDeliverable = try container.decode(Bool.self, forKey: .isDeliverable)
         deliveryPrepMinutes = try container.decodeIfPresent(Int.self, forKey: .deliveryPrepMinutes)
         tags = try container.decode([String].self, forKey: .tags)
@@ -107,6 +111,7 @@ struct Product: Codable, Identifiable, Hashable, Sendable {
         try container.encode(isPopular, forKey: .isPopular)
         try container.encode(isNew, forKey: .isNew)
         try container.encode(isActive, forKey: .isActive)
+        try container.encode(isHotSupported, forKey: .isHotSupported)
         try container.encode(isDeliverable, forKey: .isDeliverable)
         try container.encodeIfPresent(deliveryPrepMinutes, forKey: .deliveryPrepMinutes)
         try container.encode(tags, forKey: .tags)
@@ -364,6 +369,7 @@ struct APIMenuResponse: Codable {
         let isPopular: Bool
         let isNew: Bool
         let isAvailable: Bool
+        let isHotSupported: Bool?
         let availableToppings: [String]
         let sizeOptions: APIProductSizeOptions
         
@@ -373,6 +379,7 @@ struct APIMenuResponse: Codable {
             case isPopular = "is_popular"
             case isNew = "is_new"
             case isAvailable = "is_available"
+            case isHotSupported = "is_hot_supported"
             case availableToppings = "available_toppings"
             case sizeOptions = "size_options"
         }
@@ -430,6 +437,7 @@ struct APIMenuResponse: Codable {
                 isPopular: apiProd.isPopular,
                 isNew: apiProd.isNew,
                 isActive: apiProd.isAvailable,
+                isHotSupported: apiProd.isHotSupported ?? false,
                 isDeliverable: true,
                 deliveryPrepMinutes: nil,
                 tags: [],

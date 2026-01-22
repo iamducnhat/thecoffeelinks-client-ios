@@ -328,6 +328,7 @@ struct CreateOrderItemRequest: Codable, Sendable {
     }
 }
 
+
 struct OrderResponse: Codable, Sendable {
     let success: Bool
     let order: Order?
@@ -337,6 +338,162 @@ struct OrderResponse: Codable, Sendable {
         case success, order, message
     }
 }
+
+// MARK: - Create Order Response (different structure from OrderResponse)
+struct CreateOrderResponse: Codable, Sendable {
+    let success: Bool
+    let orderId: String
+    let status: String
+    let expiresAt: String?
+    let estimatedReadyTime: String?
+    let order: APICreateOrder
+    let orderId2: String?  // API returns both "orderId" and "order_id"
+    
+    struct APICreateOrder: Codable {
+        let id: String
+        let user_id: String
+        let store_id: String
+        let voucher_id: String?
+        let status: String
+        let type: String
+        let table_id: String?
+        let total_amount: Double
+        let payment_method: String
+        let payment_status: String
+        let payment_token: String?
+        let delivery_address: String?
+        let delivery_lat: Double?
+        let delivery_lng: Double?
+        let delivery_notes: String?
+        let notes: String?
+        let created_at: String
+        let updated_at: String
+        let pending_until: String?
+        let source: String
+        let delivery_option: String
+        let delivery_address_id: String?
+        let delivery_fee: Double
+        let delivery_eta_minutes: Int?
+        let has_notes: Bool
+        let finalized_at: String?
+        let items: [APICreateOrderItem]
+        let estimated_ready_at: String?
+        
+        struct APICreateOrderItem: Codable {
+            let order_id: String
+            let product_id: String
+            let product_name: String
+            let final_price: Double
+            let quantity: Int
+            let options_snapshot_json: APIOrderCustomization
+            let notes: String?
+            let is_favorite: Bool
+            
+            struct APIOrderCustomization: Codable {
+                let ice: String?
+                let size: String?
+                let sugar: String?
+                let toppings: [String]?
+            }
+        }
+    }
+    
+    enum CodingKeys: String, CodingKey {
+        case success
+        case orderId
+        case status
+        case expiresAt
+        case estimatedReadyTime
+        case order
+        case orderId2 = "order_id"
+    }
+    
+    func toOrder() -> Order {
+        let apiOrder = self.order
+        let orderStatus: OrderStatus = OrderStatus(rawValue: apiOrder.status) ?? .pending
+        let orderingMode: OrderingMode = OrderingMode(rawValue: apiOrder.delivery_option) ?? .pickup
+        let paymentMethod: PaymentMethod = PaymentMethod(rawValue: apiOrder.payment_method) ?? .cash
+        
+        let items = apiOrder.items.map { apiItem in
+            // Parse size
+            let size: ProductSize
+            if let sizeStr = apiItem.options_snapshot_json.size?.uppercased() {
+                size = ProductSize(rawValue: sizeStr) ?? .medium
+            } else {
+                size = .medium
+            }
+            
+            // Parse sugar
+            let sugar: SugarLevel?
+            if let sugarStr = apiItem.options_snapshot_json.sugar {
+                sugar = SugarLevel(rawValue: sugarStr)
+            } else {
+                sugar = .half
+            }
+            
+            // Parse ice
+            let ice: IceLevel?
+            if let iceStr = apiItem.options_snapshot_json.ice {
+                ice = IceLevel(rawValue: iceStr)
+            } else {
+                ice = .normal
+            }
+            
+            let customization = OrderCustomization(
+                size: size,
+                sugar: sugar,
+                ice: ice,
+                toppings: [],
+                notes: apiItem.notes
+            )
+            
+            return OrderItem(
+                id: UUID().uuidString,  // API doesn't return item ID in create response
+                orderId: apiItem.order_id,
+                productId: apiItem.product_id,
+                productName: apiItem.product_name,
+                productImage: nil,
+                quantity: apiItem.quantity,
+                unitPrice: apiItem.final_price,
+                finalPrice: apiItem.final_price,
+                customization: customization
+            )
+        }
+        
+        let dateFormatter = ISO8601DateFormatter()
+        let createdDate = dateFormatter.date(from: apiOrder.created_at) ?? Date()
+        let updatedDate = dateFormatter.date(from: apiOrder.updated_at) ?? Date()
+        let estimatedReadyDate = apiOrder.estimated_ready_at.flatMap { dateFormatter.date(from: $0) }
+        
+        // Calculate subtotal from items
+        let subtotal = items.reduce(0.0) { $0 + ($1.finalPrice * Double($1.quantity)) }
+        
+        return Order(
+            id: apiOrder.id,
+            userId: apiOrder.user_id,
+            storeId: apiOrder.store_id,
+            status: orderStatus,
+            mode: orderingMode,
+            paymentMethod: paymentMethod,
+            items: items,
+            subtotal: subtotal,
+            deliveryFee: apiOrder.delivery_fee,
+            discount: 0,  // API doesn't return discount in create response
+            totalAmount: apiOrder.total_amount,
+            tableId: apiOrder.table_id,
+            deliveryAddress: nil,
+            deliveryNotes: apiOrder.delivery_notes,
+            staffNotes: apiOrder.notes,
+            createdAt: createdDate,
+            updatedAt: updatedDate,
+            estimatedReadyAt: estimatedReadyDate,
+            completedAt: orderStatus == .completed ? updatedDate : nil,
+            cancelledAt: orderStatus == .cancelled ? updatedDate : nil,
+            cancellationReason: nil
+        )
+    }
+}
+
 
 struct OrdersListResponse: Codable, Sendable {
     let success: Bool
