@@ -43,9 +43,22 @@ class NetworkService: ObservableObject {
     private var encoder: JSONEncoder
     private let keychainManager: KeychainManager
     
-//    private var decoder: JSONDecoder
-//    private var encoder: JSONEncoder
-//    private let keychainManager: KeychainManager
+    // ENHANCED: Persistent ETag cache with TTL
+    private struct CachedETag: Codable {
+        let etag: String
+        let timestamp: Date
+        let ttl: TimeInterval // 24 hours default
+        
+        var isExpired: Bool {
+            Date().timeIntervalSince(timestamp) > ttl
+        }
+    }
+    
+    private let etagCacheKey = "com.thecoffeelinks.etag-cache"
+    private let responseCacheKey = "com.thecoffeelinks.response-cache"
+    private var etagCache: [String: CachedETag] = [:]
+    private var responseCache: [String: Data] = [:]
+    private let cacheQueue = DispatchQueue(label: "com.thecoffeelinks.etag-cache")
     
     @Published var authToken: String?
     private var refreshToken: String?
@@ -74,6 +87,42 @@ class NetworkService: ObservableObject {
         
         self.authToken = keychainManager.getAccessToken()
         self.refreshToken = keychainManager.getRefreshToken()
+        
+        // Load persistent ETag cache
+        loadETagCache()
+    }
+    
+    // MARK: - Persistent ETag Cache
+    
+    private func loadETagCache() {
+        cacheQueue.async { [weak self] in
+            guard let self = self,
+                  let data = UserDefaults.standard.data(forKey: self.etagCacheKey),
+                  let loaded = try? JSONDecoder().decode([String: CachedETag].self, from: data) else { return }
+            
+            // Filter out expired entries
+            let valid = loaded.filter { !$0.value.isExpired }
+            self.etagCache = valid
+        }
+    }
+    
+    private func saveETagCache() {
+        cacheQueue.async { [weak self] in
+            guard let self = self,
+                  let data = try? JSONEncoder().encode(self.etagCache) else { return }
+            UserDefaults.standard.set(data, forKey: self.etagCacheKey)
+        }
+    }
+    
+    func clearCache() async {
+        await MainActor.run {
+            cacheQueue.sync {
+                etagCache.removeAll()
+                responseCache.removeAll()
+                UserDefaults.standard.removeObject(forKey: etagCacheKey)
+                UserDefaults.standard.removeObject(forKey: responseCacheKey)
+            }
+        }
     }
     
     func setAuthSession(accessToken: String, refreshToken: String?) async {
@@ -167,6 +216,13 @@ class NetworkService: ObservableObject {
         request.setValue("application/json", forHTTPHeaderField: "Accept")
         request.setValue("TheCoffeeLinks-iOS/1.0", forHTTPHeaderField: "User-Agent")
         
+        // Add ETag support for GET requests (check if not expired)
+        if method == "GET" {
+            if let cached = cacheQueue.sync(execute: { etagCache[endpoint] }), !cached.isExpired {
+                request.setValue(cached.etag, forHTTPHeaderField: "If-None-Match")
+            }
+        }
+        
         if let token = authToken {
             request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
         }
@@ -201,6 +257,20 @@ class NetworkService: ObservableObject {
              throw NetworkError.unknown
         }
         print("📡 Response Status: \(httpResponse.statusCode)")
+        print("📊 Response Size: \(data.count) bytes")
+        
+        // Handle ETag caching with 24hr TTL
+        if method == "GET", let newETag = httpResponse.value(forHTTPHeaderField: "ETag") {
+            cacheQueue.sync {
+                let cached = CachedETag(etag: newETag, timestamp: Date(), ttl: 86400) // 24hr
+                etagCache[endpoint] = cached
+                if httpResponse.statusCode != 304 {
+                    responseCache[endpoint] = data
+                }
+            }
+            saveETagCache() // Persist to disk
+        }
+        
         if let responseString = String(data: data, encoding: .utf8) {
             print("📡 Response Body: \(responseString)")
         }
@@ -208,6 +278,14 @@ class NetworkService: ObservableObject {
         switch httpResponse.statusCode {
         case 200...299:
             return try decoder.decode(T.self, from: data)
+        case 304:
+            // Not Modified - return cached data
+            print("✅ 304 Not Modified - Using cached response")
+            if let cachedData = cacheQueue.sync(execute: { responseCache[endpoint] }) {
+                return try decoder.decode(T.self, from: cachedData)
+            } else {
+                throw NetworkError.noData
+            }
         case 401:
             // Do not clear token here, let the caller handle it (try refresh)
             // unless it's already a retry

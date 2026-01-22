@@ -480,7 +480,7 @@ struct CheckoutView: View {
                                 .background(Color.primaryEspresso)
                                 .clipShape(RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle))
                         }
-                        .disabled(checkoutViewModel.isPlacingOrder)
+                        .disabled(!cartViewModel.canCheckout || checkoutViewModel.isPlacingOrder)
                     }
                     .padding(.vertical, 24)
                     .frame(minHeight: AppLayout.touchTarget)
@@ -520,6 +520,30 @@ struct CheckoutView: View {
         .sheet(isPresented: $showStoreSheet) {
             StorePickerSheet()
                 .environmentObject(storeViewModel)
+        }
+        .onAppear {
+            syncCartWithSelection()
+        }
+        .onChange(of: storeViewModel.selectedStore) { _ in
+            syncCartWithSelection()
+        }
+        .onChange(of: deliveryViewModel.selectedAddress) { _ in
+            syncCartWithSelection()
+        }
+        .onChange(of: cartViewModel.cart.mode) { _ in
+            syncCartWithSelection()
+        }
+    }
+    
+    private func syncCartWithSelection() {
+        if cartViewModel.cart.mode == .delivery {
+            if let address = deliveryViewModel.selectedAddress {
+                cartViewModel.setDeliveryAddress(address.id, address: address)
+            }
+        } else {
+            if let store = storeViewModel.selectedStore {
+                cartViewModel.setStore(store.id)
+            }
         }
     }
     
