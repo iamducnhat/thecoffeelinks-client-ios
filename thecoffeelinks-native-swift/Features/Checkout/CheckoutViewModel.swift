@@ -50,8 +50,8 @@ final class CheckoutViewModel: ObservableObject {
         do {
             let request = CreateOrderRequest(
                 storeId: storeId, mode: cart.mode, paymentMethod: paymentMethod,
-                items: cart.items.map { CreateOrderItemRequest(productId: $0.product.id, quantity: $0.quantity, customization: $0.customization) },
-                tableId: cart.tableId, deliveryAddressId: cart.deliveryAddressId, deliveryNotes: cart.staffNotes, staffNotes: nil, voucherCode: cart.voucherCode
+                items: cart.items.map { CreateOrderItemRequest(productId: $0.product.id, productName: $0.product.name, quantity: $0.quantity, finalPrice: $0.unitPrice, customization: $0.customization) },
+                tableId: cart.tableId, deliveryAddressId: cart.deliveryAddressId, deliveryNotes: cart.staffNotes, staffNotes: nil, voucherCode: cart.voucherCode, totalAmount: cart.subtotal
             )
             
             let order = try await orderRepository.createOrder(request)

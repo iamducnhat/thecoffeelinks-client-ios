@@ -293,6 +293,7 @@ struct CreateOrderRequest: Codable, Sendable {
     let deliveryNotes: String?
     let staffNotes: String?
     let voucherCode: String?
+    let totalAmount: Double
     
     enum CodingKeys: String, CodingKey {
         case storeId = "store_id"
@@ -307,17 +308,22 @@ struct CreateOrderRequest: Codable, Sendable {
         case deliveryNotes = "delivery_notes"
         case staffNotes = "staff_notes"
         case voucherCode = "voucher_code"
+        case totalAmount = "total_amount"
     }
 }
 
 struct CreateOrderItemRequest: Codable, Sendable {
     let productId: String
+    let productName: String
     let quantity: Int
+    let finalPrice: Double
     let customization: OrderCustomization
     
     enum CodingKeys: String, CodingKey {
         case productId = "product_id"
+        case productName = "product_name"
         case quantity
+        case finalPrice = "final_price"
         case customization
     }
 }
