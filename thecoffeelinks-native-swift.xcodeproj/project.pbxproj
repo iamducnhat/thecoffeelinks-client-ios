@@ -7,7 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		12777CFB3F8B4F0FB4ECD5AA /* LibreBaskerville-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = B4331C9B483A4F6E99149D4A /* LibreBaskerville-Regular.ttf */; };
 		25544F522F1431A0009A6830 /* Realtime in Frameworks */ = {isa = PBXBuildFile; productRef = 25544F512F1431A0009A6830 /* Realtime */; };
 		25544F572F14341D009A6830 /* Supabase in Frameworks */ = {isa = PBXBuildFile; productRef = 25544F562F14341D009A6830 /* Supabase */; };
 		25FC4F5F2F1CB2A90001D920 /* CachedAsyncImage in Frameworks */ = {isa = PBXBuildFile; productRef = 25FC4F5E2F1CB2A90001D920 /* CachedAsyncImage */; };
@@ -41,9 +40,24 @@
 		FC02A854467A483D898B0051 /* LibreBaskerville-Italic.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; name = "LibreBaskerville-Italic.ttf"; path = "thecoffeelinks-native-swift/Fonts/LibreBaskerville-Italic.ttf"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		25D16B222F21BBBE00D5B216 /* Exceptions for "thecoffeelinks-native-swift" folder in "thecoffeelinks-native-swift" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				"App-Info.plist",
+				"Fonts/LibreBaskerville-Bold.ttf",
+				"Fonts/LibreBaskerville-Italic.ttf",
+			);
+			target = 25544E6D2F1424F2009A6830 /* thecoffeelinks-native-swift */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		25544E702F1424F2009A6830 /* thecoffeelinks-native-swift */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				25D16B222F21BBBE00D5B216 /* Exceptions for "thecoffeelinks-native-swift" folder in "thecoffeelinks-native-swift" target */,
+			);
 			path = "thecoffeelinks-native-swift";
 			sourceTree = "<group>";
 		};
@@ -253,7 +267,6 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				12777CFB3F8B4F0FB4ECD5AA /* LibreBaskerville-Regular.ttf in Resources */,
 				F495694AB08C4E538B0A3F32 /* LibreBaskerville-Bold.ttf in Resources */,
 				311132BBAFDC4D87A1AEF0E9 /* LibreBaskerville-Italic.ttf in Resources */,
 			);

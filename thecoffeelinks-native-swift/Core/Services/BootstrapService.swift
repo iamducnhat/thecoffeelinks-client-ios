@@ -55,7 +55,7 @@ struct BootstrapVoucher: Codable, Sendable {
     let minOrder: Double?
     let maxDiscount: Double?
     let imageUrl: String?
-   let isActive: Bool?
+    let isActive: Bool?
     let maxUsesPerUser: Int?
     let userUsesCount: Int?
     
@@ -95,34 +95,21 @@ struct BootstrapPointsHistory: Codable, Sendable {
 
 final class BootstrapService: @unchecked Sendable {
     private let networkService: NetworkServiceProtocol
-    private let cacheService: CacheServiceProtocol
-    private let cacheKey = "app_bootstrap"
     
-    init(networkService: NetworkServiceProtocol, cacheService: CacheServiceProtocol) {
+    init(networkService: NetworkServiceProtocol) {
         self.networkService = networkService
-        self.cacheService = cacheService
     }
     
     /// Fetch app bootstrap data using optimized RPC
     /// Returns profile, vouchers, versions, and recent points in single query
+    /// Note: Response cached automatically via ETag at NetworkService layer
     nonisolated func getBootstrapData() async throws -> BootstrapResponse {
-        // Try cache first
-        if let cached: BootstrapResponse = await cacheService.get(cacheKey) {
-            print("✅ Using cached bootstrap data")
-            return cached
-        }
-        
-        // Fetch from server using optimized RPC
-        print("🚀 Fetching bootstrap data from server...")
+        print("🚀 Fetching bootstrap data...")
         let response: BootstrapResponse = try await networkService.get("/api/bootstrap", queryItems: nil)
-        
-        // Cache for 5 minutes
-        await cacheService.set(cacheKey, value: response, ttl: 300)
-        
         return response
     }
     
-    /// Convert bootstrap data to domain models
+    /// Convert bootstrap data to domain User model
     func convertBootstrapToUser(_ bootstrap: BootstrapResponse) -> User? {
         guard let profile = bootstrap.profile else { return nil }
         
@@ -149,14 +136,8 @@ final class BootstrapService: @unchecked Sendable {
         )
     }
     
-    /// Convert bootstrap vouchers to domain Voucher models (simplified - just returns them as-is since structure matches)
-    /// Note: The client should use these directly or map via Voucher's Decodable initializer
+    /// Get bootstrap vouchers (returns raw bootstrap voucher models)
     func getBootstrapVouchers(_ bootstrap: BootstrapResponse) -> [BootstrapVoucher] {
         return bootstrap.vouchers ?? []
-    }
-    
-    /// Clear cached bootstrap data (call on logout or refresh)
-    nonisolated func clearCache() async {
-        await cacheService.remove(cacheKey)
     }
 }
