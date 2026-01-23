@@ -8,6 +8,26 @@ class DependencyContainer: ObservableObject {
     private(set) lazy var keychainManager = KeychainManager()
     private(set) lazy var userPreferences = UserPreferencesManager()
     private(set) lazy var networkService = NetworkService(keychainManager: keychainManager)
+    
+    // Config Extraction (Redundant but consistent with NetworkService logic)
+    private var config: NSDictionary? {
+        if let path = Bundle.main.path(forResource: "Config", ofType: "plist") {
+            return NSDictionary(contentsOfFile: path)
+        }
+        return nil
+    }
+    
+    private var apiBaseURL: String {
+        (config?["API_BASE_URL"] as? String)?.trimmingCharacters(in: CharacterSet(charactersIn: "/")) ?? "https://api.thecoffeelinksvn.com"
+    }
+    
+    // Allow overriding from Config if present, otherwise default to known anon key or empty (will require auth)
+    private var supabaseAnonKey: String {
+        config?["SUPABASE_ANON_KEY"] as? String ?? ""
+    }
+    
+    private(set) lazy var realtimeService = RealtimeService(baseURL: apiBaseURL, apiKey: supabaseAnonKey)
+    
     private(set) lazy var cacheService = CacheService()
     private(set) lazy var hapticManager = HapticManager()
     private(set) lazy var locationManager = LocationManager()
@@ -38,11 +58,16 @@ class DependencyContainer: ObservableObject {
         // Pre-warm services
         _ = keychainManager
         _ = networkService
+        _ = realtimeService
         
         // Check auth state
         if let token = keychainManager.getAccessToken() {
             let refreshToken = keychainManager.getRefreshToken()
             await networkService.setAuthSession(accessToken: token, refreshToken: refreshToken)
+            
+            // Set token for Realtime (must happen on main thread or be thread safe)
+            realtimeService.setAuthToken(token)
+            // Note: Realtime connection happens in ViewModel or on demand
         }
         
         // Initial sync of data versions

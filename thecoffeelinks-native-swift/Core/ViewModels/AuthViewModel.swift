@@ -26,8 +26,11 @@ class AuthViewModel: BaseViewModel {
     }
     
     func checkSession() {
-        if DependencyContainer.shared.keychainManager.getAccessToken() != nil {
+        if let token = DependencyContainer.shared.keychainManager.getAccessToken() {
             isAuthenticated = true
+            // Sync Realtime Token
+            DependencyContainer.shared.realtimeService.setAuthToken(token)
+            
             Task {
                 try? await fetchCurrentUser()
             }
@@ -50,24 +53,6 @@ class AuthViewModel: BaseViewModel {
                 }
             } catch {
                 print("❌ [AuthViewModel] sendOTP Error: \(error)")
-                if let decodingError = error as? DecodingError {
-                     print("❌ [AuthViewModel] It is a DecodingError: \(decodingError)")
-                     switch decodingError {
-                     case .dataCorrupted(let context):
-                         print("Context: \(context)")
-                     case .keyNotFound(let key, let context):
-                         print("Key '\(key)' not found:", context.debugDescription)
-                         print("codingPath:", context.codingPath)
-                     case .valueNotFound(let value, let context):
-                         print("Value '\(value)' not found:", context.debugDescription)
-                         print("codingPath:", context.codingPath)
-                     case .typeMismatch(let type, let context):
-                         print("Type '\(type)' mismatch:", context.debugDescription)
-                         print("codingPath:", context.codingPath)
-                     @unknown default:
-                         break
-                     }
-                }
                 await MainActor.run {
                     self.error = error.localizedDescription
                     self.authState = .error
@@ -88,6 +73,12 @@ class AuthViewModel: BaseViewModel {
         withLoading {
             do {
                 let user = try await self.authRepository.verifyOTP(code: code, phoneNumber: formattedNumber)
+                
+                // Sync Realtime Token
+                if let token = DependencyContainer.shared.keychainManager.getAccessToken() {
+                    DependencyContainer.shared.realtimeService.setAuthToken(token)
+                }
+                
                 await MainActor.run {
                     self.currentUser = user
                     self.isAuthenticated = true
@@ -96,24 +87,6 @@ class AuthViewModel: BaseViewModel {
                 }
             } catch {
                 print("❌ [AuthViewModel] verifyOTP Error: \(error)")
-                if let decodingError = error as? DecodingError {
-                     print("❌ [AuthViewModel] It is a DecodingError: \(decodingError)")
-                     switch decodingError {
-                     case .dataCorrupted(let context):
-                         print("Context: \(context)")
-                     case .keyNotFound(let key, let context):
-                         print("Key '\(key)' not found:", context.debugDescription)
-                         print("codingPath:", context.codingPath)
-                     case .valueNotFound(let value, let context):
-                         print("Value '\(value)' not found:", context.debugDescription)
-                         print("codingPath:", context.codingPath)
-                     case .typeMismatch(let type, let context):
-                         print("Type '\(type)' mismatch:", context.debugDescription)
-                         print("codingPath:", context.codingPath)
-                     @unknown default:
-                         break
-                     }
-                }
                 await MainActor.run {
                     self.error = error.localizedDescription
                     self.authState = .error
@@ -127,6 +100,12 @@ class AuthViewModel: BaseViewModel {
         withLoading {
             do {
                 let user = try await self.authRepository.bypassOTP(phoneNumber: formattedNumber)
+                
+                // Sync Realtime Token
+                if let token = DependencyContainer.shared.keychainManager.getAccessToken() {
+                    DependencyContainer.shared.realtimeService.setAuthToken(token)
+                }
+                
                 await MainActor.run {
                     self.currentUser = user
                     self.isAuthenticated = true
@@ -151,6 +130,12 @@ class AuthViewModel: BaseViewModel {
                 print("✅ LinkedIn Token Received. Logging in to backend for LinkedIn...")
                 
                 let user = try await self.authRepository.loginWithLinkedIn(code: token)
+                
+                // Sync Realtime Token
+                if let accessToken = DependencyContainer.shared.keychainManager.getAccessToken() {
+                    DependencyContainer.shared.realtimeService.setAuthToken(accessToken)
+                }
+                
                 await MainActor.run {
                     self.currentUser = user
                     self.isAuthenticated = true
@@ -169,6 +154,8 @@ class AuthViewModel: BaseViewModel {
             
             // Clear all caches
             await DependencyContainer.shared.cacheService.clear()
+            DependencyContainer.shared.realtimeService.disconnect()
+            
             URLCache.shared.removeAllCachedResponses()
             
             await MainActor.run {
