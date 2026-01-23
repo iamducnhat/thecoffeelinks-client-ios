@@ -89,7 +89,8 @@ class OrderTrackingViewModel: ObservableObject {
     private func setupRealtime(userId: String) {
         // Unsubscribe old if needed? RealtimeService handles dupes but good to be clean
         // For simplicity, just subscribe
-        realtimeService.subscribe(to: "orders", filter: "user_id=eq.\(userId)")
+        // REMOVED explicit filter: Rely on RLS (Row Level Security) and Auth Token to filter orders.
+        realtimeService.subscribe(to: "orders")
         
         // Ensure connection
         if !realtimeService.isConnected {
@@ -99,9 +100,11 @@ class OrderTrackingViewModel: ObservableObject {
     
     private func handleOrderUpdate(_ change: PostgresChange) {
         guard let changeType = change.eventType as String? else { return }
+        print("[OrderViewModel] Received Change: \(changeType)")
         
         // Handle INSERT
         if changeType == "INSERT" {
+             print("[OrderViewModel] INSERT detected, refreshing...")
              Task { await fetchActiveOrders() }
              return
         }
@@ -111,11 +114,15 @@ class OrderTrackingViewModel: ObservableObject {
            let newRecord = change.new,
            let recordId = newRecord["id"]?.value as? String {
             
+            print("[OrderViewModel] UPDATE for ID: \(recordId)")
+            
             // Find index of order being updated
             if let index = activeOrders.firstIndex(where: { $0.id == recordId }) {
                 // Update specific properties locally to avoid full refetch flicker
                 if let statusStr = newRecord["status"]?.value as? String,
                    let newStatus = OrderStatus(rawValue: statusStr) {
+                    
+                    print("[OrderViewModel] Status Update: \(newStatus)")
                     
                     // Update local model first so UI reflects the change (especially 'completed')
                     withAnimation {
@@ -133,8 +140,14 @@ class OrderTrackingViewModel: ObservableObject {
                             Task { [weak self] in await self?.fetchActiveOrders() }
                         }
                     }
+                } else {
+                    print("[OrderViewModel] Status missing or invalid")
                 }
+            } else {
+                print("[OrderViewModel] Order not found locally (IDs: \(activeOrders.map { $0.id }))")
             }
+        } else {
+            print("[OrderViewModel] Update missing 'id' or 'new' record")
         }
     }
 }

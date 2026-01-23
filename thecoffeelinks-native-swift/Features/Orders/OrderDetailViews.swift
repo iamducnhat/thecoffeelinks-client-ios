@@ -211,6 +211,7 @@ struct OrderDetailView: View {
         case .delivering: return 0.85
         case .completed: return 1.0
         case .cancelled: return 0.0
+        case .received: return 0.35
         }
     }
     
@@ -223,6 +224,7 @@ struct OrderDetailView: View {
         case .delivering: return "Your order is on the way"
         case .completed: return "Hope you enjoyed it!"
         case .cancelled: return "This order was cancelled"
+        case .received: return "The kitchen has received your order"
         }
     }
 }

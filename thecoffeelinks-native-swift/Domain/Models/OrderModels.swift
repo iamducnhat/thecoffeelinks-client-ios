@@ -12,6 +12,7 @@ import Foundation
 enum OrderStatus: String, Codable, CaseIterable, Sendable {
     case pending
     case placed
+    case received
     case preparing
     case ready
     case delivering
@@ -22,6 +23,7 @@ enum OrderStatus: String, Codable, CaseIterable, Sendable {
         switch self {
         case .pending: return "Pending"
         case .placed: return "Order Placed"
+        case .received: return "Order Received"
         case .preparing: return "Preparing"
         case .ready: return "Ready"
         case .delivering: return "On the Way"
@@ -32,7 +34,7 @@ enum OrderStatus: String, Codable, CaseIterable, Sendable {
     
     var isActive: Bool {
         switch self {
-        case .pending, .placed, .preparing, .ready, .delivering:
+        case .pending, .placed, .received, .preparing, .ready, .delivering:
             return true
         case .completed, .cancelled:
             return false
@@ -166,8 +168,7 @@ struct Order: Codable, Identifiable, Hashable, Sendable {
         case cancellationReason = "cancellation_reason"
     }
     
-    static func == (lhs: Order, rhs: Order) -> Bool { lhs.id == rhs.id }
-    func hash(into hasher: inout Hasher) { hasher.combine(id) }
+
 }
 
 // MARK: - Order Item

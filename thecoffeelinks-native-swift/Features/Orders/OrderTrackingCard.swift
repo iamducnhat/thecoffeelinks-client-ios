@@ -16,6 +16,7 @@ struct OrderTrackingCard: View {
     var statusMessage: String {
         switch order.status {
         case .placed: return "Order Placed"
+        case .received: return "Order Received"
         case .preparing: return "Preparing"
         case .ready: 
             return order.mode == .delivery ? "Driver Hearing Out" : "Ready for Pickup"
@@ -146,7 +147,7 @@ struct OrderTrackingCard: View {
     // Step Helper
     var currentStepIndex: Int {
         switch order.status {
-        case .placed: return 1
+        case .placed, .received: return 1
         case .preparing: return 2
         case .ready: return 3
         case .delivering, .completed: return 4

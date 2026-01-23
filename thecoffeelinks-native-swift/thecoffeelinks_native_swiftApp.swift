@@ -40,7 +40,10 @@ struct thecoffeelinks_native_swiftApp: App {
                 .environmentObject(deliveryViewModel)
                 .environmentObject(dependencyContainer.userPreferences) // Inject preferences
                 .environmentObject(dependencyContainer.networkService) // Inject NetworkService
-                //.preferredColorScheme(.dark)
+                .task {
+                    // Initialize core services (load tokens, pre-warm cache)
+                    await dependencyContainer.initialize()
+                }
         }
     }
     

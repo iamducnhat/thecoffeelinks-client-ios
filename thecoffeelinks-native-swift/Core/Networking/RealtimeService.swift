@@ -114,6 +114,12 @@ final class RealtimeService: ObservableObject {
         configuration.waitsForConnectivity = true
         configuration.timeoutIntervalForResource = 300 // Keep trying for 5 min
         self.urlSession = URLSession(configuration: configuration)
+        
+        log("Initialized with \(wsURL)")
+    }
+    
+    private func log(_ message: String) {
+        print("[Realtime] \(message)")
     }
     
     func setAuthToken(_ token: String) {
@@ -128,6 +134,7 @@ final class RealtimeService: ObservableObject {
     func connect() {
         guard !isConnected else { return }
         
+        log("Connecting...")
         var components = URLComponents(string: "\(baseURL)/realtime/v1/websocket")!
         components.queryItems = [
             URLQueryItem(name: "apikey", value: apiKey),
@@ -145,6 +152,7 @@ final class RealtimeService: ObservableObject {
         
         isConnected = true
         eventSubject.send(.connected)
+        log("Socket Resumed (Connected)")
         
         // Re-subscribe to channels
         for channel in channels {
@@ -153,6 +161,7 @@ final class RealtimeService: ObservableObject {
     }
     
     func disconnect() {
+        log("Disconnecting...")
         socket?.cancel(with: .normalClosure, reason: nil)
         heartbeatTimer?.invalidate()
         isConnected = false
@@ -160,8 +169,6 @@ final class RealtimeService: ObservableObject {
     }
     
     func subscribe(to table: String, filter: String? = nil) {
-        // Topic format: realtime:public:table:filter
-        // e.g. realtime:public:orders:user_id=eq.UUID
         var topic = "realtime:public:\(table)"
         if let filter = filter {
             topic += ":\(filter)"
@@ -176,6 +183,7 @@ final class RealtimeService: ObservableObject {
     }
     
     private func joinChannel(_ topic: String) {
+        log("Joining \(topic)...")
         let payload: [String: Any] = [
             "config": [
                 "postgres_changes": [
@@ -188,28 +196,15 @@ final class RealtimeService: ObservableObject {
             ]
         ]
         
-        if let token = accessToken {
-            // Send access_token for RLS
-            // Format: ["access_token": token] in payload? No, usually separate or in join_ref
-            // Supabase Realtime expects access_token in the JOIN payload
-             var config = payload["config"] as! [String: Any]
-             // Actually, usually it's passed as key "access_token" in payload
-        }
-        
-        // Construct the Phoenix "phx_join" message
-        // [JoinRef, Ref, Topic, Event, Payload]
-        // But we use JSON object format for better readability using struct
-        
         var joinPayload: [String: Any] = [:]
         if let token = accessToken {
+            log("Config: WITH Token")
             joinPayload["access_token"] = token
+        } else {
+            log("Config: No Token (Anon)")
         }
         
-        // For Postgres Changes, we need to specify what we want in the config
-        // Actually, for simplicity we just join the channel and assume the client wants updates on the topic entity
-        // Realtime V2 Protocol:
-        // Join Payload: { "config": { "postgres_changes": [...] }, "access_token": "..." }
-        
+        // ... (Parsing logic same as before)
         // Correct topic parsing:
         let parts = topic.split(separator: ":")
         let table = String(parts[2])
@@ -242,9 +237,10 @@ final class RealtimeService: ObservableObject {
         guard let data = try? JSONSerialization.data(withJSONObject: message),
               let string = String(data: data, encoding: .utf8) else { return }
         
-        socket?.send(.string(string)) { error in
+        // log("Sending: \(message["event"] ?? "") to \(message["topic"] ?? "")")
+        socket?.send(.string(string)) { [weak self] error in
             if let error = error {
-                print("[Realtime] Send error: \(error)")
+                self?.log("Send Error: \(error.localizedDescription)")
             }
         }
     }
@@ -257,9 +253,11 @@ final class RealtimeService: ObservableObject {
             case .success(let message):
                 switch message {
                 case .string(let text):
+                    self.log("<< \(text.prefix(100))") // Log partial
                     self.handleMessage(text)
                 case .data(let data):
                     if let text = String(data: data, encoding: .utf8) {
+                        self.log("<< Data: \(text.prefix(50))")
                         self.handleMessage(text)
                     }
                 @unknown default:
@@ -268,11 +266,12 @@ final class RealtimeService: ObservableObject {
                 self.receiveMessage() // Continue listening
                 
             case .failure(let error):
-                print("[Realtime] Receive error: \(error)")
+                self.log("Receive Error: \(error.localizedDescription)")
                 self.isConnected = false
                 self.eventSubject.send(.disconnected(error))
-                // Retry logic could go here
+                
                 DispatchQueue.main.asyncAfter(deadline: .now() + 5) {
+                    self.log("Reconnecting...")
                     self.connect()
                 }
             }
@@ -293,12 +292,23 @@ final class RealtimeService: ObservableObject {
         
         // Handle Postgres Changes
         if message.event == "postgres_changes" {
-            if let payloadData = try? JSONEncoder().encode(message.payload),
+            // Supabase wraps the actual change data in a "data" key
+            let changeData: AnyCodable
+            if let data = message.payload["data"] {
+                changeData = data
+            } else {
+                // Fallback or if structure is flat
+                changeData = AnyCodable(message.payload)
+            }
+            
+            if let payloadData = try? JSONEncoder().encode(changeData),
                let change = try? JSONDecoder().decode(PostgresChange.self, from: payloadData) {
                 
                 DispatchQueue.main.async {
                     self.eventSubject.send(.postgresChange(change))
                 }
+            } else {
+                print("[Realtime] Failed to decode PostgresChange from payload")
             }
         }
         
