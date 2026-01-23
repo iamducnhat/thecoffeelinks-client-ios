@@ -39,13 +39,7 @@ struct MainTabView: View {
         refreshCoordinator: DependencyContainer.shared.refreshCoordinator
     )
     
-    @EnvironmentObject var authViewModel: AuthViewModel
-    
-    // Tracking VM
-    @StateObject private var trackingViewModel = OrderTrackingViewModel(
-        orderRepository: DependencyContainer.shared.orderRepository,
-        realtimeService: DependencyContainer.shared.realtimeService
-    )
+
     
     init() {
         // Receipt-style tab bar customization
@@ -74,21 +68,8 @@ struct MainTabView: View {
                         .environmentObject(menuViewModel)
                 }
                 .tabBarMinimizeBehavior(.onScrollDown)
-                .overlay(alignment: .bottom) {
-                     // Tracking Card Overlay (Above TabBar/Accessory)
-                     if let _ = trackingViewModel.activeOrder {
-                         OrderTrackingCard(viewModel: trackingViewModel)
-                             .padding(.horizontal)
-                             .padding(.bottom, 60) // Lift above accessory/tabbar
-                     }
-                }
                 .task {
                     // Startup Priority Queue
-                    // 0. Setup Tracking (Critical)
-                    if let user = authViewModel.currentUser {
-                        trackingViewModel.setUserId(user.id)
-                    }
-                    
                     // 1. Home (High) - Already triggered by HomeView.onAppear/task, but we ensure it here
                     await homeViewModel.load()
                     
@@ -108,28 +89,17 @@ struct MainTabView: View {
             ZStack(alignment: .bottom) {
                 tabContent
                 
-                VStack(spacing: 8) {
-                    // Tracking Card
-                    if let _ = trackingViewModel.activeOrder {
-                        OrderTrackingCard(viewModel: trackingViewModel)
-                            .padding(.horizontal)
-                    }
-                    
-                    // Global Floating Cart (Fallback)
-                    if !cartViewModel.isEmpty {
-                        CartMonitor()
-                            .id("CartMonitor")
-                            .environmentObject(menuViewModel)
-                    }
+                // Global Floating Cart (Fallback)
+                if !cartViewModel.isEmpty {
+                    CartMonitor()
+                        .id("CartMonitor")
+                        .environmentObject(menuViewModel)
+                        .padding(.bottom, 50) // Lift above TabBar (approx 49pt standard height)
+                        .transition(.move(edge: .bottom).combined(with: .opacity))
+                        .zIndex(10)
                 }
-                .padding(.bottom, 50) // Lift above TabBar
-                .transition(.move(edge: .bottom).combined(with: .opacity))
-                .zIndex(10)
             }
             .task {
-                 if let user = authViewModel.currentUser {
-                    trackingViewModel.setUserId(user.id)
-                 }
                 await homeViewModel.load()
                 Task(priority: .medium) { await menuViewModel.load() }
                 Task(priority: .background) {

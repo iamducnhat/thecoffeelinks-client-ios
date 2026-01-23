@@ -515,44 +515,44 @@ struct APIOrdersResponse: Codable {
     let orders: [APIOrder]
     
     struct APIOrder: Codable {
-        let id: String
+        let id: String?
         let user_id: String?
         let store_id: String?
         let voucher_id: String?
-        let status: String
-        let type: String
+        let status: String?
+        let type: String?
         let table_id: String?
         let total_amount: Double?
-        let payment_method: String
-        let payment_status: String
+        let payment_method: String?
+        let payment_status: String?
         let payment_token: String?
         let delivery_address: String?
         let delivery_lat: Double?
         let delivery_lng: Double?
         let delivery_notes: String?
         let notes: String?
-        let created_at: String
-        let updated_at: String
+        let created_at: String?
+        let updated_at: String?
         let pending_until: String?
-        let source: String
-        let delivery_option: String
+        let source: String?
+        let delivery_option: String?
         let delivery_address_id: String?
-        let delivery_fee: Double
+        let delivery_fee: Double?
         let delivery_eta_minutes: Int?
-        let has_notes: Bool
+        let has_notes: Bool?
         let finalized_at: String?
-        let order_items: [APIOrderItem]
+        let order_items: [APIOrderItem]?
         
         struct APIOrderItem: Codable {
-            let id: String
+            let id: String?
             let notes: String?
-            let order_id: String
-            let quantity: Int
-            let created_at: String
+            let order_id: String?
+            let quantity: Int?
+            let created_at: String?
             let product_id: String?
             let final_price: Double?
-            let is_favorite: Bool
-            let product_name: String
+            let is_favorite: Bool?
+            let product_name: String?
             let product_image: String?
             let options_snapshot_json: APIOrderCustomization?
             
@@ -566,83 +566,100 @@ struct APIOrdersResponse: Codable {
     }
     
     func toOrders() -> [Order] {
-        return orders.map { apiOrder in
-            let orderStatus: OrderStatus = OrderStatus(rawValue: apiOrder.status) ?? .pending
-            let orderingMode: OrderingMode = OrderingMode(rawValue: apiOrder.delivery_option) ?? .pickup
-            let paymentMethod: PaymentMethod = PaymentMethod(rawValue: apiOrder.payment_method) ?? .cash
+        return orders.compactMap { apiOrder -> Order? in
+            guard let orderId = apiOrder.id else { return nil }
             
-            let items = apiOrder.order_items.map { apiItem in
-                // Parse size
-                let size: ProductSize
-                if let sizeStr = apiItem.options_snapshot_json?.size?.lowercased() {
-                    size = sizeStr.contains("small") ? .small :
-                           sizeStr.contains("large") ? .large : .medium
-                } else {
-                    size = .medium
+            let orderStatus: OrderStatus = OrderStatus(rawValue: apiOrder.status ?? "") ?? .pending
+            let orderingMode: OrderingMode = OrderingMode(rawValue: apiOrder.delivery_option ?? "") ?? .pickup
+            let paymentMethod: PaymentMethod = PaymentMethod(rawValue: apiOrder.payment_method ?? "") ?? .cash
+            
+            let items: [OrderItem]
+            if let apiItems = apiOrder.order_items {
+                items = apiItems.compactMap { apiItem -> OrderItem? in
+                    guard let itemId = apiItem.id, let productId = apiItem.product_id else { return nil }
+                    
+                    // Parse size
+                    let size: ProductSize
+                    if let sizeStr = apiItem.options_snapshot_json?.size?.lowercased() {
+                        size = sizeStr.contains("small") ? .small :
+                               sizeStr.contains("large") ? .large : .medium
+                    } else {
+                        size = .medium
+                    }
+                    
+                    // Parse sugar
+                    let sugar: SugarLevel
+                    if let sugarStr = apiItem.options_snapshot_json?.sugar {
+                        if sugarStr.contains("0") { sugar = .none }
+                        else if sugarStr.contains("25") { sugar = .quarter }
+                        else if sugarStr.contains("50") { sugar = .half }
+                        else if sugarStr.contains("75") { sugar = .threeQuarter }
+                        else { sugar = .full }
+                    } else {
+                        sugar = .half
+                    }
+                    
+                    // Parse ice
+                    let ice: IceLevel
+                    if let iceStr = apiItem.options_snapshot_json?.ice?.lowercased() {
+                        if iceStr.contains("no") { ice = .none }
+                        else if iceStr.contains("less") { ice = .less }
+                        else if iceStr.contains("extra") { ice = .extra }
+                        else { ice = .normal }
+                    } else {
+                        ice = .normal
+                    }
+                    
+                    let customization = OrderCustomization(
+                        size: size,
+                        sugar: sugar,
+                        ice: ice,
+                        toppings: [],
+                        notes: apiItem.notes
+                    )
+                    
+                    return OrderItem(
+                        id: itemId,
+                        orderId: apiItem.order_id ?? orderId,
+                        productId: productId,
+                        productName: apiItem.product_name ?? "Unknown Product",
+                        productImage: apiItem.product_image,
+                        quantity: apiItem.quantity ?? 1,
+                        unitPrice: apiItem.final_price ?? 0,
+                        finalPrice: apiItem.final_price ?? 0,
+                        customization: customization
+                    )
                 }
-                
-                // Parse sugar
-                let sugar: SugarLevel
-                if let sugarStr = apiItem.options_snapshot_json?.sugar {
-                    if sugarStr.contains("0") { sugar = .none }
-                    else if sugarStr.contains("25") { sugar = .quarter }
-                    else if sugarStr.contains("50") { sugar = .half }
-                    else if sugarStr.contains("75") { sugar = .threeQuarter }
-                    else { sugar = .full }
-                } else {
-                    sugar = .half
-                }
-                
-                // Parse ice
-                let ice: IceLevel
-                if let iceStr = apiItem.options_snapshot_json?.ice?.lowercased() {
-                    if iceStr.contains("no") { ice = .none }
-                    else if iceStr.contains("less") { ice = .less }
-                    else if iceStr.contains("extra") { ice = .extra }
-                    else { ice = .normal }
-                } else {
-                    ice = .normal
-                }
-                
-                let customization = OrderCustomization(
-                    size: size,
-                    sugar: sugar,
-                    ice: ice,
-                    toppings: [],
-                    notes: apiItem.notes
-                )
-                
-                return OrderItem(
-                    id: apiItem.id,
-                    orderId: apiItem.order_id,
-                    productId: apiItem.product_id ?? "",
-                    productName: apiItem.product_name,
-                    productImage: apiItem.product_image,
-                    quantity: apiItem.quantity,
-                    unitPrice: apiItem.final_price ?? 0,
-                    finalPrice: apiItem.final_price ?? 0,
-                    customization: customization
-                )
+            } else {
+                items = []
             }
             
             let dateFormatter = ISO8601DateFormatter()
-            let createdDate = dateFormatter.date(from: apiOrder.created_at) ?? Date()
-            let updatedDate = dateFormatter.date(from: apiOrder.updated_at) ?? Date()
+            let createdDate = dateFormatter.date(from: apiOrder.created_at ?? "") ?? Date()
+            let updatedDate = dateFormatter.date(from: apiOrder.updated_at ?? "") ?? Date()
+            
+            // Safe unwrap values
+            let deliveryFee = apiOrder.delivery_fee ?? 0.0
+            let totalAmount = apiOrder.total_amount ?? 0.0
+            
+            // Calculate subtotal if not provided logic:
+            // subtotal = total - fee.
+            let subtotal = totalAmount - deliveryFee
             
             return Order(
-                id: apiOrder.id,
+                id: orderId,
                 userId: apiOrder.user_id ?? "",
                 storeId: apiOrder.store_id ?? "",
                 status: orderStatus,
                 mode: orderingMode,
                 paymentMethod: paymentMethod,
                 items: items,
-                subtotal: (apiOrder.total_amount ?? 0.0) - apiOrder.delivery_fee,
-                deliveryFee: apiOrder.delivery_fee,
+                subtotal: subtotal,
+                deliveryFee: deliveryFee,
                 discount: 0,
-                totalAmount: apiOrder.total_amount ?? 0.0, // Note: totalAmount includes deliveryFee
+                totalAmount: totalAmount,
                 tableId: apiOrder.table_id,
-                deliveryAddress: nil, // API doesn't return full DeliveryAddress object, only string
+                deliveryAddress: nil,
                 deliveryNotes: apiOrder.delivery_notes,
                 staffNotes: apiOrder.notes,
                 createdAt: createdDate,

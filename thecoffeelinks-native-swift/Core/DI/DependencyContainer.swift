@@ -21,12 +21,17 @@ class DependencyContainer: ObservableObject {
         (config?["API_BASE_URL"] as? String)?.trimmingCharacters(in: CharacterSet(charactersIn: "/")) ?? "https://api.thecoffeelinksvn.com"
     }
     
+    // Extracted from Config or Fallback to known project
+    private var supabaseURL: String {
+        (config?["SUPABASE_URL"] as? String)?.trimmingCharacters(in: CharacterSet(charactersIn: "/")) ?? "https://ggikmpqyhkfhctwqbytk.supabase.co"
+    }
+    
     // Allow overriding from Config if present, otherwise default to known anon key or empty (will require auth)
     private var supabaseAnonKey: String {
         config?["SUPABASE_ANON_KEY"] as? String ?? ""
     }
     
-    private(set) lazy var realtimeService = RealtimeService(baseURL: apiBaseURL, apiKey: supabaseAnonKey)
+    private(set) lazy var realtimeService = RealtimeService(baseURL: supabaseURL, apiKey: supabaseAnonKey)
     
     private(set) lazy var cacheService = CacheService()
     private(set) lazy var hapticManager = HapticManager()

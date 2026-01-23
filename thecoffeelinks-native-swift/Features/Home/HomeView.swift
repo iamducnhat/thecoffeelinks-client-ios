@@ -17,6 +17,12 @@ struct HomeView: View {
     @EnvironmentObject var homeViewModel: HomeViewModel
     @EnvironmentObject var cartViewModel: CartViewModel
     
+    // Tracking active orders
+    @StateObject private var trackingViewModel = OrderTrackingViewModel(
+        orderRepository: DependencyContainer.shared.orderRepository,
+        realtimeService: DependencyContainer.shared.realtimeService
+    )
+    
     @State private var showAIModal = false
     @State private var scrollOffset = CGFloat.zero
     
@@ -55,6 +61,36 @@ struct HomeView: View {
                     }
                     
                     LazyVStack(spacing: AppLayout.spacing) {
+                        // SECTION 0: Active Orders (Primary Content)
+                        if !trackingViewModel.activeOrders.isEmpty {
+                            ActiveOrdersSection(orders: trackingViewModel.activeOrders)
+                            Divider().hidden()
+                        } else if let error = trackingViewModel.errorMessage {
+                            // Error State for Orders
+                            VStack(spacing: 8) {
+                                Image(systemName: "wifi.slash")
+                                    .font(.title2)
+                                    .foregroundStyle(Color.textMuted)
+                                Text("Tracking Unavailable")
+                                    .font(AppFont.headline)
+                                    .foregroundStyle(Color.textInk)
+                                Text(error)
+                                    .font(AppFont.uiCaption)
+                                    .foregroundStyle(Color.semanticError)
+                                    .multilineTextAlignment(.center)
+                                
+                                Button("Retry") {
+                                    Task { await trackingViewModel.fetchActiveOrders() }
+                                }
+                                .font(AppFont.uiButton)
+                                .foregroundColor(Color.primaryEspresso)
+                            }
+                            .padding(AppLayout.spacing)
+                            .background(Color.surfaceCard)
+                            .cornerRadius(AppLayout.cornerRadius)
+                            .padding(.horizontal, AppLayout.spacing)
+                        }
+                        
                         // AI Quick Order Prompt
                         if let cart = homeViewModel.predictedCart, !homeViewModel.isDismissedThisSession {
                             AIQuickOrderPrompt(cart: cart) {
@@ -85,6 +121,7 @@ struct HomeView: View {
                 .scrollIndicators(.hidden)
                 .refreshable {
                     await homeViewModel.refresh()
+                    await trackingViewModel.fetchActiveOrders()
                 }
             }
             .blur(radius: showAIModal ? 8 : 0)
@@ -111,10 +148,43 @@ struct HomeView: View {
         }
         .onAppear {
             Task {
+                if let user = authViewModel.currentUser {
+                    trackingViewModel.setUserId(user.id)
+                }
                 async let homeLoad: () = homeViewModel.load()
                 async let menuLoad: () = menuViewModel.load()
                 _ = await (homeLoad, menuLoad)
             }
+        }
+        // Ensure we catch the user if they load slightly after appear
+        .onChange(of: authViewModel.currentUser) { newUser in
+            if let user = newUser {
+                trackingViewModel.setUserId(user.id)
+            }
+        }
+    }
+}
+
+// MARK: - Active Orders Section
+
+struct ActiveOrdersSection: View {
+    let orders: [Order]
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: AppLayout.spacing) {
+            Text("Your Orders (\(orders.count))")
+                .textCase(.uppercase)
+                .font(AppFont.sectionHeader)
+                .foregroundStyle(Color.textInk)
+                .padding(.horizontal, AppLayout.spacing)
+                .frame(maxWidth: .infinity, alignment: .leading)
+            
+            VStack(spacing: AppLayout.spacing) {
+                ForEach(orders) { order in
+                    OrderTrackingCard(order: order)
+                }
+            }
+            .padding(.horizontal, AppLayout.spacing)
         }
     }
 }

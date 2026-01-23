@@ -20,7 +20,30 @@
 	<string>1</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
-
+	<key>NSAppTransportSecurity</key>
+	<dict>
+		<key>NSAllowsArbitraryLoads</key>
+		<true/>
+		<key>NSExceptionDomains</key>
+		<dict>
+			<key>https://ggikmpqyhkfhctwqbytk.supabase.co</key>
+			<dict>
+				<key>NSExceptionAllowsInsecureHTTPLoads</key>
+				<true/>
+				<key>NSIncludesSubdomains</key>
+				<true/>
+			</dict>
+		</dict>
+	</dict>
+	<key>UIAppFonts</key>
+	<array>
+		<string>Geologica-Regular.ttf</string>
+		<string>Geologica-Medium.ttf</string>
+		<string>Geologica-SemiBold.ttf</string>
+		<string>Geologica-Bold.ttf</string>
+		<string>NotoSansMono-Regular.ttf</string>
+		<string>NotoSansMono-Medium.ttf</string>
+	</array>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>
@@ -47,15 +70,6 @@
 		<string>UIInterfaceOrientationLandscapeRight</string>
 		<string>UIInterfaceOrientationPortrait</string>
 		<string>UIInterfaceOrientationPortraitUpsideDown</string>
-	</array>
-	<key>UIAppFonts</key>
-	<array>
-		<string>Geologica-Regular.ttf</string>
-		<string>Geologica-Medium.ttf</string>
-		<string>Geologica-SemiBold.ttf</string>
-		<string>Geologica-Bold.ttf</string>
-		<string>NotoSansMono-Regular.ttf</string>
-		<string>NotoSansMono-Medium.ttf</string>
 	</array>
 </dict>
 </plist>

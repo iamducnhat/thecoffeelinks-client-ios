@@ -88,7 +88,7 @@ final class RealtimeService: ObservableObject {
     private let urlSession: URLSession
     private let baseURL: String
     private let apiKey: String
-    private var isConnected = false
+    @Published private(set) var isConnected = false
     private var heartbeatTimer: Timer?
     private var reconnectTimer: Timer?
     
@@ -109,7 +109,11 @@ final class RealtimeService: ObservableObject {
         
         self.baseURL = wsURL
         self.apiKey = apiKey
-        self.urlSession = URLSession(configuration: .default)
+        
+        let configuration = URLSessionConfiguration.default
+        configuration.waitsForConnectivity = true
+        configuration.timeoutIntervalForResource = 300 // Keep trying for 5 min
+        self.urlSession = URLSession(configuration: configuration)
     }
     
     func setAuthToken(_ token: String) {

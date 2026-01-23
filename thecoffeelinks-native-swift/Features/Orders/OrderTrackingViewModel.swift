@@ -11,75 +11,78 @@ import Combine
 import SwiftUI
 
 class OrderTrackingViewModel: ObservableObject {
-    @Published var activeOrder: Order?
+    @Published var activeOrders: [Order] = []
     @Published var isLoading = false
+    @Published var errorMessage: String?
+    @Published var isRealtimeConnected = false
     
     private let orderRepository: OrderRepository
     private let realtimeService: RealtimeService
     private var cancellables = Set<AnyCancellable>()
     private var userId: String?
     
-    // Status Progress Helper
-    var progress: Double {
-        guard let status = activeOrder?.status else { return 0 }
-        switch status {
-        case .placed: return 0.2
-        // case .received: return 0.4
-        case .preparing: return 0.6
-        case .ready: return 0.8
-        case .delivering: return 0.9
-        case .completed: return 1.0
-        case .cancelled: return 0.0
-        case .pending: return 0.1
-        }
-    }
-    
-    var statusMessage: String {
-        guard let order = activeOrder else { return "" }
-        switch order.status {
-        case .placed: return "Order Placed"
-        // case .received: return "Kitchen Received"
-        case .preparing: return "Barista Preparing"
-        case .ready: 
-            return order.mode == .delivery ? "Driver Heading Out" : "Ready for Pickup"
-        case .delivering: return "Driver Nearby"
-        case .completed: return "Enjoy!"
-        default: return order.status.displayName
-        }
-    }
-    
     init(orderRepository: OrderRepository, realtimeService: RealtimeService, userId: String? = nil) {
         self.orderRepository = orderRepository
         self.realtimeService = realtimeService
         self.userId = userId
+        
+        setupBindings()
         
         if let userId = userId {
             setupRealtime(userId: userId)
         }
     }
     
+    private func setupBindings() {
+        // Monitor Realtime Connection State
+        realtimeService.eventSubject
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] event in
+                switch event {
+                case .connected:
+                    self?.isRealtimeConnected = true
+                    self?.errorMessage = nil
+                case .disconnected(let error):
+                    self?.isRealtimeConnected = false
+                    if let error = error {
+                        self?.errorMessage = "Realtime disconnected: \(error.localizedDescription)"
+                    }
+                case .postgresChange(let change):
+                    self?.handleOrderUpdate(change)
+                default: break
+                }
+            }
+            .store(in: &cancellables)
+    }
+    
     func setUserId(_ id: String) {
         guard self.userId != id else { return }
         self.userId = id
         setupRealtime(userId: id)
-        Task { await fetchActiveOrder() }
+        Task { await fetchActiveOrders() }
     }
     
-    func fetchActiveOrder() async {
-        await MainActor.run { isLoading = true }
+    func fetchActiveOrders() async {
+        await MainActor.run { 
+            isLoading = true 
+            errorMessage = nil
+        }
         
         do {
             let orders = try await orderRepository.getActiveOrders()
-            // Get most recent active order
-            let latest = orders.sorted(by: { $0.createdAt > $1.createdAt }).first
+            // Sort by creation date descending (newest first)
+            let sorted = orders.sorted(by: { $0.createdAt > $1.createdAt })
             
             await MainActor.run {
-                self.activeOrder = latest
+                self.activeOrders = sorted
                 self.isLoading = false
             }
         } catch {
             print("Failed to fetch active orders:", error)
-            await MainActor.run { isLoading = false }
+            await MainActor.run { 
+                self.isLoading = false
+                self.errorMessage = "Failed to load orders: \(error.localizedDescription)"
+            }
         }
     }
     
@@ -88,52 +91,52 @@ class OrderTrackingViewModel: ObservableObject {
         // For simplicity, just subscribe
         realtimeService.subscribe(to: "orders", filter: "user_id=eq.\(userId)")
         
-        realtimeService.eventSubject
-            .receive(on: DispatchQueue.main)
-            .sink { [weak self] event in
-                switch event {
-                case .postgresChange(let change):
-                    self?.handleOrderUpdate(change)
-                case .connected:
-                    print("Realtime Connected")
-                default: break
-                }
-            }
-            .store(in: &cancellables)
-            
-        realtimeService.connect()
+        // Ensure connection
+        if !realtimeService.isConnected {
+            realtimeService.connect()
+        }
     }
     
     private func handleOrderUpdate(_ change: PostgresChange) {
-        // We only care about updates to OUR active order, or NEW orders
-        guard let orderId = activeOrder?.id else {
-            // If no active order, check if this is a new order for us
-            if change.eventType == "INSERT" {
-                 Task { await fetchActiveOrder() }
-            }
-            return
+        guard let changeType = change.eventType as String? else { return }
+        
+        // Handle INSERT
+        if changeType == "INSERT" {
+             Task { await fetchActiveOrders() }
+             return
         }
         
-        // If update is for current order
-        if let newRecord = change.new, 
-           let recordId = newRecord["id"]?.value as? String,
-           recordId == orderId {
+        // Handle UPDATE
+        if changeType == "UPDATE",
+           let newRecord = change.new,
+           let recordId = newRecord["id"]?.value as? String {
             
-            // Update status locally
-            if let statusStr = newRecord["status"]?.value as? String,
-               let newStatus = OrderStatus(rawValue: statusStr) {
-                
-                // If completed/cancelled, refresh full list (might hide card)
-                if !newStatus.isActive {
-                     Task { await fetchActiveOrder() }
-                     return
-                }
-                
-                // Animate change
-                withAnimation {
-                    self.activeOrder?.status = newStatus
+            // Find index of order being updated
+            if let index = activeOrders.firstIndex(where: { $0.id == recordId }) {
+                // Update specific properties locally to avoid full refetch flicker
+                if let statusStr = newRecord["status"]?.value as? String,
+                   let newStatus = OrderStatus(rawValue: statusStr) {
+                    
+                    // Update local model first so UI reflects the change (especially 'completed')
+                    withAnimation {
+                        var updatedOrder = activeOrders[index]
+                        updatedOrder.status = newStatus
+                        updatedOrder.updatedAt = Date() // Approximate
+                        activeOrders[index] = updatedOrder
+                    }
+                    
+                    // If status changes to non-active (completed/cancelled), 
+                    // schedule a refresh to remove it after allowing the user to see the "Completed" state.
+                    if !newStatus.isActive {
+                        // Delay 8 seconds to allow completion animation
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 8) {
+                            Task { [weak self] in await self?.fetchActiveOrders() }
+                        }
+                    }
                 }
             }
         }
     }
 }
+ 
+
