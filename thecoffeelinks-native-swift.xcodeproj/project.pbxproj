@@ -9,9 +9,13 @@
 /* Begin PBXBuildFile section */
 		25544F522F1431A0009A6830 /* Realtime in Frameworks */ = {isa = PBXBuildFile; productRef = 25544F512F1431A0009A6830 /* Realtime */; };
 		25544F572F14341D009A6830 /* Supabase in Frameworks */ = {isa = PBXBuildFile; productRef = 25544F562F14341D009A6830 /* Supabase */; };
+		25D16C8D2F2277BB00D5B216 /* Geologica-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 448159AD55D041B982B3545F /* Geologica-Regular.ttf */; };
+		25D16C8E2F2277BB00D5B216 /* Geologica-Medium.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 7973847583F14F2591C6C6C7 /* Geologica-Medium.ttf */; };
+		25D16C8F2F2277BB00D5B216 /* Geologica-SemiBold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 6EA3220E26C74963B4C5E363 /* Geologica-SemiBold.ttf */; };
+		25D16C902F2277BB00D5B216 /* Geologica-Bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = F9B1B4C3BE39473CBF00E7BB /* Geologica-Bold.ttf */; };
+		25D16C912F2277BB00D5B216 /* NotoSansMono-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = D6E00DA1F6FA4F3F8228D362 /* NotoSansMono-Regular.ttf */; };
+		25D16C922F2277BB00D5B216 /* NotoSansMono-Medium.ttf in Resources */ = {isa = PBXBuildFile; fileRef = E02312DE5A624B2C8619C180 /* NotoSansMono-Medium.ttf */; };
 		25FC4F5F2F1CB2A90001D920 /* CachedAsyncImage in Frameworks */ = {isa = PBXBuildFile; productRef = 25FC4F5E2F1CB2A90001D920 /* CachedAsyncImage */; };
-		311132BBAFDC4D87A1AEF0E9 /* LibreBaskerville-Italic.ttf in Resources */ = {isa = PBXBuildFile; fileRef = FC02A854467A483D898B0051 /* LibreBaskerville-Italic.ttf */; };
-		F495694AB08C4E538B0A3F32 /* LibreBaskerville-Bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 696376B4AF3B4F08ABC24923 /* LibreBaskerville-Bold.ttf */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -35,9 +39,12 @@
 		25544E6E2F1424F2009A6830 /* thecoffeelinks-native-swift.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "thecoffeelinks-native-swift.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		25544E7B2F1424F4009A6830 /* thecoffeelinks-native-swiftTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "thecoffeelinks-native-swiftTests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		25544E852F1424F4009A6830 /* thecoffeelinks-native-swiftUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "thecoffeelinks-native-swiftUITests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
-		696376B4AF3B4F08ABC24923 /* LibreBaskerville-Bold.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; name = "LibreBaskerville-Bold.ttf"; path = "thecoffeelinks-native-swift/Fonts/LibreBaskerville-Bold.ttf"; sourceTree = "<group>"; };
-		B4331C9B483A4F6E99149D4A /* LibreBaskerville-Regular.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; name = "LibreBaskerville-Regular.ttf"; path = "thecoffeelinks-native-swift/Fonts/LibreBaskerville-Regular.ttf"; sourceTree = "<group>"; };
-		FC02A854467A483D898B0051 /* LibreBaskerville-Italic.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; name = "LibreBaskerville-Italic.ttf"; path = "thecoffeelinks-native-swift/Fonts/LibreBaskerville-Italic.ttf"; sourceTree = "<group>"; };
+		448159AD55D041B982B3545F /* Geologica-Regular.ttf */ = {isa = PBXFileReference; lastKnownFileType = text; name = "Geologica-Regular.ttf"; path = "thecoffeelinks-native-swift/Fonts/Geologica-Regular.ttf"; sourceTree = "<group>"; };
+		6EA3220E26C74963B4C5E363 /* Geologica-SemiBold.ttf */ = {isa = PBXFileReference; lastKnownFileType = text; name = "Geologica-SemiBold.ttf"; path = "thecoffeelinks-native-swift/Fonts/Geologica-SemiBold.ttf"; sourceTree = "<group>"; };
+		7973847583F14F2591C6C6C7 /* Geologica-Medium.ttf */ = {isa = PBXFileReference; lastKnownFileType = text; name = "Geologica-Medium.ttf"; path = "thecoffeelinks-native-swift/Fonts/Geologica-Medium.ttf"; sourceTree = "<group>"; };
+		D6E00DA1F6FA4F3F8228D362 /* NotoSansMono-Regular.ttf */ = {isa = PBXFileReference; lastKnownFileType = text; name = "NotoSansMono-Regular.ttf"; path = "thecoffeelinks-native-swift/Fonts/NotoSansMono-Regular.ttf"; sourceTree = "<group>"; };
+		E02312DE5A624B2C8619C180 /* NotoSansMono-Medium.ttf */ = {isa = PBXFileReference; lastKnownFileType = text; name = "NotoSansMono-Medium.ttf"; path = "thecoffeelinks-native-swift/Fonts/NotoSansMono-Medium.ttf"; sourceTree = "<group>"; };
+		F9B1B4C3BE39473CBF00E7BB /* Geologica-Bold.ttf */ = {isa = PBXFileReference; lastKnownFileType = text; name = "Geologica-Bold.ttf"; path = "thecoffeelinks-native-swift/Fonts/Geologica-Bold.ttf"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -45,8 +52,13 @@
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				"App-Info.plist",
-				"Fonts/LibreBaskerville-Bold.ttf",
-				"Fonts/LibreBaskerville-Italic.ttf",
+				Config.plist.template,
+				"Fonts/Geologica-Bold.ttf",
+				"Fonts/Geologica-Medium.ttf",
+				"Fonts/Geologica-Regular.ttf",
+				"Fonts/Geologica-SemiBold.ttf",
+				"Fonts/NotoSansMono-Medium.ttf",
+				"Fonts/NotoSansMono-Regular.ttf",
 			);
 			target = 25544E6D2F1424F2009A6830 /* thecoffeelinks-native-swift */;
 		};
@@ -119,6 +131,12 @@
 				25544E6E2F1424F2009A6830 /* thecoffeelinks-native-swift.app */,
 				25544E7B2F1424F4009A6830 /* thecoffeelinks-native-swiftTests.xctest */,
 				25544E852F1424F4009A6830 /* thecoffeelinks-native-swiftUITests.xctest */,
+				448159AD55D041B982B3545F /* Geologica-Regular.ttf */,
+				7973847583F14F2591C6C6C7 /* Geologica-Medium.ttf */,
+				6EA3220E26C74963B4C5E363 /* Geologica-SemiBold.ttf */,
+				F9B1B4C3BE39473CBF00E7BB /* Geologica-Bold.ttf */,
+				D6E00DA1F6FA4F3F8228D362 /* NotoSansMono-Regular.ttf */,
+				E02312DE5A624B2C8619C180 /* NotoSansMono-Medium.ttf */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -133,9 +151,6 @@
 		25A0C1742F1A36FB00FAD546 /* Recovered References */ = {
 			isa = PBXGroup;
 			children = (
-				B4331C9B483A4F6E99149D4A /* LibreBaskerville-Regular.ttf */,
-				696376B4AF3B4F08ABC24923 /* LibreBaskerville-Bold.ttf */,
-				FC02A854467A483D898B0051 /* LibreBaskerville-Italic.ttf */,
 			);
 			name = "Recovered References";
 			sourceTree = "<group>";
@@ -267,8 +282,12 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				F495694AB08C4E538B0A3F32 /* LibreBaskerville-Bold.ttf in Resources */,
-				311132BBAFDC4D87A1AEF0E9 /* LibreBaskerville-Italic.ttf in Resources */,
+				25D16C8D2F2277BB00D5B216 /* Geologica-Regular.ttf in Resources */,
+				25D16C8E2F2277BB00D5B216 /* Geologica-Medium.ttf in Resources */,
+				25D16C8F2F2277BB00D5B216 /* Geologica-SemiBold.ttf in Resources */,
+				25D16C902F2277BB00D5B216 /* Geologica-Bold.ttf in Resources */,
+				25D16C912F2277BB00D5B216 /* NotoSansMono-Regular.ttf in Resources */,
+				25D16C922F2277BB00D5B216 /* NotoSansMono-Medium.ttf in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

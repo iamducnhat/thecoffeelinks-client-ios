@@ -20,12 +20,7 @@
 	<string>1</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
-	<key>UIAppFonts</key>
-	<array>
-		<string>LibreBaskerville-Regular.ttf</string>
-		<string>LibreBaskerville-Bold.ttf</string>
-		<string>LibreBaskerville-Italic.ttf</string>
-	</array>
+
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>
@@ -52,6 +47,15 @@
 		<string>UIInterfaceOrientationLandscapeRight</string>
 		<string>UIInterfaceOrientationPortrait</string>
 		<string>UIInterfaceOrientationPortraitUpsideDown</string>
+	</array>
+	<key>UIAppFonts</key>
+	<array>
+		<string>Geologica-Regular.ttf</string>
+		<string>Geologica-Medium.ttf</string>
+		<string>Geologica-SemiBold.ttf</string>
+		<string>Geologica-Bold.ttf</string>
+		<string>NotoSansMono-Regular.ttf</string>
+		<string>NotoSansMono-Medium.ttf</string>
 	</array>
 </dict>
 </plist>

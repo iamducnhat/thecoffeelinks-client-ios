@@ -1,121 +1,120 @@
 import SwiftUI
 
-/// Receipt-Editorial Design System: Typography
-/// Derived from canonical CheckoutView.swift
+/// Typography Design System
+/// Uses Geologica for UI and Noto Sans Mono for monospace contexts
 ///
 /// TYPOGRAPHY HIERARCHY:
 ///
-/// 1. SERIF (Libre Baskerville / System Serif)
-///    - Screen titles (H1): .title, .serif, .bold
-///    - Section headers (H2): .title3, .serif, .semibold
-///    - TOTAL label: .title, .serif, .semibold
+/// 1. DISPLAY (Large titles, headings)
+///    - Screen titles (H1): Geologica, 28pt, Bold
+///    - Section headers (H2): Geologica, 20pt, Medium
+///    - Total label: Geologica, 28pt, Medium
 ///
-/// 2. MONOSPACED (System Mono)
-///    - Prices: .body, .monospaced
-///    - Quantities: .headline, .monospaced
-///    - Total price: .title, .monospaced, .semibold
-///    - Toggle labels: .body, .monospaced
-///    - Promo codes: .body, .monospaced
-///    - Icon buttons: .caption, .monospaced
+/// 2. MONOSPACE (Prices, Quantities, Codes, IDs)
+///    - Prices: Noto Sans Mono, 17pt, Regular
+///    - Quantities: Noto Sans Mono, 17pt, Medium
+///    - Total price: Noto Sans Mono, 28pt, Medium
+///    - CTA buttons: Noto Sans Mono, 22pt, Medium
+///    - Small labels: Noto Sans Mono, 12pt, Regular
 ///
-/// 3. DEFAULT (System / SF Pro)
-///    - Body text: .body, .default
-///    - Descriptions: .body, .default
-///    - Placeholder text: .body, .default
+/// 3. BODY (Standard UI text)
+///    - Body text: Geologica, 17pt, Regular
+///    - Headlines: Geologica, 17pt, Medium
+///    - Navigation: Geologica, 22pt, Medium
 
 struct AppFont {
     
-    // MARK: - Serif Tokens (Headlines Only)
+    // MARK: - Display Tokens (Headlines)
     
     /// Screen title: "Checkout"
-    /// Font: System Serif, Title size, Bold weight
+    /// Font: Geologica-Bold, 28pt
     static var displayTitle: Font {
-        .system(.title, design: .serif).weight(.bold)
+        .custom("GeologicaThinRoman-Bold", size: 28)
     }
     
     /// Section header: "ORDER TYPE", "VOUCHER"
-    /// Font: System Serif, Title3 size, Medium weight
+    /// Font: Geologica-Medium, 20pt
     static var sectionHeader: Font {
-        .system(.title3, design: .serif).weight(.medium)
+        .custom("GeologicaThinRoman-Medium", size: 20)
     }
     
     /// Total label: "TOTAL"
-    /// Font: System Serif, Title size, Medium weight
+    /// Font: Geologica-Medium, 28pt
     static var totalLabel: Font {
-        .system(.title, design: .serif).weight(.medium)
+        .custom("GeologicaThinRoman-Medium", size: 28)
     }
     
-    // MARK: - Monospaced Tokens (Prices, Quantities, Codes)
+    // MARK: - Monospace Tokens (Prices, Quantities, Codes, IDs)
     
     /// Prices in lists: "10.000₫"
-    /// Font: System Mono, Body size
+    /// Font: NotoSansMono-Regular, 17pt
     static var monoBody: Font {
-        .system(.body, design: .monospaced)
+        .custom("NotoSansMono-Regular", size: 17)
     }
     
     /// Quantity display: "1"
-    /// Font: System Mono, Headline size, Medium weight
+    /// Font: NotoSansMono-Medium, 17pt
     static var monoHeadline: Font {
-        .system(.headline, design: .monospaced).weight(.medium)
+        .custom("NotoSansMono-Medium", size: 17)
     }
     
     /// Total price: "12.000.000₫"
-    /// Font: System Mono, Title size, Medium weight
+    /// Font: NotoSansMono-Medium, 28pt
     static var monoTitle: Font {
-        .system(.title, design: .monospaced).weight(.medium)
+        .custom("NotoSansMono-Medium", size: 28)
     }
     
     /// CTA button text: "Place Order"
-    /// Font: System Mono, Title2 size, Medium weight
+    /// Font: NotoSansMono-Medium, 22pt
     static var monoCTA: Font {
-        .system(.title2, design: .monospaced).weight(.medium)
+        .custom("NotoSansMono-Medium", size: 22)
     }
     
-    /// Small mono for icons: button icons
-    /// Font: System Mono, Caption size
+    /// Small labels: button icons
+    /// Font: NotoSansMono-Regular, 12pt
     static var monoCaption: Font {
-        .system(.caption, design: .monospaced)
+        .custom("NotoSansMono-Regular", size: 12)
     }
     
-    // MARK: - Default Tokens (Body Text)
+    // MARK: - Body Tokens (Standard UI Text)
     
     /// Standard body text
-    /// Font: System Default, Body size
+    /// Font: Geologica-Regular, 17pt
     static var body: Font {
-        .system(.body, design: .default)
+        .custom("GeologicaThinRoman-Regular", size: 17)
     }
     
     /// Product name in list
-    /// Font: System Default, Headline size, Medium weight
+    /// Font: Geologica-Medium, 17pt
     static var headline: Font {
-        .system(.headline, design: .default).weight(.medium)
+        .custom("GeologicaThinRoman-Medium", size: 17)
     }
     
-    /// Navigation title (back button weight)
-    /// Font: System Default, Title2 size, Medium weight
+    /// Navigation title
+    /// Font: Geologica-Medium, 22pt
     static var navIcon: Font {
-        .system(.title2).weight(.medium)
+        .custom("GeologicaThinRoman-Medium", size: 22)
     }
     
-    /// Editorial Product Title
-    /// Font: Libre Baskerville Bold, Size: AppLayout.unit (18pt)
+    /// Product Title
+    /// Font: Geologica-Bold, Size: AppLayout.unit (18pt)
     static var productTitle: Font {
-        .custom(serifBoldFontName, size: AppLayout.unit)
+        .custom("GeologicaThinRoman-Bold", size: AppLayout.unit)
     }
     
     // MARK: - Legacy Aliases (Compatibility)
     
-    static let serifFontName = "LibreBaskerville-Regular"
-    static let serifBoldFontName = "LibreBaskerville-Bold"
-    static let serifItalicFontName = "LibreBaskerville-Italic"
+    static let serifFontName = "GeologicaThinRoman-Regular"
+    static let serifBoldFontName = "GeologicaThinRoman-Bold"
+    static let serifItalicFontName = "GeologicaThinRoman-Regular" // No italic variant present
     
     static var displayH1: Font { displayTitle }
     static var displayH2: Font { sectionHeader }
     static var uiTitle: Font { headline }
     static var uiBody: Font { body }
-    static var uiCaption: Font { .system(.callout, design: .default) }
-    static var uiMicro: Font { .system(.caption, design: .default).weight(.medium) }
-    static var uiButton: Font { .system(.body, design: .default).weight(.semibold) }
+    static var uiCaption: Font { .custom("GeologicaThinRoman-Regular", size: 16) }
+    static var uiMicro: Font { .custom("GeologicaThinRoman-Medium", size: 12) }
+    static var uiButton: Font { .custom("GeologicaThinRoman-SemiBold", size: 17) }
     static var mono: Font { monoBody }
 }
 
