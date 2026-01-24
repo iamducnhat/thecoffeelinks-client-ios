@@ -3,7 +3,7 @@ import re
 import uuid
 import os
 
-PROJECT_PATH = "thecoffeelinks-native-swift.xcodeproj/project.pbxproj"
+PROJECT_PATH = "thecoffeelinks-client-ios.xcodeproj/project.pbxproj"
 FONT_FILES = [
     "Fonts/LibreBaskerville-Regular.ttf",
     "Fonts/LibreBaskerville-Bold.ttf",
@@ -63,7 +63,7 @@ def main():
     # Actually, they need to be in a group to be visible in Xcode, but for building, just FileRef + BuildPhase is enough?
     # No, typically need to be in the group hierarchy.
     # Let's find the main group's children list.
-    group_regex = re.compile(r'([A-F0-9]+) /\* thecoffeelinks-native-swift \*/ = \{[^}]*children = \(([^)]+)\);', re.DOTALL)
+    group_regex = re.compile(r'([A-F0-9]+) /\* thecoffeelinks-client-ios \*/ = \{[^}]*children = \(([^)]+)\);', re.DOTALL)
     # This regex targets the group named identically to the project, which is standard.
     
     files_added = 0
@@ -80,8 +80,8 @@ def main():
         # PBXFileReference
         # Note: path should be relative to project. Since we run from root, "Fonts/..." is fine if added to root group.
         # But usually files are inside the app folder.
-        # We downloaded to `thecoffeelinks-native-swift/Fonts`. 
-        # If project is in `thecoffeelinks-native-swift`, then path is just "Fonts/..."
+        # We downloaded to `thecoffeelinks-client-ios/Fonts`. 
+        # If project is in `thecoffeelinks-client-ios`, then path is just "Fonts/..."
         
         new_file_refs.append(f'\t\t{file_ref_id} /* {filename} */ = {{isa = PBXFileReference; lastKnownFileType = file; name = "{filename}"; path = "{font_path}"; sourceTree = "<group>"; }};')
         
@@ -117,12 +117,12 @@ def main():
 
     # Optimistic: Add to Main Group (so they appear in Xcode, ensuring checking logic works)
     # We look for the main group section.
-    # We'll just append them to the first PBXGroup that looks like the main folder "thecoffeelinks-native-swift"
+    # We'll just append them to the first PBXGroup that looks like the main folder "thecoffeelinks-client-ios"
     # Identify group by path or name
-    # 25544E70 is the ID we saw in previous script for "thecoffeelinks-native-swift" group
+    # 25544E70 is the ID we saw in previous script for "thecoffeelinks-client-ios" group
     
     # Let's try to be generic: find the MainGroup object
-    main_group_block_match = re.search(r'([A-F0-9]+) /\* thecoffeelinks-native-swift \*/ = \{[^}]*children = \(([^)]*)\);', content)
+    main_group_block_match = re.search(r'([A-F0-9]+) /\* thecoffeelinks-client-ios \*/ = \{[^}]*children = \(([^)]*)\);', content)
     if main_group_block_match:
         group_id = main_group_block_match.group(1)
         current_children = main_group_block_match.group(2)

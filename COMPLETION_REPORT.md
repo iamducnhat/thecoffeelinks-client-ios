@@ -77,7 +77,7 @@
 
 **Client Backend Guide:**
 - ✅ Complete iOS-focused documentation
-- ✅ Located: `/Users/nguyenducnhat/appcafe/thecoffeelinks-native-swift/BACKEND_GUIDE.md`
+- ✅ Located: `/Users/nguyenducnhat/appcafe/thecoffeelinks-client-ios/BACKEND_GUIDE.md`
 - ✅ Matches server API exactly
 - ✅ Includes Swift integration patterns
 - ✅ Database schema reference

@@ -52,7 +52,7 @@ After backing up, add 2 closing braces before `.background` line:
 
 ```bash
 # Find the line number of `.background(Color.brandBackground)`
-grep -n ".background(Color.brandBackground)" thecoffeelinks-native-swift/Features/Home/HomeView.swift
+grep -n ".background(Color.brandBackground)" thecoffeelinks-client-ios/Features/Home/HomeView.swift
 
 # Then insert 2 closing braces before it
 ```
@@ -94,6 +94,6 @@ All API response DTOs created:
 
 Backend guides complete:
 - Server: `/Users/nguyenducnhat/appcafe/thecoffeelinks-server/BACKEND_API_GUIDE.md`
-- Client: `/Users/nguyenducnhat/appcafe/thecoffeelinks-native-swift/BACKEND_GUIDE.md`
+- Client: `/Users/nguyenducnhat/appcafe/thecoffeelinks-client-ios/BACKEND_GUIDE.md`
 
 Both files are comprehensive and match each other.

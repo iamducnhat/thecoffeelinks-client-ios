@@ -7,7 +7,7 @@
 ## 1️⃣ ORDER TYPES EXPANSION
 
 ### Current State
-The app supports three order types via [DeliveryOption](file:///Users/nguyenducnhat/appcafe/thecoffeelinks-native-swift/thecoffeelinks-native-swift/Models/Order.swift#L10-L14):
+The app supports three order types via [DeliveryOption](file:///Users/nguyenducnhat/appcafe/thecoffeelinks-client-ios/thecoffeelinks-client-ios/Models/Order.swift#L10-L14):
 - `dineIn` — Table-linked QR ordering
 - `takeAway` — Counter pickup
 - `delivery` — **Exists in model but NOT implemented in UI**
@@ -18,7 +18,7 @@ The app supports three order types via [DeliveryOption](file:///Users/nguyenducn
 | Component | Requirement |
 |-----------|-------------|
 | Saved addresses | HomeView should surface "Deliver to: [Address]" with 1-tap change |
-| Address picker | Pull from [SavedAddressesView](file:///Users/nguyenducnhat/appcafe/thecoffeelinks-native-swift/thecoffeelinks-native-swift/Views/SavedAddressesView.swift) |
+| Address picker | Pull from [SavedAddressesView](file:///Users/nguyenducnhat/appcafe/thecoffeelinks-client-ios/thecoffeelinks-client-ios/Views/SavedAddressesView.swift) |
 | Address validation | Server-side geocoding + delivery zone check |
 | Default address | Auto-select last-used; learn from frequency |
 
@@ -61,7 +61,7 @@ Pattern: "Ready in X min" → "Arrives by HH:MM"
 ## 2️⃣ HOME PAGE AS ORDERING ENGINE
 
 ### The Problem
-Current [HomeView](file:///Users/nguyenducnhat/appcafe/thecoffeelinks-native-swift/thecoffeelinks-native-swift/HomeView.swift) shows:
+Current [HomeView](file:///Users/nguyenducnhat/appcafe/thecoffeelinks-client-ios/thecoffeelinks-client-ios/HomeView.swift) shows:
 1. Header greeting
 2. QuickOrderWidget
 3. Active order (if any)
@@ -90,7 +90,7 @@ Current [HomeView](file:///Users/nguyenducnhat/appcafe/thecoffeelinks-native-swi
 
 #### Above the Fold (Ordered by Priority)
 1. **Ready-to-Order Card** (AI-generated, 1-tap checkout) ⬅️ NEW
-2. **Your Usual** (existing [QuickOrderWidget](file:///Users/nguyenducnhat/appcafe/thecoffeelinks-native-swift/thecoffeelinks-native-swift/Views/QuickOrderWidget.swift))
+2. **Your Usual** (existing [QuickOrderWidget](file:///Users/nguyenducnhat/appcafe/thecoffeelinks-client-ios/thecoffeelinks-client-ios/Views/QuickOrderWidget.swift))
 3. **Active Order Banner** (if any)
 
 #### Below the Fold (Scrollable)
@@ -123,7 +123,7 @@ Current [HomeView](file:///Users/nguyenducnhat/appcafe/thecoffeelinks-native-swi
 ## 3️⃣ FAVORITES, NOTES & PERSONAL MEMORY
 
 ### Current Gap
-No favorites system exists. [QuickOrderService](file:///Users/nguyenducnhat/appcafe/thecoffeelinks-native-swift/thecoffeelinks-native-swift/Services/QuickOrderService.swift) tracks frequency but not explicit preferences.
+No favorites system exists. [QuickOrderService](file:///Users/nguyenducnhat/appcafe/thecoffeelinks-client-ios/thecoffeelinks-client-ios/Services/QuickOrderService.swift) tracks frequency but not explicit preferences.
 
 ### Favorites Design
 
@@ -226,7 +226,7 @@ vs.
 ### AI-Generated Ready-to-Order Carts
 
 #### Current State
-[QuickOrderService](file:///Users/nguyenducnhat/appcafe/thecoffeelinks-native-swift/thecoffeelinks-native-swift/Services/QuickOrderService.swift) uses frequency × recency scoring but lacks:
+[QuickOrderService](file:///Users/nguyenducnhat/appcafe/thecoffeelinks-client-ios/thecoffeelinks-client-ios/Services/QuickOrderService.swift) uses frequency × recency scoring but lacks:
 - Time-of-day awareness
 - Weather integration
 - Day-of-week patterns
@@ -252,7 +252,7 @@ Where:
 
 ### Time-Based Prediction
 
-[AppState.timeMode](file:///Users/nguyenducnhat/appcafe/thecoffeelinks-native-swift/thecoffeelinks-native-swift/AppState.swift#L14-L18) already defines:
+[AppState.timeMode](file:///Users/nguyenducnhat/appcafe/thecoffeelinks-client-ios/thecoffeelinks-client-ios/AppState.swift#L14-L18) already defines:
 - Morning (6-11am)
 - Day (11am-5pm)
 - Evening (5pm+)
@@ -355,7 +355,7 @@ struct TimeSlotOrder {
 1. **Order history storage** — already in UserDefaults via QuickOrderService
 2. **Personal pattern detection** — frequency × recency scoring
 3. **Favorites/notes** — never leave device
-4. **Customization defaults** — [UserPreferencesManager](file:///Users/nguyenducnhat/appcafe/thecoffeelinks-native-swift/thecoffeelinks-native-swift/Services/UserPreferencesManager.swift)
+4. **Customization defaults** — [UserPreferencesManager](file:///Users/nguyenducnhat/appcafe/thecoffeelinks-client-ios/thecoffeelinks-client-ios/Services/UserPreferencesManager.swift)
 
 ### Server-Side Requirements
 1. **Trending calculation** — requires aggregate data
@@ -453,7 +453,7 @@ We never see what you ordered — only when you checkout."
 ### Speed Optimization Opportunities
 
 #### Immediate Wins
-1. **Pre-fill payment method** — Use [lastPaymentMethod](file:///Users/nguyenducnhat/appcafe/thecoffeelinks-native-swift/thecoffeelinks-native-swift/Services/UserPreferencesManager.swift#L32-L34)
+1. **Pre-fill payment method** — Use [lastPaymentMethod](file:///Users/nguyenducnhat/appcafe/thecoffeelinks-client-ios/thecoffeelinks-client-ios/Services/UserPreferencesManager.swift#L32-L34)
 2. **Auto-select nearest store** — Use location from StoresViewModel
 3. **Cart count badge** — Show on CartFloater persistently
 4. **Haptic on add** — Already exists, ensure prominence
@@ -486,7 +486,7 @@ We never see what you ordered — only when you checkout."
 
 ### 4. "Last Order Was X Days Ago" Nudge
 - If user's streak is at risk, show gentle nudge: "Miss your usual?"
-- Already partially built in [RefillPromptService](file:///Users/nguyenducnhat/appcafe/thecoffeelinks-native-swift/thecoffeelinks-native-swift/Services/RefillPromptService.swift)
+- Already partially built in [RefillPromptService](file:///Users/nguyenducnhat/appcafe/thecoffeelinks-client-ios/thecoffeelinks-client-ios/Services/RefillPromptService.swift)
 
 ### 5. Store Staff Remembers You
 - When checking in, show: "Welcome back! Same as last time?"
@@ -602,4 +602,4 @@ We never see what you ordered — only when you checkout."
 
 ---
 
-*Research conducted by analyzing [thecoffeelinks-native-swift](file:///Users/nguyenducnhat/appcafe/thecoffeelinks-native-swift) codebase.*
+*Research conducted by analyzing [thecoffeelinks-client-ios](file:///Users/nguyenducnhat/appcafe/thecoffeelinks-client-ios) codebase.*

@@ -435,7 +435,7 @@ do {
 ## 11. Backend Guide References
 
 - **Server API**: `/Users/nguyenducnhat/appcafe/thecoffeelinks-server/BACKEND_API_GUIDE.md`
-- **Client Guide**: `/Users/nguyenducnhat/appcafe/thecoffeelinks-native-swift/BACKEND_GUIDE.md`
+- **Client Guide**: `/Users/nguyenducnhat/appcafe/thecoffeelinks-client-ios/BACKEND_GUIDE.md`
 
 Both guides are comprehensive and include:
 - Complete endpoint documentation

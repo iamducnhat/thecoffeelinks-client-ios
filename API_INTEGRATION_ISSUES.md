@@ -32,7 +32,7 @@ https://server-nu-three-90.vercel.app/
 ```
 
 **Configured In**:
-- `thecoffeelinks-native-swift/Config.plist` (hardcoded)
+- `thecoffeelinks-client-ios/Config.plist` (hardcoded)
 - `Core/DI/DependencyContainer.swift` (fallback default)
 
 ### Supabase Configuration

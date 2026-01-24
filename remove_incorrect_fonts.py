@@ -2,7 +2,7 @@
 import re
 
 # Paths
-pbxproj_path = "thecoffeelinks-native-swift.xcodeproj/project.pbxproj"
+pbxproj_path = "thecoffeelinks-client-ios.xcodeproj/project.pbxproj"
 
 # 1. IDs to remove (from the file content we saw)
 # These are the ones in "Sources" phase of UI Tests

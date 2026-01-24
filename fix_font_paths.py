@@ -2,7 +2,7 @@
 import re
 
 # Paths
-pbxproj_path = "thecoffeelinks-native-swift.xcodeproj/project.pbxproj"
+pbxproj_path = "thecoffeelinks-client-ios.xcodeproj/project.pbxproj"
 
 # File References to fix
 # 696376B4AF3B4F08ABC24923 /* LibreBaskerville-Bold.ttf */
@@ -10,9 +10,9 @@ pbxproj_path = "thecoffeelinks-native-swift.xcodeproj/project.pbxproj"
 # FC02A854467A483D898B0051 /* LibreBaskerville-Italic.ttf */
 
 file_fixes = {
-    "696376B4AF3B4F08ABC24923": "thecoffeelinks-native-swift/Fonts/LibreBaskerville-Bold.ttf",
-    "B4331C9B483A4F6E99149D4A": "thecoffeelinks-native-swift/Fonts/LibreBaskerville-Regular.ttf",
-    "FC02A854467A483D898B0051": "thecoffeelinks-native-swift/Fonts/LibreBaskerville-Italic.ttf"
+    "696376B4AF3B4F08ABC24923": "thecoffeelinks-client-ios/Fonts/LibreBaskerville-Bold.ttf",
+    "B4331C9B483A4F6E99149D4A": "thecoffeelinks-client-ios/Fonts/LibreBaskerville-Regular.ttf",
+    "FC02A854467A483D898B0051": "thecoffeelinks-client-ios/Fonts/LibreBaskerville-Italic.ttf"
 }
 
 with open(pbxproj_path, 'r') as f:
@@ -28,7 +28,7 @@ for line in lines:
             # But simple string replacement should work if the format is standard
             # Expected: path = "Fonts/LibreBaskerville-Bold.ttf";
             if f'path = "Fonts/' in line:
-               modified_line = line.replace(f'path = "Fonts/', f'path = "thecoffeelinks-native-swift/Fonts/')
+               modified_line = line.replace(f'path = "Fonts/', f'path = "thecoffeelinks-client-ios/Fonts/')
                print(f"Updated path for {file_id}")
     new_lines.append(modified_line)
 

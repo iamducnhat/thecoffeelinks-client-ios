@@ -8,7 +8,7 @@ font_urls = {
     "LibreBaskerville-Italic.ttf": "https://raw.githubusercontent.com/impallari/Libre-Baskerville/master/fonts/ttf/LibreBaskerville-Italic.ttf"
 }
 
-target_dir = "thecoffeelinks-native-swift/Fonts/"
+target_dir = "thecoffeelinks-client-ios/Fonts/"
 
 if not os.path.exists(target_dir):
     os.makedirs(target_dir)

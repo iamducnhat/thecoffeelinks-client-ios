@@ -330,11 +330,11 @@ struct LiquidGlassSearchBar: View {
 """
 
 # Read the current file
-with open('thecoffeelinks-native-swift/DesignSystem.swift', 'r') as f:
+with open('thecoffeelinks-client-ios/DesignSystem.swift', 'r') as f:
     content = f.read()
 
 # Append the Liquid Glass components
-with open('thecoffeelinks-native-swift/DesignSystem.swift', 'w') as f:
+with open('thecoffeelinks-client-ios/DesignSystem.swift', 'w') as f:
     f.write(content + liquid_glass_code)
 
 print("✅ Liquid Glass components added to DesignSystem.swift")

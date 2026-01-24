@@ -28,7 +28,7 @@ The CoffeeLinks is a premium coffee ordering and professional networking applica
    ```bash
    git clone <repo-url>
    ```
-2.  Open `thecoffeelinks-native-swift.xcodeproj`.
+2.  Open `thecoffeelinks-client-ios.xcodeproj`.
 3.  Ensure the Signing Team is selected in Project Settings.
 4.  Build and Run (Cmd+R).
 

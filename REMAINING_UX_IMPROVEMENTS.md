@@ -403,7 +403,7 @@ struct LiquidGlassCard<Content: View>: View {
    - LiquidGlassTextField
    - LiquidGlassTabBar
 
-2. **App/thecoffeelinks_native_swiftApp.swift**:
+2. **App/thecoffeelinks_client_iosApp.swift**:
    - Add custom tab bar with liquid glass
    - Or apply `.toolbarBackground(.ultraThinMaterial)`
 

@@ -1,7 +1,7 @@
 import re
 import sys
 
-project_path = 'thecoffeelinks-native-swift.xcodeproj/project.pbxproj'
+project_path = 'thecoffeelinks-client-ios.xcodeproj/project.pbxproj'
 plist_name = 'Info.plist'
 
 with open(project_path, 'r') as f:

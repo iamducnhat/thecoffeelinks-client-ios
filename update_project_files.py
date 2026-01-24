@@ -4,8 +4,8 @@ import re
 import uuid
 
 # Configuration
-PROJECT_DIR = "thecoffeelinks-native-swift"
-PROJECT_FILE = "thecoffeelinks-native-swift.xcodeproj/project.pbxproj"
+PROJECT_DIR = "thecoffeelinks-client-ios"
+PROJECT_FILE = "thecoffeelinks-client-ios.xcodeproj/project.pbxproj"
 EXCLUDE_DIRS = ["Preview Content", "Assets.xcassets", "build"]
 
 def generate_id():
@@ -66,9 +66,9 @@ def main():
     new_source_files = []
     
     # We need to find the ID of the main group to add references to (or a sub-group)
-    # For now, we'll try to add them to the main group 'thecoffeelinks-native-swift'
+    # For now, we'll try to add them to the main group 'thecoffeelinks-client-ios'
     # Finding main group children block
-    main_group_regex = re.compile(r'([A-F0-9]+) /\* thecoffeelinks-native-swift \*/ = \{[^}]*children = \(([^)]+)\);', re.DOTALL)
+    main_group_regex = re.compile(r'([A-F0-9]+) /\* thecoffeelinks-client-ios \*/ = \{[^}]*children = \(([^)]+)\);', re.DOTALL)
     match = main_group_regex.search(content)
     
     if not match:

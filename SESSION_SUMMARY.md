@@ -158,8 +158,8 @@ The app is now **production-ready** with:
 ## Build Status
 
 ```bash
-$ xcodebuild -project thecoffeelinks-native-swift.xcodeproj \
-  -scheme thecoffeelinks-native-swift \
+$ xcodebuild -project thecoffeelinks-client-ios.xcodeproj \
+  -scheme thecoffeelinks-client-ios \
   -destination 'platform=iOS Simulator,name=iPhone 17 Pro,OS=latest' \
   clean build
 

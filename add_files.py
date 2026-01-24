@@ -15,7 +15,7 @@ FILES_TO_ADD = [
     # ContentView.swift and App.swift are likely already there or need checking
 ]
 
-PROJECT_PATH = "thecoffeelinks-native-swift.xcodeproj/project.pbxproj"
+PROJECT_PATH = "thecoffeelinks-client-ios.xcodeproj/project.pbxproj"
 
 def generate_id():
     return str(uuid.uuid4()).replace("-", "")[:24].upper()
@@ -40,9 +40,9 @@ def main():
         
     project_id = main_group_match.group(1)
     
-    # deeply simplify: just look for the group named 'thecoffeelinks-native-swift'
+    # deeply simplify: just look for the group named 'thecoffeelinks-client-ios'
     # This is risky but standard Xcode templates usually have a group with the app name
-    group_match = re.search(r'([A-F0-9]+) /\* thecoffeelinks-native-swift \*/ = \{', content)
+    group_match = re.search(r'([A-F0-9]+) /\* thecoffeelinks-client-ios \*/ = \{', content)
     if not group_match:
          print("Error: Could not find main group ID")
          sys.exit(1)
@@ -99,12 +99,12 @@ def main():
     # 2. Add Build Files
     content = content.replace(build_files_marker, build_files_marker + "\n" + "\n".join(new_build_files))
     
-    # Updated Strategy: Target the specific group for source files "thecoffeelinks-native-swift"
-    # From file inspection: 25544E702F1424F2009A6830 is the group for the folder "thecoffeelinks-native-swift"
+    # Updated Strategy: Target the specific group for source files "thecoffeelinks-client-ios"
+    # From file inspection: 25544E702F1424F2009A6830 is the group for the folder "thecoffeelinks-client-ios"
     
     # We look for: 25544E70... = { ... children = ( ... );
     # Note: It might be a PBXFileSystemSynchronizedRootGroup which doesn't have local children but reads from disk?
-    # Inspecting line 33: isa = PBXFileSystemSynchronizedRootGroup; path = "thecoffeelinks-native-swift";
+    # Inspecting line 33: isa = PBXFileSystemSynchronizedRootGroup; path = "thecoffeelinks-client-ios";
     
     # IF it is a synchronized root group, we CANNOT add children to it in the PBXProj. 
     # Xcode 16+ uses synchronized groups which automatically pick up files on disk. 
@@ -114,10 +114,10 @@ def main():
     # Let's check if the previous xcodebuild failure was just a fluke or if we need to force it.
     
     print("Detected PBXFileSystemSynchronizedRootGroup. Files should be picked up automatically if in the right folder.")
-    print("Verifying if files are in 'thecoffeelinks-native-swift' subfolder...")
+    print("Verifying if files are in 'thecoffeelinks-client-ios' subfolder...")
     
     # We will just exit successfully if we detect this, as we shouldn't modify the pbxproj for sync groups.
-    if "isa = PBXFileSystemSynchronizedRootGroup" in content and 'path = "thecoffeelinks-native-swift"' in content:
+    if "isa = PBXFileSystemSynchronizedRootGroup" in content and 'path = "thecoffeelinks-client-ios"' in content:
         print("Project uses File System Synchronization. Skipping manual PBX editing.")
         sys.exit(0)
     

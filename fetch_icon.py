@@ -6,7 +6,7 @@ import ssl
 # --- CONFIGURATION ---
 ICON_NAME = "menu"  # Change this variable to fetch different icons
 # Path to the Assets.xcassets directory
-ASSETS_DIR = "/Users/nguyenducnhat/appcafe/thecoffeelinks-native-swift/thecoffeelinks-native-swift/Assets.xcassets"
+ASSETS_DIR = "/Users/nguyenducnhat/appcafe/thecoffeelinks-client-ios/thecoffeelinks-client-ios/Assets.xcassets"
 
 def fetch_and_add_icon(icon_name):
     print(f"--- Processing Icon: {icon_name} ---")

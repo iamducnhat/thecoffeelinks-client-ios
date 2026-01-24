@@ -24,11 +24,11 @@
 
 | ID | Description | File(s) | Evidence | Status |
 |----|-------------|---------|----------|--------|
-| 1.4 | Social Login | [LoginView.swift](file:///Users/nguyenducnhat/appcafe/thecoffeelinks-native-swift/thecoffeelinks-native-swift/LoginView.swift) | Added `SocialLoginButton` for Apple, Google, LinkedIn. | ✅ |
-| 1.5 | 5 Tabs | [ContentView.swift](file:///Users/nguyenducnhat/appcafe/thecoffeelinks-native-swift/thecoffeelinks-native-swift/ContentView.swift) | Added Tab 4: "Connect" using `NetworkView`. | ✅ |
-| 1.11 | Booking Logic | [StoresView.swift](file:///Users/nguyenducnhat/appcafe/thecoffeelinks-native-swift/thecoffeelinks-native-swift/StoresView.swift) | Added "Book Space" button and `BookingSheet`. | ✅ |
-| 1.15 | Color Palette | [DesignSystem.swift](file:///Users/nguyenducnhat/appcafe/thecoffeelinks-native-swift/thecoffeelinks-native-swift/DesignSystem.swift) | Updated `forestCanopy` to `#0A4E5C`. | ✅ |
-| 1.12 | Network Toggle | [NetworkView.swift](file:///Users/nguyenducnhat/appcafe/thecoffeelinks-native-swift/thecoffeelinks-native-swift/NetworkView.swift) | Check-in button exists, serves as toggle for MVP. | ✅ |
+| 1.4 | Social Login | [LoginView.swift](file:///Users/nguyenducnhat/appcafe/thecoffeelinks-client-ios/thecoffeelinks-client-ios/LoginView.swift) | Added `SocialLoginButton` for Apple, Google, LinkedIn. | ✅ |
+| 1.5 | 5 Tabs | [ContentView.swift](file:///Users/nguyenducnhat/appcafe/thecoffeelinks-client-ios/thecoffeelinks-client-ios/ContentView.swift) | Added Tab 4: "Connect" using `NetworkView`. | ✅ |
+| 1.11 | Booking Logic | [StoresView.swift](file:///Users/nguyenducnhat/appcafe/thecoffeelinks-client-ios/thecoffeelinks-client-ios/StoresView.swift) | Added "Book Space" button and `BookingSheet`. | ✅ |
+| 1.15 | Color Palette | [DesignSystem.swift](file:///Users/nguyenducnhat/appcafe/thecoffeelinks-client-ios/thecoffeelinks-client-ios/DesignSystem.swift) | Updated `forestCanopy` to `#0A4E5C`. | ✅ |
+| 1.12 | Network Toggle | [NetworkView.swift](file:///Users/nguyenducnhat/appcafe/thecoffeelinks-client-ios/thecoffeelinks-client-ios/NetworkView.swift) | Check-in button exists, serves as toggle for MVP. | ✅ |
 
 ## 🧠 STEP 4 — UX & PRODUCT VALIDATION
 
