@@ -67,28 +67,29 @@ struct HomeView: View {
                             Divider().hidden()
                         } else if let error = trackingViewModel.errorMessage {
                             // Error State for Orders
-                            VStack(spacing: 8) {
-                                Image(systemName: "wifi.slash")
-                                    .font(.title2)
-                                    .foregroundStyle(Color.textMuted)
-                                Text("Tracking Unavailable")
-                                    .font(AppFont.headline)
-                                    .foregroundStyle(Color.textInk)
-                                Text(error)
-                                    .font(AppFont.uiCaption)
-                                    .foregroundStyle(Color.semanticError)
-                                    .multilineTextAlignment(.center)
-                                
-                                Button("Retry") {
-                                    Task { await trackingViewModel.fetchActiveOrders() }
-                                }
-                                .font(AppFont.uiButton)
-                                .foregroundColor(Color.primaryEspresso)
-                            }
-                            .padding(AppLayout.spacing)
-                            .background(Color.surfaceCard)
-                            .cornerRadius(AppLayout.cornerRadius)
-                            .padding(.horizontal, AppLayout.spacing)
+                            EmptyView()
+//                            VStack(spacing: 8) {
+//                                Image(systemName: "wifi.slash")
+//                                    .font(.title2)
+//                                    .foregroundStyle(Color.textMuted)
+//                                Text("Tracking Unavailable")
+//                                    .font(AppFont.headline)
+//                                    .foregroundStyle(Color.textInk)
+//                                Text(error)
+//                                    .font(AppFont.uiCaption)
+//                                    .foregroundStyle(Color.semanticError)
+//                                    .multilineTextAlignment(.center)
+//                                
+//                                Button("Retry") {
+//                                    Task { await trackingViewModel.fetchActiveOrders() }
+//                                }
+//                                .font(AppFont.uiButton)
+//                                .foregroundColor(Color.primaryEspresso)
+//                            }
+//                            .padding(AppLayout.spacing)
+//                            .background(Color.surfaceCard)
+//                            .cornerRadius(AppLayout.cornerRadius)
+//                            .padding(.horizontal, AppLayout.spacing)
                         }
                         
                         // AI Quick Order Prompt
@@ -472,10 +473,11 @@ struct PopularProductCard: View {
                         .clipShape(RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle))
                 }
             }
-            //.padding(.vertical, AppLayout.spacing)
+            .padding(.bottom, AppLayout.spacing)
             
             if showDivider {
-                Color.secondary.frame(height: 1)
+                Divider()
+                    .padding(.bottom, AppLayout.spacing)
             }
         }
     }

@@ -2,8 +2,8 @@
 //  OrderTrackingCard.swift
 //  thecoffeelinks-native-swift
 //
-//  Receipt-Style Active Order Card
-//  Matches App "Editorial" Design System
+//  Standardized Order Tracking Card
+//  Supports Realtime, Pickup, and Delivery
 //
 
 import SwiftUI
@@ -12,82 +12,119 @@ import CachedAsyncImage
 struct OrderTrackingCard: View {
     let order: Order
     
-    // Status Logic
-    var statusMessage: String {
+    // Derived UI State
+    var isDelivery: Bool { order.mode == .delivery }
+    
+    var statusTitle: String {
         switch order.status {
+        case .pending: return "Processing Order"
         case .placed: return "Order Placed"
-        case .received: return "Order Received"
-        case .preparing: return "Preparing"
-        case .ready: 
-            return order.mode == .delivery ? "Driver Hearing Out" : "Ready for Pickup"
-        case .delivering: return "On the Way"
+        case .received: return "Order Confirmed"
+        case .preparing: return "Preparing..."
+        case .ready: return isDelivery ? "Out for Delivery" : "Ready for Pickup"
+        case .delivering: return "Arriving Soon"
         case .completed: return "Completed"
-        default: return order.status.displayName
+        case .cancelled: return "Cancelled"
+        }
+    }
+    
+    var statusSubtitle: String {
+        switch order.status {
+        case .pending: return "Verifying details..."
+        case .placed: return "Waiting for store confirmation"
+        case .received: return "We have received your order"
+        case .preparing: return "Barista is making your drink"
+        case .ready: return isDelivery ? "Driver is on the way" : "Head to counter to collect"
+        case .delivering: return "Driver is nearby"
+        case .completed: return "Thank you for visiting!"
+        case .cancelled: return "Order was cancelled"
+        }
+    }
+    
+    // Progress for ProgressBar (0.0 to 1.0)
+    var progress: CGFloat {
+        switch order.status {
+        case .pending: return 0.05
+        case .placed: return 0.1
+        case .received: return 0.25
+        case .preparing: return 0.5
+        case .ready: return 0.75
+        case .delivering: return 0.9
+        case .completed: return 1.0
+        case .cancelled: return 0.0
         }
     }
     
     var body: some View {
         VStack(spacing: 0) {
-            // Header: Ticket Stub Style
+            
+            // 1. Status Header
             HStack(alignment: .top) {
                 VStack(alignment: .leading, spacing: 4) {
-                    Text("ORDER #\(order.id.prefix(6).uppercased())")
-                        .font(AppFont.monoHeadline)
-                        .foregroundStyle(Color.textInk)
-                    
-                    Text(statusMessage)
-                        .font(AppFont.sectionHeader) // Geologica Medium 20
+                    Text(statusTitle)
+                        .font(AppFont.sectionHeader)
                         .foregroundStyle(Color.primaryEspresso)
+                    
+                    Text(statusSubtitle)
+                        .font(AppFont.body)
+                        .foregroundStyle(Color.textMuted)
+                        .lineLimit(1)
                 }
                 
                 Spacer()
                 
-                // Status Icon/Time
+                // ETA or Type Badge
                 VStack(alignment: .trailing, spacing: 4) {
-                    if let eta = order.estimatedReadyAt {
+                    if let eta = order.estimatedReadyAt, order.status.isActive {
                         Text(timeString(from: eta))
-                            .font(AppFont.monoBody)
+                            .font(AppFont.monoHeadline)
                             .foregroundStyle(Color.textInk)
-                    } else {
-                        Text("--:--")
-                            .font(AppFont.monoBody)
+                        
+                        Text("ETA")
+                            .font(AppFont.uiCaption)
                             .foregroundStyle(Color.textMuted)
+                    } else {
+                        // Badge
+                        Text(isDelivery ? "DELIVERY" : "PICKUP")
+                            .font(AppFont.monoCaption)
+                            .padding(.horizontal, 8)
+                            .padding(.vertical, 4)
+                            .background(Color.backgroundPaper)
+                            .clipShape(Capsule())
+                            .overlay(Capsule().stroke(Color.border, lineWidth: 1))
                     }
-                    
-                    Text(order.mode == .delivery ? "Delivery" : "Pickup")
-                        .font(AppFont.uiCaption)
-                        .textCase(.uppercase)
-                        .foregroundStyle(Color.textMuted)
                 }
             }
             .padding(AppLayout.spacing)
             .background(Color.surfaceCard)
             
-            // Divider (Dashed Visual)
-            Rectangle()
-                .fill(Color.backgroundPaper)
-                .frame(height: 1)
-                .overlay(
+            // 2. Progress Bar (Continuous)
+            GeometryReader { geo in
+                ZStack(alignment: .leading) {
                     Rectangle()
-                        .stroke(style: StrokeStyle(lineWidth: 1, dash: [4]))
-                        .foregroundStyle(Color.border)
-                )
+                        .fill(Color.backgroundPaper)
+                        .frame(height: 4)
+                    
+                    Rectangle()
+                        .fill(Color.primaryEspresso)
+                        .frame(width: geo.size.width * progress, height: 4)
+                        .animation(.spring(response: 0.6, dampingFraction: 0.7), value: progress)
+                }
+            }
+            .frame(height: 4)
             
-            // Content: Items List
-            VStack(alignment: .leading, spacing: AppLayout.spacingMedium) {
-                ForEach(order.items.prefix(3)) { item in
-                    HStack(spacing: AppLayout.spacing) {
-                        // Quantity Badge
+            // 3. Compact Item List
+            VStack(alignment: .leading, spacing: 12) {
+                ForEach(order.items.prefix(2)) { item in
+                    HStack(alignment: .top, spacing: 12) {
                         Text("\(item.quantity)x")
-                            .font(AppFont.monoBody)
+                            .font(AppFont.monoHeadline)
                             .foregroundStyle(Color.primaryEspresso)
-                            .padding(6)
-                            .background(Color.primaryEspresso.opacity(0.1))
-                            .clipShape(RoundedRectangle(cornerRadius: 4))
+                            .frame(minWidth: 24, alignment: .leading)
                         
                         VStack(alignment: .leading, spacing: 2) {
                             Text(item.productName)
-                                .font(AppFont.body)
+                                .font(AppFont.headline)
                                 .foregroundStyle(Color.textInk)
                                 .lineLimit(1)
                             
@@ -98,110 +135,54 @@ struct OrderTrackingCard: View {
                                     .lineLimit(1)
                             }
                         }
-                        
-                        Spacer()
                     }
                 }
                 
-                if order.items.count > 3 {
-                    Text("+ \(order.items.count - 3) more items...")
+                if order.items.count > 2 {
+                    Text("+ \(order.items.count - 2) more items")
                         .font(AppFont.uiCaption)
                         .foregroundStyle(Color.textMuted)
-                        .padding(.leading, 40) // Align with text
+                        .padding(.leading, 36)
                 }
             }
             .padding(AppLayout.spacing)
-            .background(Color.backgroundPaper)
+            .background(Color.white) // Use white/paper to differentiate from gray header
             
-            // Footer: Progress Indicator
-            HStack(spacing: 4) {
-                // Visualize 5 steps: Placed, Received(skipped in UI but logical), Preparing, Ready, Completed
-                // Actually: Placed -> Preparing -> Ready -> Delivered/Completed
-                ForEach(0..<4) { index in
-                    RoundedRectangle(cornerRadius: 2)
-                        .fill(index < currentStepIndex ? Color.primaryEspresso : Color.border)
-                        .frame(height: 4)
-                        .frame(maxWidth: .infinity)
+            // 4. Action / Location Footer (Contextual)
+            if order.status.isActive {
+                HStack {
+                    if isDelivery {
+                        Label("Tracking Driver", systemImage: "map.fill")
+                            .font(AppFont.uiCaption)
+                    } else {
+                        Label("Store Directions", systemImage: "location.fill")
+                            .font(AppFont.uiCaption)
+                    }
+                    
+                    Spacer()
+                    
+                    Text("#\(order.id.prefix(6).uppercased())")
+                        .font(AppFont.monoCaption)
+                        .foregroundStyle(Color.textMuted)
                 }
+                .padding(.horizontal, AppLayout.spacing)
+                .padding(.vertical, 12)
+                .background(Color.backgroundPaper)
+                .foregroundStyle(Color.textInk)
             }
-            .padding(.horizontal, AppLayout.spacing)
-            .padding(.bottom, AppLayout.spacing)
-            .background(Color.backgroundPaper)
         }
-        .clipShape(RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle))
+        .clipShape(RoundedRectangle(cornerRadius: 16))
+        .shadow(color: Color.black.opacity(0.08), radius: 8, x: 0, y: 4)
         .overlay(
-            RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle)
+            RoundedRectangle(cornerRadius: 16)
                 .stroke(Color.border, lineWidth: 1)
         )
-        // Completion Overlay
-        .overlay {
-            if order.status == .completed {
-                CompletionOverlay()
-                    .transition(.move(edge: .bottom))
-                    .zIndex(1)
-            }
-        }
-        .animation(.spring(response: 0.6, dampingFraction: 0.8), value: order.status)
-    }
-    
-    // Step Helper
-    var currentStepIndex: Int {
-        switch order.status {
-        case .placed, .received: return 1
-        case .preparing: return 2
-        case .ready: return 3
-        case .delivering, .completed: return 4
-        default: return 0
-        }
+        .padding(.horizontal, AppLayout.spacing)
     }
     
     private func timeString(from date: Date) -> String {
         let formatter = DateFormatter()
         formatter.timeStyle = .short
         return formatter.string(from: date)
-    }
-}
-
-// MARK: - Completion Overlay Animation
-struct CompletionOverlay: View {
-    @State private var showCheck = false
-    
-    var body: some View {
-        ZStack {
-            Color.backgroundPaper
-            
-            VStack(spacing: 16) {
-                // Check Circle
-                ZStack {
-                    Circle()
-                        .fill(Color.primaryEspresso)
-                        .frame(width: 80, height: 80)
-                    
-                    Image(systemName: "checkmark")
-                        .font(.system(size: 32, weight: .bold))
-                        .foregroundStyle(.white)
-                        .scaleEffect(showCheck ? 1 : 0.5)
-                        .opacity(showCheck ? 1 : 0)
-                }
-                .scaleEffect(showCheck ? 1 : 0.8)
-                .animation(.bouncy(duration: 0.6).delay(0.2), value: showCheck)
-                
-                Text("Order Completed")
-                    .font(AppFont.displayTitle)
-                    .foregroundStyle(Color.textInk)
-                    .opacity(showCheck ? 1 : 0)
-                    .offset(y: showCheck ? 0 : 10)
-                    .animation(.easeOut(duration: 0.4).delay(0.3), value: showCheck)
-                
-                Text("Enjoy your coffee!")
-                    .font(AppFont.body)
-                    .foregroundStyle(Color.textMuted)
-                    .opacity(showCheck ? 1 : 0)
-                    .animation(.easeOut(duration: 0.4).delay(0.4), value: showCheck)
-            }
-        }
-        .onAppear {
-            withAnimation { showCheck = true }
-        }
     }
 }

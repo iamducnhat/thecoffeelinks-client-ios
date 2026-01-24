@@ -188,11 +188,21 @@ class AuthViewModel: BaseViewModel {
     }
     private func formatPhoneNumber(_ number: String) -> String {
         var formatted = number.replacingOccurrences(of: " ", with: "")
-        // Simple E.164 conversion for VN
-        if formatted.hasPrefix("0") {
-            formatted = "+84" + formatted.dropFirst()
+        
+        // Remove known prefixes if user typed them manually
+        if formatted.hasPrefix("+84") {
+            formatted = String(formatted.dropFirst(3))
+        } else if formatted.hasPrefix("84") {
+            formatted = String(formatted.dropFirst(2))
         }
-        return formatted
+        
+        // Remove leading zero
+        if formatted.hasPrefix("0") {
+            formatted = String(formatted.dropFirst())
+        }
+        
+        // Always append +84 for this App (Vietnam specific)
+        return "+84" + formatted
     }
 }
 

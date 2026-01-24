@@ -2,8 +2,8 @@
 //  LoginView.swift
 //  thecoffeelinks-native-swift
 //
-//  Receipt-Editorial Design
-//  Aligned with canonical CheckoutView.swift
+//  Redesigned Phone Login / OTP Bootstrap
+//  Contextual, Trustworthy, and Fluid
 //
 
 import SwiftUI
@@ -11,71 +11,70 @@ import SwiftUI
 struct LoginView: View {
     @EnvironmentObject var authViewModel: AuthViewModel
     @Environment(\.dismiss) var dismiss
-    @State private var scrollOffset = CGFloat.zero
+    @State private var isInputActive: Bool = false
     
-    // Default to true to maintain backward compatibility with existing usages
+    // Default to true to maintain backward compatibility
     var isPresentedModally: Bool = true
     
     var body: some View {
         ZStack(alignment: .top) {
             Color.backgroundPaper.ignoresSafeArea()
             
-            // Fixed Close Button (Only show if modal)
-            if isPresentedModally {
-                HStack {
-                    Spacer()
-                    Button {
-                        authViewModel.authState = .idle
-                        authViewModel.phoneNumber = ""
-                        authViewModel.otpCode = ""
-                        dismiss()
-                    } label: {
-                        Image(systemName: "xmark")
-                            .font(AppFont.navIcon)
-                            .foregroundStyle(Color.textInk)
-                            .frame(minWidth: AppLayout.touchTarget, minHeight: AppLayout.touchTarget)
-                    }
-                }
-                .padding(.horizontal, AppLayout.spacing)
-                .padding(.top, AppLayout.spacing)
-            }
-            
+            // Header Content
             VStack(spacing: 0) {
-                ScrollView(.vertical) {
-                    VStack(alignment: .leading, spacing: AppLayout.spacingXL) {
-                        // Header
-                        VStack(alignment: .leading, spacing: 8) {
-                            Text(authViewModel.authState == .otpSent ? "Verify your number" : "Welcome")
-                                .font(AppFont.displayTitle)
-                                .foregroundColor(Color.textInk)
-                            
-                            Text(authViewModel.authState == .otpSent ? "We sent a code to your phone" : "Sign in to continue")
-                                .font(AppFont.body)
-                                .foregroundColor(Color.textMuted)
+                // Nav/Close Bar
+                if isPresentedModally {
+                    HStack {
+                        Spacer()
+                        Button {
+                            dismiss()
+                        } label: {
+                            Image(systemName: "xmark")
+                                .font(AppFont.navIcon)
+                                .foregroundStyle(Color.textMuted)
+                                .frame(width: 44, height: 44)
+                                .contentShape(Rectangle())
                         }
-                        .padding(.top, 80)
-                        
-                        Color.secondary.frame(height: 1)
-                        
-                        if authViewModel.authState != .otpSent {
-                            phoneInputSection
-                        } else {
-                            otpInputSection
-                        }
-                        
-                        Spacer(minLength: 100)
                     }
-                    .frame(maxWidth: .infinity, alignment: .leading)
                     .padding(.horizontal, AppLayout.spacing)
-                    .background(GeometryReader {
-                        Color.clear.preference(key: ViewOffsetKey.self, value: -$0.frame(in: .named("scroll")).origin.y)
-                    })
-                    .onPreferenceChange(ViewOffsetKey.self) {
-                        self.scrollOffset = $0
-                    }
+                    .padding(.top, AppLayout.spacing)
+                } else {
+                    Spacer().frame(height: 60)
                 }
-                .coordinateSpace(name: "scroll")
-                .scrollIndicators(.hidden)
+                
+                ScrollView {
+                    VStack(alignment: .leading, spacing: 32) {
+                        
+                        // Title Section
+                        VStack(alignment: .leading, spacing: 12) {
+                            Text(authViewModel.authState == .otpSent ? "Check your texts" : "What's your number?")
+                                .font(AppFont.displayTitle)
+                                .foregroundStyle(Color.textInk)
+                                .fixedSize(horizontal: false, vertical: true)
+                            
+                            Text(authViewModel.authState == .otpSent ? "We sent a code to \(authViewModel.phoneNumber)" : "We'll text you a code to verify your account.")
+                                .font(AppFont.body)
+                                .foregroundStyle(Color.textMuted)
+                                .fixedSize(horizontal: false, vertical: true)
+                        }
+                        .padding(.top, 20)
+                        
+                        // Input Section
+                        VStack(spacing: 24) {
+                            if authViewModel.authState != .otpSent {
+                                phoneInputSection
+                                    .transition(.asymmetric(insertion: .move(edge: .leading), removal: .move(edge: .leading).combined(with: .opacity)))
+                            } else {
+                                otpInputSection
+                                    .transition(.asymmetric(insertion: .move(edge: .trailing), removal: .move(edge: .trailing).combined(with: .opacity)))
+                            }
+                        }
+                        
+                        Spacer(minLength: 40)
+                    }
+                    .padding(.horizontal, AppLayout.spacing)
+                }
+                .scrollDismissesKeyboard(.immediately)
             }
         }
         .onDisappear {
@@ -85,138 +84,164 @@ struct LoginView: View {
                 authViewModel.otpCode = ""
             }
         }
+        .animation(.spring(response: 0.5, dampingFraction: 0.8), value: authViewModel.authState)
         .alert(isPresented: Binding<Bool>(
             get: { authViewModel.authState == .error },
             set: { show in if !show { authViewModel.authState = .idle } }
         )) {
             Alert(
-                title: Text("Oops!"),
-                message: Text(authViewModel.error ?? "Something went wrong. Please try again."),
+                title: Text("Something went wrong"),
+                message: Text(authViewModel.error ?? "Please try again."),
                 dismissButton: .default(Text("OK")) {
                     authViewModel.error = nil
-                    authViewModel.authState = .idle
+                    // Stay on current state to allow retry
+                     if authViewModel.otpCode.isEmpty {
+                        authViewModel.authState = .idle
+                    } else {
+                        // If failed on OTP verify, stay on OTP
+                         authViewModel.authState = .otpSent
+                    }
                 }
             )
         }
     }
     
-    // MARK: - Phone Input Section
+    // MARK: - Phone Input
     
     private var phoneInputSection: some View {
-        VStack(alignment: .leading, spacing: AppLayout.spacing) {
-            Text("Phone Number")
-                .textCase(.uppercase)
-                .font(AppFont.sectionHeader)
-                .foregroundStyle(Color.textInk)
+        VStack(alignment: .leading, spacing: 16) {
             
-            HStack(spacing: AppLayout.spacingMedium) {
-                Image(systemName: "phone")
-                    .font(AppFont.body)
-                    .foregroundStyle(Color.textMuted)
-                
-                TextField("0912345678", text: $authViewModel.phoneNumber)
-                    .textFieldStyle(PlainTextFieldStyle())
+            // Input Field
+            HStack(spacing: 12) {
+                Text("🇻🇳 +84")
                     .font(AppFont.monoBody)
-                    .keyboardType(.phonePad)
                     .foregroundStyle(Color.textInk)
+                    .padding(.leading, 16)
+                
+                TextField("912 345 678", text: $authViewModel.phoneNumber)
+                    .textFieldStyle(.plain)
+                    .font(AppFont.monoHeadline) // Larger for input
+                    .foregroundStyle(Color.textInk)
+                    .keyboardType(.numberPad)
+                    .padding(.vertical, 16)
             }
-            .padding(.horizontal, 8)
-            .padding(.vertical, 6)
-            .overlay {
-                RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle)
-                    .stroke(Color.borderTertiary, style: StrokeStyle(lineWidth: 1, dash: AppLayout.dashedPattern))
-            }
-            
+            .background(Color.surfaceCard)
+            .clipShape(RoundedRectangle(cornerRadius: 16))
+            .overlay(
+                RoundedRectangle(cornerRadius: 16)
+                    .stroke(isInputActive ? Color.primaryEspresso : Color.border, lineWidth: 1.5)
+            )
+            .onTapGesture { isInputActive = true }
+             
+             // CTA
             Button {
                 let digits = authViewModel.phoneNumber.filter { $0.isNumber }
                 authViewModel.sendOTP(phoneNumber: digits)
             } label: {
-                Text("Send code")
-                    .font(AppFont.monoCTA)
-                    .foregroundStyle(Color.backgroundPaper)
-                    .padding(.vertical, 12)
-                    .frame(maxWidth: .infinity, alignment: .center)
-                    .background(Color.accentColor)
-                    .clipShape(RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle))
+                ZStack {
+                    if authViewModel.isLoading {
+                        ProgressView().tint(.white)
+                    } else {
+                        Text("Continue")
+                            .font(AppFont.monoCTA)
+                            .foregroundStyle(.white)
+                    }
+                }
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 16)
+                .background(isValidPhone ? Color.primaryEspresso : Color.border) // Active/Disabled colors
+                .clipShape(RoundedRectangle(cornerRadius: 16))
             }
-            .disabled(authViewModel.phoneNumber.filter { $0.isNumber }.count < 10)
-            .opacity(authViewModel.phoneNumber.filter { $0.isNumber }.count < 10 ? 0.666 : 1.0)
+            .disabled(!isValidPhone || authViewModel.isLoading)
+            .animation(.easeInOut(duration: 0.2), value: isValidPhone)
+            
+            // Security Note
+            HStack(spacing: 6) {
+                Image(systemName: "lock.fill")
+                    .font(.caption)
+                Text("Your info is securely handled.")
+                    .font(AppFont.uiCaption)
+            }
+            .foregroundStyle(Color.textMuted)
+            .padding(.top, 4)
+            .frame(maxWidth: .infinity, alignment: .center)
+        }
+    }
+    
+    var isValidPhone: Bool {
+        authViewModel.phoneNumber.filter { $0.isNumber }.count >= 9
+    }
+    
+    // MARK: - OTP Input
+    
+    private var otpInputSection: some View {
+        VStack(alignment: .leading, spacing: 24) {
+            
+            // OTP Field
+            HStack(spacing: 12) {
+                Image(systemName: "key.fill")
+                    .foregroundStyle(Color.primaryEspresso)
+                    .padding(.leading, 16)
+                
+                TextField("000000", text: $authViewModel.otpCode)
+                    .textFieldStyle(.plain)
+                    .font(AppFont.monoHeadline)
+                    .foregroundStyle(Color.textInk)
+                    .keyboardType(.numberPad)
+                    .padding(.vertical, 16)
+                    .onChange(of: authViewModel.otpCode) { newValue in
+                        if newValue.count == 6 {
+                            authViewModel.verifyOTP(code: newValue)
+                        }
+                    }
+            }
+            .background(Color.surfaceCard)
+            .clipShape(RoundedRectangle(cornerRadius: 16))
+            .overlay(
+                RoundedRectangle(cornerRadius: 16)
+                    .stroke(Color.primaryEspresso, lineWidth: 1.5)
+            )
             
             if authViewModel.isLoading {
                 HStack {
                     ProgressView().tint(Color.primaryEspresso)
-                    Text("Sending...")
-                        .font(AppFont.uiCaption)
-                        .foregroundStyle(Color.textMuted)
+                    Text("Verifying...")
+                         .font(AppFont.body)
+                         .foregroundStyle(Color.textMuted)
                 }
-            }
-        }
-    }
-    
-    // MARK: - OTP Input Section
-    
-    private var otpInputSection: some View {
-        VStack(alignment: .leading, spacing: AppLayout.spacing) {
-            Text("Verification Code")
-                .textCase(.uppercase)
-                .font(AppFont.sectionHeader)
-                .foregroundStyle(Color.textInk)
-            
-            HStack(spacing: AppLayout.spacingMedium) {
-                Image(systemName: "lock.shield")
-                    .font(AppFont.body)
-                    .foregroundStyle(Color.textMuted)
-                
-                TextField("6-digit code", text: $authViewModel.otpCode)
-                    .textFieldStyle(PlainTextFieldStyle())
-                    .font(AppFont.monoBody)
-                    .keyboardType(.numberPad)
-                    .foregroundStyle(Color.textInk)
-            }
-            .padding(.horizontal, 8)
-            .padding(.vertical, 6)
-            .overlay {
-                RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle)
-                    .stroke(Color.borderTertiary, style: StrokeStyle(lineWidth: 1, dash: AppLayout.dashedPattern))
+                .frame(maxWidth: .infinity, alignment: .center)
             }
             
-            Button {
-                authViewModel.verifyOTP(code: authViewModel.otpCode)
-            } label: {
-                Text("Verify")
-                    .font(AppFont.monoCTA)
-                    .foregroundStyle(Color.backgroundPaper)
-                    .padding(.vertical, 12)
-                    .frame(maxWidth: .infinity, alignment: .center)
-                    .background(Color.accentColor)
-                    .clipShape(RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle))
-            }
-            .disabled(authViewModel.otpCode.count != 6)
-            .opacity(authViewModel.otpCode.count != 6 ? 0.666 : 1.0)
-            
-            // Secondary Actions
-            VStack(alignment: .leading, spacing: AppLayout.spacingMedium) {
-                Button {
+            // Resend / Edit
+            HStack {
+                Button("Wrong number?") {
                     authViewModel.authState = .idle
                     authViewModel.otpCode = ""
-                } label: {
-                    Text("Use a different number")
-                        .font(AppFont.uiCaption)
-                        .foregroundColor(Color.primaryEspresso)
                 }
+                .font(AppFont.uiCaption)
+                .foregroundStyle(Color.textMuted)
                 
-                #if DEBUG
-                Button {
+                Spacer()
+                
+                Button("Resend Code") {
                     let digits = authViewModel.phoneNumber.filter { $0.isNumber }
-                    authViewModel.bypassOTP(phoneNumber: digits)
-                } label: {
-                    Text("Dev: Skip verification")
-                        .font(AppFont.uiCaption)
-                        .foregroundColor(Color.semanticError)
+                    authViewModel.sendOTP(phoneNumber: digits)
                 }
-                #endif
+                .font(AppFont.uiCaption)
+                .foregroundStyle(Color.primaryEspresso)
             }
-            .padding(.top, AppLayout.spacingMedium)
+            
+            #if DEBUG
+            Button {
+                let digits = authViewModel.phoneNumber.filter { $0.isNumber }
+                authViewModel.bypassOTP(phoneNumber: digits)
+            } label: {
+                    Text("Dev: Skip (Bypass)")
+                    .font(AppFont.uiCaption)
+                    .foregroundStyle(Color.semanticError)
+                    .padding(.top, 20)
+            }
+            #endif
         }
     }
 }

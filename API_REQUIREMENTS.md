@@ -22,7 +22,7 @@ POST /api/auth/linkedin
 ```json
 {
   "code": "linkedin_auth_code",
-  "redirect_uri": "https://app.thecoffeelinks.com/auth/callback"
+  "redirect_uri": "https://thecoffeelinks.vn/auth/callback"
 }
 ```
 

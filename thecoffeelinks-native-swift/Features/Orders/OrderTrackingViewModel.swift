@@ -10,6 +10,18 @@ import Foundation
 import Combine
 import SwiftUI
 
+//
+//  OrderTrackingViewModel.swift
+//  thecoffeelinks-native-swift
+//
+//  ViewModel for Order Tracking Card
+//  Handles fetching active order and realtime status updates.
+//
+
+import Foundation
+import Combine
+import SwiftUI
+
 class OrderTrackingViewModel: ObservableObject {
     @Published var activeOrders: [Order] = []
     @Published var isLoading = false
@@ -28,8 +40,9 @@ class OrderTrackingViewModel: ObservableObject {
         
         setupBindings()
         
+        // Initial fetch if user is already known
         if let userId = userId {
-            setupRealtime(userId: userId)
+            self.setUserId(userId)
         }
     }
     
@@ -42,13 +55,18 @@ class OrderTrackingViewModel: ObservableObject {
                 case .connected:
                     self?.isRealtimeConnected = true
                     self?.errorMessage = nil
+                    // Re-fetch on reconnect to ensure no missed events
+                    Task { [weak self] in await self?.fetchActiveOrders() }
+                    
                 case .disconnected(let error):
                     self?.isRealtimeConnected = false
                     if let error = error {
-                        self?.errorMessage = "Realtime disconnected: \(error.localizedDescription)"
+                        print("[OrderTracking] Realtime disconnected: \(error.localizedDescription)")
                     }
+                    
                 case .postgresChange(let change):
                     self?.handleOrderUpdate(change)
+                    
                 default: break
                 }
             }
@@ -56,40 +74,49 @@ class OrderTrackingViewModel: ObservableObject {
     }
     
     func setUserId(_ id: String) {
-        guard self.userId != id else { return }
+        guard self.userId != id || activeOrders.isEmpty else { return }
         self.userId = id
-        setupRealtime(userId: id)
+        
+        // Reset state
+        self.activeOrders = []
+        self.errorMessage = nil
+        
+        setupRealtime()
         Task { await fetchActiveOrders() }
     }
     
     func fetchActiveOrders() async {
         await MainActor.run { 
-            isLoading = true 
-            errorMessage = nil
+            if activeOrders.isEmpty { isLoading = true } // Only show load spinner if empty
         }
         
         do {
             let orders = try await orderRepository.getActiveOrders()
-            // Sort by creation date descending (newest first)
+            // Sort by newest first
             let sorted = orders.sorted(by: { $0.createdAt > $1.createdAt })
             
             await MainActor.run {
-                self.activeOrders = sorted
+                withAnimation {
+                    self.activeOrders = sorted
+                }
                 self.isLoading = false
             }
         } catch {
             print("Failed to fetch active orders:", error)
             await MainActor.run { 
                 self.isLoading = false
-                self.errorMessage = "Failed to load orders: \(error.localizedDescription)"
+                // Don't show error message to user for background fetches, just log it.
+                // Only show if list is empty and user explicitly requested it (refinement).
+                if self.activeOrders.isEmpty {
+                     // self.errorMessage = "Could not load orders."
+                }
             }
         }
     }
     
-    private func setupRealtime(userId: String) {
-        // Unsubscribe old if needed? RealtimeService handles dupes but good to be clean
-        // For simplicity, just subscribe
-        // REMOVED explicit filter: Rely on RLS (Row Level Security) and Auth Token to filter orders.
+    private func setupRealtime() {
+        // Subscribe to 'orders' table
+        // RLS policies on Server ensure we only receive our own orders
         realtimeService.subscribe(to: "orders")
         
         // Ensure connection
@@ -100,11 +127,10 @@ class OrderTrackingViewModel: ObservableObject {
     
     private func handleOrderUpdate(_ change: PostgresChange) {
         guard let changeType = change.eventType as String? else { return }
-        print("[OrderViewModel] Received Change: \(changeType)")
+        print("[OrderViewModel] Realtime Event: \(changeType)")
         
-        // Handle INSERT
+        // Handle INSERT: New order placed (maybe on another device)
         if changeType == "INSERT" {
-             print("[OrderViewModel] INSERT detected, refreshing...")
              Task { await fetchActiveOrders() }
              return
         }
@@ -114,40 +140,34 @@ class OrderTrackingViewModel: ObservableObject {
            let newRecord = change.new,
            let recordId = newRecord["id"]?.value as? String {
             
-            print("[OrderViewModel] UPDATE for ID: \(recordId)")
-            
-            // Find index of order being updated
+            // Check if this order is in our active list
             if let index = activeOrders.firstIndex(where: { $0.id == recordId }) {
-                // Update specific properties locally to avoid full refetch flicker
-                if let statusStr = newRecord["status"]?.value as? String,
-                   let newStatus = OrderStatus(rawValue: statusStr) {
-                    
-                    print("[OrderViewModel] Status Update: \(newStatus)")
-                    
-                    // Update local model first so UI reflects the change (especially 'completed')
-                    withAnimation {
-                        var updatedOrder = activeOrders[index]
-                        updatedOrder.status = newStatus
-                        updatedOrder.updatedAt = Date() // Approximate
-                        activeOrders[index] = updatedOrder
-                    }
-                    
-                    // If status changes to non-active (completed/cancelled), 
-                    // schedule a refresh to remove it after allowing the user to see the "Completed" state.
-                    if !newStatus.isActive {
-                        // Delay 8 seconds to allow completion animation
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 8) {
-                            Task { [weak self] in await self?.fetchActiveOrders() }
+                guard let statusStr = newRecord["status"]?.value as? String,
+                      let newStatus = OrderStatus(rawValue: statusStr) else { return }
+                
+                print("[OrderViewModel] Order \(recordId) -> \(newStatus.displayName)")
+                
+                // Update local state smoothly
+                withAnimation {
+                    var updatedOrder = activeOrders[index]
+                    updatedOrder.status = newStatus
+                    updatedOrder.updatedAt = Date()
+                    activeOrders[index] = updatedOrder
+                }
+                
+                // If order is completed/cancelled, remove it after a delay
+                if !newStatus.isActive {
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 5) { [weak self] in
+                        withAnimation {
+                            self?.activeOrders.removeAll(where: { $0.id == recordId })
                         }
                     }
-                } else {
-                    print("[OrderViewModel] Status missing or invalid")
                 }
             } else {
-                print("[OrderViewModel] Order not found locally (IDs: \(activeOrders.map { $0.id }))")
+                // We don't have this order, but maybe we should?
+                // If it's active now, fetch it.
+                 Task { await fetchActiveOrders() }
             }
-        } else {
-            print("[OrderViewModel] Update missing 'id' or 'new' record")
         }
     }
 }
