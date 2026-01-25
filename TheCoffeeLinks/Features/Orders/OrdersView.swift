@@ -14,6 +14,9 @@ struct OrdersView: View {
     @State private var selectedTab = 0 // 0: Active, 1: History
     @State private var scrollOffset = CGFloat.zero
     
+    // Add this property to control header mode
+    var isPresentedModally: Bool = true
+    
     var body: some View {
         ZStack(alignment: .top) {
             Color.backgroundPaper.ignoresSafeArea()
@@ -21,7 +24,7 @@ struct OrdersView: View {
             // Fixed Navigation Header
             HStack(alignment: .center, spacing: AppLayout.spacing) {
                 Button { dismiss() } label: {
-                    Image(systemName: "xmark")
+                    Image(systemName: isPresentedModally ? "xmark" : "chevron.left")
                         .font(AppFont.navIcon)
                         .foregroundStyle(Color.textInk)
                         .frame(minWidth: AppLayout.touchTarget, minHeight: AppLayout.touchTarget)
@@ -36,7 +39,7 @@ struct OrdersView: View {
                         }
                 }
                 
-                Text("orders_title")
+                Text(String(localized: "orders_title"))
                     .font(AppFont.displayTitle)
                     .lineLimit(1)
                     .foregroundStyle(Color.textInk)
@@ -47,18 +50,20 @@ struct OrdersView: View {
             .frame(minHeight: AppLayout.touchTarget)
             .frame(maxWidth: .infinity, alignment: .center)
             .padding(.horizontal, AppLayout.spacing)
+            .zIndex(1) // Ensure it stays on top
             
             VStack(spacing: 0) {
                 ScrollView(.vertical) {
                     // Navigation Header (Scrollable)
                     HStack(alignment: .center, spacing: AppLayout.spacing) {
-                        Image(systemName: "xmark")
+                        // Invisible placeholder to align title
+                        Image(systemName: isPresentedModally ? "xmark" : "chevron.left")
                             .font(AppFont.navIcon)
-                            .foregroundStyle(Color.textInk)
+                            .foregroundStyle(Color.clear)
                             .frame(minWidth: AppLayout.touchTarget, minHeight: AppLayout.touchTarget)
                             .hidden()
                         
-                        Text("orders_title")
+                        Text(String(localized: "orders_title"))
                             .font(AppFont.displayTitle)
                             .lineLimit(1)
                             .foregroundStyle(Color.textInk)
@@ -113,10 +118,10 @@ struct OrdersView: View {
                             let orders = selectedTab == 0 ? viewModel.activeOrders : viewModel.historyOrders
                             if orders.isEmpty {
                                 VStack(spacing: AppLayout.spacing) {
-                                    Text("orders_empty_title")
+                                    Text(String(localized: "orders_empty_title"))
                                         .font(AppFont.sectionHeader)
                                         .foregroundStyle(Color.textInk)
-                                    Text("orders_empty_message")
+                                    Text(String(localized: "orders_empty_message"))
                                         .font(AppFont.body)
                                         .foregroundStyle(Color.textMuted)
                                 }
@@ -144,9 +149,10 @@ struct OrdersView: View {
                 .coordinateSpace(name: "scroll")
                 .scrollIndicators(.hidden)
             }
-            .zIndex(-Double.infinity)
+            .zIndex(0)
         }
         .onAppear { viewModel.fetchOrders() }
+        .navigationBarHidden(true)
     }
 }
 
@@ -169,7 +175,7 @@ struct OrderTabButton: View {
     }
 }
 
-// MARK: - Order Row
+// MARK: - OrderRow
 
 struct OrderRow: View {
     let order: Order

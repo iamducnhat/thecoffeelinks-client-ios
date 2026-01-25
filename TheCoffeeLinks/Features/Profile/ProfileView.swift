@@ -12,8 +12,8 @@ import CachedAsyncImage
 struct ProfileView: View {
     @EnvironmentObject var authViewModel: AuthViewModel
     @EnvironmentObject var profileViewModel: ProfileViewModel
-    @State private var showSettings = false
-    @State private var showOrderHistory = false
+    @EnvironmentObject var appState: AppState // To switch tabs
+    
     @State private var showLogin = false
     @State private var showEditProfile = false
     @State private var scrollOffset = CGFloat.zero
@@ -52,10 +52,7 @@ struct ProfileView: View {
                         
                         // Rewards Section
                         VStack(alignment: .leading, spacing: AppLayout.spacing) {
-                            Text(String(localized: "rewards_section_title"))
-                                .textCase(.uppercase)
-                                .font(AppFont.sectionHeader)
-                                .foregroundStyle(Color.textInk)
+                            ProfileSectionHeader(title: String(localized: "rewards_section_title"))
                             
                             HStack(spacing: AppLayout.spacingMedium) {
                                 if authViewModel.isAuthenticated {
@@ -71,20 +68,27 @@ struct ProfileView: View {
                         
                         // Activity Section
                         VStack(alignment: .leading, spacing: AppLayout.spacing) {
-                            Text(String(localized: "activity_section_title"))
-                                .textCase(.uppercase)
-                                .font(AppFont.sectionHeader)
-                                .foregroundStyle(Color.textInk)
+                            ProfileSectionHeader(title: String(localized: "activity_section_title"))
                             
                             VStack(spacing: 0) {
                                 if authViewModel.isAuthenticated {
-                                    ActionRow(title: String(localized: "action_order_history"), icon: "list.bullet.rectangle") { showOrderHistory = true }
-                                    ActionRow(title: String(localized: "action_saved_locations"), icon: "mappin.and.ellipse") { }
-                                    ActionRow(title: String(localized: "action_my_vouchers"), icon: "ticket") { }
+                                    // Order History -> Push
+                                    ProfileRow(title: String(localized: "action_order_history"), icon: "list.bullet.rectangle", destination: OrdersView(isPresentedModally: false))
+                                    Divider()
+                                    // Saved Locations -> Push
+                                    ProfileRow(title: String(localized: "action_saved_locations"), icon: "mappin.and.ellipse", destination: SavedLocationsView())
+                                    Divider()
+                                    // My Vouchers -> Switch Tab (Action)
+                                    ProfileRow(title: String(localized: "action_my_vouchers"), icon: "ticket") {
+                                        appState.selectedTab = 3 // Switch to Promotions Tab (Index 3)
+                                    }
                                 } else {
-                                    ActionRow(title: "Order history", icon: "list.bullet.rectangle") { showLogin = true }
-                                    ActionRow(title: "Saved locations", icon: "mappin.and.ellipse") { showLogin = true }
-                                    ActionRow(title: "My vouchers", icon: "ticket") { showLogin = true }
+                                    // Guest Actions -> Show Login
+                                    ProfileRow(title: "Order history", icon: "list.bullet.rectangle") { showLogin = true }
+                                    Divider()
+                                    ProfileRow(title: "Saved locations", icon: "mappin.and.ellipse") { showLogin = true }
+                                    Divider()
+                                    ProfileRow(title: "My vouchers", icon: "ticket") { showLogin = true }
                                 }
                             }
                             .background(Color.surfaceCard)
@@ -97,15 +101,29 @@ struct ProfileView: View {
                         
                         // Settings Section
                         VStack(alignment: .leading, spacing: AppLayout.spacing) {
-                            Text(String(localized: "settings_section_title"))
-                                .textCase(.uppercase)
-                                .font(AppFont.sectionHeader)
-                                .foregroundStyle(Color.textInk)
+                            ProfileSectionHeader(title: String(localized: "settings_section_title"))
                             
                             VStack(spacing: 0) {
-                                ActionRow(title: String(localized: "action_edit_profile"), icon: "person") { if authViewModel.isAuthenticated { showEditProfile = true } else { showLogin = true } }
-                                ActionRow(title: String(localized: "action_security"), icon: "lock.shield") { if authViewModel.isAuthenticated { showSettings = true } else { showLogin = true } }
-                                ActionRow(title: String(localized: "action_notifications"), icon: "bell") { }
+                                // Edit Profile -> Modal (Sheet)
+                                ProfileRow(title: String(localized: "action_edit_profile"), icon: "person") {
+                                    if authViewModel.isAuthenticated {
+                                        showEditProfile = true
+                                    } else {
+                                        showLogin = true
+                                    }
+                                }
+                                Divider()
+                                
+                                // Security -> Push
+                                if authViewModel.isAuthenticated {
+                                    ProfileRow(title: String(localized: "action_security"), icon: "lock.shield", destination: SecurityView())
+                                } else {
+                                    ProfileRow(title: String(localized: "action_security"), icon: "lock.shield") { showLogin = true }
+                                }
+                                Divider()
+                                
+                                // Notifications -> Push
+                                ProfileRow(title: String(localized: "action_notifications"), icon: "bell", destination: NotificationsView())
                             }
                             .background(Color.surfaceCard)
                             .overlay(
@@ -143,9 +161,16 @@ struct ProfileView: View {
                                 }
                             }
                             
-                            Text("Version 1.0.4")
-                                .font(AppFont.uiMicro)
-                                .foregroundStyle(Color.textMuted)
+                            // Footer
+                            if let appVersion = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String {
+                                Text("Version \(appVersion)")
+                                    .font(AppFont.uiMicro)
+                                    .foregroundStyle(Color.textMuted)
+                            } else {
+                                Text("Version 1.0.0")
+                                    .font(AppFont.uiMicro)
+                                    .foregroundStyle(Color.textMuted)
+                            }
                         }
                         .padding(.horizontal, AppLayout.spacing)
                         .padding(.bottom, 100)
@@ -166,9 +191,6 @@ struct ProfileView: View {
                 showLogin = false
                 profileViewModel.loadProfile()
             }
-        }
-        .fullScreenCover(isPresented: $showOrderHistory) {
-            OrdersView()
         }
         .fullScreenCover(isPresented: $showLogin) {
             LoginView()
@@ -193,36 +215,27 @@ struct ProfileView: View {
                     )
                 
                 if let avatarUrl = profileViewModel.userProfile?.avatarUrl, let url = URL(string: avatarUrl) {
-                    // CHANGED: Using CachedAsyncImage
-                    CachedAsyncImage(url: url) { phase in // CHANGED
-                        switch phase { // CHANGED
-                        case .empty: // CHANGED
-                            Rectangle() // CHANGED
-                                .fill(Color.surfaceCard) // CHANGED
-                                .overlay { // CHANGED
-                                    ProgressView() // CHANGED
-                                        .tint(Color.primaryEspresso) // CHANGED
-                                } // CHANGED
-                        case .success(let image): // CHANGED
-                            image // CHANGED
-                                .resizable() // CHANGED
-                                .aspectRatio(contentMode: .fill) // CHANGED
-                        case .failure: // CHANGED
-                            Rectangle() // CHANGED
-                                .fill(Color.surfaceCard) // CHANGED
-                                .overlay { // CHANGED
-                                    Text(String(profileViewModel.userProfile?.displayName.prefix(1) ?? "U")) // CHANGED
-                                        .font(.system(size: 32, weight: .bold)) // CHANGED
-                                        .foregroundStyle(Color.textInk) // CHANGED
-                                } // CHANGED
-                        @unknown default: // CHANGED
-                            EmptyView() // CHANGED
-                        } // CHANGED
-                    } // CHANGED
+                    CachedAsyncImage(url: url) { phase in
+                        switch phase {
+                        case .empty:
+                            Rectangle()
+                                .fill(Color.surfaceCard)
+                                .overlay {
+                                    ProgressView()
+                                        .tint(Color.primaryEspresso)
+                                }
+                        case .success(let image):
+                            image
+                                .resizable()
+                                .aspectRatio(contentMode: .fill)
+                        case .failure:
+                            fallbackAvatar
+                        @unknown default:
+                            EmptyView()
+                        }
+                    }
                 } else {
-                    Text(String(profileViewModel.userProfile?.displayName.prefix(1) ?? "U"))
-                        .font(.system(size: 32, weight: .bold))
-                        .foregroundStyle(Color.textInk)
+                    fallbackAvatar
                 }
             }
             .frame(width: 80, height: 80)
@@ -256,6 +269,16 @@ struct ProfileView: View {
         .padding(.horizontal, AppLayout.spacing)
     }
     
+    private var fallbackAvatar: some View {
+        Rectangle()
+            .fill(Color.surfaceCard)
+            .overlay {
+                Text(String(profileViewModel.userProfile?.displayName.prefix(1) ?? "U"))
+                    .font(.system(size: 32, weight: .bold))
+                    .foregroundStyle(Color.textInk)
+            }
+    }
+    
     private var guestHeader: some View {
         HStack(spacing: AppLayout.spacing) {
             ZStack {
@@ -287,59 +310,5 @@ struct ProfileView: View {
             Spacer()
         }
         .padding(.horizontal, AppLayout.spacing)
-    }
-}
-
-// MARK: - Components
-
-struct MetricBox: View {
-    let label: String
-    let value: String
-    
-    var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text(value)
-                .font(AppFont.monoTitle)
-                .foregroundStyle(Color.textInk)
-            Text(label)
-                .font(AppFont.uiMicro)
-                .foregroundStyle(Color.textMuted)
-        }
-        .padding(AppLayout.spacing)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .background(Color.surfaceCard)
-        .overlay(
-            RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle)
-                .stroke(Color.border, lineWidth: 1)
-        )
-    }
-}
-
-struct ActionRow: View {
-    let title: String
-    var icon: String = "chevron.right"
-    let action: () -> Void
-    
-    var body: some View {
-        Button(action: action) {
-            HStack {
-                Image(systemName: icon)
-                    .font(AppFont.body)
-                    .foregroundStyle(Color.textMuted)
-                    .frame(width: 24)
-                
-                Text(title)
-                    .font(AppFont.body)
-                    .foregroundStyle(Color.textInk)
-                
-                Spacer()
-                
-                Image(systemName: "chevron.right")
-                    .font(.system(size: 12))
-                    .foregroundStyle(Color.textMuted)
-            }
-            .padding(AppLayout.spacing)
-            .background(Color.backgroundPaper)
-        }
     }
 }

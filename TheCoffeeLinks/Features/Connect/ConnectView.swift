@@ -7,7 +7,7 @@
 //
 
 import SwiftUI
-import CachedAsyncImage // CHANGED
+import CachedAsyncImage
 
 struct ConnectView: View {
     @StateObject private var viewModel: SocialViewModel
@@ -182,8 +182,8 @@ struct ConnectView: View {
                                 .foregroundStyle(Color.textInk)
                             
                             VStack(spacing: 0) {
-                                ActionRow(title: "Block users", icon: "person.crop.circle.badge.xmark") { }
-                                ActionRow(title: "Report a concern", icon: "exclamationmark.triangle") { showingReport = true }
+                                ProfileRow(title: "Block users", icon: "person.crop.circle.badge.xmark") { }
+                                ProfileRow(title: "Report a concern", icon: "exclamationmark.triangle") { showingReport = true }
                             }
                             .background(Color.surfaceCard)
                             .overlay(
@@ -261,32 +261,31 @@ struct PresenceRow: View {
                         .frame(width: 44, height: 44)
                     
                     if let avatarUrl = user.avatarUrl, let url = URL(string: avatarUrl) {
-                        // CHANGED: Using CachedAsyncImage
-                        CachedAsyncImage(url: url) { phase in // CHANGED
-                            switch phase { // CHANGED
-                            case .empty: // CHANGED
-                                Rectangle() // CHANGED
-                                    .fill(Color.surfaceCard) // CHANGED
-                                    .overlay { // CHANGED
-                                        ProgressView() // CHANGED
-                                            .tint(Color.primaryEspresso) // CHANGED
-                                    } // CHANGED
-                            case .success(let image): // CHANGED
-                                image // CHANGED
-                                    .resizable() // CHANGED
-                                    .aspectRatio(contentMode: .fill) // CHANGED
-                            case .failure: // CHANGED
-                                Rectangle() // CHANGED
-                                    .fill(Color.surfaceCard) // CHANGED
-                                    .overlay { // CHANGED
-                                        Text(user.displayName.prefix(1)) // CHANGED
-                                            .font(AppFont.body) // CHANGED
-                                            .foregroundStyle(Color.primaryEspresso) // CHANGED
-                                    } // CHANGED
-                            @unknown default: // CHANGED
-                                EmptyView() // CHANGED
-                            } // CHANGED
-                        } // CHANGED
+                        CachedAsyncImage(url: url) { phase in
+                            switch phase {
+                            case .empty:
+                                Rectangle()
+                                    .fill(Color.surfaceCard)
+                                    .overlay {
+                                        ProgressView()
+                                            .tint(Color.primaryEspresso)
+                                    }
+                            case .success(let image):
+                                image
+                                    .resizable()
+                                    .aspectRatio(contentMode: .fill)
+                            case .failure:
+                                Rectangle()
+                                    .fill(Color.surfaceCard)
+                                    .overlay {
+                                        Text(user.displayName.prefix(1))
+                                            .font(AppFont.body)
+                                            .foregroundStyle(Color.primaryEspresso)
+                                    }
+                            @unknown default:
+                                EmptyView()
+                            }
+                        }
                     } else {
                         Text(user.displayName.prefix(1))
                             .font(AppFont.body)
@@ -531,32 +530,31 @@ struct UserProfileSheet: View {
                                     .frame(width: 100, height: 100)
                                 
                                 if let avatarUrl = user.avatarUrl, let url = URL(string: avatarUrl) {
-                                    // CHANGED: Using CachedAsyncImage
-                                    CachedAsyncImage(url: url) { phase in // CHANGED
-                                        switch phase { // CHANGED
-                                        case .empty: // CHANGED
-                                            Rectangle() // CHANGED
-                                                .fill(Color.surfaceCard) // CHANGED
-                                                .overlay { // CHANGED
-                                                    ProgressView() // CHANGED
-                                                        .tint(Color.primaryEspresso) // CHANGED
-                                                } // CHANGED
-                                        case .success(let image): // CHANGED
-                                            image // CHANGED
-                                                .resizable() // CHANGED
-                                                .aspectRatio(contentMode: .fill) // CHANGED
-                                        case .failure: // CHANGED
-                                            Rectangle() // CHANGED
-                                                .fill(Color.surfaceCard) // CHANGED
-                                                .overlay { // CHANGED
-                                                    Text(user.displayName.prefix(1)) // CHANGED
-                                                        .font(.system(size: 32)) // CHANGED
-                                                        .foregroundStyle(Color.primaryEspresso) // CHANGED
-                                                } // CHANGED
-                                        @unknown default: // CHANGED
-                                            EmptyView() // CHANGED
-                                        } // CHANGED
-                                    } // CHANGED
+                                    CachedAsyncImage(url: url) { phase in
+                                        switch phase {
+                                        case .empty:
+                                            Rectangle()
+                                                .fill(Color.surfaceCard)
+                                                .overlay {
+                                                    ProgressView()
+                                                        .tint(Color.primaryEspresso)
+                                                }
+                                        case .success(let image):
+                                            image
+                                                .resizable()
+                                                .aspectRatio(contentMode: .fill)
+                                        case .failure:
+                                            Rectangle()
+                                                .fill(Color.surfaceCard)
+                                                .overlay {
+                                                    Text(user.displayName.prefix(1))
+                                                        .font(.system(size: 32))
+                                                        .foregroundStyle(Color.primaryEspresso)
+                                                }
+                                        @unknown default:
+                                            EmptyView()
+                                        }
+                                    }
                                 } else {
                                     Text(user.displayName.prefix(1))
                                         .font(.system(size: 32))
