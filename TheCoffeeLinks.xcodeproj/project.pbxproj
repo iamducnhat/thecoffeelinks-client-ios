@@ -9,12 +9,6 @@
 /* Begin PBXBuildFile section */
 		25544F522F1431A0009A6830 /* Realtime in Frameworks */ = {isa = PBXBuildFile; productRef = 25544F512F1431A0009A6830 /* Realtime */; };
 		25544F572F14341D009A6830 /* Supabase in Frameworks */ = {isa = PBXBuildFile; productRef = 25544F562F14341D009A6830 /* Supabase */; };
-		25D16C8D2F2277BB00D5B216 /* Geologica-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 448159AD55D041B982B3545F /* Geologica-Regular.ttf */; };
-		25D16C8E2F2277BB00D5B216 /* Geologica-Medium.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 7973847583F14F2591C6C6C7 /* Geologica-Medium.ttf */; };
-		25D16C8F2F2277BB00D5B216 /* Geologica-SemiBold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 6EA3220E26C74963B4C5E363 /* Geologica-SemiBold.ttf */; };
-		25D16C902F2277BB00D5B216 /* Geologica-Bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = F9B1B4C3BE39473CBF00E7BB /* Geologica-Bold.ttf */; };
-		25D16C912F2277BB00D5B216 /* NotoSansMono-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = D6E00DA1F6FA4F3F8228D362 /* NotoSansMono-Regular.ttf */; };
-		25D16C922F2277BB00D5B216 /* NotoSansMono-Medium.ttf in Resources */ = {isa = PBXBuildFile; fileRef = E02312DE5A624B2C8619C180 /* NotoSansMono-Medium.ttf */; };
 		25FC4F5F2F1CB2A90001D920 /* CachedAsyncImage in Frameworks */ = {isa = PBXBuildFile; productRef = 25FC4F5E2F1CB2A90001D920 /* CachedAsyncImage */; };
 /* End PBXBuildFile section */
 
@@ -36,9 +30,9 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
-		25544E6E2F1424F2009A6830 /* thecoffeelinks-client-ios.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "thecoffeelinks-client-ios.app"; sourceTree = BUILT_PRODUCTS_DIR; };
-		25544E7B2F1424F4009A6830 /* thecoffeelinks-client-iosTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "thecoffeelinks-client-iosTests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
-		25544E852F1424F4009A6830 /* thecoffeelinks-client-iosUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "thecoffeelinks-client-iosUITests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
+		25544E6E2F1424F2009A6830 /* TheCoffeeLinks.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = TheCoffeeLinks.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		25544E7B2F1424F4009A6830 /* TheCoffeeLinksTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = TheCoffeeLinksTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		25544E852F1424F4009A6830 /* TheCoffeeLinksUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = TheCoffeeLinksUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		448159AD55D041B982B3545F /* Geologica-Regular.ttf */ = {isa = PBXFileReference; lastKnownFileType = text; name = "Geologica-Regular.ttf"; path = "thecoffeelinks-client-ios/Fonts/Geologica-Regular.ttf"; sourceTree = "<group>"; };
 		6EA3220E26C74963B4C5E363 /* Geologica-SemiBold.ttf */ = {isa = PBXFileReference; lastKnownFileType = text; name = "Geologica-SemiBold.ttf"; path = "thecoffeelinks-client-ios/Fonts/Geologica-SemiBold.ttf"; sourceTree = "<group>"; };
 		7973847583F14F2591C6C6C7 /* Geologica-Medium.ttf */ = {isa = PBXFileReference; lastKnownFileType = text; name = "Geologica-Medium.ttf"; path = "thecoffeelinks-client-ios/Fonts/Geologica-Medium.ttf"; sourceTree = "<group>"; };
@@ -48,39 +42,33 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
-		25D16B222F21BBBE00D5B216 /* Exceptions for "thecoffeelinks-client-ios" folder in "thecoffeelinks-client-ios" target */ = {
+		25D16B222F21BBBE00D5B216 /* Exceptions for "TheCoffeeLinks" folder in "TheCoffeeLinks" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
-				"App-Info.plist",
-				Config.plist.template,
-				"Fonts/Geologica-Bold.ttf",
-				"Fonts/Geologica-Medium.ttf",
-				"Fonts/Geologica-Regular.ttf",
-				"Fonts/Geologica-SemiBold.ttf",
-				"Fonts/NotoSansMono-Medium.ttf",
-				"Fonts/NotoSansMono-Regular.ttf",
+				Config.template.plist,
+				Info.plist,
 			);
-			target = 25544E6D2F1424F2009A6830 /* thecoffeelinks-client-ios */;
+			target = 25544E6D2F1424F2009A6830 /* TheCoffeeLinks */;
 		};
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
-		25544E702F1424F2009A6830 /* thecoffeelinks-client-ios */ = {
+		25544E702F1424F2009A6830 /* TheCoffeeLinks */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
-				25D16B222F21BBBE00D5B216 /* Exceptions for "thecoffeelinks-client-ios" folder in "thecoffeelinks-client-ios" target */,
+				25D16B222F21BBBE00D5B216 /* Exceptions for "TheCoffeeLinks" folder in "TheCoffeeLinks" target */,
 			);
-			path = "thecoffeelinks-client-ios";
+			path = TheCoffeeLinks;
 			sourceTree = "<group>";
 		};
-		25544E7E2F1424F4009A6830 /* thecoffeelinks-client-iosTests */ = {
+		25544E7E2F1424F4009A6830 /* TheCoffeeLinksTests */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			path = "thecoffeelinks-client-iosTests";
+			path = TheCoffeeLinksTests;
 			sourceTree = "<group>";
 		};
-		25544E882F1424F4009A6830 /* thecoffeelinks-client-iosUITests */ = {
+		25544E882F1424F4009A6830 /* TheCoffeeLinksUITests */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			path = "thecoffeelinks-client-iosUITests";
+			path = TheCoffeeLinksUITests;
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
@@ -116,9 +104,9 @@
 		25544E652F1424F2009A6830 = {
 			isa = PBXGroup;
 			children = (
-				25544E702F1424F2009A6830 /* thecoffeelinks-client-ios */,
-				25544E7E2F1424F4009A6830 /* thecoffeelinks-client-iosTests */,
-				25544E882F1424F4009A6830 /* thecoffeelinks-client-iosUITests */,
+				25544E702F1424F2009A6830 /* TheCoffeeLinks */,
+				25544E7E2F1424F4009A6830 /* TheCoffeeLinksTests */,
+				25544E882F1424F4009A6830 /* TheCoffeeLinksUITests */,
 				25544F552F14341D009A6830 /* Frameworks */,
 				25544E6F2F1424F2009A6830 /* Products */,
 				25A0C1742F1A36FB00FAD546 /* Recovered References */,
@@ -128,9 +116,9 @@
 		25544E6F2F1424F2009A6830 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				25544E6E2F1424F2009A6830 /* thecoffeelinks-client-ios.app */,
-				25544E7B2F1424F4009A6830 /* thecoffeelinks-client-iosTests.xctest */,
-				25544E852F1424F4009A6830 /* thecoffeelinks-client-iosUITests.xctest */,
+				25544E6E2F1424F2009A6830 /* TheCoffeeLinks.app */,
+				25544E7B2F1424F4009A6830 /* TheCoffeeLinksTests.xctest */,
+				25544E852F1424F4009A6830 /* TheCoffeeLinksUITests.xctest */,
 				448159AD55D041B982B3545F /* Geologica-Regular.ttf */,
 				7973847583F14F2591C6C6C7 /* Geologica-Medium.ttf */,
 				6EA3220E26C74963B4C5E363 /* Geologica-SemiBold.ttf */,
@@ -158,9 +146,9 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		25544E6D2F1424F2009A6830 /* thecoffeelinks-client-ios */ = {
+		25544E6D2F1424F2009A6830 /* TheCoffeeLinks */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 25544E8F2F1424F4009A6830 /* Build configuration list for PBXNativeTarget "thecoffeelinks-client-ios" */;
+			buildConfigurationList = 25544E8F2F1424F4009A6830 /* Build configuration list for PBXNativeTarget "TheCoffeeLinks" */;
 			buildPhases = (
 				25544E6A2F1424F2009A6830 /* Sources */,
 				25544E6B2F1424F2009A6830 /* Frameworks */,
@@ -171,21 +159,21 @@
 			dependencies = (
 			);
 			fileSystemSynchronizedGroups = (
-				25544E702F1424F2009A6830 /* thecoffeelinks-client-ios */,
+				25544E702F1424F2009A6830 /* TheCoffeeLinks */,
 			);
-			name = "thecoffeelinks-client-ios";
+			name = TheCoffeeLinks;
 			packageProductDependencies = (
 				25544F512F1431A0009A6830 /* Realtime */,
 				25544F562F14341D009A6830 /* Supabase */,
 				25FC4F5E2F1CB2A90001D920 /* CachedAsyncImage */,
 			);
 			productName = "thecoffeelinks-client-ios";
-			productReference = 25544E6E2F1424F2009A6830 /* thecoffeelinks-client-ios.app */;
+			productReference = 25544E6E2F1424F2009A6830 /* TheCoffeeLinks.app */;
 			productType = "com.apple.product-type.application";
 		};
-		25544E7A2F1424F4009A6830 /* thecoffeelinks-client-iosTests */ = {
+		25544E7A2F1424F4009A6830 /* TheCoffeeLinksTests */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 25544E922F1424F4009A6830 /* Build configuration list for PBXNativeTarget "thecoffeelinks-client-iosTests" */;
+			buildConfigurationList = 25544E922F1424F4009A6830 /* Build configuration list for PBXNativeTarget "TheCoffeeLinksTests" */;
 			buildPhases = (
 				25544E772F1424F4009A6830 /* Sources */,
 				25544E782F1424F4009A6830 /* Frameworks */,
@@ -197,18 +185,18 @@
 				25544E7D2F1424F4009A6830 /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
-				25544E7E2F1424F4009A6830 /* thecoffeelinks-client-iosTests */,
+				25544E7E2F1424F4009A6830 /* TheCoffeeLinksTests */,
 			);
-			name = "thecoffeelinks-client-iosTests";
+			name = TheCoffeeLinksTests;
 			packageProductDependencies = (
 			);
 			productName = "thecoffeelinks-client-iosTests";
-			productReference = 25544E7B2F1424F4009A6830 /* thecoffeelinks-client-iosTests.xctest */;
+			productReference = 25544E7B2F1424F4009A6830 /* TheCoffeeLinksTests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
 		};
-		25544E842F1424F4009A6830 /* thecoffeelinks-client-iosUITests */ = {
+		25544E842F1424F4009A6830 /* TheCoffeeLinksUITests */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 25544E952F1424F4009A6830 /* Build configuration list for PBXNativeTarget "thecoffeelinks-client-iosUITests" */;
+			buildConfigurationList = 25544E952F1424F4009A6830 /* Build configuration list for PBXNativeTarget "TheCoffeeLinksUITests" */;
 			buildPhases = (
 				25544E812F1424F4009A6830 /* Sources */,
 				25544E822F1424F4009A6830 /* Frameworks */,
@@ -220,13 +208,13 @@
 				25544E872F1424F4009A6830 /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
-				25544E882F1424F4009A6830 /* thecoffeelinks-client-iosUITests */,
+				25544E882F1424F4009A6830 /* TheCoffeeLinksUITests */,
 			);
-			name = "thecoffeelinks-client-iosUITests";
+			name = TheCoffeeLinksUITests;
 			packageProductDependencies = (
 			);
 			productName = "thecoffeelinks-client-iosUITests";
-			productReference = 25544E852F1424F4009A6830 /* thecoffeelinks-client-iosUITests.xctest */;
+			productReference = 25544E852F1424F4009A6830 /* TheCoffeeLinksUITests.xctest */;
 			productType = "com.apple.product-type.bundle.ui-testing";
 		};
 /* End PBXNativeTarget section */
@@ -252,12 +240,13 @@
 					};
 				};
 			};
-			buildConfigurationList = 25544E692F1424F2009A6830 /* Build configuration list for PBXProject "thecoffeelinks-client-ios" */;
-			developmentRegion = en;
+			buildConfigurationList = 25544E692F1424F2009A6830 /* Build configuration list for PBXProject "TheCoffeeLinks" */;
+			developmentRegion = vi;
 			hasScannedForEncodings = 0;
 			knownRegions = (
 				en,
 				Base,
+				vi,
 			);
 			mainGroup = 25544E652F1424F2009A6830;
 			minimizedProjectReferenceProxies = 1;
@@ -270,9 +259,9 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				25544E6D2F1424F2009A6830 /* thecoffeelinks-client-ios */,
-				25544E7A2F1424F4009A6830 /* thecoffeelinks-client-iosTests */,
-				25544E842F1424F4009A6830 /* thecoffeelinks-client-iosUITests */,
+				25544E6D2F1424F2009A6830 /* TheCoffeeLinks */,
+				25544E7A2F1424F4009A6830 /* TheCoffeeLinksTests */,
+				25544E842F1424F4009A6830 /* TheCoffeeLinksUITests */,
 			);
 		};
 /* End PBXProject section */
@@ -282,12 +271,6 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				25D16C8D2F2277BB00D5B216 /* Geologica-Regular.ttf in Resources */,
-				25D16C8E2F2277BB00D5B216 /* Geologica-Medium.ttf in Resources */,
-				25D16C8F2F2277BB00D5B216 /* Geologica-SemiBold.ttf in Resources */,
-				25D16C902F2277BB00D5B216 /* Geologica-Bold.ttf in Resources */,
-				25D16C912F2277BB00D5B216 /* NotoSansMono-Regular.ttf in Resources */,
-				25D16C922F2277BB00D5B216 /* NotoSansMono-Medium.ttf in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -334,12 +317,12 @@
 /* Begin PBXTargetDependency section */
 		25544E7D2F1424F4009A6830 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			target = 25544E6D2F1424F2009A6830 /* thecoffeelinks-client-ios */;
+			target = 25544E6D2F1424F2009A6830 /* TheCoffeeLinks */;
 			targetProxy = 25544E7C2F1424F4009A6830 /* PBXContainerItemProxy */;
 		};
 		25544E872F1424F4009A6830 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			target = 25544E6D2F1424F2009A6830 /* thecoffeelinks-client-ios */;
+			target = 25544E6D2F1424F2009A6830 /* TheCoffeeLinks */;
 			targetProxy = 25544E862F1424F4009A6830 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
@@ -398,6 +381,8 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
+				INFOPLIST_FILE = TheCoffeeLinks/Info.plist;
+				INFOPLIST_PREPROCESS = NO;
 				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
@@ -457,6 +442,8 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
+				INFOPLIST_FILE = TheCoffeeLinks/Info.plist;
+				INFOPLIST_PREPROCESS = NO;
 				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MTL_ENABLE_DEBUG_INFO = NO;
@@ -478,7 +465,7 @@
 				DEVELOPMENT_TEAM = UJLGY9Y9S3;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = NO;
-				INFOPLIST_FILE = "thecoffeelinks-client-ios/App-Info.plist";
+				INFOPLIST_FILE = TheCoffeeLinks/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = "The Coffee Links";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.food-and-drink";
 				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "We use your location to find the nearest coffee shops.";
@@ -516,7 +503,7 @@
 				DEVELOPMENT_TEAM = UJLGY9Y9S3;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = NO;
-				INFOPLIST_FILE = "thecoffeelinks-client-ios/App-Info.plist";
+				INFOPLIST_FILE = TheCoffeeLinks/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = "The Coffee Links";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.food-and-drink";
 				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "We use your location to find the nearest coffee shops.";
@@ -552,10 +539,10 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = UJLGY9Y9S3;
 				GENERATE_INFOPLIST_FILE = NO;
-				INFOPLIST_FILE = "thecoffeelinks-client-ios/App-Info.plist";
+				INFOPLIST_FILE = TheCoffeeLinks/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = "vn.nhat.thecoffeelinks-client-iosTests";
+				PRODUCT_BUNDLE_IDENTIFIER = vn.thecoffeelinks.thecoffeelinksTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRING_CATALOG_GENERATE_SYMBOLS = NO;
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
@@ -564,7 +551,7 @@
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/thecoffeelinks-client-ios.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/thecoffeelinks-client-ios";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/TheCoffeeLinks.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/TheCoffeeLinks";
 			};
 			name = Debug;
 		};
@@ -576,10 +563,10 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = UJLGY9Y9S3;
 				GENERATE_INFOPLIST_FILE = NO;
-				INFOPLIST_FILE = "thecoffeelinks-client-ios/App-Info.plist";
+				INFOPLIST_FILE = TheCoffeeLinks/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = "vn.nhat.thecoffeelinks-client-iosTests";
+				PRODUCT_BUNDLE_IDENTIFIER = vn.thecoffeelinks.thecoffeelinksTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRING_CATALOG_GENERATE_SYMBOLS = NO;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
@@ -587,7 +574,7 @@
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/thecoffeelinks-client-ios.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/thecoffeelinks-client-ios";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/TheCoffeeLinks.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/TheCoffeeLinks";
 			};
 			name = Release;
 		};
@@ -598,9 +585,9 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = UJLGY9Y9S3;
 				GENERATE_INFOPLIST_FILE = NO;
-				INFOPLIST_FILE = "thecoffeelinks-client-ios/App-Info.plist";
+				INFOPLIST_FILE = TheCoffeeLinks/Info.plist;
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = "vn.nhat.thecoffeelinks-client-iosUITests";
+				PRODUCT_BUNDLE_IDENTIFIER = vn.thecoffeelinks.thecoffeelinksUITests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRING_CATALOG_GENERATE_SYMBOLS = NO;
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
@@ -620,9 +607,9 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = UJLGY9Y9S3;
 				GENERATE_INFOPLIST_FILE = NO;
-				INFOPLIST_FILE = "thecoffeelinks-client-ios/App-Info.plist";
+				INFOPLIST_FILE = TheCoffeeLinks/Info.plist;
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = "vn.nhat.thecoffeelinks-client-iosUITests";
+				PRODUCT_BUNDLE_IDENTIFIER = vn.thecoffeelinks.thecoffeelinksUITests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRING_CATALOG_GENERATE_SYMBOLS = NO;
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
@@ -638,7 +625,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		25544E692F1424F2009A6830 /* Build configuration list for PBXProject "thecoffeelinks-client-ios" */ = {
+		25544E692F1424F2009A6830 /* Build configuration list for PBXProject "TheCoffeeLinks" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				25544E8D2F1424F4009A6830 /* Debug */,
@@ -647,7 +634,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		25544E8F2F1424F4009A6830 /* Build configuration list for PBXNativeTarget "thecoffeelinks-client-ios" */ = {
+		25544E8F2F1424F4009A6830 /* Build configuration list for PBXNativeTarget "TheCoffeeLinks" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				25544E902F1424F4009A6830 /* Debug */,
@@ -656,7 +643,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		25544E922F1424F4009A6830 /* Build configuration list for PBXNativeTarget "thecoffeelinks-client-iosTests" */ = {
+		25544E922F1424F4009A6830 /* Build configuration list for PBXNativeTarget "TheCoffeeLinksTests" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				25544E932F1424F4009A6830 /* Debug */,
@@ -665,7 +652,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		25544E952F1424F4009A6830 /* Build configuration list for PBXNativeTarget "thecoffeelinks-client-iosUITests" */ = {
+		25544E952F1424F4009A6830 /* Build configuration list for PBXNativeTarget "TheCoffeeLinksUITests" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				25544E962F1424F4009A6830 /* Debug */,
