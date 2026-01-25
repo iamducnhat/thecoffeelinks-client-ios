@@ -41,7 +41,7 @@ struct CartView: View {
                             }
                     }
                     
-                    Text("Cart (\(cartViewModel.itemCount))")
+                    Text(LocalizedStringKey("Cart (\(cartViewModel.itemCount))"))
                         .font(AppFont.displayTitle)
                         .lineLimit(1)
                         .foregroundStyle(Color.textInk)
@@ -63,7 +63,7 @@ struct CartView: View {
                                 .frame(minWidth: AppLayout.touchTarget, minHeight: AppLayout.touchTarget)
                                 .hidden()
                             
-                            Text("Cart (\(cartViewModel.itemCount))")
+                            Text(LocalizedStringKey("Cart (\(cartViewModel.itemCount))"))
                                 .font(AppFont.displayTitle)
                                 .lineLimit(1)
                                 .foregroundStyle(Color.textInk)
@@ -115,14 +115,14 @@ struct CartView: View {
                             
                             // MARK: Order Summary
                             VStack(alignment: .leading, spacing: AppLayout.spacing) {
-                                Text("Summary")
+                                Text(LocalizedStringKey("Summary"))
                                     .textCase(.uppercase)
                                     .font(AppFont.sectionHeader)
                                     .foregroundStyle(Color.textInk)
                                 
                                 VStack(spacing: 8) {
                                     HStack {
-                                        Text("Subtotal")
+                                        Text(LocalizedStringKey("Subtotal"))
                                             .font(AppFont.body)
                                             .foregroundStyle(Color.textMuted)
                                         Spacer()
@@ -133,7 +133,7 @@ struct CartView: View {
                                     
                                     if cartViewModel.deliveryFee > 0 {
                                         HStack {
-                                            Text("Delivery Fee")
+                                            Text(LocalizedStringKey("Delivery Fee"))
                                                 .font(AppFont.body)
                                                 .foregroundStyle(Color.textMuted)
                                             Spacer()
@@ -145,7 +145,7 @@ struct CartView: View {
                                     
                                     if cartViewModel.summary.discount > 0 {
                                         HStack {
-                                            Text("Discount")
+                                            Text(LocalizedStringKey("Discount"))
                                                 .font(AppFont.body)
                                                 .foregroundStyle(Color.semanticSuccess)
                                             Spacer()
@@ -174,7 +174,7 @@ struct CartView: View {
                     // MARK: Total & Checkout
                     VStack(alignment: .leading, spacing: AppLayout.spacing) {
                         HStack(spacing: 0) {
-                            Text("TOTAL")
+                            Text(LocalizedStringKey("TOTAL"))
                                 .font(AppFont.totalLabel)
                                 .lineLimit(1)
                                 .foregroundStyle(Color.textInk)
@@ -189,7 +189,7 @@ struct CartView: View {
                         Button {
                             showingCheckout = true
                         } label: {
-                            Text("Checkout")
+                            Text(LocalizedStringKey("Checkout"))
                                 .font(AppFont.monoCTA)
                                 .foregroundStyle(Color.backgroundPaper)
                                 .padding(.vertical, 12)

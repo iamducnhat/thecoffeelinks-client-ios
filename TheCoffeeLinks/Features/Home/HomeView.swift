@@ -36,11 +36,11 @@ struct HomeView: View {
                     VStack(alignment: .leading, spacing: AppLayout.spacing) {
                         HStack {
                             VStack(alignment: .leading, spacing: 4) {
-                                Text("Hello, \(authViewModel.currentUser?.displayName ?? "GUEST")")
+                                Text(LocalizedStringKey("Hello, \(authViewModel.currentUser?.displayName ?? "GUEST")"))
                                     .font(AppFont.uiCaption)
                                     .foregroundStyle(Color.primaryEspresso)
                                 
-                                Text("The Coffee Links")
+                                Text(LocalizedStringKey("The Coffee Links"))
                                     .font(AppFont.displayTitle)
                                     .foregroundColor(Color.textInk)
                             }
@@ -168,7 +168,7 @@ struct ActiveOrdersSection: View {
     
     var body: some View {
         VStack(alignment: .leading, spacing: AppLayout.spacing) {
-            Text("Your Orders (\(orders.count))")
+            Text(LocalizedStringKey("Your Orders (\(orders.count))"))
                 .textCase(.uppercase)
                 .font(AppFont.sectionHeader)
                 .foregroundStyle(Color.textInk)
@@ -201,7 +201,7 @@ struct AIQuickOrderPrompt: View {
                     .foregroundStyle(Color.primaryEspresso)
                 
                 VStack(alignment: .leading, spacing: 4) {
-                    Text("For you")
+                    Text(LocalizedStringKey("For you"))
                         .font(AppFont.uiCaption)
                         .foregroundStyle(Color.primaryEspresso)
                     
@@ -235,7 +235,7 @@ struct AIQuickOrderModal: View {
         VStack(spacing: 0) {
             // Header
             VStack(alignment: .leading, spacing: 8) {
-                Text("Recommended")
+                Text(LocalizedStringKey("Recommended"))
                     .font(AppFont.uiCaption)
                     .foregroundStyle(Color.primaryEspresso)
                 
@@ -274,7 +274,7 @@ struct AIQuickOrderModal: View {
                 Divider()
 
                 HStack {
-                    Text("Total")
+                    Text(LocalizedStringKey("Total"))
                         .font(AppFont.headline)
                         .foregroundColor(Color.textInk)
                     Spacer()
@@ -291,7 +291,7 @@ struct AIQuickOrderModal: View {
             // Actions
             HStack(spacing: 1) {
                 Button(action: onDismiss) {
-                    Text("Not now")
+                    Text(LocalizedStringKey("Not now"))
                         .font(AppFont.body)
                         .foregroundStyle(Color.textMuted)
                         .frame(maxWidth: .infinity)
@@ -300,7 +300,7 @@ struct AIQuickOrderModal: View {
                 }
                 
                 Button(action: onOrder) {
-                    Text("Order")
+                    Text(LocalizedStringKey("Order"))
                         .font(AppFont.monoHeadline)
                         .foregroundStyle(Color.backgroundPaper)
                         .frame(maxWidth: .infinity)
@@ -325,7 +325,7 @@ struct OffersSection: View {
     
     var body: some View {
         VStack(alignment: .leading, spacing: AppLayout.spacing) {
-            Text("Offers")
+            Text(LocalizedStringKey("Offers"))
                 .textCase(.uppercase)
                 .font(AppFont.sectionHeader)
                 .foregroundStyle(Color.textInk)
@@ -402,7 +402,7 @@ struct PopularSection: View {
     
     var body: some View {
         VStack(alignment: .leading, spacing: AppLayout.spacing) {
-            Text("Popular drinks")
+            Text(LocalizedStringKey("Popular drinks"))
                 .textCase(.uppercase)
                 .font(AppFont.sectionHeader)
                 .foregroundStyle(Color.textInk)
@@ -512,7 +512,7 @@ struct EventsSection: View {
     var body: some View {
         VStack(alignment: .leading, spacing: AppLayout.spacing) {
             // Lighter section header
-            Text("Upcoming events")
+            Text(LocalizedStringKey("Upcoming events"))
                 .textCase(.uppercase)
                 .font(AppFont.sectionHeader)
                 .foregroundStyle(Color.textInk)

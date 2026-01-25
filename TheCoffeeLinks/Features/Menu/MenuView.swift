@@ -201,7 +201,7 @@ struct ProductCard: View {
                 let mediumPrice = product.sizeOptions.first(where: { $0.size == .medium })?.price ?? product.basePrice
                 
                 HStack(spacing: 6) {
-                    Text("MEDIUM")
+                    Text(LocalizedStringKey("MEDIUM"))
                         .font(AppFont.monoCaption)
                         .tracking(1.0)
                         .foregroundColor(Color.textInk.opacity(0.6))
@@ -255,11 +255,11 @@ struct ProductGridSkeleton: View {
 struct EmptyMenuState: View {
     var body: some View {
         VStack(spacing: AppLayout.spacingXL) {
-            Text("No items found")
+            Text(LocalizedStringKey("No items found"))
                 .font(AppFont.sectionHeader)
                 .foregroundColor(Color.textInk)
             
-            Text("Try searching for something else.")
+            Text(LocalizedStringKey("Try searching for something else."))
                 .font(AppFont.body)
                 .foregroundColor(Color.textMuted)
                 .multilineTextAlignment(.center)
