@@ -22,7 +22,7 @@ struct NetworkView: View {
                 ScrollView(.vertical) {
                     // Header
                     VStack(alignment: .leading, spacing: AppLayout.spacing) {
-                        Text("Space")
+                        Text(String(localized: "space_title"))
                             .font(AppFont.displayTitle)
                             .foregroundColor(Color.textInk)
                             .padding(.top, AppLayout.spacing)
@@ -67,7 +67,7 @@ struct IntentSelectorContent: View {
         LazyVStack(spacing: AppLayout.spacingXL) {
             // Intent Section
             VStack(alignment: .leading, spacing: AppLayout.spacing) {
-                Text("What brings you here?")
+                Text(String(localized: "network_intent_prompt"))
                     .textCase(.uppercase)
                     .font(AppFont.sectionHeader)
                     .foregroundStyle(Color.textInk)
@@ -125,7 +125,7 @@ struct ActiveNetworkingContent: View {
         LazyVStack(spacing: AppLayout.spacingXL) {
             // Active Status Banner
             VStack(alignment: .leading, spacing: AppLayout.spacing) {
-                Text("Active check-in")
+                Text(String(localized: "home_active_checkin"))
                     .textCase(.uppercase)
                     .font(AppFont.sectionHeader)
                     .foregroundStyle(Color.textInk)
@@ -145,7 +145,7 @@ struct ActiveNetworkingContent: View {
                     Button {
                         networkViewModel.checkOut()
                     } label: {
-                        Text("End")
+                        Text(String(localized: "common_end"))
                             .font(AppFont.monoBody)
                             .foregroundStyle(Color.semanticError)
                             .padding(.horizontal, 12)
@@ -169,7 +169,7 @@ struct ActiveNetworkingContent: View {
             // Nearby People Section
             VStack(alignment: .leading, spacing: AppLayout.spacing) {
                 HStack {
-                    Text("Nearby")
+                    Text(String(localized: "network_nearby_title"))
                         .textCase(.uppercase)
                         .font(AppFont.sectionHeader)
                         .foregroundStyle(Color.textInk)
@@ -183,11 +183,11 @@ struct ActiveNetworkingContent: View {
                 
                 if networkViewModel.nearbyPeople.isEmpty {
                     VStack(spacing: AppLayout.spacing) {
-                        Text("No one nearby")
+                        Text(String(localized: "network_nearby_empty"))
                             .font(AppFont.sectionHeader)
                             .foregroundStyle(Color.textInk)
                         
-                        Text("Be the first to check in!")
+                        Text(String(localized: "network_nearby_prompt"))
                             .font(AppFont.body)
                             .foregroundStyle(Color.textMuted)
                     }
@@ -269,7 +269,7 @@ struct PersonRow: View {
                         .scaleEffect(0.8)
                         .tint(Color.primaryEspresso)
                 } else {
-                    Text("Connect")
+                    Text(String(localized: "network_connect_action"))
                         .font(AppFont.monoBody)
                         .foregroundStyle(Color.primaryEspresso)
                 }
@@ -294,7 +294,7 @@ struct NetworkCheckInSheet: View {
             VStack(spacing: 0) {
                 // Header
                 HStack {
-                    Text("Check In")
+                    Text(String(localized: "network_check_in_action"))
                         .font(AppFont.displayTitle)
                         .foregroundStyle(Color.textInk)
                     
@@ -339,7 +339,7 @@ struct NetworkCheckInSheet: View {
                         
                         // Location
                         VStack(alignment: .leading, spacing: AppLayout.spacing) {
-                            Text("Location")
+                            Text(String(localized: "common_location"))
                                 .textCase(.uppercase)
                                 .font(AppFont.sectionHeader)
                                 .foregroundStyle(Color.textInk)
@@ -363,7 +363,7 @@ struct NetworkCheckInSheet: View {
                             } else {
                                 HStack {
                                     ProgressView().tint(Color.primaryEspresso)
-                                    Text("Finding nearest location...")
+                                    Text(String(localized: "network_finding_location"))
                                         .font(AppFont.body)
                                         .foregroundStyle(Color.textMuted)
                                 }
@@ -372,7 +372,7 @@ struct NetworkCheckInSheet: View {
                         
                         // Duration
                         VStack(alignment: .leading, spacing: AppLayout.spacing) {
-                            Text("Duration")
+                            Text(String(localized: "common_duration"))
                                 .textCase(.uppercase)
                                 .font(AppFont.sectionHeader)
                                 .foregroundStyle(Color.textInk)
@@ -394,7 +394,7 @@ struct NetworkCheckInSheet: View {
                                 isPresented = false
                             }
                         } label: {
-                            Text("Check In")
+                            Text(String(localized: "network_check_in_action"))
                                 .font(AppFont.monoCTA)
                                 .foregroundStyle(Color.backgroundPaper)
                                 .padding(.vertical, 12)

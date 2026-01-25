@@ -26,7 +26,7 @@ struct ProfileView: View {
                 ScrollView(.vertical) {
                     // Header
                     VStack(alignment: .leading, spacing: AppLayout.spacing) {
-                        Text("Profile")
+                        Text(String(localized: "profile_title"))
                             .font(AppFont.displayTitle)
                             .foregroundColor(Color.textInk)
                             .padding(.top, AppLayout.spacing)
@@ -52,18 +52,18 @@ struct ProfileView: View {
                         
                         // Rewards Section
                         VStack(alignment: .leading, spacing: AppLayout.spacing) {
-                            Text("Rewards & Wallet")
+                            Text(String(localized: "rewards_section_title"))
                                 .textCase(.uppercase)
                                 .font(AppFont.sectionHeader)
                                 .foregroundStyle(Color.textInk)
                             
                             HStack(spacing: AppLayout.spacingMedium) {
                                 if authViewModel.isAuthenticated {
-                                    MetricBox(label: "BEAN POINTS", value: "\(profileViewModel.userProfile?.points ?? 0)")
-                                    MetricBox(label: "MY VOUCHERS", value: "\(profileViewModel.vouchers.count)")
+                                    MetricBox(label: String(localized: "metric_points"), value: "\(profileViewModel.userProfile?.points ?? 0)")
+                                    MetricBox(label: String(localized: "metric_vouchers"), value: "\(profileViewModel.vouchers.count)")
                                 } else {
-                                    MetricBox(label: "BEAN POINTS", value: "—")
-                                    MetricBox(label: "MY VOUCHERS", value: "—")
+                                    MetricBox(label: String(localized: "metric_points"), value: "—")
+                                    MetricBox(label: String(localized: "metric_vouchers"), value: "—")
                                 }
                             }
                         }
@@ -71,16 +71,16 @@ struct ProfileView: View {
                         
                         // Activity Section
                         VStack(alignment: .leading, spacing: AppLayout.spacing) {
-                            Text("Activity")
+                            Text(String(localized: "activity_section_title"))
                                 .textCase(.uppercase)
                                 .font(AppFont.sectionHeader)
                                 .foregroundStyle(Color.textInk)
                             
                             VStack(spacing: 0) {
                                 if authViewModel.isAuthenticated {
-                                    ActionRow(title: "Order history", icon: "list.bullet.rectangle") { showOrderHistory = true }
-                                    ActionRow(title: "Saved locations", icon: "mappin.and.ellipse") { }
-                                    ActionRow(title: "My vouchers", icon: "ticket") { }
+                                    ActionRow(title: String(localized: "action_order_history"), icon: "list.bullet.rectangle") { showOrderHistory = true }
+                                    ActionRow(title: String(localized: "action_saved_locations"), icon: "mappin.and.ellipse") { }
+                                    ActionRow(title: String(localized: "action_my_vouchers"), icon: "ticket") { }
                                 } else {
                                     ActionRow(title: "Order history", icon: "list.bullet.rectangle") { showLogin = true }
                                     ActionRow(title: "Saved locations", icon: "mappin.and.ellipse") { showLogin = true }
@@ -97,15 +97,15 @@ struct ProfileView: View {
                         
                         // Settings Section
                         VStack(alignment: .leading, spacing: AppLayout.spacing) {
-                            Text("Settings")
+                            Text(String(localized: "settings_section_title"))
                                 .textCase(.uppercase)
                                 .font(AppFont.sectionHeader)
                                 .foregroundStyle(Color.textInk)
                             
                             VStack(spacing: 0) {
-                                ActionRow(title: "Edit profile", icon: "person") { if authViewModel.isAuthenticated { showEditProfile = true } else { showLogin = true } }
-                                ActionRow(title: "Security", icon: "lock.shield") { if authViewModel.isAuthenticated { showSettings = true } else { showLogin = true } }
-                                ActionRow(title: "Notifications", icon: "bell") { }
+                                ActionRow(title: String(localized: "action_edit_profile"), icon: "person") { if authViewModel.isAuthenticated { showEditProfile = true } else { showLogin = true } }
+                                ActionRow(title: String(localized: "action_security"), icon: "lock.shield") { if authViewModel.isAuthenticated { showSettings = true } else { showLogin = true } }
+                                ActionRow(title: String(localized: "action_notifications"), icon: "bell") { }
                             }
                             .background(Color.surfaceCard)
                             .overlay(
@@ -121,7 +121,7 @@ struct ProfileView: View {
                                 Button {
                                     authViewModel.logout()
                                 } label: {
-                                    Text("Sign out")
+                                    Text(String(localized: "sign_out_button"))
                                         .font(AppFont.monoCTA)
                                         .foregroundStyle(Color.backgroundPaper)
                                         .padding(.vertical, 12)
@@ -133,7 +133,7 @@ struct ProfileView: View {
                                 Button {
                                     showLogin = true
                                 } label: {
-                                    Text("Sign in or Join")
+                                    Text(String(localized: "sign_in_join_button"))
                                         .font(AppFont.monoCTA)
                                         .foregroundStyle(Color.backgroundPaper)
                                         .padding(.vertical, 12)
@@ -229,11 +229,11 @@ struct ProfileView: View {
             .clipShape(RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle))
             
             VStack(alignment: .leading, spacing: 4) {
-                Text(profileViewModel.userProfile?.fullName ?? "Guest")
+                Text(profileViewModel.userProfile?.fullName ?? String(localized: "guest_name"))
                     .font(AppFont.sectionHeader)
                     .foregroundStyle(Color.textInk)
                 
-                Text(profileViewModel.userProfile?.email ?? "Signed in")
+                Text(profileViewModel.userProfile?.email ?? String(localized: "signed_in_placeholder"))
                     .font(AppFont.uiCaption)
                     .foregroundStyle(Color.textMuted)
                 
@@ -275,11 +275,11 @@ struct ProfileView: View {
             .clipShape(RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle))
             
             VStack(alignment: .leading, spacing: 4) {
-                Text("Guest")
+                Text(String(localized: "guest_name"))
                     .font(AppFont.sectionHeader)
                     .foregroundStyle(Color.textInk)
                 
-                Text("Sign in to earn points & rewards")
+                Text(String(localized: "guest_subtitle"))
                     .font(AppFont.uiCaption)
                     .foregroundStyle(Color.textMuted)
             }

@@ -26,7 +26,7 @@ struct StoresView: View {
             ScrollView(.vertical) { LazyVStack(alignment: .leading, spacing: AppLayout.spacing) {
                 // Header
                 VStack(alignment: .leading, spacing: AppLayout.spacing) {
-                    Text("Find a Store")
+                    Text(String(localized: "stores_find_title"))
                         .font(AppFont.displayTitle)
                         .foregroundColor(Color.textInk)
                         .padding(.top, AppLayout.spacing)
@@ -286,11 +286,11 @@ struct EmptyStoresState: View {
                 .font(.system(size: 48))
                 .foregroundStyle(Color.textMuted)
             
-            Text("No stores found")
+            Text(String(localized: "stores_empty_search"))
                 .font(AppFont.sectionHeader)
                 .foregroundStyle(Color.textInk)
             
-            Text("Try adjusting your search or check back later.")
+            Text(String(localized: "stores_empty_suggestion"))
                 .font(AppFont.body)
                 .foregroundStyle(Color.textMuted)
                 .multilineTextAlignment(.center)

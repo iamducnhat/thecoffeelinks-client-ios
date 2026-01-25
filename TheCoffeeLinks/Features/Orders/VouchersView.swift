@@ -44,7 +44,7 @@ struct VouchersView: View {
                 // Header
                 VStack(alignment: .leading, spacing: AppLayout.spacing) {
                     HStack {
-                        Text("Vouchers")
+                        Text(String(localized: "vouchers_title"))
                             .font(AppFont.displayTitle)
                             .foregroundStyle(Color.textInk)
                         
@@ -94,7 +94,7 @@ struct VouchersView: View {
                             ReceiptLoadingLog()
                         } else if filteredVouchers.isEmpty {
                             VStack(spacing: AppLayout.spacing) {
-                                Text("No vouchers")
+                                Text(String(localized: "vouchers_empty"))
                                     .font(AppFont.sectionHeader)
                                     .foregroundStyle(Color.textInk)
                                 

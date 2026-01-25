@@ -179,7 +179,7 @@ struct ProductDetailSheet: View {
                         // Size Selection
                         if product.sizeOptions.count > 1 {
                             VStack(alignment: .leading, spacing: AppLayout.spacing) {
-                                Text("Size")
+                                Text(String(localized: "product_size_label"))
                                     .textCase(.uppercase)
                                     .font(AppFont.sectionHeader)
                                     .foregroundStyle(Color.textInk)
@@ -215,7 +215,7 @@ struct ProductDetailSheet: View {
                         
                         // Sugar Level
                         VStack(alignment: .leading, spacing: AppLayout.spacing) {
-                            Text("Sugar")
+                            Text(String(localized: "product_sugar_label"))
                                 .textCase(.uppercase)
                                 .font(AppFont.sectionHeader)
                                 .foregroundStyle(Color.textInk)
@@ -246,7 +246,7 @@ struct ProductDetailSheet: View {
                         
                         // Ice Level
                         VStack(alignment: .leading, spacing: AppLayout.spacing) {
-                            Text("Ice")
+                            Text(String(localized: "product_ice_label"))
                                 .textCase(.uppercase)
                                 .font(AppFont.sectionHeader)
                                 .foregroundStyle(Color.textInk)
@@ -278,7 +278,7 @@ struct ProductDetailSheet: View {
                         // Toppings
                         if !product.availableToppings.isEmpty {
                             VStack(alignment: .leading, spacing: AppLayout.spacing) {
-                                Text("Add-ons")
+                                Text(String(localized: "product_addons_label"))
                                     .textCase(.uppercase)
                                     .font(AppFont.sectionHeader)
                                     .foregroundStyle(Color.textInk)
@@ -324,7 +324,7 @@ struct ProductDetailSheet: View {
                         
                         // Special Instructions
                         VStack(alignment: .leading, spacing: AppLayout.spacing) {
-                            Text("Special instructions")
+                            Text(String(localized: "product_special_instructions"))
                                 .textCase(.uppercase)
                                 .font(AppFont.sectionHeader)
                                 .foregroundStyle(Color.textInk)
@@ -345,7 +345,7 @@ struct ProductDetailSheet: View {
                         
                         // Quantity
                         HStack {
-//                            Text("Quantity")
+//                            Text(String(localized: "product_quantity_label"))
 //                                .font(AppFont.body)
 //                                .foregroundStyle(Color.textInk)
 //                            

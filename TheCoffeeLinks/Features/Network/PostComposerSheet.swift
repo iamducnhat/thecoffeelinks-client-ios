@@ -11,7 +11,7 @@ struct EditorialPostComposerSheet: View {
             VStack(spacing: Editorial.Spacing.lg) {
                 // Type Selection
                 VStack(alignment: .leading, spacing: Editorial.Spacing.sm) {
-                    Text("Post Type")
+                    Text(String(localized: "social_post_type_label"))
                         .font(Editorial.subheading())
                         .foregroundStyle(Editorial.Colors.textPrimary)
                     
@@ -30,7 +30,7 @@ struct EditorialPostComposerSheet: View {
                 
                 // Content Input
                 VStack(alignment: .leading, spacing: Editorial.Spacing.sm) {
-                    Text("Content")
+                    Text(String(localized: "social_content_label"))
                         .font(Editorial.subheading())
                         .foregroundStyle(Editorial.Colors.textPrimary)
                     
@@ -51,15 +51,15 @@ struct EditorialPostComposerSheet: View {
             }
             .editorialPadding()
             .editorialBackground()
-            .navigationTitle("New Post")
+            .navigationTitle(String(localized: "social_new_post"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("Cancel") { dismiss() }
+                    Button(String(localized: "common_cancel")) { dismiss() }
                         .foregroundStyle(Editorial.Colors.textPrimary)
                 }
                 ToolbarItem(placement: .confirmationAction) {
-                    Button("Post") {
+                    Button(String(localized: "social_post_action")) {
                         // Post logic here
                         dismiss()
                     }

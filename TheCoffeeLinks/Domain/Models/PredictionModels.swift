@@ -142,19 +142,19 @@ enum PredictionReason: Codable, Sendable, Equatable {
     
     var displayText: String {
         switch self {
-        case .routine: return "Based on your routine"
-        case .weather: return "Perfect for this weather"
-        case .trending: return "Popular right now"
+        case .routine: return String(localized: "prediction_reason_routine")
+        case .weather: return String(localized: "prediction_reason_weather")
+        case .trending: return String(localized: "prediction_reason_trending")
         case .timeOfDay(let slot):
             switch slot {
-            case .morning: return "Good morning"
-            case .afternoon: return "Good afternoon"
-            case .evening: return "Good evening"
-            case .night: return "Late night snack"
+            case .morning: return String(localized: "prediction_reason_morning")
+            case .afternoon: return String(localized: "prediction_reason_afternoon")
+            case .evening: return String(localized: "prediction_reason_evening")
+            case .night: return String(localized: "prediction_reason_night")
             }
-        case .dayOfWeek(let day): return "Happy \(day)!"
-        case .frequency: return "You order this often"
-        case .history: return "From your history"
+        case .dayOfWeek(let day): return String(localized: "prediction_reason_day_of_week \(day)")
+        case .frequency: return String(localized: "prediction_reason_frequency")
+        case .history: return String(localized: "prediction_reason_history")
         case .custom(let message): return message
         }
     }
@@ -245,9 +245,9 @@ enum ConfidenceLevel: String, Sendable {
     
     var displayPrefix: String {
         switch self {
-        case .high: return "High Confidence"
-        case .medium: return "Suggested"
-        case .low: return "For You"
+        case .high: return String(localized: "confidence_high")
+        case .medium: return String(localized: "confidence_medium")
+        case .low: return String(localized: "confidence_low")
         }
     }
 }

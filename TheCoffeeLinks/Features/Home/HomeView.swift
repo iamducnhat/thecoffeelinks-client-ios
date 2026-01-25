@@ -36,11 +36,9 @@ struct HomeView: View {
                     VStack(alignment: .leading, spacing: AppLayout.spacing) {
                         HStack {
                             VStack(alignment: .leading, spacing: 4) {
-                                Text(LocalizedStringKey("Hello, \(authViewModel.currentUser?.displayName ?? "GUEST")"))
-                                    .font(AppFont.uiCaption)
-                                    .foregroundStyle(Color.primaryEspresso)
+                                Text(String(localized: "home_hello_user \(authViewModel.currentUser?.displayName ?? String(localized: "guest_name"))"))
                                 
-                                Text(LocalizedStringKey("The Coffee Links"))
+                                Text(LocalizedStringKey("The Coffee Links")) // Brand name, keep or use app_name
                                     .font(AppFont.displayTitle)
                                     .foregroundColor(Color.textInk)
                             }
@@ -168,7 +166,7 @@ struct ActiveOrdersSection: View {
     
     var body: some View {
         VStack(alignment: .leading, spacing: AppLayout.spacing) {
-            Text(LocalizedStringKey("Your Orders (\(orders.count))"))
+            Text(String(localized: "active_orders_section \(orders.count)"))
                 .textCase(.uppercase)
                 .font(AppFont.sectionHeader)
                 .foregroundStyle(Color.textInk)
@@ -201,7 +199,7 @@ struct AIQuickOrderPrompt: View {
                     .foregroundStyle(Color.primaryEspresso)
                 
                 VStack(alignment: .leading, spacing: 4) {
-                    Text(LocalizedStringKey("For you"))
+                    Text(String(localized: "ai_recommendation_label"))
                         .font(AppFont.uiCaption)
                         .foregroundStyle(Color.primaryEspresso)
                     
@@ -235,7 +233,7 @@ struct AIQuickOrderModal: View {
         VStack(spacing: 0) {
             // Header
             VStack(alignment: .leading, spacing: 8) {
-                Text(LocalizedStringKey("Recommended"))
+                Text(String(localized: "ai_modal_title"))
                     .font(AppFont.uiCaption)
                     .foregroundStyle(Color.primaryEspresso)
                 
@@ -274,7 +272,7 @@ struct AIQuickOrderModal: View {
                 Divider()
 
                 HStack {
-                    Text(LocalizedStringKey("Total"))
+                    Text(String(localized: "total_label"))
                         .font(AppFont.headline)
                         .foregroundColor(Color.textInk)
                     Spacer()
@@ -291,7 +289,7 @@ struct AIQuickOrderModal: View {
             // Actions
             HStack(spacing: 1) {
                 Button(action: onDismiss) {
-                    Text(LocalizedStringKey("Not now"))
+                    Text(String(localized: "btn_not_now"))
                         .font(AppFont.body)
                         .foregroundStyle(Color.textMuted)
                         .frame(maxWidth: .infinity)
@@ -300,7 +298,7 @@ struct AIQuickOrderModal: View {
                 }
                 
                 Button(action: onOrder) {
-                    Text(LocalizedStringKey("Order"))
+                    Text(String(localized: "btn_order"))
                         .font(AppFont.monoHeadline)
                         .foregroundStyle(Color.backgroundPaper)
                         .frame(maxWidth: .infinity)
@@ -325,7 +323,7 @@ struct OffersSection: View {
     
     var body: some View {
         VStack(alignment: .leading, spacing: AppLayout.spacing) {
-            Text(LocalizedStringKey("Offers"))
+            Text(String(localized: "offers_section_title"))
                 .textCase(.uppercase)
                 .font(AppFont.sectionHeader)
                 .foregroundStyle(Color.textInk)
@@ -402,7 +400,7 @@ struct PopularSection: View {
     
     var body: some View {
         VStack(alignment: .leading, spacing: AppLayout.spacing) {
-            Text(LocalizedStringKey("Popular drinks"))
+            Text(String(localized: "popular_section_title"))
                 .textCase(.uppercase)
                 .font(AppFont.sectionHeader)
                 .foregroundStyle(Color.textInk)
@@ -512,7 +510,7 @@ struct EventsSection: View {
     var body: some View {
         VStack(alignment: .leading, spacing: AppLayout.spacing) {
             // Lighter section header
-            Text(LocalizedStringKey("Upcoming events"))
+            Text(String(localized: "events_section_title"))
                 .textCase(.uppercase)
                 .font(AppFont.sectionHeader)
                 .foregroundStyle(Color.textInk)

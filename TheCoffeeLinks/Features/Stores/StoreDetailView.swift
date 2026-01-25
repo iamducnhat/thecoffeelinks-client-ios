@@ -172,7 +172,7 @@ struct StoreDetailView: View {
                                             UIApplication.shared.open(url)
                                         }
                                     } label: {
-                                        Text("Call")
+                                        Text("store_call")
                                             .font(AppFont.monoBody)
                                             .foregroundStyle(Color.primaryEspresso)
                                     }
@@ -187,7 +187,7 @@ struct StoreDetailView: View {
                                 Image(systemName: "clock")
                                     .foregroundStyle(Color.primaryEspresso)
                                 VStack(alignment: .leading, spacing: 2) {
-                                    Text(store.isCurrentlyOpen ? "Open Now" : "Closed")
+                                    Text(store.isCurrentlyOpen ? String(localized: "store_open_now") : String(localized: "store_closed"))
                                         .font(AppFont.body)
                                         .foregroundStyle(store.isCurrentlyOpen ? Color.semanticSuccess : Color.semanticError)
                                     
@@ -211,7 +211,7 @@ struct StoreDetailView: View {
                         // Amenities
                         if let amenities = store.amenities, !amenities.isEmpty {
                             VStack(alignment: .leading, spacing: AppLayout.spacing) {
-                                Text("Amenities")
+                                Text("store_amenities_section")
                                     .textCase(.uppercase)
                                     .font(AppFont.sectionHeader)
                                     .foregroundStyle(Color.textInk)
@@ -237,7 +237,7 @@ struct StoreDetailView: View {
                         
                         // Action Buttons
                         VStack(spacing: AppLayout.spacing) {
-                            Text("Order Options")
+                            Text("store_order_options_section")
                                 .textCase(.uppercase)
                                 .font(AppFont.sectionHeader)
                                 .foregroundStyle(Color.textInk)
@@ -253,7 +253,7 @@ struct StoreDetailView: View {
                                         VStack(spacing: 4) {
                                             Image(systemName: "fork.knife")
                                                 .font(.system(size: 20))
-                                            Text("Dine In")
+                                            Text("store_dine_in")
                                                 .font(AppFont.uiCaption)
                                         }
                                         .foregroundStyle(Color.backgroundPaper)
@@ -273,7 +273,7 @@ struct StoreDetailView: View {
                                         VStack(spacing: 4) {
                                             Image(systemName: "bag.fill")
                                                 .font(.system(size: 20))
-                                            Text("Take Away")
+                                            Text("store_take_away")
                                                 .font(AppFont.uiCaption)
                                         }
                                         .foregroundStyle(Color.backgroundPaper)
@@ -290,7 +290,7 @@ struct StoreDetailView: View {
                                 viewModel.selectStore(store)
                                 showingCheckIn = true
                             } label: {
-                                Text("Check In")
+                                Text("store_check_in")
                                     .font(AppFont.monoCTA)
                                     .foregroundStyle(Color.backgroundPaper)
                                     .padding(.vertical, 12)
@@ -307,7 +307,7 @@ struct StoreDetailView: View {
                                 HStack {
                                     Image(systemName: "arrow.triangle.turn.up.right.circle")
                                         .font(.system(size: 16))
-                                    Text("Get Directions")
+                                    Text("store_get_directions")
                                         .font(AppFont.monoBody)
                                 }
                                 .foregroundStyle(Color.primaryEspresso)

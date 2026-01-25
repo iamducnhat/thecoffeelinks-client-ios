@@ -41,7 +41,7 @@ struct CartView: View {
                             }
                     }
                     
-                    Text(LocalizedStringKey("Cart (\(cartViewModel.itemCount))"))
+                    Text("cart_header_count \(cartViewModel.itemCount)")
                         .font(AppFont.displayTitle)
                         .lineLimit(1)
                         .foregroundStyle(Color.textInk)
@@ -63,7 +63,7 @@ struct CartView: View {
                                 .frame(minWidth: AppLayout.touchTarget, minHeight: AppLayout.touchTarget)
                                 .hidden()
                             
-                            Text(LocalizedStringKey("Cart (\(cartViewModel.itemCount))"))
+                            Text("cart_header_count \(cartViewModel.itemCount)")
                                 .font(AppFont.displayTitle)
                                 .lineLimit(1)
                                 .foregroundStyle(Color.textInk)
@@ -115,14 +115,14 @@ struct CartView: View {
                             
                             // MARK: Order Summary
                             VStack(alignment: .leading, spacing: AppLayout.spacing) {
-                                Text(LocalizedStringKey("Summary"))
+                                Text("summary_section_title")
                                     .textCase(.uppercase)
                                     .font(AppFont.sectionHeader)
                                     .foregroundStyle(Color.textInk)
                                 
                                 VStack(spacing: 8) {
                                     HStack {
-                                        Text(LocalizedStringKey("Subtotal"))
+                                        Text("subtotal_label")
                                             .font(AppFont.body)
                                             .foregroundStyle(Color.textMuted)
                                         Spacer()
@@ -133,7 +133,7 @@ struct CartView: View {
                                     
                                     if cartViewModel.deliveryFee > 0 {
                                         HStack {
-                                            Text(LocalizedStringKey("Delivery Fee"))
+                                            Text("delivery_fee_label")
                                                 .font(AppFont.body)
                                                 .foregroundStyle(Color.textMuted)
                                             Spacer()
@@ -145,7 +145,7 @@ struct CartView: View {
                                     
                                     if cartViewModel.summary.discount > 0 {
                                         HStack {
-                                            Text(LocalizedStringKey("Discount"))
+                                            Text("discount_label")
                                                 .font(AppFont.body)
                                                 .foregroundStyle(Color.semanticSuccess)
                                             Spacer()
@@ -174,7 +174,7 @@ struct CartView: View {
                     // MARK: Total & Checkout
                     VStack(alignment: .leading, spacing: AppLayout.spacing) {
                         HStack(spacing: 0) {
-                            Text(LocalizedStringKey("TOTAL"))
+                            Text("total_label")
                                 .font(AppFont.totalLabel)
                                 .lineLimit(1)
                                 .foregroundStyle(Color.textInk)
@@ -189,7 +189,7 @@ struct CartView: View {
                         Button {
                             showingCheckout = true
                         } label: {
-                            Text(LocalizedStringKey("Checkout"))
+                            Text("checkout_button")
                                 .font(AppFont.monoCTA)
                                 .foregroundStyle(Color.backgroundPaper)
                                 .padding(.vertical, 12)
@@ -290,14 +290,14 @@ struct CartItemRow: View {
                 }
                 
                 if let notes = item.customization.notes, !notes.isEmpty {
-                    Text("Note: \(notes)")
+                    Text("note_prefix \(notes)")
                         .font(AppFont.uiMicro)
                         .italic()
                         .foregroundStyle(Color.textMuted)
                 }
                 
                 Button { onEdit() } label: {
-                    Text("Edit")
+                    Text("edit_button")
                         .font(AppFont.uiMicro)
                         .foregroundStyle(Color.primaryEspresso)
                 }
@@ -367,16 +367,16 @@ struct EmptyCartView: View {
         VStack(spacing: AppLayout.spacingXL) {
             Spacer()
             
-            Text("Your Cart is Empty")
+            Text("cart_empty_title")
                 .font(AppFont.displayTitle)
                 .foregroundColor(Color.textInk)
             
-            Text("Start adding products to see them here.")
+            Text("cart_empty_message")
                 .font(AppFont.body)
                 .foregroundColor(Color.textMuted)
             
             Button { onBrowse() } label: {
-                Text("Browse Menu")
+                Text("browse_menu_button")
                     .font(AppFont.monoCTA)
                     .foregroundStyle(Color.backgroundPaper)
                     .padding(.horizontal, 32)
@@ -399,13 +399,13 @@ struct VoucherSection: View {
     
     var body: some View {
         VStack(alignment: .leading, spacing: AppLayout.spacing) {
-            Text("Voucher")
+            Text("voucher_section_title")
                 .textCase(.uppercase)
                 .font(AppFont.sectionHeader)
                 .foregroundStyle(Color.textInk)
             
             HStack(spacing: AppLayout.spacingMedium) {
-                TextField("Promotion Code", text: $code)
+                TextField("promotion_code_placeholder", text: $code)
                     .textFieldStyle(PlainTextFieldStyle())
                     .font(AppFont.monoBody)
                     .padding(.horizontal, 8)
@@ -421,7 +421,7 @@ struct VoucherSection: View {
                         code = ""
                     }
                 } label: {
-                    Text("Apply")
+                    Text("apply_button")
                         .font(AppFont.monoBody)
                         .foregroundStyle(Color.backgroundPaper)
                         .padding(.horizontal, 16)
@@ -460,14 +460,14 @@ struct EditCartItemSheet: View {
                 // Header
                 HStack {
                     Button { dismiss() } label: {
-                        Text("Cancel")
+                        Text("cancel_button")
                             .font(AppFont.body)
                             .foregroundStyle(Color.textMuted)
                     }
                     
                     Spacer()
                     
-                    Text("Update Item")
+                    Text("item_update_title")
                         .font(AppFont.sectionHeader)
                         .foregroundStyle(Color.textInk)
                     
@@ -480,7 +480,7 @@ struct EditCartItemSheet: View {
                         onSave(newItem)
                         dismiss()
                     } label: {
-                        Text("Save")
+                        Text("save_button")
                             .font(AppFont.body)
                             .foregroundStyle(Color.primaryEspresso)
                     }
@@ -526,7 +526,7 @@ struct EditCartItemSheet: View {
                         
                         // Size Option
                         VStack(alignment: .leading, spacing: AppLayout.spacingMedium) {
-                            Text("Size")
+                            Text("size_section_title")
                                 .textCase(.uppercase)
                                 .font(AppFont.sectionHeader)
                                 .foregroundStyle(Color.textInk)
@@ -553,12 +553,12 @@ struct EditCartItemSheet: View {
                         
                         // Notes
                         VStack(alignment: .leading, spacing: AppLayout.spacingMedium) {
-                            Text("Notes")
+                            Text("notes_section_title")
                                 .textCase(.uppercase)
                                 .font(AppFont.sectionHeader)
                                 .foregroundStyle(Color.textInk)
                             
-                            TextField("Special instructions...", text: $notes)
+                            TextField("notes_placeholder", text: $notes)
                                 .textFieldStyle(PlainTextFieldStyle())
                                 .font(AppFont.body)
                                 .padding(.horizontal, 8)

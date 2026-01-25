@@ -105,9 +105,9 @@ struct CartSummary: Sendable {
     let remainingForMinimum: Double
     
     var breakdown: [(String, Double, Bool)] {
-        var items: [(String, Double, Bool)] = [("Subtotal", subtotal, false)]
-        if deliveryFee > 0 { items.append(("Delivery", deliveryFee, false)) }
-        if discount > 0 { items.append(("Discount", -discount, true)) }
+        var items: [(String, Double, Bool)] = [(String(localized: "cart_summary_subtotal"), subtotal, false)]
+        if deliveryFee > 0 { items.append((String(localized: "cart_summary_delivery"), deliveryFee, false)) }
+        if discount > 0 { items.append((String(localized: "cart_summary_discount"), -discount, true)) }
         return items
     }
 }
@@ -223,9 +223,9 @@ struct Voucher: Codable, Identifiable, Sendable {
     
     var displayValue: String {
         switch discountType {
-        case .percentage: return "\(Int(discountValue))% OFF"
-        case .fixed, .discount: return discountValue.formattedVND + " OFF"
-        case .freeDelivery: return "Free Delivery"
+        case .percentage: return String(localized: "voucher_discount_percentage \(Int(discountValue))")
+        case .fixed, .discount: return String(localized: "voucher_discount_off \(discountValue.formattedVND)")
+        case .freeDelivery: return String(localized: "voucher_free_delivery")
         }
     }
     

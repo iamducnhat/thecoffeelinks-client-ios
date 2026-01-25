@@ -16,7 +16,7 @@ struct EditorialBookingSheet: View {
                 VStack(alignment: .leading, spacing: AppLayout.spacingXL) {
                     // Date & Time
                     VStack(alignment: .leading, spacing: AppLayout.spacing) {
-                        Text("Date & Time")
+                        Text(String(localized: "space_date_time_label"))
                             .font(AppFont.sectionHeader)
                             .foregroundStyle(Color.textInk)
 
@@ -57,7 +57,7 @@ struct EditorialBookingSheet: View {
 
                     // Preferences
                     VStack(alignment: .leading, spacing: AppLayout.spacing) {
-                        Text("Preferences")
+                        Text(String(localized: "space_preferences_label"))
                             .font(AppFont.sectionHeader)
                             .foregroundStyle(Color.textInk)
 
@@ -71,7 +71,7 @@ struct EditorialBookingSheet: View {
                         // Logic to save booking
                         isPresented = false
                     } label: {
-                        Text("Confirm Booking")
+                        Text(String(localized: "space_confirm_booking"))
                             .font(AppFont.monoCTA)
                             .foregroundStyle(Color.backgroundPaper)
                             .padding(.vertical, 12)
@@ -84,11 +84,11 @@ struct EditorialBookingSheet: View {
                 .padding(.vertical, 24)
             }
             .background(Color.backgroundPaper.ignoresSafeArea())
-            .navigationTitle("Book Space")
+            .navigationTitle(String(localized: "space_book_space"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("Cancel") { isPresented = false }
+                    Button(String(localized: "common_cancel")) { isPresented = false }
                         .foregroundColor(Color.textInk)
                 }
             }
@@ -121,7 +121,7 @@ struct EditorialQRCheckInView: View {
                 }
                 .padding()
 
-                Text("Scan Table QR")
+                Text(String(localized: "space_scan_qr"))
                     .font(AppFont.displayTitle)
                     .foregroundStyle(.white)
 
@@ -136,7 +136,7 @@ struct EditorialQRCheckInView: View {
                             Image(systemName: "qrcode.viewfinder")
                                 .font(.system(size: 48))
                                 .foregroundStyle(.white.opacity(0.5))
-                            Text("Camera Preview")
+                            Text(String(localized: "space_camera_preview"))
                                 .font(AppFont.body)
                                 .foregroundStyle(.white.opacity(0.8))
                         }
@@ -144,7 +144,7 @@ struct EditorialQRCheckInView: View {
 
                 Spacer()
 
-                Text("Align the QR code within the frame to check in")
+                Text(String(localized: "qr_scan_instruction"))
                     .font(AppFont.body)
                     .foregroundStyle(.white.opacity(0.8))
                     .multilineTextAlignment(.center)

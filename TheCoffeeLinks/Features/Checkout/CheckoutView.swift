@@ -40,9 +40,9 @@ struct CheckoutView: View {
     
     private var locationDisplayString: String {
         if cartViewModel.cart.mode == .delivery {
-            return deliveryViewModel.selectedAddress?.shortAddress ?? "Select Delivery Address"
+            return deliveryViewModel.selectedAddress?.shortAddress ?? String(localized: "select_delivery_address")
         } else {
-            return storeViewModel.selectedStore?.name ?? "Select Store"
+            return storeViewModel.selectedStore?.name ?? String(localized: "select_store")
         }
     }
     
@@ -96,7 +96,7 @@ struct CheckoutView: View {
                             }
                     }
                     
-                    Text("Checkout")
+                    Text("checkout_title")
                         .font(AppFont.displayTitle)
                         .lineLimit(1)
                         .foregroundColor(Color.textInk)
@@ -142,7 +142,7 @@ struct CheckoutView: View {
                             // MARK: Order Type Section
                             VStack(alignment: .leading, spacing: AppLayout.spacing) {
                                 HStack {
-                                    Text("Order type")
+                                    Text("order_type_section")
                                         .textCase(.uppercase)
                                         .font(AppFont.sectionHeader)
                                         .foregroundColor(Color.textInk)
@@ -183,7 +183,7 @@ struct CheckoutView: View {
                                 } label: {
                                     HStack {
                                         VStack(alignment: .leading, spacing: 2) {
-                                            Text(cartViewModel.cart.mode == .delivery ? "DELIVERY ADDRESS" : "STORE LOCATION")
+                                            Text(cartViewModel.cart.mode == .delivery ? "delivery_address_header" : "store_location_header")
                                                 .font(AppFont.uiMicro)
                                                 .foregroundStyle(Color.textMuted)
                                             
@@ -320,12 +320,12 @@ struct CheckoutView: View {
                             
                             // MARK: Voucher Section
                             VStack(alignment: .leading, spacing: AppLayout.spacing) {
-                                Text("Voucher")
+                                Text("voucher_section_title")
                                     .textCase(.uppercase)
                                     .font(AppFont.sectionHeader)
                                     .foregroundColor(Color.textInk)
                                 
-                                TextField("Promotion Code", text: $voucherCode)
+                                TextField("promotion_code_placeholder", text: $voucherCode)
                                     .textFieldStyle(PlainTextFieldStyle())
                                     .font(AppFont.monoBody)
                                     .padding(.horizontal, 8)
@@ -341,23 +341,23 @@ struct CheckoutView: View {
                             
                             // MARK: Redeem Points Section
                             VStack(alignment: .leading, spacing: AppLayout.spacing) {
-                                Text("Redeem Point")
+                                Text("redeem_point_section")
                                     .textCase(.uppercase)
                                     .font(AppFont.sectionHeader)
                                     .foregroundColor(Color.textInk)
                                 
                                 let points = authViewModel.currentUser?.points ?? 0
                                 (
-                                    Text("You have \(points) points. 1 point = 1000₫. ")
+                                    Text("points_balance_info \(points)")
                                         .foregroundColor(Color.textMuted)
                                     +
-                                    Text("How to get more points?")
+                                    Text("points_info_link")
                                         .underline(pattern: .dot)
                                         .foregroundColor(Color.primaryEspresso)
                                 )
                                 .font(AppFont.body)
                                 
-                                TextField("Enter points to redeem", text: $redeemPoints)
+                                TextField("redeem_points_placeholder", text: $redeemPoints)
                                     .textFieldStyle(PlainTextFieldStyle())
                                     .font(AppFont.monoBody)
                                     .keyboardType(.numberPad)
@@ -374,7 +374,7 @@ struct CheckoutView: View {
                             
                             // MARK: Payment Method Section
                             VStack(alignment: .leading, spacing: AppLayout.spacing) {
-                                Text("Payment Method")
+                                Text("payment_method_section")
                                     .textCase(.uppercase)
                                     .font(AppFont.sectionHeader)
                                     .foregroundColor(Color.textInk)
@@ -458,7 +458,7 @@ struct CheckoutView: View {
                     // MARK: Total & Confirmation
                     VStack(alignment: .leading, spacing: AppLayout.spacing) {
                         HStack(spacing: 0) {
-                            Text("TOTAL")
+                            Text("total_label")
                                 .font(AppFont.totalLabel)
                                 .lineLimit(1)
                                 .foregroundColor(Color.textInk)
@@ -473,7 +473,7 @@ struct CheckoutView: View {
                         Button {
                             placeOrder()
                         } label: {
-                            Text(checkoutViewModel.isPlacingOrder ? "Placing order..." : "Place Order")
+                            Text(checkoutViewModel.isPlacingOrder ? "placing_order_state" : "place_order_button")
                                 .font(AppFont.monoCTA)
                                 .foregroundColor(Color.backgroundPaper)
                                 .padding(.vertical, 12)
@@ -558,16 +558,16 @@ struct CheckoutView: View {
     }
     
     private func placeOrder() {
-        orderLog = ["Connecting to server..."]
+        orderLog = [String(localized: "status_connecting")]
         orderError = nil
         
         Task {
-            orderLog.append("Creating order...")
+            orderLog.append(String(localized: "status_creating_order"))
             
             _ = await checkoutViewModel.placeOrder(cart: cartViewModel.cart)
             
             if checkoutViewModel.showingPaymentWebView {
-                orderLog.append("Opening payment gateway...")
+                orderLog.append(String(localized: "status_opening_gateway"))
             } else if let order = checkoutViewModel.orderPlaced {
                 handleOrderSuccess(order)
             } else if let error = checkoutViewModel.error {
@@ -578,8 +578,8 @@ struct CheckoutView: View {
     }
     
     private func handleOrderSuccess(_ order: Order) {
-        orderLog.append("Order #\(order.id.prefix(8)) created successfully!")
-        orderLog.append("✓ Order confirmed!")
+        orderLog.append(String(localized: "status_success_format \(order.id.prefix(8))"))
+        orderLog.append(String(localized: "status_confirmed"))
         cartViewModel.clearCart()
         DependencyContainer.shared.hapticManager.playSuccess()
         showSuccess = true
@@ -611,11 +611,11 @@ struct CheckoutEmptyState: View {
     
     var body: some View {
         VStack(spacing: AppLayout.spacingXL) {
-            Text("Cart is empty")
+            Text("cart_empty_title")
                 .font(AppFont.displayTitle)
                 .foregroundColor(Color.textInk)
             
-            Text("Your cart is empty. Please add some items before checking out.")
+            Text("cart_empty_message_checkout")
                 .font(AppFont.body)
                 .foregroundColor(Color.textMuted)
                 .multilineTextAlignment(.center)
@@ -624,7 +624,7 @@ struct CheckoutEmptyState: View {
             Button {
                 dismiss()
             } label: {
-                Text("Return to Menu")
+                Text("return_to_menu_button")
                     .font(AppFont.monoCTA)
                     .foregroundColor(Color.backgroundPaper)
                     .padding(.vertical, 12)

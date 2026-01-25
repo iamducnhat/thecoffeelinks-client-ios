@@ -7,7 +7,7 @@ struct AppButton: View {
         case destructive
     }
     
-    let title: String
+    let title: LocalizedStringKey
     let icon: String?
     let style: Style
     let isLoading: Bool
@@ -15,7 +15,7 @@ struct AppButton: View {
     let action: () -> Void
     
     init(
-        _ title: String,
+        _ title: LocalizedStringKey,
         icon: String? = nil,
         style: Style = .primary,
         isLoading: Bool = false,
@@ -28,6 +28,17 @@ struct AppButton: View {
         self.isLoading = isLoading
         self.isDisabled = isDisabled
         self.action = action
+    }
+
+    init(
+        _ title: String,
+        icon: String? = nil,
+        style: Style = .primary,
+        isLoading: Bool = false,
+        isDisabled: Bool = false,
+        action: @escaping () -> Void
+    ) {
+        self.init(LocalizedStringKey(title), icon: icon, style: style, isLoading: isLoading, isDisabled: isDisabled, action: action)
     }
     
     var body: some View {
@@ -102,12 +113,26 @@ struct ScaleButtonStyle: ButtonStyle {
 
 struct AppButton_Previews: PreviewProvider {
     static var previews: some View {
-        VStack(spacing: 20) {
-            AppButton("Checkout • $15.50", style: .primary) {}
-            AppButton("Browse Menu", style: .secondary) {}
-            AppButton("Logout", icon: "arrow.right.square", style: .destructive) {}
+        Group {
+            VStack(spacing: 20) {
+                AppButton("Checkout", style: .primary) {}
+                AppButton("Browse Menu", style: .secondary) {}
+                AppButton("Sign out", icon: "arrow.right.square", style: .destructive) {}
+            }
+            .padding()
+            .previewLayout(.sizeThatFits)
+            .previewDisplayName("English")
+            .environment(\.locale, .init(identifier: "en"))
+            
+            VStack(spacing: 20) {
+                AppButton("Checkout", style: .primary) {}
+                AppButton("Browse Menu", style: .secondary) {}
+                AppButton("Sign out", icon: "arrow.right.square", style: .destructive) {}
+            }
+            .padding()
+            .previewLayout(.sizeThatFits)
+            .previewDisplayName("Vietnamese")
+            .environment(\.locale, .init(identifier: "vi"))
         }
-        .padding()
-        .previewLayout(.sizeThatFits)
     }
 }

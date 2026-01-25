@@ -32,7 +32,7 @@ struct ConnectView: View {
                 ScrollView(.vertical) {
                     // Header
                     VStack(alignment: .leading, spacing: AppLayout.spacing) {
-                        Text("Connect")
+                        Text(String(localized: "network_connect_action"))
                             .font(AppFont.displayTitle)
                             .foregroundColor(Color.textInk)
                             .padding(.top, AppLayout.spacing)
@@ -129,11 +129,11 @@ struct ConnectView: View {
                                     )
                                 } else {
                                     VStack(spacing: AppLayout.spacing) {
-                                        Text("No one nearby")
+                                        Text(String(localized: "network_nearby_empty"))
                                             .font(AppFont.sectionHeader)
                                             .foregroundStyle(Color.textInk)
                                         
-                                        Text("Be the first to check in!")
+                                        Text(String(localized: "network_nearby_prompt"))
                                             .font(AppFont.body)
                                             .foregroundStyle(Color.textMuted)
                                     }
@@ -162,7 +162,7 @@ struct ConnectView: View {
                                 Button {
                                     showingStoreSelector = true
                                 } label: {
-                                    Text("Check In")
+                                    Text(String(localized: "network_check_in_action"))
                                         .font(AppFont.monoCTA)
                                         .foregroundStyle(Color.backgroundPaper)
                                         .padding(.horizontal, 48)
@@ -337,7 +337,7 @@ struct CheckInSheet: View {
             VStack(spacing: 0) {
                 // Header
                 HStack {
-                    Text("Check In")
+                    Text(String(localized: "network_check_in_action"))
                         .font(AppFont.displayTitle)
                         .foregroundStyle(Color.textInk)
                     
@@ -357,7 +357,7 @@ struct CheckInSheet: View {
                     LazyVStack(alignment: .leading, spacing: AppLayout.spacingXL) {
                         // Location
                         VStack(alignment: .leading, spacing: AppLayout.spacing) {
-                            Text("Location")
+                            Text(String(localized: "common_location"))
                                 .textCase(.uppercase)
                                 .font(AppFont.sectionHeader)
                                 .foregroundStyle(Color.textInk)
@@ -613,7 +613,7 @@ struct UserProfileSheet: View {
                                     Button {
                                         showingMessageInput = false
                                     } label: {
-                                        Text("Cancel")
+                                        Text(String(localized: "common_cancel"))
                                             .font(AppFont.monoBody)
                                             .foregroundStyle(Color.textMuted)
                                             .padding(.vertical, 12)

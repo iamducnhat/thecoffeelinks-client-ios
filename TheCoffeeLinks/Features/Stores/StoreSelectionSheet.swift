@@ -26,14 +26,14 @@ struct StoreSelectionSheet: View {
                 // Header
                 HStack {
                     Button { dismiss() } label: {
-                        Text("Cancel")
+                        Text(String(localized: "common_cancel"))
                             .font(AppFont.body)
                             .foregroundStyle(Color.textMuted)
                     }
                     
                     Spacer()
                     
-                    Text("Select Store")
+                    Text(String(localized: "store_selection_title"))
                         .font(AppFont.displayTitle)
                         .foregroundStyle(Color.textInk)
                     
@@ -74,7 +74,7 @@ struct StoreSelectionSheet: View {
                         Image(systemName: "mappin.slash")
                             .font(.system(size: 32))
                             .foregroundStyle(Color.textMuted)
-                        Text("No stores found")
+                        Text(String(localized: "stores_empty_search"))
                             .font(AppFont.body)
                             .foregroundStyle(Color.textMuted)
                     }

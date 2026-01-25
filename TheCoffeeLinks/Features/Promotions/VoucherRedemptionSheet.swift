@@ -37,7 +37,7 @@ struct VoucherRedemptionSheet: View {
                 HStack {
                     Spacer()
                     
-                    Text("Redeem Voucher")
+                    Text(String(localized: "voucher_redeem_title"))
                         .font(AppFont.sectionHeader)
                         .foregroundStyle(Color.textInk)
                     
@@ -91,7 +91,7 @@ struct VoucherRedemptionSheet: View {
                                     Image(systemName: "exclamationmark.triangle")
                                         .font(.largeTitle)
                                         .foregroundColor(.red)
-                                    Text("Failed to load QR")
+                                    Text(String(localized: "voucher_qr_error"))
                                         .font(AppFont.uiCaption)
                                     if let err = fetchError {
                                         Text(err)
@@ -100,7 +100,7 @@ struct VoucherRedemptionSheet: View {
                                             .multilineTextAlignment(.center)
                                             .padding(.horizontal)
                                     }
-                                    Button("Retry") {
+                                    Button(String(localized: "common_retry")) {
                                         Task { await fetchSignedQR() }
                                     }
                                     .buttonStyle(.bordered)
@@ -118,7 +118,7 @@ struct VoucherRedemptionSheet: View {
                         
                         // 4. Voucher Code (Copyable)
                         VStack(spacing: AppLayout.spacingSmall) {
-                            Text("VOUCHER CODE")
+                            Text(String(localized: "voucher_code_label"))
                                 .font(AppFont.uiMicro)
                                 .textCase(.uppercase)
                                 .foregroundStyle(Color.textMuted)
@@ -146,7 +146,7 @@ struct VoucherRedemptionSheet: View {
                                     HStack(spacing: 4) {
                                         Image(systemName: hasCopied ? "checkmark.circle.fill" : "doc.on.doc")
                                         if hasCopied {
-                                            Text("Copied")
+                                            Text(String(localized: "common_copied"))
                                                 .font(AppFont.uiMicro)
                                         }
                                     }

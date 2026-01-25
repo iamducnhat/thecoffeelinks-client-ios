@@ -178,7 +178,7 @@ struct StoreDetailSheet: View {
                     Button {
                         showBooking = true
                     } label: {
-                        Text("Book a Table")
+                        Text(String(localized: "space_book_table"))
                             .font(AppFont.monoCTA)
                             .foregroundStyle(Color.backgroundPaper)
                             .padding(.vertical, 12)
@@ -190,7 +190,7 @@ struct StoreDetailSheet: View {
                     Button {
                         storeViewModel.selectedStore = nil
                     } label: {
-                        Text("Close")
+                        Text(String(localized: "common_close"))
                             .font(AppFont.monoBody)
                             .foregroundStyle(Color.textMuted)
                             .padding(.vertical, 12)

@@ -20,7 +20,7 @@ struct DeliveryAddressSheet: View {
                 // Header
                 HStack {
                     Button { dismiss() } label: {
-                        Text("Close")
+                        Text(String(localized: "common_close"))
                             .font(AppFont.body)
                             .foregroundStyle(Color.textMuted)
                     }
@@ -149,7 +149,7 @@ struct AddressCard: View {
         .buttonStyle(.plain)
         .contextMenu {
             Button(role: .destructive, action: onDelete) {
-                Label("Delete", systemImage: "trash")
+                Label(String(localized: "common_delete"), systemImage: "trash")
             }
         }
     }

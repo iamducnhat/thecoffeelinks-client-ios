@@ -19,7 +19,7 @@ struct CartMonitor: View {
             appState.showCheckout = true
         } label: {
             HStack(spacing: AppLayout.spacingSmall) {
-                Text("\(cartViewModel.itemCount) item\(cartViewModel.itemCount == 1 ? "" : "s")")
+                Text("common_item_count_format \(cartViewModel.itemCount)")
                     .font(AppFont.body)
                 
                 Spacer()

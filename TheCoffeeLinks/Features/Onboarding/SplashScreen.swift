@@ -26,11 +26,11 @@ struct SplashScreen: View {
                     .foregroundStyle(Color.primaryEspresso)
                 
                 VStack(spacing: AppLayout.spacing) {
-                    Text("The Coffee Links")
+                    Text(String(localized: "app_name"))
                         .font(AppFont.displayTitle)
                         .foregroundStyle(Color.textInk)
                     
-                    Text("Your daily ritual, perfected")
+                    Text(String(localized: "splash_tagline"))
                         .font(AppFont.body)
                         .foregroundStyle(Color.textMuted)
                 }

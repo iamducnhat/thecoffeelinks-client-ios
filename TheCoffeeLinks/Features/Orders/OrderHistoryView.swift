@@ -41,7 +41,7 @@ struct OrderHistoryView: View {
                         .frame(minWidth: AppLayout.touchTarget, minHeight: AppLayout.touchTarget)
                 }
                 
-                Text("History")
+                Text(String(localized: "history_title"))
                     .font(AppFont.displayTitle)
                     .lineLimit(1)
                     .foregroundStyle(Color.textInk)
@@ -63,11 +63,11 @@ struct OrderHistoryView: View {
                     
                     if history.isEmpty {
                         VStack(spacing: AppLayout.spacing) {
-                            Text("No orders yet")
+                            Text(String(localized: "orders_empty_generic"))
                                 .font(AppFont.sectionHeader)
                                 .foregroundStyle(Color.textInk)
                             
-                            Text("When you place an order, it will appear here.")
+                            Text(String(localized: "orders_empty_description"))
                                 .font(AppFont.uiCaption)
                                 .foregroundStyle(Color.textMuted)
                                 .multilineTextAlignment(.center)

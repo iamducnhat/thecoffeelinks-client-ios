@@ -43,7 +43,7 @@ struct FavoritesView: View {
                         }
                 }
                 
-                Text("Favorites")
+                Text("favorites_title")
                     .font(AppFont.displayTitle)
                     .lineLimit(1)
                     .foregroundStyle(Color.textInk)
@@ -65,7 +65,7 @@ struct FavoritesView: View {
                             .frame(minWidth: AppLayout.touchTarget, minHeight: AppLayout.touchTarget)
                             .hidden()
                         
-                        Text("Favorites")
+                        Text("favorites_title")
                             .font(AppFont.displayTitle)
                             .lineLimit(1)
                             .foregroundStyle(Color.textInk)
@@ -90,11 +90,11 @@ struct FavoritesView: View {
                             .padding(AppLayout.spacing)
                     } else if viewModel.favorites.isEmpty {
                         VStack(spacing: AppLayout.spacing) {
-                            Text("No favorites yet")
+                            Text("favorites_empty_title")
                                 .font(AppFont.sectionHeader)
                                 .foregroundStyle(Color.textInk)
                             
-                            Text("Save your favorite drinks for quick reordering")
+                            Text("favorites_empty_message")
                                 .font(AppFont.body)
                                 .foregroundStyle(Color.textMuted)
                                 .multilineTextAlignment(.center)
@@ -116,7 +116,7 @@ struct FavoritesView: View {
                                     Button(role: .destructive) {
                                         Task { await viewModel.removeFavorite(id: favorite.id) }
                                     } label: {
-                                        Label("Delete", systemImage: "trash")
+                                        Label(String(localized: "common_delete"), systemImage: "trash")
                                     }
                                 }
                             }
@@ -199,7 +199,7 @@ struct FavoriteItemRow: View {
                                 .foregroundStyle(Color.primaryEspresso)
                             
                             if favorite.orderCount > 0 {
-                                Text("• Ordered \(favorite.orderCount)x")
+                                Text(String(localized: "favorite_ordered_count_format \(favorite.orderCount)"))
                                     .font(AppFont.uiMicro)
                                     .foregroundStyle(Color.textMuted)
                             }

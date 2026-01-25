@@ -172,7 +172,14 @@ struct User: Codable, Identifiable, Hashable, Sendable {
 enum MembershipTier: String, Codable, CaseIterable, Sendable {
     case bronze, silver, gold, platinum
     
-    var displayName: String { rawValue.capitalized }
+    var displayName: String {
+        switch self {
+        case .bronze: return String(localized: "tier_bronze")
+        case .silver: return String(localized: "tier_silver")
+        case .gold: return String(localized: "tier_gold")
+        case .platinum: return String(localized: "tier_platinum")
+        }
+    }
     
     var pointsMultiplier: Double {
         switch self {
@@ -237,17 +244,17 @@ enum PresenceMode: String, Codable, CaseIterable, Sendable {
     
     var displayName: String {
         switch self {
-        case .private: return "Private"
-        case .friends: return "Friends Only"
-        case .public: return "Public"
+        case .private: return String(localized: "presence_mode_private")
+        case .friends: return String(localized: "presence_mode_friends")
+        case .public: return String(localized: "presence_mode_public")
         }
     }
     
     var description: String {
         switch self {
-        case .private: return "Your presence is hidden from everyone"
-        case .friends: return "Only friends can see when you're at a store"
-        case .public: return "Anyone at the store can see you're there"
+        case .private: return String(localized: "presence_desc_private")
+        case .friends: return String(localized: "presence_desc_friends")
+        case .public: return String(localized: "presence_desc_public")
         }
     }
     

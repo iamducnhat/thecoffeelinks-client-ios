@@ -13,7 +13,7 @@ struct OrderTrackingCard: View {
     // Derived UI State
     var isDelivery: Bool { order.mode == .delivery }
     
-    var statusTitle: String {
+    var statusTitle: LocalizedStringKey {
         switch order.status {
         case .pending: return "Action Required"
         case .placed: return "Order Received"
@@ -26,7 +26,7 @@ struct OrderTrackingCard: View {
         }
     }
     
-    var statusSubtitle: String {
+    var statusSubtitle: LocalizedStringKey {
         switch order.status {
         case .pending: return "Payment verification needed"
         case .placed: return "Waiting for store acknowledgment"
@@ -177,7 +177,7 @@ struct OrderTrackingCard: View {
                             onResumePayment?()
                         } label: {
                             HStack(spacing: 4) {
-                                Text("COMPLETE PAYMENT")
+                                Text(String(localized: "order_complete_payment_action"))
                                 Image(systemName: "creditcard.fill")
                             }
                             .font(AppFont.monoCaption)

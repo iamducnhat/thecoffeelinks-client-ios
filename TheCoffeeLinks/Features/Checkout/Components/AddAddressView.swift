@@ -24,7 +24,7 @@ struct AddAddressView: View {
                 // Header
                 HStack {
                     Button { dismiss() } label: {
-                        Text("Cancel")
+                        Text(String(localized: "common_cancel"))
                             .font(AppFont.body)
                             .foregroundStyle(Color.textMuted)
                     }
@@ -47,7 +47,7 @@ struct AddAddressView: View {
                         if deliveryViewModel.isLoading {
                             ProgressView().tint(Color.primaryEspresso)
                         } else {
-                            Text("Save")
+                            Text(String(localized: "common_save"))
                                 .font(AppFont.headline)
                                 .foregroundStyle(deliveryViewModel.canSaveAddress ? Color.primaryEspresso : Color.textMuted)
                         }
@@ -63,7 +63,7 @@ struct AddAddressView: View {
                         
                         // Map / Location Section
                         VStack(alignment: .leading, spacing: AppLayout.spacing) {
-                            Text("Location")
+                            Text(String(localized: "common_location"))
                                 .font(AppFont.sectionHeader)
                                 .foregroundStyle(Color.textInk)
                             
@@ -122,7 +122,7 @@ struct AddAddressView: View {
                         
                         // Details Form
                         VStack(alignment: .leading, spacing: AppLayout.spacing) {
-                            Text("Details")
+                            Text(String(localized: "order_detail_details"))
                                 .font(AppFont.sectionHeader)
                                 .foregroundStyle(Color.textInk)
                             

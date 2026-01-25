@@ -24,7 +24,7 @@ struct PromotionsView: View {
                 ScrollView(.vertical) {
                     // Header
                     VStack(alignment: .leading, spacing: AppLayout.spacing) {
-                        Text("Promotions")
+                        Text(String(localized: "promotions_title"))
                             .font(AppFont.displayTitle)
                             .foregroundColor(Color.textInk)
                             .padding(.top, AppLayout.spacing)
@@ -97,11 +97,11 @@ struct PromotionsView: View {
                 .font(.system(size: 48))
                 .foregroundStyle(Color.textMuted)
             
-            Text("Sign in to access promotions")
+            Text(String(localized: "promo_sign_in_title"))
                 .font(AppFont.sectionHeader)
                 .foregroundStyle(Color.textInk)
             
-            Text("Join our membership program to earn points, redeem vouchers, and get exclusive offers.")
+            Text(String(localized: "promo_sign_in_desc"))
                 .font(AppFont.body)
                 .foregroundStyle(Color.textMuted)
                 .multilineTextAlignment(.center)
@@ -109,7 +109,7 @@ struct PromotionsView: View {
             Button {
                 showLogin = true
             } label: {
-                Text("Sign in or Join")
+                Text(String(localized: "auth_sign_in_or_join"))
                     .font(AppFont.monoCTA)
                     .foregroundStyle(Color.backgroundPaper)
                     .padding(.vertical, 12)

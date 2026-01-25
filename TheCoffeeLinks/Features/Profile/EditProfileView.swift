@@ -24,7 +24,7 @@ struct EditProfileView: View {
             VStack(spacing: 0) {
                 // Header
                 HStack {
-                    Button("Cancel") {
+                    Button(String(localized: "common_cancel")) {
                         dismiss()
                     }
                     .font(AppFont.body)
@@ -32,13 +32,13 @@ struct EditProfileView: View {
                     
                     Spacer()
                     
-                    Text("Edit Profile")
+                    Text(String(localized: "profile_edit_title"))
                         .font(AppFont.sectionHeader)
                         .foregroundStyle(Color.textInk)
                     
                     Spacer()
                     
-                    Button("Save") {
+                    Button(String(localized: "common_save")) {
                         saveProfile()
                     }
                     .font(AppFont.body)
@@ -54,7 +54,7 @@ struct EditProfileView: View {
                     VStack(spacing: AppLayout.spacingXL) {
                         // Section 1: Basic Info
                         VStack(alignment: .leading, spacing: AppLayout.spacing) {
-                            Text("PUBLIC PROFILE")
+                            Text(String(localized: "profile_public_label"))
                                 .font(AppFont.uiCaption)
                                 .foregroundStyle(Color.textMuted)
                                 .padding(.horizontal, AppLayout.spacingCompact)

@@ -40,9 +40,9 @@ enum PresenceStatus: String, Codable, CaseIterable, Sendable {
     
     var displayName: String {
         switch self {
-        case .available: return "Available"
-        case .focused: return "Focused"
-        case .away: return "Away"
+        case .available: return String(localized: "status_available")
+        case .focused: return String(localized: "status_focused")
+        case .away: return String(localized: "status_away")
         }
     }
     
@@ -68,15 +68,15 @@ enum ConnectionMode: String, Codable, CaseIterable, Sendable {
     
     var displayName: String {
         switch self {
-        case .open: return "Open to Connect"
-        case .focus: return "Focus Mode"
+        case .open: return String(localized: "connection_mode_open")
+        case .focus: return String(localized: "connection_mode_focus")
         }
     }
     
     var description: String {
         switch self {
-        case .open: return "Visible to other coffee enthusiasts"
-        case .focus: return "Working quietly, not open to chat"
+        case .open: return String(localized: "connection_desc_open")
+        case .focus: return String(localized: "connection_desc_focus")
         }
     }
 }
@@ -209,11 +209,11 @@ enum ReportReason: String, Codable, CaseIterable, Sendable {
     
     var displayName: String {
         switch self {
-        case .harassment: return "Harassment or Bullying"
-        case .spam: return "Spam"
-        case .inappropriate: return "Inappropriate Content"
-        case .impersonation: return "Impersonation"
-        case .other: return "Other"
+        case .harassment: return String(localized: "report_reason_harassment")
+        case .spam: return String(localized: "report_reason_spam")
+        case .inappropriate: return String(localized: "report_reason_inappropriate")
+        case .impersonation: return String(localized: "report_reason_impersonation")
+        case .other: return String(localized: "report_reason_other")
         }
     }
 }

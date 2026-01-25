@@ -48,11 +48,11 @@ class AppState: ObservableObject {
     var topIntent: String? {
         switch userActivity {
         case .activeOrder(_, let status):
-            return "Order \(status)"
+            return String(localized: "intent_order_status_format \(status)")
         case .checkedIn(let location):
-            return "You are at \(location)"
+            return String(localized: "intent_checked_in_format \(location)")
         case .idle:
-            return timeMode == .morning ? "Morning Fuel" : nil
+            return timeMode == .morning ? String(localized: "intent_morning_fuel") : nil
         default:
             return nil
         }

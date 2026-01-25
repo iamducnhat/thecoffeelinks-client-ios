@@ -42,7 +42,7 @@ struct SearchView: View {
                         }
                 }
                 
-                Text("Search")
+                Text(String(localized: "common_search"))
                     .font(AppFont.displayTitle)
                     .lineLimit(1)
                     .foregroundStyle(Color.textInk)
@@ -64,7 +64,7 @@ struct SearchView: View {
                             .frame(minWidth: AppLayout.touchTarget, minHeight: AppLayout.touchTarget)
                             .hidden()
                         
-                        Text("Search")
+                        Text(String(localized: "common_search"))
                             .font(AppFont.displayTitle)
                             .lineLimit(1)
                             .foregroundStyle(Color.textInk)
@@ -118,7 +118,7 @@ struct SearchView: View {
                         // Recent Searches
                         if !viewModel.recentSearches.isEmpty {
                             VStack(alignment: .leading, spacing: AppLayout.spacing) {
-                                Text("Recent")
+                                Text(String(localized: "common_recent"))
                                     .textCase(.uppercase)
                                     .font(AppFont.sectionHeader)
                                     .foregroundStyle(Color.textInk)
@@ -165,11 +165,11 @@ struct SearchView: View {
                                 .padding(AppLayout.spacing)
                         } else if viewModel.searchResults.isEmpty {
                             VStack(spacing: AppLayout.spacing) {
-                                Text("No results found")
+                                Text(String(localized: "search_empty_title"))
                                     .font(AppFont.sectionHeader)
                                     .foregroundStyle(Color.textInk)
                                 
-                                Text("Try searching for something else")
+                                Text(String(localized: "search_empty_desc"))
                                     .font(AppFont.body)
                                     .foregroundStyle(Color.textMuted)
                             }

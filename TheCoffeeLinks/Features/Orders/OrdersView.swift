@@ -36,7 +36,7 @@ struct OrdersView: View {
                         }
                 }
                 
-                Text("Orders")
+                Text("orders_title")
                     .font(AppFont.displayTitle)
                     .lineLimit(1)
                     .foregroundStyle(Color.textInk)
@@ -58,7 +58,7 @@ struct OrdersView: View {
                             .frame(minWidth: AppLayout.touchTarget, minHeight: AppLayout.touchTarget)
                             .hidden()
                         
-                        Text("Orders")
+                        Text("orders_title")
                             .font(AppFont.displayTitle)
                             .lineLimit(1)
                             .foregroundStyle(Color.textInk)
@@ -81,10 +81,10 @@ struct OrdersView: View {
                     LazyVStack(spacing: AppLayout.spacing) {
                         // Tab Selector
                         HStack(spacing: 0) {
-                            OrderTabButton(title: "ACTIVE", isSelected: selectedTab == 0) {
+                            OrderTabButton(title: String(localized: "orders_tab_active"), isSelected: selectedTab == 0) {
                                 selectedTab = 0
                             }
-                            OrderTabButton(title: "PAST", isSelected: selectedTab == 1) {
+                            OrderTabButton(title: String(localized: "orders_tab_history"), isSelected: selectedTab == 1) {
                                 selectedTab = 1
                             }
                         }
@@ -97,7 +97,7 @@ struct OrdersView: View {
                         if viewModel.isLoading {
                             VStack(alignment: .leading, spacing: 8) {
                                 ForEach(0..<5, id: \.self) { i in
-                                    Text("> Fetching order \(i+1)...")
+                                    Text(String(localized: "order_fetching_status \(i+1)"))
                                         .font(AppFont.uiMicro)
                                         .foregroundStyle(Color.primaryEspresso)
                                 }
@@ -113,10 +113,10 @@ struct OrdersView: View {
                             let orders = selectedTab == 0 ? viewModel.activeOrders : viewModel.historyOrders
                             if orders.isEmpty {
                                 VStack(spacing: AppLayout.spacing) {
-                                    Text("No orders")
+                                    Text("orders_empty_title")
                                         .font(AppFont.sectionHeader)
                                         .foregroundStyle(Color.textInk)
-                                    Text("No matching records found.")
+                                    Text("orders_empty_message")
                                         .font(AppFont.body)
                                         .foregroundStyle(Color.textMuted)
                                 }
@@ -177,7 +177,7 @@ struct OrderRow: View {
     var body: some View {
         VStack(alignment: .leading, spacing: AppLayout.spacingMedium) {
             HStack {
-                Text("Order #\(order.id.prefix(8).uppercased())")
+                Text(String(localized: "order_number_format \(order.id.prefix(8).uppercased())"))
                     .font(AppFont.monoBody.bold())
                     .foregroundStyle(Color.textInk)
                 Spacer()
@@ -188,7 +188,7 @@ struct OrderRow: View {
             
             HStack {
                 VStack(alignment: .leading, spacing: 2) {
-                    Text("Placed on \(order.createdAt.formatted(.dateTime.month().day().hour().minute()))")
+                    Text(String(localized: "order_placed_on_format \(order.createdAt.formatted(.dateTime.month().day().hour().minute()))"))
                         .font(AppFont.uiMicro)
                     Text(order.status.displayName.uppercased())
                         .font(AppFont.monoBody)

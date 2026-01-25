@@ -80,7 +80,7 @@ struct OrderDetailView: View {
                     LazyVStack(spacing: AppLayout.spacingXL) {
                         // Status Section
                         VStack(alignment: .leading, spacing: AppLayout.spacing) {
-                            Text("Status")
+                            Text(String(localized: "order_detail_status"))
                                 .textCase(.uppercase)
                                 .font(AppFont.sectionHeader)
                                 .foregroundStyle(Color.textInk)
@@ -119,7 +119,7 @@ struct OrderDetailView: View {
                         // Progress Bar (if active)
                         if order.status != .completed && order.status != .cancelled {
                             VStack(alignment: .leading, spacing: AppLayout.spacing) {
-                                Text("Progress")
+                                Text(String(localized: "order_detail_progress"))
                                     .textCase(.uppercase)
                                     .font(AppFont.sectionHeader)
                                     .foregroundStyle(Color.textInk)
@@ -137,7 +137,7 @@ struct OrderDetailView: View {
                         
                         // Items Section
                         VStack(alignment: .leading, spacing: AppLayout.spacing) {
-                            Text("Items")
+                            Text(String(localized: "order_detail_items"))
                                 .textCase(.uppercase)
                                 .font(AppFont.sectionHeader)
                                 .foregroundStyle(Color.textInk)
@@ -174,7 +174,7 @@ struct OrderDetailView: View {
                         
                         // Order Details
                         VStack(alignment: .leading, spacing: AppLayout.spacing) {
-                            Text("Details")
+                            Text(String(localized: "order_detail_details"))
                                 .textCase(.uppercase)
                                 .font(AppFont.sectionHeader)
                                 .foregroundStyle(Color.textInk)

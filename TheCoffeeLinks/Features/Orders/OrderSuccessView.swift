@@ -42,11 +42,11 @@ struct OrderSuccessView: View {
                 if showDone {
                     VStack(alignment: .leading, spacing: AppLayout.spacingXL) {
                         VStack(alignment: .leading, spacing: AppLayout.spacing) {
-                            Text("Order Received")
+                            Text(String(localized: "order_success_title"))
                                 .font(AppFont.displayTitle)
                                 .foregroundStyle(Color.textInk)
                             
-                            Text("Your order has been successfully placed. We'll notify you when it's ready.")
+                            Text(String(localized: "order_success_message"))
                                 .font(AppFont.body)
                                 .foregroundStyle(Color.textMuted)
                         }
@@ -55,7 +55,7 @@ struct OrderSuccessView: View {
                         Button {
                             onDismiss()
                         } label: {
-                            Text("Done")
+                            Text(String(localized: "common_done"))
                                 .font(AppFont.monoCTA)
                                 .foregroundStyle(Color.backgroundPaper)
                                 .padding(.vertical, 12)

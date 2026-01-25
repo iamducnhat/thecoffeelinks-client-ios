@@ -37,12 +37,12 @@ struct DeliveryModeBanner: View {
                                     .font(AppFont.uiCaption)
                                     .foregroundStyle(Color.textMuted)
                             } else {
-                                Text("Select delivery address")
+                                Text(String(localized: "delivery_select_address"))
                                     .font(AppFont.uiCaption)
                                     .foregroundStyle(Color.semanticError)
                             }
                         } else {
-                            Text("Store pickup")
+                            Text(String(localized: "delivery_pickup_option"))
                                 .font(AppFont.uiCaption)
                                 .foregroundStyle(Color.textMuted)
                         }
@@ -74,7 +74,7 @@ struct DeliveryModeBanner: View {
                         ProgressView()
                             .controlSize(.small)
                             .tint(Color.primaryEspresso)
-                        Text("Checking availability...")
+                        Text(String(localized: "delivery_checking_status"))
                             .font(AppFont.uiMicro)
                             .foregroundStyle(Color.textMuted)
                     }
@@ -128,7 +128,7 @@ struct DeliveryInfoCard: View {
                 HStack(spacing: 4) {
                     Image(systemName: "bicycle")
                         .foregroundStyle(Color.semanticSuccess)
-                    Text("Delivery available")
+                    Text(String(localized: "delivery_available_label"))
                         .font(AppFont.uiCaption)
                         .foregroundStyle(Color.semanticSuccess)
                 }
@@ -142,7 +142,7 @@ struct DeliveryInfoCard: View {
             
             if let fee = availability.fee {
                 HStack {
-                    Text("Fee")
+                    Text(String(localized: "delivery_fee_label"))
                         .font(AppFont.uiMicro)
                         .foregroundStyle(Color.textMuted)
                     Spacer()
@@ -154,7 +154,7 @@ struct DeliveryInfoCard: View {
             
             if let minOrder = availability.minOrderAmount {
                 HStack {
-                    Text("Min. Order")
+                    Text(String(localized: "delivery_min_order_label"))
                         .font(AppFont.uiMicro)
                         .foregroundStyle(Color.textMuted)
                     Spacer()
@@ -189,14 +189,14 @@ struct OrderingModeSheet: View {
                 // Header
                 HStack {
                     Button { dismiss() } label: {
-                        Text("Cancel")
+                        Text(String(localized: "common_cancel"))
                             .font(AppFont.body)
                             .foregroundStyle(Color.textMuted)
                     }
                     
                     Spacer()
                     
-                    Text("Order Type")
+                    Text(String(localized: "delivery_order_type_label"))
                         .font(AppFont.displayTitle)
                         .foregroundStyle(Color.textInk)
                     
@@ -210,7 +210,7 @@ struct OrderingModeSheet: View {
                 
                 ScrollView {
                     VStack(spacing: AppLayout.spacing) {
-                        Text("How would you like your order?")
+                        Text(String(localized: "delivery_mode_prompt"))
                             .font(AppFont.sectionHeader)
                             .foregroundStyle(Color.textInk)
                             .padding(.top, AppLayout.spacing)

@@ -135,11 +135,11 @@ struct DeliveryAvailability: Codable, Sendable {
         
         var message: String {
             switch self {
-            case .outOfZone: return "This address is outside our delivery area"
-            case .storeClosed: return "The store is currently closed"
-            case .tooFar: return "This address is too far for delivery"
-            case .noDrivers: return "No delivery drivers available right now"
-            case .temporarilyUnavailable: return "Delivery is temporarily unavailable"
+            case .outOfZone: return String(localized: "delivery_unavailable_out_of_zone")
+            case .storeClosed: return String(localized: "delivery_unavailable_store_closed")
+            case .tooFar: return String(localized: "delivery_unavailable_too_far")
+            case .noDrivers: return String(localized: "delivery_unavailable_no_drivers")
+            case .temporarilyUnavailable: return String(localized: "delivery_unavailable_temp_unavailable")
             }
         }
     }
@@ -167,8 +167,8 @@ struct DeliveryFee: Codable, Sendable {
     var displayAmount: String { amount.formattedVND }
     
     var breakdown: [(String, Double)] {
-        var items: [(String, Double)] = [("Base fee", baseFee), ("Distance", distanceFee)]
-        if let surge = surgeFee, surge > 0 { items.append(("Peak time surcharge", surge)) }
+        var items: [(String, Double)] = [(String(localized: "delivery_fee_base"), baseFee), (String(localized: "delivery_fee_distance"), distanceFee)]
+        if let surge = surgeFee, surge > 0 { items.append((String(localized: "delivery_fee_surge"), surge)) }
         return items
     }
 }
@@ -192,7 +192,7 @@ struct DeliveryETA: Codable, Sendable {
         case calculatedAt = "calculated_at"
     }
     
-    var displayRange: String { "\(minMinutes)-\(maxMinutes) min" }
+    var displayRange: String { String(localized: "eta_range_format \(minMinutes) \(maxMinutes)") }
     
     var estimatedArrival: Date {
         Calendar.current.date(byAdding: .minute, value: minutes, to: calculatedAt) ?? calculatedAt
@@ -201,7 +201,7 @@ struct DeliveryETA: Codable, Sendable {
     var estimatedArrivalDisplay: String {
         let formatter = DateFormatter()
         formatter.timeStyle = .short
-        return "by \(formatter.string(from: estimatedArrival))"
+        return String(localized: "eta_arrival_format \(formatter.string(from: estimatedArrival))")
     }
 }
 
@@ -259,12 +259,12 @@ enum DeliveryTrackingStatus: String, Codable, Sendable {
     
     var displayName: String {
         switch self {
-        case .assigned: return "Driver Assigned"
-        case .pickedUp: return "Order Picked Up"
-        case .enRoute: return "On the Way"
-        case .nearBy: return "Almost There"
-        case .arrived: return "Driver Arrived"
-        case .delivered: return "Delivered"
+        case .assigned: return String(localized: "tracking_status_assigned")
+        case .pickedUp: return String(localized: "tracking_status_picked_up")
+        case .enRoute: return String(localized: "tracking_status_en_route")
+        case .nearBy: return String(localized: "tracking_status_near_by")
+        case .arrived: return String(localized: "tracking_status_arrived")
+        case .delivered: return String(localized: "tracking_status_delivered")
         }
     }
 }

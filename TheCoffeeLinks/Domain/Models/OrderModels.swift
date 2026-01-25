@@ -21,14 +21,14 @@ enum OrderStatus: String, Codable, CaseIterable, Sendable {
     
     var displayName: String {
         switch self {
-        case .pending: return "Pending"
-        case .placed: return "Order Placed"
-        case .received: return "Order Received"
-        case .preparing: return "Preparing"
-        case .ready: return "Ready"
-        case .delivering: return "On the Way"
-        case .completed: return "Completed"
-        case .cancelled: return "Cancelled"
+        case .pending: return String(localized: "order_status_pending")
+        case .placed: return String(localized: "order_status_placed")
+        case .received: return String(localized: "order_status_received")
+        case .preparing: return String(localized: "order_status_preparing")
+        case .ready: return String(localized: "order_status_ready")
+        case .delivering: return String(localized: "order_status_delivering")
+        case .completed: return String(localized: "order_status_completed")
+        case .cancelled: return String(localized: "order_status_cancelled")
         }
     }
     
@@ -51,9 +51,9 @@ enum OrderingMode: String, Codable, CaseIterable, Sendable {
     
     var displayName: String {
         switch self {
-        case .pickup: return "Pickup"
-        case .dineIn: return "Dine In"
-        case .delivery: return "Delivery"
+        case .pickup: return String(localized: "ordering_mode_pickup")
+        case .dineIn: return String(localized: "ordering_mode_dine_in")
+        case .delivery: return String(localized: "ordering_mode_delivery")
         }
     }
     
@@ -85,11 +85,11 @@ enum PaymentMethod: String, Codable, CaseIterable, Sendable {
     
     var displayName: String {
         switch self {
-        case .applePay: return "Apple Pay"
-        case .cash: return "Cash"
-        case .card: return "Card"
-        case .momo: return "MoMo"
-        case .zalopay: return "ZaloPay"
+        case .applePay: return String(localized: "payment_method_apple_pay")
+        case .cash: return String(localized: "payment_method_cash")
+        case .card: return String(localized: "payment_method_card")
+        case .momo: return String(localized: "payment_method_momo")
+        case .zalopay: return String(localized: "payment_method_zalopay")
         }
     }
     
@@ -218,7 +218,7 @@ struct OrderCustomization: Codable, Hashable, Sendable {
         var parts: [String] = [size.displayName]
         if let sugar = sugar { parts.append(sugar.displayName) }
         if let ice = ice { parts.append(ice.displayName) }
-        if !toppings.isEmpty { parts.append("+\(toppings.count) toppings") }
+        if !toppings.isEmpty { parts.append(String(localized: "customization_toppings_count \(toppings.count)")) }
         return parts.joined(separator: " • ")
     }
     
@@ -236,9 +236,9 @@ enum ProductSize: String, Codable, CaseIterable, Sendable {
     
     var displayName: String {
         switch self {
-        case .small: return "Small"
-        case .medium: return "Medium"
-        case .large: return "Large"
+        case .small: return String(localized: "size_small")
+        case .medium: return String(localized: "size_medium")
+        case .large: return String(localized: "size_large")
         }
     }
 }
@@ -252,7 +252,15 @@ enum SugarLevel: String, Codable, CaseIterable, Sendable {
     case threeQuarter = "75%"
     case full = "100%"
     
-    var displayName: String { rawValue + " Sugar" }
+    var displayName: String {
+        switch self {
+        case .none: return String(localized: "sugar_level_suffix 0%")
+        case .quarter: return String(localized: "sugar_level_suffix 25%")
+        case .half: return String(localized: "sugar_level_suffix 50%")
+        case .threeQuarter: return String(localized: "sugar_level_suffix 75%")
+        case .full: return String(localized: "sugar_level_suffix 100%")
+        }
+    }
 }
 
 // MARK: - Ice Level
@@ -265,10 +273,10 @@ enum IceLevel: String, Codable, CaseIterable, Sendable {
     
     var displayName: String {
         switch self {
-        case .none: return "No Ice"
-        case .less: return "Less Ice"
-        case .normal: return "Normal Ice"
-        case .extra: return "Extra Ice"
+        case .none: return String(localized: "ice_level_no")
+        case .less: return String(localized: "ice_level_less")
+        case .normal: return String(localized: "ice_level_normal")
+        case .extra: return String(localized: "ice_level_extra")
         }
     }
 }

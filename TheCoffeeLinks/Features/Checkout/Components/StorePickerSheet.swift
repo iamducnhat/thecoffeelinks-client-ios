@@ -24,21 +24,21 @@ struct StorePickerSheet: View {
                 // Header
                 HStack {
                     Button { dismiss() } label: {
-                        Text("Close")
+                        Text(String(localized: "common_close"))
                             .font(AppFont.body)
                             .foregroundStyle(Color.textMuted)
                     }
                     
                     Spacer()
                     
-                    Text("Select Store")
+                    Text(String(localized: "store_selection_title"))
                         .font(AppFont.displayTitle)
                         .foregroundStyle(Color.textInk)
                     
                     Spacer()
                     
                     // Invisible spacer for balance
-                    Text("Close").font(AppFont.body).hidden()
+                    Text(String(localized: "common_close")).font(AppFont.body).hidden()
                 }
                 .padding(AppLayout.spacing)
                 

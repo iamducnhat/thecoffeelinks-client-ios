@@ -47,12 +47,12 @@ struct LoginView: View {
                         
                         // Title Section
                         VStack(alignment: .leading, spacing: 12) {
-                            Text(authViewModel.authState == .otpSent ? "Check your texts" : "What's your number?")
+                            Text(authViewModel.authState == .otpSent ? "login_title_otp_sent" : "login_title_phone_input")
                                 .font(AppFont.displayTitle)
                                 .foregroundStyle(Color.textInk)
                                 .fixedSize(horizontal: false, vertical: true)
                             
-                            Text(authViewModel.authState == .otpSent ? "We sent a code to \(authViewModel.phoneNumber)" : "We'll text you a code to verify your account.")
+                            Text(authViewModel.authState == .otpSent ? String(localized: "login_message_otp_sent \(authViewModel.phoneNumber)") : String(localized: "login_message_phone_input"))
                                 .font(AppFont.body)
                                 .foregroundStyle(Color.textMuted)
                                 .fixedSize(horizontal: false, vertical: true)
@@ -90,9 +90,9 @@ struct LoginView: View {
             set: { show in if !show { authViewModel.authState = .idle } }
         )) {
             Alert(
-                title: Text("Something went wrong"),
+                title: Text("error_dialog_title"),
                 message: Text(authViewModel.error ?? "Please try again."),
-                dismissButton: .default(Text("OK")) {
+                dismissButton: .default(Text("btn_ok")) {
                     authViewModel.error = nil
                     // Stay on current state to allow retry
                      if authViewModel.otpCode.isEmpty {
@@ -142,7 +142,7 @@ struct LoginView: View {
                     if authViewModel.isLoading {
                         ProgressView().tint(.white)
                     } else {
-                        Text("Continue")
+                        Text("btn_continue")
                             .font(AppFont.monoCTA)
                             .foregroundStyle(.white)
                     }
@@ -205,7 +205,7 @@ struct LoginView: View {
             if authViewModel.isLoading {
                 HStack {
                     ProgressView().tint(Color.primaryEspresso)
-                    Text("Verifying...")
+                    Text("status_verifying")
                          .font(AppFont.body)
                          .foregroundStyle(Color.textMuted)
                 }
@@ -214,7 +214,7 @@ struct LoginView: View {
             
             // Resend / Edit
             HStack {
-                Button("Wrong number?") {
+                Button("btn_wrong_number") {
                     authViewModel.authState = .idle
                     authViewModel.otpCode = ""
                 }
@@ -223,7 +223,7 @@ struct LoginView: View {
                 
                 Spacer()
                 
-                Button("Resend Code") {
+                Button("btn_resend_code") {
                     let digits = authViewModel.phoneNumber.filter { $0.isNumber }
                     authViewModel.sendOTP(phoneNumber: digits)
                 }
@@ -236,7 +236,7 @@ struct LoginView: View {
                 let digits = authViewModel.phoneNumber.filter { $0.isNumber }
                 authViewModel.bypassOTP(phoneNumber: digits)
             } label: {
-                    Text("Dev: Skip (Bypass)")
+                    Text("dev_skip_bypass")
                     .font(AppFont.uiCaption)
                     .foregroundStyle(Color.semanticError)
                     .padding(.top, 20)
