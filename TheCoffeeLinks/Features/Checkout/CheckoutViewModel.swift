@@ -44,7 +44,7 @@ final class CheckoutViewModel: ObservableObject {
         self.hapticService = hapticService
     }
     
-    func placeOrder(cart: Cart) async -> Order? {
+    func placeOrder(cart: Cart, pointsToRedeem: Int? = nil, voucherCode: String? = nil) async -> Order? {
         guard !cart.isEmpty, let storeId = cart.storeId else {
             error = CheckoutError.noStoreSelected
             return nil
@@ -53,10 +53,16 @@ final class CheckoutViewModel: ObservableObject {
         isPlacingOrder = true; error = nil
         
         do {
+            // Priority: Argument > Cart > nil
+            let finalVoucherCode = voucherCode?.isEmpty == false ? voucherCode : cart.voucherCode
+            
             let request = CreateOrderRequest(
                 storeId: storeId, mode: cart.mode, paymentMethod: paymentMethod,
                 items: cart.items.map { CreateOrderItemRequest(productId: $0.product.id, productName: $0.product.name, quantity: $0.quantity, finalPrice: $0.unitPrice, customization: $0.customization) },
-                tableId: cart.tableId, deliveryAddressId: cart.deliveryAddressId, deliveryNotes: cart.staffNotes, staffNotes: nil, voucherCode: cart.voucherCode, totalAmount: cart.subtotal
+                tableId: cart.tableId, deliveryAddressId: cart.deliveryAddressId, deliveryNotes: cart.staffNotes, staffNotes: nil, 
+                voucherCode: finalVoucherCode, 
+                pointsToRedeem: pointsToRedeem,
+                totalAmount: cart.subtotal
             )
             
             let order = try await orderRepository.createOrder(request)

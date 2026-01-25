@@ -304,6 +304,7 @@ struct CreateOrderRequest: Codable, Sendable {
     let deliveryNotes: String?
     let staffNotes: String?
     let voucherCode: String?
+    let pointsToRedeem: Int?
     let totalAmount: Double
     
     enum CodingKeys: String, CodingKey {
@@ -319,6 +320,7 @@ struct CreateOrderRequest: Codable, Sendable {
         case deliveryNotes = "delivery_notes"
         case staffNotes = "staff_notes"
         case voucherCode = "voucher_code"
+        case pointsToRedeem = "points_to_redeem"
         case totalAmount = "total_amount"
     }
 }

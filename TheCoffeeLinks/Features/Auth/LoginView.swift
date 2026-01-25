@@ -159,7 +159,7 @@ struct LoginView: View {
             HStack(spacing: 6) {
                 Image(systemName: "lock.fill")
                     .font(.caption)
-                Text("Your info is securely handled.")
+                Text("login_security_note")
                     .font(AppFont.uiCaption)
             }
             .foregroundStyle(Color.textMuted)

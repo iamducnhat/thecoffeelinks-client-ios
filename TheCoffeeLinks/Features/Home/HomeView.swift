@@ -37,6 +37,8 @@ struct HomeView: View {
                         HStack {
                             VStack(alignment: .leading, spacing: 4) {
                                 Text(String(localized: "home_hello_user \(authViewModel.currentUser?.displayName ?? String(localized: "guest_name"))"))
+                                    .font(AppFont.headline)
+                                    .foregroundStyle(Color.primaryEspresso)
                                 
                                 Text(LocalizedStringKey("The Coffee Links")) // Brand name, keep or use app_name
                                     .font(AppFont.displayTitle)

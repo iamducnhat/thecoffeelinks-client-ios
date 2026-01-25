@@ -564,7 +564,8 @@ struct CheckoutView: View {
         Task {
             orderLog.append(String(localized: "status_creating_order"))
             
-            _ = await checkoutViewModel.placeOrder(cart: cartViewModel.cart)
+            let points = Int(redeemPoints)
+            _ = await checkoutViewModel.placeOrder(cart: cartViewModel.cart, pointsToRedeem: points, voucherCode: voucherCode)
             
             if checkoutViewModel.showingPaymentWebView {
                 orderLog.append(String(localized: "status_opening_gateway"))
