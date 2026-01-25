@@ -66,6 +66,11 @@ struct OrderHistoryView: View {
                             Text("No orders yet")
                                 .font(AppFont.sectionHeader)
                                 .foregroundStyle(Color.textInk)
+                            
+                            Text("When you place an order, it will appear here.")
+                                .font(AppFont.uiCaption)
+                                .foregroundStyle(Color.textMuted)
+                                .multilineTextAlignment(.center)
                         }
                         .frame(maxWidth: .infinity)
                         .padding(60)

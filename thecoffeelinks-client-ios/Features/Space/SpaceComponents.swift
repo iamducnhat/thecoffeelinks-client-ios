@@ -4,41 +4,45 @@ import SwiftUI
 struct EditorialBookingSheet: View {
     let store: Store
     @Binding var isPresented: Bool
-    
+
     @State private var selectedDate = Date()
-    @State private var selectedDirecton = 60.0 // minutes
+    @State private var selectedDuration = 60.0 // minutes
     @State private var numberOfPeople = 1
     @State private var needsPower = false
-    
+
     var body: some View {
         NavigationView {
             ScrollView {
-                VStack(spacing: Editorial.Spacing.lg) {
+                VStack(alignment: .leading, spacing: AppLayout.spacingXL) {
                     // Date & Time
-                    VStack(alignment: .leading, spacing: Editorial.Spacing.sm) {
+                    VStack(alignment: .leading, spacing: AppLayout.spacing) {
                         Text("Date & Time")
-                            .font(Editorial.subheading())
-                            .foregroundStyle(Editorial.Colors.textPrimary)
-                        
+                            .font(AppFont.sectionHeader)
+                            .foregroundStyle(Color.textInk)
+
                         DatePicker("", selection: $selectedDate, in: Date()...)
                             .datePickerStyle(.graphical)
-                            .background(Color.white)
-                            .overlay(RoundedRectangle(cornerRadius: 4).stroke(Color.border, lineWidth: 1))
+                            .background(Color.backgroundPaper)
+                            .clipShape(RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle))
+                            .overlay(
+                                RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle)
+                                    .stroke(Color.border, lineWidth: 1)
+                            )
                     }
-                    
+
                     // Duration & People
-                    VStack(spacing: Editorial.Spacing.md) {
+                    VStack(spacing: AppLayout.spacing) {
                         EditorialStepperRow(
                             title: "Duration",
-                            value: "\(Int(selectedDirecton)) min",
+                            value: "\(Int(selectedDuration)) min",
                             onDecrement: {
-                                if selectedDirecton > 30 { selectedDirecton -= 30 }
+                                if selectedDuration > 30 { selectedDuration -= 30 }
                             },
                             onIncrement: {
-                                if selectedDirecton < 480 { selectedDirecton += 30 }
+                                if selectedDuration < 480 { selectedDuration += 30 }
                             }
                         )
-                        
+
                         EditorialStepperRow(
                             title: "People",
                             value: "\(numberOfPeople)",
@@ -50,34 +54,42 @@ struct EditorialBookingSheet: View {
                             }
                         )
                     }
-                    
+
                     // Preferences
-                    VStack(alignment: .leading, spacing: Editorial.Spacing.sm) {
+                    VStack(alignment: .leading, spacing: AppLayout.spacing) {
                         Text("Preferences")
-                            .font(Editorial.subheading())
-                            .foregroundStyle(Editorial.Colors.textSecondary)
-                        
+                            .font(AppFont.sectionHeader)
+                            .foregroundStyle(Color.textInk)
+
                         EditorialToggleRow(title: "Need Power Outlet", isOn: $needsPower)
                     }
-                    
-                    Spacer(minLength: Editorial.Spacing.lg)
-                    
+
+                    Spacer(minLength: AppLayout.spacingXL)
+
                     // Confirm Button
-                    EditorialButton(title: "Confirm Booking") {
+                    Button {
                         // Logic to save booking
                         isPresented = false
+                    } label: {
+                        Text("Confirm Booking")
+                            .font(AppFont.monoCTA)
+                            .foregroundStyle(Color.backgroundPaper)
+                            .padding(.vertical, 12)
+                            .frame(maxWidth: .infinity)
+                            .background(Color.accentColor)
+                            .clipShape(RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle))
                     }
                 }
-                .editorialPadding()
+                .padding(AppLayout.spacing)
                 .padding(.vertical, 24)
             }
-            .editorialBackground()
+            .background(Color.backgroundPaper.ignoresSafeArea())
             .navigationTitle("Book Space")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Cancel") { isPresented = false }
-                        .foregroundColor(.textInk)
+                        .foregroundColor(Color.textInk)
                 }
             }
         }
@@ -87,12 +99,12 @@ struct EditorialBookingSheet: View {
 // MARK: - Editorial QR Check-In View
 struct EditorialQRCheckInView: View {
     @Environment(\.dismiss) var dismiss
-    
+
     var body: some View {
         ZStack {
             Color.black.ignoresSafeArea()
-            
-            VStack(spacing: Editorial.Spacing.xl) {
+
+            VStack(spacing: AppLayout.spacingXL) {
                 // Header
                 HStack {
                     Spacer()
@@ -108,32 +120,32 @@ struct EditorialQRCheckInView: View {
                     }
                 }
                 .padding()
-                
+
                 Text("Scan Table QR")
-                    .font(Editorial.title())
+                    .font(AppFont.displayTitle)
                     .foregroundStyle(.white)
-                
+
                 Spacer()
-                
+
                 // Scanner Frame (Sharp)
                 Rectangle()
                     .stroke(Color.white, style: StrokeStyle(lineWidth: 4, dash: [20]))
                     .frame(width: 280, height: 280)
                     .overlay(
-                        VStack(spacing: Editorial.Spacing.md) {
+                        VStack(spacing: AppLayout.spacing) {
                             Image(systemName: "qrcode.viewfinder")
                                 .font(.system(size: 48))
                                 .foregroundStyle(.white.opacity(0.5))
                             Text("Camera Preview")
-                                .font(Editorial.body())
+                                .font(AppFont.body)
                                 .foregroundStyle(.white.opacity(0.8))
                         }
                     )
-                
+
                 Spacer()
-                
+
                 Text("Align the QR code within the frame to check in")
-                    .font(Editorial.body())
+                    .font(AppFont.body)
                     .foregroundStyle(.white.opacity(0.8))
                     .multilineTextAlignment(.center)
                     .padding(.bottom, 40)

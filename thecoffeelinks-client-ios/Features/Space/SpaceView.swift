@@ -149,11 +149,27 @@ struct StoreDetailSheet: View {
                         .font(AppFont.body)
                         .foregroundStyle(Color.textMuted)
                     
-                    // Stats
-                    HStack(spacing: AppLayout.spacing) {
-                        StoreStat(title: "Status", value: store.isCurrentlyOpen ? "Open" : "Closed", color: store.isCurrentlyOpen ? Color.semanticSuccess : Color.semanticError)
-                        StoreStat(title: "Noise", value: "Quiet", color: Color.primaryEspresso)
-                        StoreStat(title: "Tables", value: "5 Free", color: Color.primaryEspresso)
+                    // Amenities (if available)
+                    if let amenities = store.amenities, !amenities.isEmpty {
+                        ScrollView(.horizontal, showsIndicators: false) {
+                            HStack(spacing: AppLayout.spacingSmall) {
+                                ForEach(amenities.prefix(3), id: \.self) { amenity in
+                                    HStack(spacing: 4) {
+                                        Image(systemName: amenity.iconName)
+                                            .font(.system(size: 12))
+                                            .foregroundStyle(Color.primaryEspresso)
+                                        Text(amenity.displayName)
+                                            .font(AppFont.uiMicro)
+                                            .foregroundStyle(Color.textInk)
+                                    }
+                                    .padding(.horizontal, 8)
+                                    .padding(.vertical, 4)
+                                    .background(Color.surfaceCard)
+                                    .clipShape(RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle))
+                                }
+                            }
+                            .padding(.horizontal, -AppLayout.spacing)
+                        }
                     }
                     
                     Color.secondary.frame(height: 1)
@@ -190,33 +206,9 @@ struct StoreDetailSheet: View {
         }
         .background(Color.backgroundPaper)
         .clipShape(RoundedCorner(radius: 16, corners: [.topLeft, .topRight]))
-    }
-}
-
-// MARK: - Store Stat
-
-struct StoreStat: View {
-    let title: String
-    let value: String
-    let color: Color
-    
-    var body: some View {
-        VStack(spacing: 4) {
-            Text(value)
-                .font(AppFont.monoBody)
-                .foregroundStyle(color)
-            Text(title)
-                .font(AppFont.uiMicro)
-                .foregroundStyle(Color.textMuted)
+        .sheet(isPresented: $showBooking) {
+            EditorialBookingSheet(store: store, isPresented: $showBooking)
         }
-        .frame(maxWidth: .infinity)
-        .padding(AppLayout.spacingMedium)
-        .background(Color.surfaceCard)
-        .overlay(
-            RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle)
-                .stroke(Color.border, lineWidth: 1)
-        )
-        .clipShape(RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle))
     }
 }
 

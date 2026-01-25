@@ -51,8 +51,8 @@ struct AddressMapPickerView: View {
                 
                 Button {
                     selectedLocation = region.center
-                    // Reverse geocode mock
-                    addressString = "\(String(format: "%.4f", region.center.latitude)), \(String(format: "%.4f", region.center.longitude))"
+                    // TODO: Implement proper reverse geocoding to convert coordinates to readable address
+                    addressString = "Selected location (\(String(format: "%.2f", region.center.latitude)), \(String(format: "%.2f", region.center.longitude)))"
                     dismiss()
                 } label: {
                     Text("Confirm Location")

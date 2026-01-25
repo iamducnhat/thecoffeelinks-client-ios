@@ -40,15 +40,17 @@ struct StoreMapView: View {
                     selectedStore = store
                 } label: {
                     VStack(spacing: 0) {
-                        // Label bubble
-                        Text("5m") // Wait time mock logic
-                            .font(AppFont.uiMicro)
-                            .foregroundStyle(Color.backgroundPaper)
-                            .padding(.horizontal, 6)
-                            .padding(.vertical, 2)
-                            .background(Color.primaryEspresso)
-                            .clipShape(Capsule())
-                            .shadow(radius: 2, y: 1)
+                        // Wait time label (if available)
+                        if let waitMinutes = store.currentWaitMinutes {
+                            Text("\(waitMinutes)m")
+                                .font(AppFont.uiMicro)
+                                .foregroundStyle(Color.backgroundPaper)
+                                .padding(.horizontal, 6)
+                                .padding(.vertical, 2)
+                                .background(Color.primaryEspresso)
+                                .clipShape(Capsule())
+                                .shadow(radius: 2, y: 1)
+                        }
                         
                         Image(systemName: "triangle.fill")
                             .resizable()
