@@ -21,7 +21,7 @@ struct SecurityView: View {
                 // Header
                 HStack {
                     Button(action: { dismiss() }) {
-                        Image(systemName: "chevron.left")
+                        Image("chevron.left")
                             .font(AppFont.body)
                             .foregroundStyle(Color.textInk)
                     }
@@ -34,7 +34,7 @@ struct SecurityView: View {
                     
                     Spacer()
                     
-                    Image(systemName: "chevron.left").opacity(0)
+                    Image("chevron.left").opacity(0)
                 }
                 .padding(AppLayout.spacing)
                 

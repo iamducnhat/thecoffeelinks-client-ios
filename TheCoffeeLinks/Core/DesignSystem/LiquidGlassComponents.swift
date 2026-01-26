@@ -72,7 +72,7 @@ struct LiquidGlassButton: View {
         } label: {
             HStack(spacing: 8) {
                 if let icon = icon {
-                    Image(systemName: icon)
+                    Image(icon)
                         .font(.system(size: 16, weight: .semibold))
                 }
                 Text(title)

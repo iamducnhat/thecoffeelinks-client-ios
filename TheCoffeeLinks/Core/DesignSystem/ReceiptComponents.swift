@@ -144,7 +144,7 @@ struct ReceiptHeader: View {
         HStack(alignment: .center, spacing: AppLayout.spacing) {
             if showBackButton {
                 ReceiptIconButton(
-                    icon: "arrow.left",
+                    icon: "arrow_left",
                     showBorder: true,
                     borderOpacity: min(88.8, max(scrollOffset, 0.0)) / 99.9
                 ) {
@@ -246,7 +246,7 @@ struct ReceiptItemRow: View {
                     Rectangle()
                         .fill(Color.textInk.opacity(0.1))
                         .overlay {
-                            Image(systemName: "photo")
+                            Image("photo")
                                 .font(AppFont.productTitle)
                                 .foregroundStyle(Color.textInk)
                         }
@@ -381,7 +381,7 @@ struct ReceiptImagePlaceholder: View {
             .frame(width: size, height: size)
             .cornerRadius(AppLayout.cornerRadius)
             .overlay {
-                Image(systemName: "photo")
+                Image("photo")
                     .font(AppFont.productTitle)
                     .foregroundStyle(Color.textInk)
             }
@@ -531,7 +531,7 @@ struct VoucherCard: View {
             .overlay(
                 VStack {
                     Spacer()
-                    Image(systemName: "ticket.fill")
+                    Image("ticket")
                         .font(.system(size: 40))
                         .foregroundStyle(Color.primaryEspresso.opacity(0.3))
                     Spacer()

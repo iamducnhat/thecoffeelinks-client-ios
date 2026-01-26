@@ -16,7 +16,7 @@ struct FavoritesManagementView: View {
                     }
                     Spacer()
                     Button(action: { /* Quick Order Logic */ }) {
-                        Image(systemName: "cart.badge.plus")
+                        Image("cart.badge.plus")
                             .foregroundColor(Editorial.Colors.primaryEspresso)
                     }
                 }
@@ -68,7 +68,7 @@ struct FavoriteCard: View {
             HStack {
                 Text("$\(String(format: "%.2f", item.product.price))")
                 Spacer()
-                Image(systemName: "heart.fill").foregroundColor(.red)
+                Image("heart").foregroundColor(.red)
             }
         }
         .padding()

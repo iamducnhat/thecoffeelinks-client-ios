@@ -87,7 +87,7 @@ struct OrderTrackingCard: View {
                 
                 if let eta = order.estimatedReadyAt, order.status.isActive {
                     HStack(spacing: 4) {
-                        Image(systemName: "clock")
+                        Image("clock")
                             .font(AppFont.monoCaption)
                         Text("ETA: \(timeString(from: eta))")
                             .font(AppFont.monoHeadline)
@@ -178,7 +178,7 @@ struct OrderTrackingCard: View {
                         } label: {
                             HStack(spacing: 4) {
                                 Text(String(localized: "order_complete_payment_action"))
-                                Image(systemName: "creditcard.fill")
+                                Image("credit_card")
                             }
                             .font(AppFont.monoCaption)
                             .foregroundStyle(Color.backgroundPaper)
@@ -188,7 +188,11 @@ struct OrderTrackingCard: View {
                             .clipShape(RoundedRectangle(cornerRadius: AppLayout.cornerRadius / 2))
                         }
                     } else if order.status.isActive {
-                        Label(isDelivery ? "LIVE TRACKING" : "GET DIRECTIONS", systemImage: isDelivery ? "map.fill" : "location.fill")
+                        Label {
+                            Text(isDelivery ? "LIVE TRACKING" : "GET DIRECTIONS")
+                        } icon: {
+                            Image(isDelivery ? "map" : "map_pin")
+                        }
                             .font(AppFont.monoCaption)
                             .foregroundStyle(Color.primaryEspresso)
                     }

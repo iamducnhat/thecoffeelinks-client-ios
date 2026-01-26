@@ -151,7 +151,7 @@ struct EditorialEmptyState: View {
     
     var body: some View {
         VStack(spacing: Editorial.Spacing.md) {
-            Image(systemName: "square.dashed")
+            Image("square")
                 .font(.system(size: 48))
                 .foregroundStyle(Editorial.Colors.textTertiary)
             
@@ -256,7 +256,7 @@ struct QuantityStepper: View {
                 if quantity > minValue { quantity -= 1 }
                 else if let onDelete = onDelete { onDelete() }
             } label: {
-                Image(systemName: quantity <= minValue && onDelete != nil ? "trash" : "minus")
+                Text("\(Image(systemName: quantity <= minValue && onDelete != nil ? "trash" : "minus"))")
                     .font(.system(size: 14, weight: .semibold))
                     .frame(width: 36, height: 36)
             }
@@ -270,7 +270,7 @@ struct QuantityStepper: View {
             Button {
                 if quantity < maxValue { quantity += 1 }
             } label: {
-                Image(systemName: "plus")
+                Text("\(Image(systemName: "plus"))")
                     .font(.system(size: 14, weight: .semibold))
                     .frame(width: 36, height: 36)
             }

@@ -24,7 +24,7 @@ struct DigitalCredentialContent: View {
                 Spacer()
                 // Refresh Button
                 Button(action: onRefresh) {
-                    Image(systemName: "arrow.clockwise")
+                    Image("arrow.clockwise")
                         .font(.system(size: 16, weight: .medium))
                         .foregroundColor(Color.textMuted)
                 }

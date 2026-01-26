@@ -16,7 +16,7 @@ struct BrandTextField: View {
             
             HStack {
                 if let icon = icon {
-                    Image(systemName: icon)
+                    Image(icon)
                         .foregroundColor(Editorial.Colors.textMuted)
                 }
                 
@@ -44,7 +44,7 @@ struct SearchInput: View {
     
     var body: some View {
         HStack {
-            Image(systemName: "magnifyingglass")
+            Image("magnifyingglass")
                 .foregroundColor(Editorial.Colors.textMuted)
             
             TextField(placeholder, text: $text)
@@ -52,7 +52,7 @@ struct SearchInput: View {
             
             if !text.isEmpty {
                 Button(action: { text = "" }) {
-                    Image(systemName: "xmark.circle.fill")
+                    Image("circle_x")
                         .foregroundColor(Editorial.Colors.textMuted)
                 }
             }

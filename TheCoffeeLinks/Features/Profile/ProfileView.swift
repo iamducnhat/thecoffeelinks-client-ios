@@ -73,10 +73,10 @@ struct ProfileView: View {
                             VStack(spacing: 0) {
                                 if authViewModel.isAuthenticated {
                                     // Order History -> Push
-                                    ProfileRow(title: String(localized: "action_order_history"), icon: "list.bullet.rectangle", destination: OrdersView(isPresentedModally: false))
+                                    ProfileRow(title: String(localized: "action_order_history"), icon: "list", destination: OrdersView(isPresentedModally: false))
                                     Divider()
                                     // Saved Locations -> Push
-                                    ProfileRow(title: String(localized: "action_saved_locations"), icon: "mappin.and.ellipse", destination: SavedLocationsView())
+                                    ProfileRow(title: String(localized: "action_saved_locations"), icon: "map_pin", destination: SavedLocationsView())
                                     Divider()
                                     // My Vouchers -> Switch Tab (Action)
                                     ProfileRow(title: String(localized: "action_my_vouchers"), icon: "ticket") {
@@ -84,9 +84,9 @@ struct ProfileView: View {
                                     }
                                 } else {
                                     // Guest Actions -> Show Login
-                                    ProfileRow(title: "Order history", icon: "list.bullet.rectangle") { showLogin = true }
+                                    ProfileRow(title: "Order history", icon: "list") { showLogin = true }
                                     Divider()
-                                    ProfileRow(title: "Saved locations", icon: "mappin.and.ellipse") { showLogin = true }
+                                    ProfileRow(title: "Saved locations", icon: "map_pin") { showLogin = true }
                                     Divider()
                                     ProfileRow(title: "My vouchers", icon: "ticket") { showLogin = true }
                                 }
@@ -116,9 +116,9 @@ struct ProfileView: View {
                                 
                                 // Security -> Push
                                 if authViewModel.isAuthenticated {
-                                    ProfileRow(title: String(localized: "action_security"), icon: "lock.shield", destination: SecurityView())
+                                    ProfileRow(title: String(localized: "action_security"), icon: "shield", destination: SecurityView())
                                 } else {
-                                    ProfileRow(title: String(localized: "action_security"), icon: "lock.shield") { showLogin = true }
+                                    ProfileRow(title: String(localized: "action_security"), icon: "shield") { showLogin = true }
                                 }
                                 Divider()
                                 
@@ -290,7 +290,7 @@ struct ProfileView: View {
                             .stroke(Color.textInk, lineWidth: 1)
                     )
                 
-                Image(systemName: "person.fill")
+                Image("user")
                     .font(.system(size: 32))
                     .foregroundStyle(Color.textMuted)
             }

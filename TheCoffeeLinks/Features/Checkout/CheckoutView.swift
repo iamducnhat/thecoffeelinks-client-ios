@@ -81,7 +81,7 @@ struct CheckoutView: View {
                 // Fixed Navigation Header
                 HStack(alignment: .center, spacing: AppLayout.spacing) {
                     Button { dismiss() } label: {
-                        Image(systemName: "arrow.left")
+                        Image("arrow.left")
                             .font(AppFont.navIcon)
                             .foregroundStyle(Color.textInk)
                             .frame(minWidth: AppLayout.touchTarget, minHeight: AppLayout.touchTarget)
@@ -112,7 +112,7 @@ struct CheckoutView: View {
                     ScrollView(.vertical) {
                         // Navigation Header (Scrollable)
                         HStack(alignment: .center, spacing: AppLayout.spacing) {
-                            Image(systemName: "arrow.left")
+                            Image("arrow.left")
                                 .font(AppFont.navIcon)
                                 .foregroundStyle(Color.textInk)
                                 .frame(minWidth: AppLayout.touchTarget, minHeight: AppLayout.touchTarget)
@@ -163,7 +163,7 @@ struct CheckoutView: View {
                                             Text(cartViewModel.cart.mode.displayName)
                                                 .textCase(.uppercase)
                                                 .font(AppFont.monoBody)
-                                            Image(systemName: "arrow.left.arrow.right")
+                                            Image("arrow.left.arrow.right")
                                                 .font(AppFont.monoCaption)
                                         }
                                         .padding(AppLayout.spacingMicro)
@@ -195,7 +195,7 @@ struct CheckoutView: View {
                                         
                                         Spacer()
                                         
-                                        Image(systemName: "chevron.right")
+                                        Image("chevron.right")
                                             .font(.system(size: 14))
                                             .foregroundStyle(Color.textMuted)
                                     }
@@ -232,7 +232,7 @@ struct CheckoutView: View {
                                         Rectangle() // CHANGED
                                             .fill(Color.textInk.opacity(0.1)) // CHANGED
                                             .overlay { // CHANGED
-                                                Image(systemName: "photo") // CHANGED
+                                                Image("photo") // CHANGED
                                                     .font(AppFont.productTitle) // CHANGED
                                                     .foregroundStyle(Color.textInk) // CHANGED
                                             } // CHANGED
@@ -275,7 +275,7 @@ struct CheckoutView: View {
                                                         cartViewModel.removeItem(item.id)
                                                     }
                                                 } label: {
-                                                    Text("\(Image(systemName: "minus"))")
+                                                    Text("\(Image("minus"))")
                                                         .font(AppFont.body)
                                                         .padding(AppLayout.spacingMicro)
                                                         .foregroundStyle(Color.backgroundPaper)
@@ -292,7 +292,7 @@ struct CheckoutView: View {
                                                 Button {
                                                     cartViewModel.updateQuantity(for: item.id, delta: 1)
                                                 } label: {
-                                                    Text("\(Image(systemName: "plus"))")
+                                                    Text("\(Image("plus"))")
                                                         .font(AppFont.body)
                                                         .padding(AppLayout.spacingMicro)
                                                         .foregroundStyle(Color.backgroundPaper)
@@ -386,7 +386,7 @@ struct CheckoutView: View {
                                                 checkoutViewModel.paymentMethod = method
                                             } label: {
                                                 VStack(spacing: 4) {
-                                                    Image(systemName: method.iconName)
+                                                    Image(method.iconName)
                                                         .font(AppFont.navIcon)
                                                     Text(method.displayName)
                                                         .font(AppFont.monoBody)
@@ -415,7 +415,7 @@ struct CheckoutView: View {
                             // Error Display
                             if let error = orderError {
                                 HStack {
-                                    Image(systemName: "exclamationmark.triangle.fill")
+                                    Image("triangle_alert")
                                         .foregroundColor(Color.semanticError)
                                     Text(error)
                                         .font(AppFont.uiMicro)

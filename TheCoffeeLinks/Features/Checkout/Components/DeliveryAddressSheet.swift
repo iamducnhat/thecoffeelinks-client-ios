@@ -36,7 +36,7 @@ struct DeliveryAddressSheet: View {
                     Button {
                         showAddAddress = true
                     } label: {
-                        Image(systemName: "plus")
+                        Image("plus")
                             .font(AppFont.navIcon)
                             .foregroundStyle(Color.primaryEspresso)
                     }
@@ -133,7 +133,7 @@ struct AddressCard: View {
                 Spacer()
                 
                 if isSelected {
-                    Image(systemName: "checkmark.circle.fill")
+                    Image("circle_check")
                         .font(.system(size: 20))
                         .foregroundStyle(Color.primaryEspresso)
                 }
@@ -149,7 +149,11 @@ struct AddressCard: View {
         .buttonStyle(.plain)
         .contextMenu {
             Button(role: .destructive, action: onDelete) {
-                Label(String(localized: "common_delete"), systemImage: "trash")
+                Label {
+                            Text(String(localized: "common_delete"))
+                        } icon: {
+                            Image("trash")
+                        }
             }
         }
     }
@@ -164,7 +168,7 @@ struct EmptyAddressState: View {
         VStack(spacing: AppLayout.spacingXL) {
             Spacer().frame(height: 40)
             
-            Image(systemName: "map")
+            Image("map")
                 .font(.system(size: 48))
                 .foregroundStyle(Color.textMuted)
             

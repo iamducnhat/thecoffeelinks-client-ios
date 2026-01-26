@@ -24,7 +24,7 @@ struct SavedLocationsView: View {
                 // Header
                 HStack {
                     Button(action: { dismiss() }) {
-                        Image(systemName: "chevron.left")
+                        Image("chevron.left")
                             .font(AppFont.body)
                             .foregroundStyle(Color.textInk)
                     }
@@ -38,7 +38,7 @@ struct SavedLocationsView: View {
                     Spacer()
                     
                     // Invisible button to balance layout
-                    Image(systemName: "chevron.left").opacity(0)
+                    Image("chevron.left").opacity(0)
                         
                 }
                 .padding(AppLayout.spacing)
@@ -79,7 +79,7 @@ struct LocationRow: View {
                         Circle().stroke(Color.border, lineWidth: 1)
                     )
                 
-                Image(systemName: location.icon)
+                Image(location.icon)
                     .font(.system(size: 16))
                     .foregroundStyle(Color.textMuted)
             }
@@ -97,7 +97,7 @@ struct LocationRow: View {
             
             Spacer()
             
-            Image(systemName: "pencil")
+            Image("pencil")
                 .font(.system(size: 16))
                 .foregroundStyle(Color.textMuted)
         }

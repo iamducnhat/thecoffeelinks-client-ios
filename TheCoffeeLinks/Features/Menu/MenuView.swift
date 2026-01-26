@@ -24,7 +24,7 @@ struct MenuView: View {
                 VStack(spacing: AppLayout.spacing) {
                     // Search Field
                     HStack(spacing: AppLayout.spacingMedium) {
-                        Image(systemName: "magnifyingglass")
+                        Image("magnifyingglass")
                             .font(AppFont.body)
                             .foregroundStyle(Color.textMuted)
                         
@@ -37,7 +37,7 @@ struct MenuView: View {
                             Button {
                                 menuViewModel.searchQuery = ""
                             } label: {
-                                Image(systemName: "xmark.circle.fill")
+                                Image("circle_x")
                                     .font(AppFont.body)
                                     .foregroundStyle(Color.textMuted)
                             }
@@ -169,7 +169,7 @@ struct ProductCard: View {
                         Rectangle() // CHANGED
                             .fill(Color.surfaceCard) // CHANGED
                             .overlay { // CHANGED
-                                Image(systemName: "photo") // CHANGED
+                                Image("photo") // CHANGED
                                     .font(AppFont.monoCaption) // CHANGED
                                     .foregroundStyle(Color.textMuted) // CHANGED
                             } // CHANGED

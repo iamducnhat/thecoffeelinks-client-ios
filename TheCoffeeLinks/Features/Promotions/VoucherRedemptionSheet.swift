@@ -46,7 +46,7 @@ struct VoucherRedemptionSheet: View {
                     Button {
                         dismiss()
                     } label: {
-                        Image(systemName: "xmark")
+                        Image("xmark")
                             .font(AppFont.body)
                             .foregroundStyle(Color.textInk)
                             .frame(width: 44, height: 44)
@@ -88,7 +88,7 @@ struct VoucherRedemptionSheet: View {
                                     .frame(width: 280, height: 280)
                             } else {
                                 VStack(spacing: 8) {
-                                    Image(systemName: "exclamationmark.triangle")
+                                    Image("exclamationmark.triangle")
                                         .font(.largeTitle)
                                         .foregroundColor(.red)
                                     Text(String(localized: "voucher_qr_error"))
@@ -144,7 +144,7 @@ struct VoucherRedemptionSheet: View {
                                     }
                                 } label: {
                                     HStack(spacing: 4) {
-                                        Image(systemName: hasCopied ? "checkmark.circle.fill" : "doc.on.doc")
+                                        Image(hasCopied ? "checkmark.circle.fill" : "doc.on.doc")
                                         if hasCopied {
                                             Text(String(localized: "common_copied"))
                                                 .font(AppFont.uiMicro)

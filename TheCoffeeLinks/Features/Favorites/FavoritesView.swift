@@ -28,7 +28,7 @@ struct FavoritesView: View {
             // Fixed Navigation Header
             HStack(alignment: .center, spacing: AppLayout.spacing) {
                 Button { dismiss() } label: {
-                    Image(systemName: "xmark")
+                    Image("xmark")
                         .font(AppFont.navIcon)
                         .foregroundStyle(Color.textInk)
                         .frame(minWidth: AppLayout.touchTarget, minHeight: AppLayout.touchTarget)
@@ -59,7 +59,7 @@ struct FavoritesView: View {
                 ScrollView(.vertical) {
                     // Navigation Header (Scrollable)
                     HStack(alignment: .center, spacing: AppLayout.spacing) {
-                        Image(systemName: "xmark")
+                        Image("xmark")
                             .font(AppFont.navIcon)
                             .foregroundStyle(Color.textInk)
                             .frame(minWidth: AppLayout.touchTarget, minHeight: AppLayout.touchTarget)
@@ -116,7 +116,11 @@ struct FavoritesView: View {
                                     Button(role: .destructive) {
                                         Task { await viewModel.removeFavorite(id: favorite.id) }
                                     } label: {
-                                        Label(String(localized: "common_delete"), systemImage: "trash")
+                                        Label {
+                            Text(String(localized: "common_delete"))
+                        } icon: {
+                            Image("trash")
+                        }
                                     }
                                 }
                             }
@@ -208,7 +212,7 @@ struct FavoriteItemRow: View {
                     
                     Spacer()
                     
-                    Image(systemName: "chevron.right")
+                    Image("chevron.right")
                         .font(.system(size: 12))
                         .foregroundStyle(Color.textMuted)
                 }

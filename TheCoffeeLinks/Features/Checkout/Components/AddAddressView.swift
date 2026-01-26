@@ -81,7 +81,7 @@ struct AddAddressView: View {
                                     .disabled(true)
                                     .clipShape(RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle))
                                     
-                                    Image(systemName: "mappin.circle.fill")
+                                    Image("map_pin")
                                         .font(.system(size: 32))
                                         .foregroundStyle(Color.primaryEspresso)
                                         .shadow(radius: 2)
@@ -90,7 +90,7 @@ struct AddAddressView: View {
                                         Task { await deliveryViewModel.getCurrentLocation() }
                                     } label: {
                                         VStack(spacing: 8) {
-                                            Image(systemName: "location.fill")
+                                            Image("map_pin")
                                                 .font(.system(size: 24))
                                             Text("Use Current Location")
                                                 .font(AppFont.headline)
@@ -102,7 +102,7 @@ struct AddAddressView: View {
                             
                              // Search Field
                              HStack {
-                                 Image(systemName: "magnifyingglass")
+                                 Image("magnifyingglass")
                                      .foregroundStyle(Color.textMuted)
                                  TextField("Search for address...", text: $deliveryViewModel.streetAddress)
                                      .textFieldStyle(PlainTextFieldStyle())

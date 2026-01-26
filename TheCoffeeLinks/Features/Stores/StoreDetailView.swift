@@ -34,7 +34,7 @@ struct StoreDetailView: View {
             // Fixed Navigation Header
             HStack(alignment: .center, spacing: AppLayout.spacing) {
                 Button { dismiss() } label: {
-                    Image(systemName: "xmark")
+                    Image("xmark")
                         .font(AppFont.navIcon)
                         .foregroundStyle(Color.textInk)
                         .frame(minWidth: AppLayout.touchTarget, minHeight: AppLayout.touchTarget)
@@ -65,7 +65,7 @@ struct StoreDetailView: View {
                 ScrollView(.vertical) {
                     // Navigation Header (Scrollable)
                     HStack(alignment: .center, spacing: AppLayout.spacing) {
-                        Image(systemName: "xmark")
+                        Image("xmark")
                             .font(AppFont.navIcon)
                             .foregroundStyle(Color.textInk)
                             .frame(minWidth: AppLayout.touchTarget, minHeight: AppLayout.touchTarget)
@@ -142,7 +142,7 @@ struct StoreDetailView: View {
                                     .fill(Color.primaryEspresso)
                                     .frame(width: 24, height: 24)
                                     .overlay(
-                                        Image(systemName: "cup.and.saucer.fill")
+                                        Image("coffee")
                                             .font(.system(size: 12))
                                             .foregroundStyle(Color.backgroundPaper)
                                     )
@@ -161,7 +161,7 @@ struct StoreDetailView: View {
                             // Phone
                             if let phone = store.phone {
                                 HStack {
-                                    Image(systemName: "phone")
+                                    Image("phone")
                                         .foregroundStyle(Color.primaryEspresso)
                                     Text(phone)
                                         .font(AppFont.body)
@@ -184,7 +184,7 @@ struct StoreDetailView: View {
                             
                             // Hours
                             HStack {
-                                Image(systemName: "clock")
+                                Image("clock")
                                     .foregroundStyle(Color.primaryEspresso)
                                 VStack(alignment: .leading, spacing: 2) {
                                     Text(store.isCurrentlyOpen ? String(localized: "store_open_now") : String(localized: "store_closed"))
@@ -219,7 +219,7 @@ struct StoreDetailView: View {
                                 LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: AppLayout.spacingMedium) {
                                     ForEach(amenities, id: \.self) { amenity in
                                         HStack(spacing: 4) {
-                                            Image(systemName: amenity.iconName)
+                                            Image(amenity.iconName)
                                                 .foregroundStyle(Color.primaryEspresso)
                                                 .font(.system(size: 14))
                                             Text(amenity.displayName)
@@ -251,7 +251,7 @@ struct StoreDetailView: View {
                                         dismiss()
                                     } label: {
                                         VStack(spacing: 4) {
-                                            Image(systemName: "fork.knife")
+                                            Image("fork.knife")
                                                 .font(.system(size: 20))
                                             Text("store_dine_in")
                                                 .font(AppFont.uiCaption)
@@ -271,7 +271,7 @@ struct StoreDetailView: View {
                                         dismiss()
                                     } label: {
                                         VStack(spacing: 4) {
-                                            Image(systemName: "bag.fill")
+                                            Image("bag")
                                                 .font(.system(size: 20))
                                             Text("store_take_away")
                                                 .font(AppFont.uiCaption)
@@ -305,7 +305,7 @@ struct StoreDetailView: View {
                                 UIApplication.shared.open(url)
                             } label: {
                                 HStack {
-                                    Image(systemName: "arrow.triangle.turn.up.right.circle")
+                                    Image("arrow.triangle.turn.up.right.circle")
                                         .font(.system(size: 16))
                                     Text("store_get_directions")
                                         .font(AppFont.monoBody)

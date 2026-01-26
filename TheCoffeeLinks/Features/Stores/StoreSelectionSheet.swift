@@ -48,7 +48,7 @@ struct StoreSelectionSheet: View {
                 // Search
                 VStack {
                     HStack(spacing: AppLayout.spacingMedium) {
-                        Image(systemName: "magnifyingglass")
+                        Image("magnifyingglass")
                             .font(AppFont.body)
                             .foregroundStyle(Color.textMuted)
                         
@@ -71,7 +71,7 @@ struct StoreSelectionSheet: View {
                         .padding(AppLayout.spacing)
                 } else if viewModel.filteredStores.isEmpty {
                     VStack(spacing: AppLayout.spacing) {
-                        Image(systemName: "mappin.slash")
+                        Image("mappin.slash")
                             .font(.system(size: 32))
                             .foregroundStyle(Color.textMuted)
                         Text(String(localized: "stores_empty_search"))

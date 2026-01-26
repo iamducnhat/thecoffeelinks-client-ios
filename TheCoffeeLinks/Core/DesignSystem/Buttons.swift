@@ -68,7 +68,7 @@ struct ReceiptUtilityButton: View {
                     .textCase(.uppercase)
                     .font(AppFont.monoBody)
                 if let icon = icon {
-                    Image(systemName: icon)
+                    Image(icon)
                         .font(AppFont.monoCaption)
                 }
             }
@@ -115,7 +115,7 @@ struct ReceiptIconButton: View {
     
     var body: some View {
         Button(action: action) {
-            Image(systemName: icon)
+            Image(icon)
                 .font(AppFont.navIcon)
                 .foregroundStyle(Color.textInk)
                 .frame(minWidth: AppLayout.touchTarget, minHeight: AppLayout.touchTarget)
@@ -172,7 +172,7 @@ struct SecondaryButton: View {
         Button(action: action) {
             HStack {
                 if let icon = icon {
-                    Image(systemName: icon)
+                    Image(icon)
                 }
                 Text(title)
                     .font(AppFont.uiBody)

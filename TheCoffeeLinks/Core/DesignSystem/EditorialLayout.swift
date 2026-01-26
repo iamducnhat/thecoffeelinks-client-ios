@@ -171,7 +171,7 @@ struct EditorialTextField: View {
     var body: some View {
         HStack(spacing: Editorial.Spacing.gutter) {
             if let icon = icon {
-                Image(systemName: icon)
+                Image(icon)
                     .foregroundStyle(Color.textMuted)
             }
             
@@ -226,7 +226,7 @@ struct EditorialStepperRow: View {
             
             HStack(spacing: 0) {
                 Button(action: onDecrement) {
-                    Image(systemName: "minus")
+                    Image("minus")
                         .frame(width: 32, height: 32)
                         .background(Color.surfaceCard)
                 }
@@ -239,7 +239,7 @@ struct EditorialStepperRow: View {
                     .background(Color.backgroundPaper)
                 
                 Button(action: onIncrement) {
-                    Image(systemName: "plus")
+                    Image("plus")
                         .frame(width: 32, height: 32)
                         .background(Color.surfaceCard)
                 }
@@ -275,7 +275,7 @@ struct EditorialPermissionTile: View {
     var body: some View {
         Button(action: action) {
             HStack(alignment: .top, spacing: Editorial.Spacing.md) {
-                Image(systemName: icon)
+                Image(icon)
                     .font(.system(size: 24))
                     .foregroundStyle(isGranted ? Color.semanticSuccess : Color.textInk)
                     .frame(width: 40, height: 40)
@@ -298,7 +298,7 @@ struct EditorialPermissionTile: View {
                 Spacer()
                 
                 if isGranted {
-                    Image(systemName: "checkmark")
+                    Image("checkmark")
                         .foregroundStyle(Color.semanticSuccess)
                 } else {
                     Text("Enable")
@@ -332,7 +332,7 @@ struct EditorialSelectableRow: View {
                 Spacer()
                 
                 if isSelected {
-                    Image(systemName: "checkmark")
+                    Image("checkmark")
                         .foregroundStyle(Color.primaryEspresso)
                 }
             }

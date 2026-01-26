@@ -33,7 +33,7 @@ struct StoresView: View {
                     
                     // Search
                     HStack(spacing: AppLayout.spacingMedium) {
-                        Image(systemName: "magnifyingglass")
+                        Image("magnifyingglass")
                             .font(AppFont.body)
                             .foregroundStyle(Color.textMuted)
                         
@@ -46,7 +46,7 @@ struct StoresView: View {
                             Button {
                                 viewModel.searchQuery = ""
                             } label: {
-                                Image(systemName: "xmark.circle.fill")
+                                Image("circle_x")
                                     .font(AppFont.body)
                                     .foregroundStyle(Color.textMuted)
                             }
@@ -209,7 +209,7 @@ struct StoreCard: View {
                     // Distance
                     if let distance = distance {
                         HStack(spacing: 4) {
-                            Image(systemName: "location.fill")
+                            Image("map_pin")
                                 .font(.system(size: 10))
                             Text(distance)
                                 .font(AppFont.monoBody)
@@ -229,7 +229,7 @@ struct StoreCard: View {
                     
                     Spacer()
                     
-                    Image(systemName: "chevron.right")
+                    Image("chevron.right")
                         .font(.system(size: 12))
                         .foregroundStyle(Color.textMuted)
                 }
@@ -282,7 +282,7 @@ struct StoreListSkeleton: View {
 struct EmptyStoresState: View {
     var body: some View {
         VStack(spacing: AppLayout.spacingXL) {
-            Image(systemName: "mappin.slash")
+            Image("mappin.slash")
                 .font(.system(size: 48))
                 .foregroundStyle(Color.textMuted)
             

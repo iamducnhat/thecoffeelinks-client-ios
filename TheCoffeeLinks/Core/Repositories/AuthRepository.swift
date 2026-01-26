@@ -85,6 +85,92 @@ class AuthRepository {
         return response.user
     }
 
+
+    // MARK: - Phone + Password Authentication
+
+    func register(phone: String, password: String, name: String, dob: String) async throws -> String {
+        struct RegisterRequest: Encodable {
+            let phone: String
+            let password: String
+            let name: String
+            let dob: String
+        }
+        
+        struct RegisterResponse: Decodable {
+            let success: Bool
+            let userId: String?
+        }
+        
+        let response: RegisterResponse = try await networkService.request(
+            "/api/auth/register",
+            method: "POST",
+            body: RegisterRequest(phone: phone, password: password, name: name, dob: dob)
+        )
+        
+        return response.userId ?? ""
+    }
+
+    func loginWithPassword(phone: String, password: String) async throws -> User {
+        struct LoginRequest: Encodable {
+            let phone: String
+            let password: String
+        }
+        
+        struct LoginResponse: Decodable {
+            let session: SessionData
+            let user: SupabaseUser
+            
+            struct SessionData: Decodable {
+                let accessToken: String
+                let refreshToken: String?
+                
+                enum CodingKeys: String, CodingKey {
+                    case accessToken = "access_token"
+                    case refreshToken = "refresh_token"
+                }
+            }
+            
+            struct SupabaseUser: Decodable {
+                let id: String
+                let phone: String?
+                let userMetadata: UserMetadata?
+                
+                enum CodingKeys: String, CodingKey {
+                    case id, phone
+                    case userMetadata = "user_metadata"
+                }
+                
+                struct UserMetadata: Decodable {
+                    let fullName: String?
+                }
+                
+                func toDomain() -> User {
+                    let display = userMetadata?.fullName ?? phone ?? "User"
+                    return User(
+                        id: id,
+                        email: nil,
+                        phone: phone,
+                        displayName: display,
+                        avatarUrl: nil,
+                        membershipTier: .bronze,
+                        points: 0,
+                        createdAt: Date(),
+                        preferences: .default
+                    )
+                }
+            }
+        }
+        
+        let response: LoginResponse = try await networkService.request(
+            "/api/auth/login/password",
+            method: "POST",
+            body: LoginRequest(phone: phone, password: password)
+        )
+        
+        await networkService.setAuthSession(accessToken: response.session.accessToken, refreshToken: response.session.refreshToken)
+        return response.user.toDomain()
+    }
+
     // MARK: - Phone OTP Authentication
     
     func sendOTP(phoneNumber: String) async throws {

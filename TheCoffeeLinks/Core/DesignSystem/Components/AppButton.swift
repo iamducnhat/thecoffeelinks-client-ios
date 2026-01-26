@@ -47,7 +47,7 @@ struct AppButton: View {
         } label: {
             HStack(spacing: AppLayout.spacingCompact) {
                 if let icon = icon {
-                    Image(systemName: icon)
+                    Image(icon)
                         .font(.system(size: 20, weight: .semibold))
                 }
                 
@@ -117,7 +117,7 @@ struct AppButton_Previews: PreviewProvider {
             VStack(spacing: 20) {
                 AppButton("Checkout", style: .primary) {}
                 AppButton("Browse Menu", style: .secondary) {}
-                AppButton("Sign out", icon: "arrow.right.square", style: .destructive) {}
+                AppButton("Sign out", icon: "log_out", style: .destructive) {}
             }
             .padding()
             .previewLayout(.sizeThatFits)
@@ -127,7 +127,7 @@ struct AppButton_Previews: PreviewProvider {
             VStack(spacing: 20) {
                 AppButton("Checkout", style: .primary) {}
                 AppButton("Browse Menu", style: .secondary) {}
-                AppButton("Sign out", icon: "arrow.right.square", style: .destructive) {}
+                AppButton("Sign out", icon: "log_out", style: .destructive) {}
             }
             .padding()
             .previewLayout(.sizeThatFits)

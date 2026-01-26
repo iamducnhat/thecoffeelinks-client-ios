@@ -111,7 +111,7 @@ struct EditorialQRCheckInView: View {
                     Button {
                         dismiss()
                     } label: {
-                        Image(systemName: "xmark")
+                        Image("xmark")
                             .font(.system(size: 18, weight: .semibold))
                             .foregroundStyle(.white)
                             .frame(width: 40, height: 40)
@@ -133,7 +133,7 @@ struct EditorialQRCheckInView: View {
                     .frame(width: 280, height: 280)
                     .overlay(
                         VStack(spacing: AppLayout.spacing) {
-                            Image(systemName: "qrcode.viewfinder")
+                            Image("qrcode.viewfinder")
                                 .font(.system(size: 48))
                                 .foregroundStyle(.white.opacity(0.5))
                             Text(String(localized: "space_camera_preview"))

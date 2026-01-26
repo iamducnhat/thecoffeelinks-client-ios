@@ -95,7 +95,7 @@ struct IntentCard: View {
     var body: some View {
         Button(action: action) {
             VStack(spacing: AppLayout.spacingMedium) {
-                Image(systemName: intent.icon)
+                Image(intent.icon)
                     .font(.system(size: 24))
                     .foregroundColor(Color.primaryEspresso)
                 
@@ -301,7 +301,7 @@ struct NetworkCheckInSheet: View {
                     Spacer()
                     
                     Button { isPresented = false } label: {
-                        Image(systemName: "xmark")
+                        Image("xmark")
                             .font(AppFont.navIcon)
                             .foregroundStyle(Color.textInk)
                     }
@@ -320,7 +320,7 @@ struct NetworkCheckInSheet: View {
                                 .foregroundStyle(Color.textInk)
                             
                             HStack(spacing: AppLayout.spacing) {
-                                Image(systemName: networkViewModel.currentIntent.icon)
+                                Image(networkViewModel.currentIntent.icon)
                                     .font(.system(size: 20))
                                     .foregroundStyle(Color.primaryEspresso)
                                 

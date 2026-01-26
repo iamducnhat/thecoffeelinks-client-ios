@@ -51,7 +51,7 @@ struct VouchersView: View {
                         Spacer()
                         
                         Button { dismiss() } label: {
-                            Image(systemName: "xmark")
+                            Image("xmark")
                                 .font(AppFont.navIcon)
                                 .foregroundStyle(Color.textInk)
                         }

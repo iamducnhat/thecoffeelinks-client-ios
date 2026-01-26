@@ -21,7 +21,7 @@ struct DeliveryModeBanner: View {
         VStack(spacing: AppLayout.spacing) {
             Button(action: onChangeMode) {
                 HStack(spacing: AppLayout.spacing) {
-                    Image(systemName: currentMode.iconName)
+                    Image(currentMode.iconName)
                         .font(.system(size: 20))
                         .foregroundStyle(Color.primaryEspresso)
                         .frame(width: 24)
@@ -50,7 +50,7 @@ struct DeliveryModeBanner: View {
                     
                     Spacer()
                     
-                    Image(systemName: "chevron.down")
+                    Image("chevron.down")
                         .font(.system(size: 12))
                         .foregroundStyle(Color.textMuted)
                 }
@@ -100,7 +100,7 @@ struct DeliveryUnavailableWarning: View {
     
     var body: some View {
         HStack(spacing: AppLayout.spacing) {
-            Image(systemName: "exclamationmark.triangle.fill")
+            Image("triangle_alert")
                 .foregroundStyle(Color.semanticError)
             Text(reason?.message ?? "Delivery unavailable")
                 .font(AppFont.uiCaption)
@@ -126,7 +126,7 @@ struct DeliveryInfoCard: View {
         VStack(spacing: 4) {
             HStack {
                 HStack(spacing: 4) {
-                    Image(systemName: "bicycle")
+                    Image("bicycle")
                         .foregroundStyle(Color.semanticSuccess)
                     Text(String(localized: "delivery_available_label"))
                         .font(AppFont.uiCaption)
@@ -245,7 +245,7 @@ struct ModeOptionCard: View {
     var body: some View {
         Button(action: onTap) {
             HStack(spacing: AppLayout.spacing) {
-                Image(systemName: mode.iconName)
+                Image(mode.iconName)
                     .font(.system(size: 24))
                     .foregroundStyle(isSelected ? Color.primaryEspresso : Color.textMuted)
                     .frame(width: 40)
@@ -262,11 +262,11 @@ struct ModeOptionCard: View {
                 Spacer()
                 
                 if isSelected {
-                    Image(systemName: "checkmark.circle.fill")
+                    Image("circle_check")
                         .font(.system(size: 20))
                         .foregroundStyle(Color.primaryEspresso)
                 } else {
-                    Image(systemName: "circle")
+                    Image("circle")
                         .font(.system(size: 20))
                         .foregroundStyle(Color.border)
                 }

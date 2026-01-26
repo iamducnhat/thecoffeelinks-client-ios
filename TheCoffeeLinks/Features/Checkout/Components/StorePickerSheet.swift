@@ -109,7 +109,7 @@ struct StoreCardSimple: View {
             Spacer()
             
             if isSelected {
-                Image(systemName: "checkmark.circle.fill")
+                Image("circle_check")
                     .font(.system(size: 20))
                     .foregroundStyle(Color.primaryEspresso)
             }

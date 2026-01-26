@@ -196,7 +196,7 @@ struct AIQuickOrderPrompt: View {
     var body: some View {
         Button(action: action) {
             HStack(spacing: AppLayout.spacing) {
-                Image(systemName: "sparkles")
+                Image("sparkles")
                     .font(.system(size: 24))
                     .foregroundStyle(Color.primaryEspresso)
                 
@@ -212,7 +212,7 @@ struct AIQuickOrderPrompt: View {
                 
                 Spacer()
                 
-                Image(systemName: "chevron.right")
+                Image("chevron_right")
                     .font(.system(size: 14))
                     .foregroundStyle(Color.textMuted)
             }
@@ -363,7 +363,7 @@ struct OffersSection: View {
                                     .fill(Color.surfaceCard)
                                     .overlay {
                                         VStack(spacing: AppLayout.spacingSmall) {
-                                            Image(systemName: "ticket.fill")
+                                            Image("ticket")
                                                 .font(.system(size: 32))
                                                 .foregroundStyle(Color.primaryEspresso.opacity(0.3))
                                             Text(voucher.displayTitle)
@@ -451,7 +451,7 @@ struct PopularProductCard: View {
                         Rectangle() // CHANGED
                             .fill(Color.textInk.opacity(0.1)) // CHANGED
                             .overlay { // CHANGED
-                                Image(systemName: "photo") // CHANGED
+                                Image("photo") // CHANGED
                                     .font(AppFont.productTitle) // CHANGED
                                     .foregroundStyle(Color.textInk.opacity(0.3)) // CHANGED
                             } // CHANGED
@@ -488,7 +488,7 @@ struct PopularProductCard: View {
                 Button {
                     cartViewModel.addItem(product: product.product, quantity: 1, customization: .default)
                 } label: {
-                    Image(systemName: "plus")
+                    Image("plus")
                         .font(AppFont.body)
                         .padding(AppLayout.spacingMicro)
                         .foregroundStyle(Color.backgroundPaper)

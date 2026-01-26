@@ -81,7 +81,7 @@ struct ProfileRow<Destination: View>: View {
     
     private var rowContent: some View {
         HStack(spacing: AppLayout.spacing) {
-            Image(systemName: icon)
+            Image(icon)
                 .font(.system(size: 20))
                 .foregroundStyle(Color.textMuted)
                 .frame(width: 24)
@@ -92,7 +92,7 @@ struct ProfileRow<Destination: View>: View {
             
             Spacer()
             
-            Image(systemName: "chevron.right")
+            Image("chevron_right")
                 .font(.system(size: 14))
                 .foregroundStyle(Color.textMuted)
         }
@@ -114,7 +114,7 @@ struct ToggleRow: View {
     
     var body: some View {
         HStack(spacing: AppLayout.spacing) {
-            Image(systemName: icon)
+            Image(icon)
                 .font(.system(size: 20))
                 .foregroundStyle(Color.textMuted)
                 .frame(width: 24)

@@ -19,7 +19,7 @@ struct SplashScreen: View {
             
             VStack(spacing: AppLayout.spacingXL) {
                 // Brand Mark
-                Image(systemName: "cup.and.saucer.fill")
+                Image("coffee")
                     .resizable()
                     .scaledToFit()
                     .frame(width: 80, height: 80)

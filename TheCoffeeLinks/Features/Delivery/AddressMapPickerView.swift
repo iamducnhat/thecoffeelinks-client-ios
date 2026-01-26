@@ -25,7 +25,7 @@ struct AddressMapPickerView: View {
                 .ignoresSafeArea()
             
             // Center Pin
-            Image(systemName: "mappin")
+            Image("mappin")
                 .font(.system(size: 40))
                 .foregroundStyle(Color.primaryEspresso)
                 .shadow(radius: 4)
@@ -37,7 +37,7 @@ struct AddressMapPickerView: View {
                     Button {
                         dismiss()
                     } label: {
-                        Image(systemName: "xmark.circle.fill")
+                        Image("circle_x")
                             .font(.system(size: 32))
                             .foregroundStyle(Color.backgroundPaper)
                             .shadow(radius: 4)

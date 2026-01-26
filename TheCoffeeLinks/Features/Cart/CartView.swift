@@ -26,7 +26,7 @@ struct CartView: View {
                 // Fixed Navigation Header
                 HStack(alignment: .center, spacing: AppLayout.spacing) {
                     Button { dismiss() } label: {
-                        Image(systemName: "xmark")
+                        Image("xmark")
                             .font(AppFont.navIcon)
                             .foregroundStyle(Color.textInk)
                             .frame(minWidth: AppLayout.touchTarget, minHeight: AppLayout.touchTarget)
@@ -57,7 +57,7 @@ struct CartView: View {
                     ScrollView(.vertical) {
                         // Navigation Header (Scrollable)
                         HStack(alignment: .center, spacing: AppLayout.spacing) {
-                            Image(systemName: "xmark")
+                            Image("xmark")
                                 .font(AppFont.navIcon)
                                 .foregroundStyle(Color.textInk)
                                 .frame(minWidth: AppLayout.touchTarget, minHeight: AppLayout.touchTarget)
@@ -265,7 +265,7 @@ struct CartItemRow: View {
                     Rectangle() // CHANGED
                         .fill(Color.textInk.opacity(0.1)) // CHANGED
                         .overlay { // CHANGED
-                            Image(systemName: "photo") // CHANGED
+                            Image("photo") // CHANGED
                                 .font(AppFont.productTitle) // CHANGED
                                 .foregroundStyle(Color.textInk) // CHANGED
                         } // CHANGED
@@ -323,7 +323,7 @@ struct CartItemRow: View {
                                 onRemove()
                             }
                         } label: {
-                            Image(systemName: "minus")
+                            Image("minus")
                                 .font(AppFont.body)
                                 .padding(AppLayout.spacingMicro)
                                 .foregroundStyle(Color.backgroundPaper)
@@ -340,7 +340,7 @@ struct CartItemRow: View {
                         Button {
                             onUpdateQuantity(item.quantity + 1)
                         } label: {
-                            Image(systemName: "plus")
+                            Image("plus")
                                 .font(AppFont.body)
                                 .padding(AppLayout.spacingMicro)
                                 .foregroundStyle(Color.backgroundPaper)

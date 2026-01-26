@@ -182,8 +182,8 @@ struct ConnectView: View {
                                 .foregroundStyle(Color.textInk)
                             
                             VStack(spacing: 0) {
-                                ProfileRow(title: "Block users", icon: "person.crop.circle.badge.xmark") { }
-                                ProfileRow(title: "Report a concern", icon: "exclamationmark.triangle") { showingReport = true }
+                                ProfileRow(title: "Block users", icon: "circle_x") { }
+                                ProfileRow(title: "Report a concern", icon: "triangle_alert") { showingReport = true }
                             }
                             .background(Color.surfaceCard)
                             .overlay(
@@ -311,7 +311,7 @@ struct PresenceRow: View {
                 Spacer()
                 
                 if user.mode == .open {
-                    Image(systemName: "bubble.left.fill")
+                    Image("message_circle")
                         .font(.system(size: 12))
                         .foregroundStyle(Color.primaryEspresso)
                 }
@@ -343,7 +343,7 @@ struct CheckInSheet: View {
                     Spacer()
                     
                     Button { dismiss() } label: {
-                        Image(systemName: "xmark")
+                        Image("xmark")
                             .font(AppFont.navIcon)
                             .foregroundStyle(Color.textInk)
                     }
@@ -395,7 +395,7 @@ struct CheckInSheet: View {
                                         }
                                         Spacer()
                                         if selectedMode == mode {
-                                            Image(systemName: "checkmark")
+                                            Image("checkmark")
                                                 .foregroundStyle(Color.primaryEspresso)
                                         }
                                     }
@@ -453,7 +453,7 @@ struct ModeSheet: View {
                     Spacer()
                     
                     Button { dismiss() } label: {
-                        Image(systemName: "xmark")
+                        Image("xmark")
                             .font(AppFont.navIcon)
                             .foregroundStyle(Color.textInk)
                     }
@@ -475,7 +475,7 @@ struct ModeSheet: View {
                                         .foregroundStyle(Color.textInk)
                                     Spacer()
                                     if currentMode == mode {
-                                        Image(systemName: "checkmark")
+                                        Image("checkmark")
                                             .foregroundStyle(Color.primaryEspresso)
                                     }
                                 }
@@ -513,7 +513,7 @@ struct UserProfileSheet: View {
                 HStack {
                     Spacer()
                     Button { dismiss() } label: {
-                        Image(systemName: "xmark")
+                        Image("xmark")
                             .font(AppFont.navIcon)
                             .foregroundStyle(Color.textInk)
                     }
@@ -666,7 +666,7 @@ struct ReportSheet: View {
                     Spacer()
                     
                     Button { dismiss() } label: {
-                        Image(systemName: "xmark")
+                        Image("xmark")
                             .font(AppFont.navIcon)
                             .foregroundStyle(Color.textInk)
                     }
@@ -694,7 +694,7 @@ struct ReportSheet: View {
                                             .foregroundStyle(Color.textInk)
                                         Spacer()
                                         if selectedReason == reason {
-                                            Image(systemName: "checkmark")
+                                            Image("checkmark")
                                                 .foregroundStyle(Color.primaryEspresso)
                                         }
                                     }

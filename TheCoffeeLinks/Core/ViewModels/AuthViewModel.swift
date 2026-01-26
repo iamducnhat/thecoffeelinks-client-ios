@@ -11,6 +11,11 @@ class AuthViewModel: BaseViewModel {
     @Published var phoneNumber: String = ""
     @Published var otpCode: String = ""
     
+    // Form fields - Password / Profile
+    @Published var password: String = ""
+    @Published var fullName: String = ""
+    @Published var dob: String = ""
+    
     // State management
     enum PhoneAuthState {
         case idle
@@ -37,6 +42,72 @@ class AuthViewModel: BaseViewModel {
         }
     }
     
+    // MARK: - Phone + Password Auth
+    
+    func register() {
+        let formattedNumber = formatPhoneNumber(self.phoneNumber)
+        
+        // Basic validation
+        guard !password.isEmpty, !fullName.isEmpty, !dob.isEmpty else {
+            self.error = "Please fill in all fields"
+            self.authState = .error
+            return
+        }
+        
+        // Format Date: DD/MM/YYYY -> YYYY-MM-DD
+        let formattedDob = formatDateForAPI(self.dob)
+        
+        withLoading {
+            do {
+                _ = try await self.authRepository.register(
+                    phone: formattedNumber,
+                    password: self.password,
+                    name: self.fullName,
+                    dob: formattedDob
+                )
+                print("✅ Registered. Waiting for OTP.")
+                await MainActor.run {
+                    self.authState = .otpSent
+                    self.error = nil // Clear error
+                }
+            } catch {
+                print("❌ [AuthViewModel] Register Error: \(error)")
+                await MainActor.run {
+                    self.error = error.localizedDescription
+                    self.authState = .error
+                }
+            }
+        }
+    }
+    
+    func loginWithPassword() {
+        let formattedNumber = formatPhoneNumber(self.phoneNumber)
+        
+        withLoading {
+            do {
+                let user = try await self.authRepository.loginWithPassword(phone: formattedNumber, password: self.password)
+                
+                // Sync Realtime Token
+                if let token = DependencyContainer.shared.keychainManager.getAccessToken() {
+                    DependencyContainer.shared.realtimeService.setAuthToken(token)
+                }
+                
+                await MainActor.run {
+                    self.currentUser = user
+                    self.isAuthenticated = true
+                    self.authState = .idle
+                    self.error = nil
+                }
+            } catch {
+                print("❌ [AuthViewModel] Login Password Error: \(error)")
+                await MainActor.run {
+                    self.error = error.localizedDescription
+                    self.authState = .error
+                }
+            }
+        }
+    }
+
     // MARK: - Phone OTP Authentication
     
     func sendOTP(phoneNumber: String) {
@@ -203,6 +274,23 @@ class AuthViewModel: BaseViewModel {
         
         // Always append +84 for this App (Vietnam specific)
         return "+84" + formatted
+    }
+    
+    // Helper to convert DD/MM/YYYY to YYYY-MM-DD
+    private func formatDateForAPI(_ dateString: String) -> String {
+        let inputFormatter = DateFormatter()
+        inputFormatter.dateFormat = "dd/MM/yyyy"
+        inputFormatter.locale = Locale(identifier: "en_US_POSIX")
+        
+        if let date = inputFormatter.date(from: dateString) {
+            let outputFormatter = DateFormatter()
+            outputFormatter.dateFormat = "yyyy-MM-dd"
+            outputFormatter.locale = Locale(identifier: "en_US_POSIX")
+            return outputFormatter.string(from: date)
+        }
+        
+        // Fallback or return original if parsing fails (server will likely reject it, but better than crash)
+        return dateString
     }
 }
 

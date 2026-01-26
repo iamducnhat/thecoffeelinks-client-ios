@@ -71,7 +71,7 @@ struct ProductDetailSheet: View {
                     .hidden()
                 
                 Button { dismiss() } label: {
-                    Image(systemName: "xmark")
+                    Image("xmark")
                         .font(AppFont.navIcon)
                         .foregroundStyle(Color.textInk)
                         .frame(minWidth: AppLayout.touchTarget, minHeight: AppLayout.touchTarget)
@@ -105,7 +105,7 @@ struct ProductDetailSheet: View {
                             
                             // Hidden button placeholder for alignment
                             Button { dismiss() } label: {
-                                Image(systemName: "xmark")
+                                Image("xmark")
                                     .font(AppFont.navIcon)
                                     .foregroundStyle(Color.textInk)
                                     .frame(minWidth: AppLayout.touchTarget, minHeight: AppLayout.touchTarget)

@@ -93,7 +93,7 @@ struct InitialSetupView: View {
                     title: "Location Services",
                     subtitle: "Nearby store detection",
                     isGranted: isLocationAuthorized,
-                    icon: "location.fill"
+                    icon: "map_pin"
                 ) {
                     requestLocationPermission()
                 }
@@ -102,7 +102,7 @@ struct InitialSetupView: View {
                     title: "Notifications",
                     subtitle: "Order status updates",
                     isGranted: isNotificationAuthorized,
-                    icon: "bell.fill"
+                    icon: "bell"
                 ) {
                     requestNotificationPermission()
                 }
@@ -232,7 +232,7 @@ struct PermissionTile: View {
                     .fill(isGranted ? Color.semanticSuccess.opacity(0.1) : Color.surfaceCard)
                     .frame(width: 44, height: 44)
                     .overlay {
-                        Image(systemName: isGranted ? "checkmark" : icon)
+                        Image(isGranted ? "check" : icon)
                             .font(.system(size: 16))
                             .foregroundColor(isGranted ? Color.semanticSuccess : Color.textMuted)
                     }
@@ -288,11 +288,11 @@ struct SelectableRow: View {
                 Spacer()
                 
                 if isSelected {
-                    Image(systemName: "checkmark.circle.fill")
+                    Image("circle_check")
                         .font(.system(size: 20))
                         .foregroundStyle(Color.primaryEspresso)
                 } else {
-                    Image(systemName: "circle")
+                    Image("circle")
                         .font(.system(size: 20))
                         .foregroundStyle(Color.border)
                 }

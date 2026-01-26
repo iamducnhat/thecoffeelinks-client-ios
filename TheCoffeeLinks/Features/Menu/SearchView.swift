@@ -27,7 +27,7 @@ struct SearchView: View {
             // Fixed Navigation Header
             HStack(alignment: .center, spacing: AppLayout.spacing) {
                 Button { dismiss() } label: {
-                    Image(systemName: "xmark")
+                    Image("xmark")
                         .font(AppFont.navIcon)
                         .foregroundStyle(Color.textInk)
                         .frame(minWidth: AppLayout.touchTarget, minHeight: AppLayout.touchTarget)
@@ -58,7 +58,7 @@ struct SearchView: View {
                 ScrollView(.vertical) {
                     // Navigation Header (Scrollable)
                     HStack(alignment: .center, spacing: AppLayout.spacing) {
-                        Image(systemName: "xmark")
+                        Image("xmark")
                             .font(AppFont.navIcon)
                             .foregroundStyle(Color.textInk)
                             .frame(minWidth: AppLayout.touchTarget, minHeight: AppLayout.touchTarget)
@@ -83,7 +83,7 @@ struct SearchView: View {
                     
                     // Search Bar
                     HStack(spacing: AppLayout.spacingMedium) {
-                        Image(systemName: "magnifyingglass")
+                        Image("magnifyingglass")
                             .font(AppFont.body)
                             .foregroundStyle(Color.textMuted)
                         
@@ -96,7 +96,7 @@ struct SearchView: View {
                             Button {
                                 viewModel.searchQuery = ""
                             } label: {
-                                Image(systemName: "xmark.circle.fill")
+                                Image("circle_x")
                                     .font(AppFont.body)
                                     .foregroundStyle(Color.textMuted)
                             }
@@ -136,7 +136,7 @@ struct SearchView: View {
                                                     
                                                     Spacer()
                                                     
-                                                    Image(systemName: "arrow.up.left")
+                                                    Image("arrow.up.left")
                                                         .font(.system(size: 12))
                                                         .foregroundStyle(Color.textMuted)
                                                 }
@@ -265,7 +265,7 @@ struct SearchResultRow: View {
                     
                     Spacer()
                     
-                    Image(systemName: "chevron.right")
+                    Image("chevron.right")
                         .font(.system(size: 12))
                         .foregroundStyle(Color.textMuted)
                 }

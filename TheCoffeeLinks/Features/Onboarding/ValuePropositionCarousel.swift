@@ -61,7 +61,7 @@ struct ValuePropositionCarousel: View {
                         .fill(Color.backgroundPaper)
                         .frame(width: 80, height: 80)
                         .overlay(
-                            Image(systemName: slides[currentPage].image)
+                            Image(slides[currentPage].image)
                                 .font(.system(size: 32))
                                 .foregroundStyle(Color.primaryEspresso)
                         )

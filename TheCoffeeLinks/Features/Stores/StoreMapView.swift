@@ -52,7 +52,7 @@ struct StoreMapView: View {
                                 .shadow(radius: 2, y: 1)
                         }
                         
-                        Image(systemName: "triangle.fill")
+                        Image("triangle")
                             .resizable()
                             .frame(width: 8, height: 6)
                             .foregroundStyle(Color.primaryEspresso)

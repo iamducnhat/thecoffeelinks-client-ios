@@ -93,7 +93,7 @@ struct PromotionsView: View {
     
     private var guestState: some View {
         VStack(spacing: AppLayout.spacingXL) {
-            Image(systemName: "ticket")
+            Image("ticket")
                 .font(.system(size: 48))
                 .foregroundStyle(Color.textMuted)
             
