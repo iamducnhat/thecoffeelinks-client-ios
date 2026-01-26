@@ -144,7 +144,7 @@ struct VoucherRedemptionSheet: View {
                                     }
                                 } label: {
                                     HStack(spacing: 4) {
-                                        Image(hasCopied ? "checkmark.circle.fill" : "doc.on.doc")
+                                        Image(hasCopied ? "circle_check" : "doc.on.doc")
                                         if hasCopied {
                                             Text(String(localized: "common_copied"))
                                                 .font(AppFont.uiMicro)

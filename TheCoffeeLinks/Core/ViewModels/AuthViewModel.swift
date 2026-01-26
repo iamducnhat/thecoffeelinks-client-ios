@@ -4,8 +4,16 @@ import Combine
 class AuthViewModel: BaseViewModel {
     private let authRepository: AuthRepository
     
-    @Published var currentUser: User?
+    @Published var currentUser: User? {
+        didSet {
+            // Update derived state
+            self.isPhoneVerified = currentUser?.phoneVerificationStatus == .verified
+            // If user exists but is not verified, we might want to ensure they see the verification screen
+            // The ContentView will handle the routing based on isPhoneVerified.
+        }
+    }
     @Published var isAuthenticated: Bool = false
+    @Published var isPhoneVerified: Bool = false // Strict Gate
     
     // Form fields - Phone Auth
     @Published var phoneNumber: String = ""
@@ -155,6 +163,11 @@ class AuthViewModel: BaseViewModel {
                     self.isAuthenticated = true
                     self.authState = .idle
                     self.error = nil
+                    
+                    // If verified, isPhoneVerified will be set via didSet
+                    if user.phoneVerificationStatus == .verified {
+                         print("✅ Phone verified.")
+                    }
                 }
             } catch {
                 print("❌ [AuthViewModel] verifyOTP Error: \(error)")
@@ -232,6 +245,7 @@ class AuthViewModel: BaseViewModel {
             await MainActor.run {
                 self.currentUser = nil
                 self.isAuthenticated = false
+                self.isPhoneVerified = false // Reset
                 self.phoneNumber = ""
                 self.otpCode = ""
                 self.authState = .idle

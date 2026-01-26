@@ -133,10 +133,14 @@ class AuthRepository {
             struct SupabaseUser: Decodable {
                 let id: String
                 let phone: String?
+                let phoneVerified: Bool?
+                let phoneVerificationStatus: String?
                 let userMetadata: UserMetadata?
                 
                 enum CodingKeys: String, CodingKey {
                     case id, phone
+                    case phoneVerified = "phone_verified"
+                    case phoneVerificationStatus = "phone_verification_status"
                     case userMetadata = "user_metadata"
                 }
                 
@@ -146,10 +150,15 @@ class AuthRepository {
                 
                 func toDomain() -> User {
                     let display = userMetadata?.fullName ?? phone ?? "User"
+                    // Map status string to enum
+                    let status = PhoneVerificationStatus(rawValue: phoneVerificationStatus ?? "") ?? .unverified
+                    
                     return User(
                         id: id,
                         email: nil,
                         phone: phone,
+                        phoneVerified: phoneVerified ?? false,
+                        phoneVerificationStatus: status,
                         displayName: display,
                         avatarUrl: nil,
                         membershipTier: .bronze,
@@ -213,6 +222,8 @@ class AuthRepository {
                 let shortIdVersion: Int?
                 let email: String?
                 let phone: String?
+                let phoneVerified: Bool?
+                let phoneVerificationStatus: String?
                 let userMetadata: UserMetadata?
                 let createdAt: String?
                 
@@ -220,6 +231,8 @@ class AuthRepository {
                     case id, email, phone
                     case shortId = "short_id"
                     case shortIdVersion = "short_id_version"
+                    case phoneVerified = "phone_verified"
+                    case phoneVerificationStatus = "phone_verification_status"
                     case userMetadata = "user_metadata"
                     case createdAt = "created_at"
                 }
@@ -230,17 +243,22 @@ class AuthRepository {
                 
                 func toDomain() -> User {
                     let display = userMetadata?.fullName ?? phone ?? "User"
+                    // Map status string to enum
+                    let status = PhoneVerificationStatus(rawValue: phoneVerificationStatus ?? "") ?? .unverified
+                    
                     return User(
                         id: id,
                         shortId: shortId,
                         shortIdVersion: shortIdVersion,
                         email: email,
                         phone: phone,
+                        phoneVerified: phoneVerified ?? false,
+                        phoneVerificationStatus: status,
                         displayName: display,
                         avatarUrl: nil,
                         membershipTier: .bronze,
                         points: 0,
-                        createdAt: Date(),
+                        createdAt: Date(), // Simplified for now, or parse createdAt
                         preferences: .default
                     )
                 }

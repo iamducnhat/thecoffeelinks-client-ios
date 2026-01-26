@@ -22,6 +22,9 @@ struct User: Codable, Identifiable, Hashable, Sendable {
     let createdAt: Date
     var preferences: UserPreferences
     
+    let phoneVerified: Bool
+    let phoneVerificationStatus: PhoneVerificationStatus
+    
     var fullName: String { displayName } // UI Compatibility
     var bio: String? { nil } // UI Compatibility (Phase 6 Profile)
     var jobTitle: String? { nil } // UI Compatibility
@@ -32,6 +35,8 @@ struct User: Codable, Identifiable, Hashable, Sendable {
         case shortId = "short_id"
         case shortIdVersion = "short_id_version"
         case email, phone
+        case phoneVerified = "phone_verified"
+        case phoneVerificationStatus = "phone_verification_status"
         case displayName = "name"
         case avatarUrl = "avatar_url"
         case membershipTier = "membership_tier"
@@ -40,14 +45,17 @@ struct User: Codable, Identifiable, Hashable, Sendable {
         case preferences
     }
     
-    init(id: String, shortId: String? = nil, shortIdVersion: Int? = 1, email: String?, phone: String?, displayName: String,
-         avatarUrl: String?, membershipTier: MembershipTier, points: Int,
+    init(id: String, shortId: String? = nil, shortIdVersion: Int? = 1, email: String?, phone: String?, 
+         phoneVerified: Bool = false, phoneVerificationStatus: PhoneVerificationStatus = .unverified,
+         displayName: String, avatarUrl: String?, membershipTier: MembershipTier, points: Int,
          createdAt: Date, preferences: UserPreferences) {
         self.id = id
         self.shortId = shortId
         self.shortIdVersion = shortIdVersion
         self.email = email
         self.phone = phone
+        self.phoneVerified = phoneVerified
+        self.phoneVerificationStatus = phoneVerificationStatus
         self.displayName = displayName
         self.avatarUrl = avatarUrl
         self.membershipTier = membershipTier
@@ -123,6 +131,14 @@ struct User: Codable, Identifiable, Hashable, Sendable {
         let rawName = try container.decode(String.self, forKey: .displayName)
         phone = try container.decodeIfPresent(String.self, forKey: .phone)
         
+        // Verification Fields - Default to verified/true if missing for backward compatibility/safety during migration
+        // But the requirement says "Client must NEVER guess state. Always rely on server."
+        // So better to default to false/unverified if strictly enforcing.
+        // However, existing users might not have the field yet until backfill.
+        // Let's decode if present, else default to false/unverified.
+        phoneVerified = try container.decodeIfPresent(Bool.self, forKey: .phoneVerified) ?? false
+        phoneVerificationStatus = try container.decodeIfPresent(PhoneVerificationStatus.self, forKey: .phoneVerificationStatus) ?? .unverified
+        
         // Fix for "Hello, User" issue:
         // If the name is generic "User" (case-insensitive) or empty, and we have a phone number,
         // prefer showing the phone number to match the initial login experience.
@@ -161,10 +177,20 @@ struct User: Codable, Identifiable, Hashable, Sendable {
     func hash(into hasher: inout Hasher) { hasher.combine(id) }
     
     static var placeholder: User {
-        User(id: "placeholder", shortId: "123456", shortIdVersion: 1, email: nil, phone: nil, displayName: "User",
+        User(id: "placeholder", shortId: "123456", shortIdVersion: 1, email: nil, phone: nil, 
+             phoneVerified: false, phoneVerificationStatus: .unverified,
+             displayName: "User",
              avatarUrl: nil, membershipTier: .bronze, points: 0,
              createdAt: Date(), preferences: .default)
     }
+}
+
+// MARK: - Phone Verification Status
+
+enum PhoneVerificationStatus: String, Codable, Sendable {
+    case unverified = "unverified"
+    case pending = "pending"
+    case verified = "verified"
 }
 
 // MARK: - Membership Tier

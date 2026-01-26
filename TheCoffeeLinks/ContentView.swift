@@ -24,6 +24,11 @@ struct ContentView: View {
                 // User MUST be logged in to proceed.
                 LoginView(isPresentedModally: false)
                     .transition(.opacity)
+            } else if !authViewModel.isPhoneVerified {
+                // 1b. Strict Phone Verification Gate
+                // User is authenticated but NOT verified.
+                PhoneVerificationView()
+                    .transition(.opacity)
             } else if !appState.isOnboardingCompleted || !appState.isInitialSetupCompleted {
                 // 2. Onboarding & Setup Flow
                 // Combined flow: Carousel -> Setup
