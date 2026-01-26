@@ -58,6 +58,8 @@ class DependencyContainer: ObservableObject {
     private(set) lazy var analyticsService = AnalyticsService()
     private(set) lazy var predictionSyncService = PredictionSyncService(orderRepository: orderRepository, predictionRepository: predictionRepository)
     
+    private var cancellables = Set<AnyCancellable>()
+    
     private init() {}
     
     func initialize() async {
@@ -74,6 +76,21 @@ class DependencyContainer: ObservableObject {
             // Set token for Realtime (must happen on main thread or be thread safe)
             realtimeService.setAuthToken(token)
             // Note: Realtime connection happens in ViewModel or on demand
+        }
+        
+        // Subscribe to auth token changes to keep RealtimeService in sync
+        await MainActor.run {
+            networkService.$authToken
+                .receive(on: RunLoop.main)
+                .sink { [weak self] token in
+                    guard let self = self else { return }
+                    if let token = token {
+                        self.realtimeService.setAuthToken(token)
+                    } else {
+                        self.realtimeService.disconnect()
+                    }
+                }
+                .store(in: &cancellables)
         }
         
         // Initial sync of data versions

@@ -26,7 +26,7 @@
 		<true/>
 		<key>NSExceptionDomains</key>
 		<dict>
-			<key>https://ggikmpqyhkfhctwqbytk.supabase.co</key>
+			<key>ggikmpqyhkfhctwqbytk.supabase.co</key>
 			<dict>
 				<key>NSExceptionAllowsInsecureHTTPLoads</key>
 				<true/>
