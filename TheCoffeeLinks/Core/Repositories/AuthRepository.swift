@@ -186,10 +186,10 @@ class AuthRepository {
         )
     }
     
-    func verifyOTP(code: String, phoneNumber: String) async throws -> User {
+    func verifyOTP(otp: String, phoneNumber: String) async throws -> User {
         struct OTPVerifyRequest: Encodable {
-            let code: String
             let phone: String
+            let otp: String
         }
         
         struct OTPResponse: Decodable {
@@ -251,7 +251,7 @@ class AuthRepository {
         let response: OTPResponse = try await networkService.request(
             "/api/auth/otp/verify",
             method: "POST",
-            body: OTPVerifyRequest(code: code, phone: phoneNumber)
+            body: OTPVerifyRequest(phone: phoneNumber, otp: otp)
         )
         
         await networkService.setAuthSession(accessToken: response.session.accessToken, refreshToken: response.session.refreshToken)

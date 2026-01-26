@@ -290,7 +290,7 @@ struct LoginView: View {
             
             // Centered Wrapper for Input
             AuthTextField(
-                icon: "key.fill",
+                icon: "key",
                 placeholder: "000000",
                 text: $authViewModel.otpCode,
                 keyboardType: UIKeyboardType.numberPad

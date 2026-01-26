@@ -143,7 +143,7 @@ class AuthViewModel: BaseViewModel {
         
         withLoading {
             do {
-                let user = try await self.authRepository.verifyOTP(code: code, phoneNumber: formattedNumber)
+                let user = try await self.authRepository.verifyOTP(otp: code, phoneNumber: formattedNumber)
                 
                 // Sync Realtime Token
                 if let token = DependencyContainer.shared.keychainManager.getAccessToken() {
