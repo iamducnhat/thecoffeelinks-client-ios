@@ -1,26 +1,15 @@
 {
   "fill" : {
-    "automatic-gradient" : "display-p3:0.13333,0.21569,0.14118,1.00000"
+    "automatic-gradient" : "display-p3:0.70264,0.60840,0.38184,1.00000"
   },
   "groups" : [
     {
       "layers" : [
         {
-          "fill-specializations" : [
-            {
-              "appearance" : "tinted",
-              "value" : "automatic"
-            }
-          ],
-          "image-name" : "Subtract 4.svg",
-          "name" : "Subtract 4",
-          "position" : {
-            "scale" : 0.222,
-            "translation-in-points" : [
-              0,
-              0
-            ]
-          }
+          "fill" : "none",
+          "hidden" : false,
+          "image-name" : "THE Coffee LINKS 2 2.png",
+          "name" : "THE Coffee LINKS 2 2"
         }
       ],
       "shadow" : {

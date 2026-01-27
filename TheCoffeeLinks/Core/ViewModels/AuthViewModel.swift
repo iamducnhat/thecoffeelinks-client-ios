@@ -13,7 +13,7 @@ class AuthViewModel: BaseViewModel {
         }
     }
     @Published var isAuthenticated: Bool = false
-    @Published var isPhoneVerified: Bool = false // Strict Gate
+    @Published var isPhoneVerified: Bool = true // Strict Gate: Default true to prevent flash, server will correct it.
     
     // Form fields - Phone Auth
     @Published var phoneNumber: String = ""
