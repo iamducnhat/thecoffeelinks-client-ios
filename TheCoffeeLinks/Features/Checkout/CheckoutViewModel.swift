@@ -43,7 +43,7 @@ final class CheckoutViewModel: ObservableObject {
     private let hapticService: HapticServiceProtocol
     private let orderStorage: OrderStorageProtocol
     
-    private var undoTimer: Timer?
+    private nonisolated(unsafe) var undoTimer: Timer?
     private let undoWindowDuration: TimeInterval = 30
     private var cancellables = Set<AnyCancellable>()
     
@@ -226,7 +226,11 @@ final class CheckoutViewModel: ObservableObject {
     }
     
     private func stopUndoTimer() { undoTimer?.invalidate(); undoTimer = nil }
-    deinit { undoTimer?.invalidate() }
+    
+    deinit {
+        // Timer invalidation in deinit to prevent memory leaks
+        undoTimer?.invalidate()
+    }
     
     // MARK: - Payment Handlers
     

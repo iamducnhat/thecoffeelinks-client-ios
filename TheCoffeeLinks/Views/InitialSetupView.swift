@@ -61,8 +61,9 @@ struct InitialSetupView: View {
         }
         
         UNUserNotificationCenter.current().getNotificationSettings { settings in
+            let isAuthorized = settings.authorizationStatus == .authorized
             DispatchQueue.main.async {
-                self.isNotificationAuthorized = (settings.authorizationStatus == .authorized)
+                self.isNotificationAuthorized = isAuthorized
             }
         }
     }

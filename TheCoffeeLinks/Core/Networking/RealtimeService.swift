@@ -31,27 +31,107 @@ struct AnyCodable: Codable {
     
     init(from decoder: Decoder) throws {
         let container = try decoder.singleValueContainer()
-        if let x = try? container.decode(String.self) { value = x }
-        else if let x = try? container.decode(Int.self) { value = x }
-        else if let x = try? container.decode(Double.self) { value = x }
-        else if let x = try? container.decode(Bool.self) { value = x }
-        else if let x = try? container.decode([String: AnyCodable].self) { value = x.mapValues { $0.value } }
-        else if let x = try? container.decode([AnyCodable].self) { value = x.map { $0.value } }
-        else if container.decodeNil() { value = NSNull() }
-        else { throw DecodingError.dataCorruptedError(in: container, debugDescription: "Unknown value") }
+        
+        // Try decoding in order of specificity
+        // Wrap all attempts to catch any nested decode failures
+        do {
+            if let x = try container.decode(String.self) as String? { 
+                value = x
+                return
+            }
+        } catch { }
+        
+        do {
+            if let x = try container.decode(Int.self) as Int? { 
+                value = x
+                return
+            }
+        } catch { }
+        
+        do {
+            if let x = try container.decode(Double.self) as Double? { 
+                value = x
+                return
+            }
+        } catch { }
+        
+        do {
+            if let x = try container.decode(Bool.self) as Bool? { 
+                value = x
+                return
+            }
+        } catch { }
+        
+        do {
+            if let x = try container.decode([String: AnyCodable].self) as [String: AnyCodable]? {
+                print(x)
+                value = x.mapValues { $0.value }
+                return
+            }
+        } catch { }
+        
+        do {
+            if let x = try container.decode([AnyCodable].self) as [AnyCodable]? { 
+                value = x.map { $0.value }
+                return
+            }
+        } catch { }
+        
+        if container.decodeNil() { 
+            value = NSNull()
+        }
+        else {
+            // Fallback: store null for unknown types
+            value = NSNull()
+        }
     }
     
     func encode(to encoder: Encoder) throws {
         var container = encoder.singleValueContainer()
+        
         if let x = value as? String { try container.encode(x) }
         else if let x = value as? Int { try container.encode(x) }
         else if let x = value as? Double { try container.encode(x) }
         else if let x = value as? Bool { try container.encode(x) }
         else if let x = value as? [String: Any] { 
-            let anyCodableDict = x.mapValues { AnyCodable($0) }
-            try container.encode(anyCodableDict)
+            // Safely encode dictionary by filtering out non-encodable values
+            let safeDict = x.compactMapValues { value -> AnyCodable? in
+                if value is String || value is Int || value is Double || value is Bool {
+                    return AnyCodable(value)
+                } else if let dict = value as? [String: Any] {
+                    return AnyCodable(dict)
+                } else if let arr = value as? [Any] {
+                    return AnyCodable(arr)
+                } else if value is NSNull {
+                    return AnyCodable(NSNull())
+                }
+                return nil // Skip non-encodable types
+            }
+            try container.encode(safeDict)
         }
-        else { try container.encodeNil() }
+        else if let x = value as? [Any] {
+            // Safely encode array by filtering out non-encodable values
+            let safeArray = x.compactMap { value -> AnyCodable? in
+                if value is String || value is Int || value is Double || value is Bool {
+                    return AnyCodable(value)
+                } else if let dict = value as? [String: Any] {
+                    return AnyCodable(dict)
+                } else if let arr = value as? [Any] {
+                    return AnyCodable(arr)
+                } else if value is NSNull {
+                    return AnyCodable(NSNull())
+                }
+                return nil // Skip non-encodable types
+            }
+            try container.encode(safeArray)
+        }
+        else if value is NSNull {
+            try container.encodeNil()
+        }
+        else { 
+            // For unknown types, encode nil
+            try container.encodeNil()
+        }
     }
 }
 
@@ -184,7 +264,7 @@ final class RealtimeService: ObservableObject {
     
     private func joinChannel(_ topic: String) {
         log("Joining \(topic)...")
-        let payload: [String: Any] = [
+        let _: [String: Any] = [
             "config": [
                 "postgres_changes": [
                     [
@@ -240,7 +320,9 @@ final class RealtimeService: ObservableObject {
         // log("Sending: \(message["event"] ?? "") to \(message["topic"] ?? "")")
         socket?.send(.string(string)) { [weak self] error in
             if let error = error {
-                self?.log("Send Error: \(error.localizedDescription)")
+                DispatchQueue.main.async {
+                    self?.log("Send Error: \(error.localizedDescription)")
+                }
             }
         }
     }
@@ -249,30 +331,34 @@ final class RealtimeService: ObservableObject {
         socket?.receive { [weak self] result in
             guard let self = self else { return }
             
-            switch result {
-            case .success(let message):
-                switch message {
-                case .string(let text):
-                    self.log("<< \(text.prefix(100))") // Log partial
-                    self.handleMessage(text)
-                case .data(let data):
-                    if let text = String(data: data, encoding: .utf8) {
-                        self.log("<< Data: \(text.prefix(50))")
+            DispatchQueue.main.async { [weak self] in
+                guard let self = self else { return }
+                
+                switch result {
+                case .success(let message):
+                    switch message {
+                    case .string(let text):
+                        self.log("<< \(text.prefix(100))") // Log partial
                         self.handleMessage(text)
+                    case .data(let data):
+                        if let text = String(data: data, encoding: .utf8) {
+                            self.log("<< Data: \(text.prefix(50))")
+                            self.handleMessage(text)
+                        }
+                    @unknown default:
+                        break
                     }
-                @unknown default:
-                    break
-                }
-                self.receiveMessage() // Continue listening
-                
-            case .failure(let error):
-                self.log("Receive Error: \(error.localizedDescription)")
-                self.isConnected = false
-                self.eventSubject.send(.disconnected(error))
-                
-                DispatchQueue.main.asyncAfter(deadline: .now() + 5) {
-                    self.log("Reconnecting...")
-                    self.connect()
+                    self.receiveMessage() // Continue listening
+                    
+                case .failure(let error):
+                    self.log("Receive Error: \(error.localizedDescription)")
+                    self.isConnected = false
+                    self.eventSubject.send(.disconnected(error))
+                    
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 5) {
+                        self.log("Reconnecting...")
+                        self.connect()
+                    }
                 }
             }
         }
@@ -301,14 +387,21 @@ final class RealtimeService: ObservableObject {
                 changeData = AnyCodable(message.payload)
             }
             
-            if let payloadData = try? JSONEncoder().encode(changeData),
-               let change = try? JSONDecoder().decode(PostgresChange.self, from: payloadData) {
-                
-                DispatchQueue.main.async {
-                    self.eventSubject.send(.postgresChange(change))
+            do {
+                let payloadData = try JSONEncoder().encode(changeData)
+                if let change = try? JSONDecoder().decode(PostgresChange.self, from: payloadData) {
+                    DispatchQueue.main.async {
+                        self.eventSubject.send(.postgresChange(change))
+                    }
+                } else {
+            DispatchQueue.main.async { [weak self] in
+                self?.log("Failed to decode PostgresChange from payload")
+            }
                 }
-            } else {
-                print("[Realtime] Failed to decode PostgresChange from payload")
+            } catch {
+            DispatchQueue.main.async { [weak self] in
+                self?.log("Error encoding PostgresChange payload: \(error.localizedDescription)")
+            }
             }
         }
         

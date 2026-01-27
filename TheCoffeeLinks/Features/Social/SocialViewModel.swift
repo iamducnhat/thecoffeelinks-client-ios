@@ -25,7 +25,7 @@ final class SocialViewModel: ObservableObject {
     private let socialRepository: SocialRepositoryProtocol
     private let presenceService: PresenceServiceProtocol
     private let userRepository: UserRepositoryProtocol
-    private var refreshTimer: Timer?
+    private nonisolated(unsafe) var refreshTimer: Timer?
     
     init(socialRepository: SocialRepositoryProtocol, presenceService: PresenceServiceProtocol, userRepository: UserRepositoryProtocol) {
         self.socialRepository = socialRepository
@@ -33,7 +33,14 @@ final class SocialViewModel: ObservableObject {
         self.userRepository = userRepository
     }
     
-    deinit { refreshTimer?.invalidate() }
+    nonisolated(unsafe) func getRefreshTimer() -> Timer? {
+        refreshTimer
+    }
+    
+    deinit {
+        // Timer invalidation in deinit to prevent memory leaks
+        getRefreshTimer()?.invalidate()
+    }
     
     var visiblePresences: [StorePresence] {
         presences.filter { presence in

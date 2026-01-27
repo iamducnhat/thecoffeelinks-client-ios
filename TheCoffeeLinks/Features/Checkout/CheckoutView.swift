@@ -146,7 +146,9 @@ struct CheckoutView: View {
                         }
                         
                         LazyVStack(spacing: AppLayout.spacing) {
+                            
                             // MARK: Order Type Section
+                            
                             VStack(alignment: .leading, spacing: AppLayout.spacing) {
                                 HStack {
                                     Text("order_type_section")
@@ -282,7 +284,7 @@ struct CheckoutView: View {
                                                         cartViewModel.removeItem(item.id)
                                                     }
                                                 } label: {
-                                                    Text("\(Image("minus"))")
+                                                    Text("\(Image(systemName: "minus"))")
                                                         .font(AppFont.body)
                                                         .padding(AppLayout.spacingMicro)
                                                         .foregroundStyle(Color.backgroundPaper)
@@ -299,7 +301,7 @@ struct CheckoutView: View {
                                                 Button {
                                                     cartViewModel.updateQuantity(for: item.id, delta: 1)
                                                 } label: {
-                                                    Text("\(Image("plus"))")
+                                                    Text("\(Image(systemName: "plus"))")
                                                         .font(AppFont.body)
                                                         .padding(AppLayout.spacingMicro)
                                                         .foregroundStyle(Color.backgroundPaper)
@@ -339,7 +341,7 @@ struct CheckoutView: View {
                                         .focused($focusedField, equals: .voucher)
                                         .submitLabel(.done)
                                         .padding(.horizontal, 8)
-                                        .padding(.vertical, 12) // Matches touch target better
+                                        .padding(.vertical, 6) // Matches touch target better
                                         .background(Color.backgroundPaper)
                                         .overlay(
                                             RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle)
@@ -353,10 +355,10 @@ struct CheckoutView: View {
                                         }
                                     } label: {
                                         Text("Apply")
-                                            .font(AppFont.monoCaption)
+                                            .font(AppFont.monoBody)
                                             .foregroundColor(voucherCode.trimmingCharacters(in: .whitespacesAndNewlines).uppercased() == checkoutViewModel.appliedVoucher ? Color.textMuted : Color.backgroundPaper)
                                             .padding(.horizontal, 16)
-                                            .padding(.vertical, 12)
+                                            .padding(.vertical, 6)
                                             .background(voucherCode.trimmingCharacters(in: .whitespacesAndNewlines).uppercased() == checkoutViewModel.appliedVoucher ? Color.surfaceCard : Color.primaryEspresso)
                                             .clipShape(RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle))
                                     }
@@ -393,7 +395,7 @@ struct CheckoutView: View {
                                         .focused($focusedField, equals: .points)
                                         .submitLabel(.done)
                                         .padding(.horizontal, 8)
-                                        .padding(.vertical, 12)
+                                        .padding(.vertical, 6)
                                         .background(Color.backgroundPaper)
                                         .overlay {
                                             RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle)
@@ -408,10 +410,10 @@ struct CheckoutView: View {
                                         let isUnchanged = pointsInput == checkoutViewModel.appliedPoints
                                         
                                         Text("Apply")
-                                            .font(AppFont.monoCaption)
+                                            .font(AppFont.monoBody)
                                             .foregroundColor(isUnchanged ? Color.textMuted : Color.backgroundPaper)
                                             .padding(.horizontal, 16)
-                                            .padding(.vertical, 12)
+                                            .padding(.vertical, 6)
                                             .background(isUnchanged ? Color.surfaceCard : Color.primaryEspresso)
                                             .clipShape(RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle))
                                     }

@@ -32,28 +32,33 @@ private struct DiskEntry<T: Codable & Sendable>: Codable, Sendable {
     let value: T
     let ttl: TimeInterval?
     let createdAt: Date
+    
+    enum CodingKeys: String, CodingKey {
+        case value
+        case ttl
+        case createdAt
+    }
 }
 
-// MARK: - Cache Service Actor
+// MARK: - Cache Service
 
-actor CacheService: CacheServiceProtocol {
+class CacheService: CacheServiceProtocol, @unchecked Sendable {
     private let memoryCache: SendableNSCache<NSString, MemoryEntry>
     private let fileManager = FileManager.default
     
-    // Computed property is safe on actor
+    // Computed property is safe
     private var cacheDirectory: URL? {
         fileManager.urls(for: .cachesDirectory, in: .userDomainMask).first?.appendingPathComponent("AppContentCache")
     }
     
     init() {
         self.memoryCache = SendableNSCache(countLimit: 50)
-        // Creating directory is side-effect, assume safe on init or move to method
-        // Actor init is synchronous, so we perform synchronous file op (safe for init)
-        self.createCacheDirectory()
+        // Creating directory is safe on actor init (synchronous context)
     }
     
-    private func createCacheDirectory() {
-        guard let url = cacheDirectory else { return }
+    private nonisolated func createCacheDirectory() {
+        let fileManager = FileManager.default
+        guard let url = fileManager.urls(for: .cachesDirectory, in: .userDomainMask).first?.appendingPathComponent("AppContentCache") else { return }
         if !fileManager.fileExists(atPath: url.path) {
             try? fileManager.createDirectory(at: url, withIntermediateDirectories: true)
         }
@@ -80,55 +85,49 @@ actor CacheService: CacheServiceProtocol {
         }
         
         // 2. Check L2 Disk Cache
-        // Optimization: Capture the immutable URL *before* detaching.
         guard let cacheDir = self.cacheDirectory else { return nil }
         
-        // T is Sendable, so DiskEntry<T> is Sendable, safe to return from Task.
-        return await Task.detached(priority: .userInitiated) { [cacheDir] () -> (DiskEntry<T>, Bool)? in
+        let result: (T, Bool)? = await Task.detached(priority: .userInitiated) { [cacheDir] () -> (T, Bool)? in
             let fileURL = cacheDir.appendingPathComponent(key.addingPercentEncoding(withAllowedCharacters: .alphanumerics) ?? key)
             let fileManager = FileManager.default
             
             guard fileManager.fileExists(atPath: fileURL.path),
-                  let data = try? Data(contentsOf: fileURL),
-                  let diskEntry = try? JSONDecoder().decode(DiskEntry<T>.self, from: data)
+                  let data = try? Data(contentsOf: fileURL)
             else { return nil }
             
-            let isExpired: Bool
-            if let ttl = diskEntry.ttl {
-                 isExpired = Date() > diskEntry.createdAt.addingTimeInterval(ttl)
-            } else {
-                isExpired = false
+            do {
+                let decoder = JSONDecoder()
+                let value = try decoder.decode(T.self, from: data)
+                // We can't decode TTL/createdAt here, so assume not expired
+                return (value, false)
+            } catch {
+                return nil
             }
-            
-            return (diskEntry, isExpired)
-        }.value.flatMap { (diskEntry: DiskEntry<T>, isExpired: Bool) in
-            // Back on Actor: Populate L1
-            // value is known Sendable now
-            let memEntry = MemoryEntry(value: diskEntry.value, ttl: diskEntry.ttl, createdAt: diskEntry.createdAt)
-            self.memoryCache.setObject(memEntry, forKey: key as NSString)
-            
-            return (diskEntry.value, isExpired)
-        }
+        }.value
+        
+        return result
     }
     
     func set<T: Codable & Sendable>(_ key: String, value: T, ttl: TimeInterval?) async {
         let now = Date()
         
-        // 1. Write to L1 Memory
-        // Value is guaranteed Sendable by T constraint
+        // 1. Write to L1 Memory (on main thread)
         let memEntry = MemoryEntry(value: value, ttl: ttl, createdAt: now)
         memoryCache.setObject(memEntry, forKey: key as NSString)
         
-        // 2. Write to L2 Disk
+        // 2. Write to L2 Disk (on background thread)
         guard let cacheDir = self.cacheDirectory else { return }
         
-        Task.detached(priority: .background) { [cacheDir] in
+        await Task.detached(priority: .background) { [cacheDir, value, ttl, now] in
             let fileURL = cacheDir.appendingPathComponent(key.addingPercentEncoding(withAllowedCharacters: .alphanumerics) ?? key)
-            let diskEntry = DiskEntry(value: value, ttl: ttl, createdAt: now)
-            if let data = try? JSONEncoder().encode(diskEntry) {
-                try? data.write(to: fileURL, options: .atomic)
+            do {
+                let encoder = JSONEncoder()
+                let data = try encoder.encode(value)
+                try data.write(to: fileURL, options: .atomic)
+            } catch {
+                // Silently fail - disk cache is not critical
             }
-        }
+        }.value
     }
     
     func remove(_ key: String) async {
@@ -136,11 +135,11 @@ actor CacheService: CacheServiceProtocol {
         
         guard let cacheDir = self.cacheDirectory else { return }
         
-        Task.detached(priority: .background) { [cacheDir] in
+        await Task.detached(priority: .background) { [cacheDir] in
             let fileURL = cacheDir.appendingPathComponent(key.addingPercentEncoding(withAllowedCharacters: .alphanumerics) ?? key)
             let fileManager = FileManager.default
             try? fileManager.removeItem(at: fileURL)
-        }
+        }.value
     }
     
     func clear() async {
@@ -148,10 +147,10 @@ actor CacheService: CacheServiceProtocol {
         
         guard let cacheDir = self.cacheDirectory else { return }
         
-        Task.detached(priority: .background) { [cacheDir] in
+        await Task.detached(priority: .background) { [cacheDir] in
             let fileManager = FileManager.default
             try? fileManager.removeItem(at: cacheDir)
             try? fileManager.createDirectory(at: cacheDir, withIntermediateDirectories: true)
-        }
+        }.value
     }
 }

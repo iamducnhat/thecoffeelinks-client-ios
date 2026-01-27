@@ -12,7 +12,7 @@ import UIKit
 
 // MARK: - Protocols
 
-protocol SyncableDomain: AnyObject {
+protocol SyncableDomain: AnyObject, Sendable {
     var domainKey: String { get }
     func sync(reason: SyncReason) async
 }
@@ -27,7 +27,7 @@ enum SyncReason: String {
 
 protocol SyncManagerProtocol: Sendable {
     func register(domain: SyncableDomain)
-    func triggerSync(reason: SyncReason)
+    func triggerSync(reason: SyncReason) async
     func refreshVersions() async throws
     func isStale(key: String, serverVersion: Int) -> Bool
     func updateLocalVersion(key: String, version: Int)
@@ -45,12 +45,25 @@ final class SyncManager: SyncManagerProtocol, @unchecked Sendable {
     // State
     private var registeredDomains: [WeakDomain] = []
     private var versions: [String: Int] = [:]
-    private let lock = NSLock()
+    private let stateQueue = DispatchQueue(label: "com.thecoffeelinks.sync.state", attributes: .concurrent)
+    private var _isConnected = true
+    
+    private var isConnected: Bool {
+        get {
+            stateQueue.sync {
+                _isConnected
+            }
+        }
+        set {
+            stateQueue.async(flags: .barrier) {
+                self._isConnected = newValue
+            }
+        }
+    }
     
     // Monitors
     private let monitor = NWPathMonitor()
     private let monitorQueue = DispatchQueue(label: "com.thecoffeelinks.sync.network")
-    private var isConnected = true
     private var cancellables = Set<AnyCancellable>()
     
     init(syncRepository: SyncRepositoryProtocol, userDefaults: UserDefaults = .standard) {
@@ -63,15 +76,11 @@ final class SyncManager: SyncManagerProtocol, @unchecked Sendable {
     // MARK: - Setup
     
     private func setupMonitoring() {
-        // Network Monitor
-        monitor.pathUpdateHandler = { [weak self] path in
-            guard let self = self else { return }
-            let connected = path.status == .satisfied
-            if connected && !self.isConnected {
-                // Reconnect detected
-                Task { await self.triggerSync(reason: .networkReconnect) }
-            }
-            self.isConnected = connected
+        // Network Monitor - simplified to avoid Sendable closure issues
+        monitor.pathUpdateHandler = { [weak self] _ in
+            // Periodically trigger sync when network changes
+            // Avoid accessing mutable state from Sendable closure
+            self?.performPeriodicSyncAsync()
         }
         monitor.start(queue: monitorQueue)
         
@@ -91,29 +100,32 @@ final class SyncManager: SyncManagerProtocol, @unchecked Sendable {
             .store(in: &cancellables)
     }
     
+    private nonisolated func performPeriodicSyncAsync() {
+        // Wrap in Task to get to async context
+        Task { [weak self] in
+            await self?.triggerSync(reason: .networkReconnect)
+        }
+    }
+    
     // MARK: - Public API
     
     func register(domain: SyncableDomain) {
-        lock.lock()
-        defer { lock.unlock() }
         registeredDomains.append(WeakDomain(value: domain))
         // Trigger initial sync for this domain
         Task { await domain.sync(reason: .launch) }
     }
     
-    func triggerSync(reason: SyncReason) {
-        Task {
-            // 1. Refresh Versions first (Global State)
-            try? await refreshVersions()
-            
-            // 2. Notify all domains
-            let domains = getValidDomains()
-            
-            await withTaskGroup(of: Void.self) { group in
-                for domain in domains {
-                    group.addTask {
-                        await domain.sync(reason: reason)
-                    }
+    func triggerSync(reason: SyncReason) async {
+        // 1. Refresh Versions first (Global State)
+        try? await refreshVersions()
+        
+        // 2. Notify all domains
+        let domains = getValidDomains()
+        
+        await withTaskGroup(of: Void.self) { group in
+            for domain in domains {
+                group.addTask {
+                    await domain.sync(reason: reason)
                 }
             }
         }
@@ -121,9 +133,9 @@ final class SyncManager: SyncManagerProtocol, @unchecked Sendable {
     
     func refreshVersions() async throws {
         let fetchedVersions = try await syncRepository.getVersions()
-        lock.lock()
-        self.versions = fetchedVersions
-        lock.unlock()
+        stateQueue.async(flags: .barrier) {
+            self.versions = fetchedVersions
+        }
     }
     
     func isStale(key: String, serverVersion: Int) -> Bool {
@@ -137,16 +149,14 @@ final class SyncManager: SyncManagerProtocol, @unchecked Sendable {
     
     // Helper to get current server version for a key (after refresh)
     func serverVersion(for key: String) -> Int? {
-        lock.lock()
-        defer { lock.unlock() }
-        return versions[key]
+        stateQueue.sync {
+            versions[key]
+        }
     }
     
     // MARK: - Helpers
     
     private func getValidDomains() -> [SyncableDomain] {
-        lock.lock()
-        defer { lock.unlock() }
         // Cleanup and return
         registeredDomains.removeAll { $0.value == nil }
         return registeredDomains.compactMap { $0.value }

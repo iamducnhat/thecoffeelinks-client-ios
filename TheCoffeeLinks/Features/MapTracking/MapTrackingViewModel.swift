@@ -22,7 +22,7 @@ final class MapTrackingViewModel: ObservableObject {
     private let orderId: String
     private let deliveryRepository: DeliveryRepositoryProtocol
     private let locationService: LocationServiceProtocol
-    private var refreshTimer: Timer?
+    private nonisolated(unsafe) var refreshTimer: Timer?
     
     init(orderId: String, deliveryRepository: DeliveryRepositoryProtocol, locationService: LocationServiceProtocol) {
         self.orderId = orderId
@@ -30,7 +30,14 @@ final class MapTrackingViewModel: ObservableObject {
         self.locationService = locationService
     }
     
-    deinit { refreshTimer?.invalidate() }
+    nonisolated(unsafe) func getRefreshTimer() -> Timer? {
+        refreshTimer
+    }
+    
+    deinit {
+        // Timer invalidation in deinit to prevent memory leaks
+        getRefreshTimer()?.invalidate()
+    }
     
     var driverName: String { tracking?.driverName ?? "Driver" }
     var driverPhone: String? { tracking?.driverPhone }

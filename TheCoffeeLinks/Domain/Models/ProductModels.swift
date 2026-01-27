@@ -480,9 +480,14 @@ extension NumberFormatter {
 extension Double {
 
     /// Vietnamese Dong, symbol attached tightly to number (e.g. 10.000₫)
-    var formattedVND: String {
-        let raw = NumberFormatter.vndTight
-            .string(from: NSNumber(value: self)) ?? "\(Int(self))₫"
+    nonisolated var formattedVND: String {
+        let formatter = NumberFormatter()
+        formatter.numberStyle = .currency
+        formatter.locale = Locale(identifier: "vi_VN")
+        formatter.currencyCode = "VND"
+        formatter.maximumFractionDigits = 0
+        
+        let raw = formatter.string(from: NSNumber(value: self)) ?? "\(Int(self))₫"
         
         // Remove all spaces (including non-breaking space)
         return raw.replacingOccurrences(

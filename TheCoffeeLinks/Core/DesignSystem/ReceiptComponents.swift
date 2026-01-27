@@ -12,7 +12,7 @@ import SwiftUI
 
 /// Zig-zag line separator mimicking receipt paper tear
 struct WaveSeparator: Shape {
-    var stepWidth: CGFloat = AppLayout.waveStepWidth
+    var stepWidth: CGFloat = 4.0
     
     func path(in rect: CGRect) -> Path {
         var path = Path()
@@ -38,7 +38,7 @@ struct WaveSeparator: Shape {
 
 /// Filled rectangle with wave edge (for backgrounds)
 struct WaveRect: Shape {
-    var stepWidth: CGFloat = AppLayout.waveStepWidth
+    var stepWidth: CGFloat = 4.0
     var waveEdge: WaveEdge = .top
     
     enum WaveEdge {
