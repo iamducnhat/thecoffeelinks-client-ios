@@ -28,6 +28,7 @@ struct CheckoutView: View {
     @State private var scrollOffset = CGFloat.zero
     @State private var voucherCode: String = ""
     @State private var redeemPoints: String = ""
+    @State private var savedStoreId: String = ""
     @State private var showSuccess = false
     @State private var orderError: String?
     @State private var orderLog: [String] = []
@@ -600,12 +601,27 @@ struct CheckoutView: View {
         }
         .onAppear {
             syncCartWithSelection()
-            // Restore saved textfield values
+            // Restore saved textfield and store values
             voucherCode = UserDefaults.standard.string(forKey: "checkoutVoucherCode") ?? ""
             redeemPoints = UserDefaults.standard.string(forKey: "checkoutRedeemPoints") ?? ""
+            savedStoreId = UserDefaults.standard.string(forKey: "checkoutSelectedStoreId") ?? ""
+            // Restore store selection if saved
+            if !savedStoreId.isEmpty {
+                // Find and select the store if it exists
+                Task {
+                    if let stores = await storeViewModel.fetchStores() {
+                        if let store = stores.first(where: { $0.id == savedStoreId }) {
+                            storeViewModel.selectedStore = store
+                        }
+                    }
+                }
+            }
         }
-        .onChange(of: storeViewModel.selectedStore) { _ in
+        .onChange(of: storeViewModel.selectedStore) { newStore in
             syncCartWithSelection()
+            if let store = newStore {
+                savedStoreId = store.id
+            }
         }
         .onChange(of: deliveryViewModel.selectedAddress) { _ in
             syncCartWithSelection()
@@ -626,9 +642,10 @@ struct CheckoutView: View {
             }
         }
         .onDisappear {
-            // Save textfield values when view is dismissed
+            // Save all values when view is dismissed
             UserDefaults.standard.set(voucherCode, forKey: "checkoutVoucherCode")
             UserDefaults.standard.set(redeemPoints, forKey: "checkoutRedeemPoints")
+            UserDefaults.standard.set(savedStoreId, forKey: "checkoutSelectedStoreId")
         }
     }
     
