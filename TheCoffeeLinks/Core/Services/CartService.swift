@@ -20,12 +20,14 @@ protocol CartServiceProtocol {
 final class CartService: CartServiceProtocol {
     private let networkService: NetworkServiceProtocol
     private let cartStorage: CartStorageProtocol
+    private let productRepository: ProductRepositoryProtocol
     
     // In-memory dirty flag or queue could be added here for robust sync manager
     
-    init(networkService: NetworkServiceProtocol, cartStorage: CartStorageProtocol) {
+    init(networkService: NetworkServiceProtocol, cartStorage: CartStorageProtocol, productRepository: ProductRepositoryProtocol) {
         self.networkService = networkService
         self.cartStorage = cartStorage
+        self.productRepository = productRepository
     }
     
     // MARK: - Local First API
@@ -43,7 +45,8 @@ final class CartService: CartServiceProtocol {
             throw CartError.failedToFetch
         }
         
-        let mappedCart = mapToDomainCart(cartData)
+        // Hydrate from product repository
+        let mappedCart = try await mapToDomainCart(cartData)
         
         // RECONCILE: Simple Last-Write-Wins or Server Authoritative
         // For Cart, Server is usually authoritative on Price/Availability.
@@ -63,7 +66,7 @@ final class CartService: CartServiceProtocol {
             throw CartError.failedToAdd
         }
         
-        let mappedCart = mapToDomainCart(cartData)
+        let mappedCart = try await mapToDomainCart(cartData)
         try? cartStorage.saveCart(mappedCart)
         return mappedCart
     }
@@ -119,7 +122,7 @@ final class CartService: CartServiceProtocol {
                 let response: CartResponse = try await networkService.post("/api/cart/items", body: payload, encoder: nil)
                 
                 if response.success, let serverCartData = response.cart {
-                    let serverCart = mapToDomainCart(serverCartData)
+                    let serverCart = try await mapToDomainCart(serverCartData)
                     // Replace Local to ensure consistency
                     try? cartStorage.saveCart(serverCart)
                     // Ideally notify listeners here
@@ -139,14 +142,19 @@ final class CartService: CartServiceProtocol {
     
     // MARK: - Mappers
     
-    private func mapToDomainCart(_ serverCart: ServerCart) -> Cart {
+    private func mapToDomainCart(_ serverCart: ServerCart) async throws -> Cart {
         var mergedItems: [String: CartItem] = [:]
         var orderedKeys: [String] = [] // To preserve server order if possible, or just stability
+        
+        // Fetch full menu to resolve products
+        // This is efficient because getMenu() caches aggressively
+        let menu = try await productRepository.getMenu()
+        let productsMap = Dictionary(uniqueKeysWithValues: menu.products.map { ($0.id, $0) })
         
         let storeId = serverCart.store_id ?? ""
         
         for item in serverCart.items {
-            if let product = mapToProduct(item.product) {
+            if let product = productsMap[item.product_id] {
                 // Parse Customization
                 var customization = OrderCustomization.default
                 if let mods = item.modifiers {
@@ -190,31 +198,6 @@ final class CartService: CartServiceProtocol {
         
         return cart
     }
-    
-    private func mapToProduct(_ serverProduct: ServerProduct) -> Product? {
-        let sizeOpts = serverProduct.size_options_list 
-        
-        return Product(
-            id: serverProduct.id,
-            name: serverProduct.name,
-            description: serverProduct.description ?? "",
-            categoryId: "unknown",
-            categoryName: serverProduct.category,
-            imageUrl: serverProduct.image ?? "",
-            basePrice: Double(serverProduct.price ?? serverProduct.price_min ?? 0),
-            sizeOptions: sizeOpts,
-            availableToppings: serverProduct.available_toppings ?? [],
-            isPopular: serverProduct.is_popular,
-            isNew: serverProduct.is_new,
-            isActive: true,
-            isHotSupported: false,
-            isDeliverable: true,
-            deliveryPrepMinutes: nil,
-            tags: [],
-            nutritionInfo: nil,
-            allergens: []
-        )
-    }
 }
 
 // MARK: - DTOs
@@ -241,6 +224,24 @@ struct ServerCart: Decodable {
     let total_amount: Double
     let store_id: String?
     let voucher_code: String?
+    
+    enum CodingKeys: String, CodingKey {
+        case id, items, subtotal, total_amount, store_id, voucher_code
+    }
+    
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        id = try container.decode(String.self, forKey: .id)
+        
+        // Robust decoding: Skip invalid items instead of failing the whole cart
+        let safeItems = try container.decode([SafeDecodable<ServerCartItem>].self, forKey: .items)
+        items = safeItems.compactMap { $0.value }
+        
+        subtotal = try container.decode(Double.self, forKey: .subtotal)
+        total_amount = try container.decode(Double.self, forKey: .total_amount)
+        store_id = try container.decodeIfPresent(String.self, forKey: .store_id)
+        voucher_code = try container.decodeIfPresent(String.self, forKey: .voucher_code)
+    }
 }
 
 struct ServerCartItem: Decodable {
@@ -249,51 +250,24 @@ struct ServerCartItem: Decodable {
     let quantity: Int
     let modifiers: OrderCustomization?
     let price_snapshot: Double
-    let product: ServerProduct
 }
 
-struct ServerProduct: Decodable {
-    let id: String
-    let name: String
-    let description: String?
-    let price: Int? 
-    let price_min: Int?
-    let image: String?
-    let category: String?
-    let is_popular: Bool
-    let is_new: Bool
-    let size_options: [String: ServerSizeOption]?
-    let available_toppings: [String]?
-    
-    var size_options_list: [SizeOption] {
-        guard let opts = size_options else { return [] }
-        var list: [SizeOption] = []
-        for (key, val) in opts {
-            if let size = ProductSize(rawValue: key) ?? ProductSize(rawValue: key.uppercased()) {
-                 list.append(SizeOption(size: size, price: val.price, isEnabled: val.enabled))
-            } else {
-                let s: ProductSize
-                switch key.lowercased() {
-                case "s", "small": s = .small
-                case "m", "medium": s = .medium
-                case "l", "large": s = .large
-                default: continue
-                }
-                list.append(SizeOption(size: s, price: val.price, isEnabled: val.enabled))
-            }
-        }
-        return list
-    }
-}
 
-struct ServerSizeOption: Decodable {
-    let price: Double
-    let enabled: Bool
-}
 
 struct AddItemPayload: Encodable {
     let product_id: String
     let quantity: Int
     let modifiers: OrderCustomization
     let key: String?
+}
+
+// MARK: - Safe Decoding
+
+struct SafeDecodable<T: Decodable>: Decodable {
+    let value: T?
+    
+    init(from decoder: Decoder) throws {
+        let container = try decoder.singleValueContainer()
+        self.value = try? container.decode(T.self)
+    }
 }

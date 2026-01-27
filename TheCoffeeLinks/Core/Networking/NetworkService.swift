@@ -190,10 +190,10 @@ class NetworkService: ObservableObject {
     
     func request<T: Decodable>(_ endpoint: String, method: String = "GET", body: Encodable? = nil, queryItems: [URLQueryItem]? = nil, encoder: JSONEncoder? = nil) async throws -> T {
         do {
-            return try await _performRequest(endpoint, method: method, body: body, queryItems: queryItems, encoder: encoder)
+            return try await _performRequest(endpoint, method: method, body: body, queryItems: queryItems, encoder: encoder, includeAppAttest: true)
         } catch NetworkError.unauthorized {
             if await refreshAuthToken() {
-                return try await _performRequest(endpoint, method: method, body: body, queryItems: queryItems, encoder: encoder)
+                return try await _performRequest(endpoint, method: method, body: body, queryItems: queryItems, encoder: encoder, includeAppAttest: true)
             } else {
                 throw NetworkError.unauthorized
             }
@@ -202,7 +202,7 @@ class NetworkService: ObservableObject {
         }
     }
 
-    private func _performRequest<T: Decodable>(_ endpoint: String, method: String = "GET", body: Encodable? = nil, queryItems: [URLQueryItem]? = nil, isRetry: Bool = false, encoder: JSONEncoder? = nil) async throws -> T {
+    private func _performRequest<T: Decodable>(_ endpoint: String, method: String = "GET", body: Encodable? = nil, queryItems: [URLQueryItem]? = nil, isRetry: Bool = false, encoder: JSONEncoder? = nil, includeAppAttest: Bool = false) async throws -> T {
         var urlComponents = URLComponents(string: baseURL + endpoint)
         urlComponents?.queryItems = queryItems
         
@@ -225,6 +225,26 @@ class NetworkService: ObservableObject {
         
         if let token = authToken {
             request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        }
+        
+        // Add App Attest headers for protected endpoints
+        if includeAppAttest {
+            let bodyData: Data?
+            if let body = body {
+                let actualEncoder = encoder ?? self.encoder
+                bodyData = try? actualEncoder.encode(body)
+            } else {
+                bodyData = nil
+            }
+            
+            if let attestHeaders = try? await AppAttestNetworkInterceptor.shared.prepareRequest(
+                endpoint: endpoint,
+                body: bodyData
+            ) {
+                request.setValue(attestHeaders.keyId, forHTTPHeaderField: "X-App-Attest-Key-Id")
+                request.setValue(attestHeaders.assertion, forHTTPHeaderField: "X-App-Attest-Assertion")
+                request.setValue(attestHeaders.challenge, forHTTPHeaderField: "X-App-Attest-Challenge")
+            }
         }
         
         if let body = body {
@@ -272,7 +292,7 @@ class NetworkService: ObservableObject {
         }
         
         if let responseString = String(data: data, encoding: .utf8) {
-            print("📡 Response Body: \(responseString)")
+            print("📡 Response Body: \(responseString.prefix(40))")
         }
         
         switch httpResponse.statusCode {
@@ -359,7 +379,7 @@ class NetworkService: ObservableObject {
         }
         print("📡 Response Status: \(httpResponse.statusCode)")
         if let responseString = String(data: data, encoding: .utf8) {
-            print("📡 Response Body: \(responseString)")
+            print("📡 Response Body: \(responseString.prefix(40))")
         }
         
         if !(200...299).contains(httpResponse.statusCode) {
@@ -404,7 +424,7 @@ class NetworkService: ObservableObject {
         }
         print("📡 Response Status: \(httpResponse.statusCode)")
         if let responseString = String(data: data, encoding: .utf8) {
-            print("📡 Response Body: \(responseString)")
+            print("📡 Response Body: \(responseString.prefix(40))")
         }
         switch httpResponse.statusCode {
         case 200...299:

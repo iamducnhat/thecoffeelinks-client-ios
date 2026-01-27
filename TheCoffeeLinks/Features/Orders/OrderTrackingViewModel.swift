@@ -78,14 +78,18 @@ class OrderTrackingViewModel: ObservableObject {
     }
     
     func setUserId(_ id: String) {
-        guard self.userId != id || activeOrders.isEmpty else { return }
+        let isNewUser = self.userId != id
         self.userId = id
         
-        // Reset state
-        self.activeOrders = []
-        self.errorMessage = nil
+        if isNewUser {
+            // Reset state for new user
+            self.activeOrders = []
+            self.errorMessage = nil
+            setupRealtime()
+        }
         
-        setupRealtime()
+        // Always attempt a fetch when setUserId is called (e.g. onAppear), 
+        // to ensure we have the latest state even if the userId hasn't changed.
         Task { await fetchActiveOrders() }
     }
     

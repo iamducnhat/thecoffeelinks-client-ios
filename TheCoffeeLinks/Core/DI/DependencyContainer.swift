@@ -22,7 +22,7 @@ class DependencyContainer: ObservableObject {
     }
     
     private var apiBaseURL: String {
-        (config?["API_BASE_URL"] as? String)?.trimmingCharacters(in: CharacterSet(charactersIn: "/")) ?? "https://api.thecoffeelinksvn.com"
+        (config?["API_BASE_URL"] as? String)?.trimmingCharacters(in: CharacterSet(charactersIn: "/")) ?? "https://api.thecoffeelinks.vn"
     }
     
     // Extracted from Config or Fallback to known project
@@ -64,7 +64,7 @@ class DependencyContainer: ObservableObject {
     private(set) lazy var cartStorage = CartStorage()
     private(set) lazy var storeStorage = StoreStorage()
     private(set) lazy var profileStorage = ProfileStorage()
-    private(set) lazy var cartService = CartService(networkService: networkService, cartStorage: cartStorage)
+    private(set) lazy var cartService = CartService(networkService: networkService, cartStorage: cartStorage, productRepository: productRepository)
     
     private var cancellables = Set<AnyCancellable>()
     

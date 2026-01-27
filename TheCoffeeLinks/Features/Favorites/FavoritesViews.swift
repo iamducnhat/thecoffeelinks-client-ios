@@ -5,7 +5,7 @@ struct FavoritesManagementView: View {
     
     var body: some View {
         List {
-            ForEach(vm.favorites) { item in
+            ForEach(vm.favorites, id: \.id) { item in
                 HStack {
                     VStack(alignment: .leading) {
                         Text(item.product.name).font(.headline)
@@ -47,7 +47,7 @@ struct FavoritesSection: View {
             
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: 16) {
-                    ForEach(vm.favorites) { item in
+                    ForEach(vm.favorites, id: \.id) { item in
                         FavoriteCard(item: item)
                     }
                 }

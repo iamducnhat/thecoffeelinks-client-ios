@@ -130,44 +130,65 @@ class AuthRepository {
                 }
             }
             
-            struct SupabaseUser: Decodable {
-                let id: String
-                let phone: String?
-                let phoneVerified: Bool?
-                let phoneVerificationStatus: String?
-                let userMetadata: UserMetadata?
-                
-                enum CodingKeys: String, CodingKey {
-                    case id, phone
-                    case phoneVerified = "phone_verified"
-                    case phoneVerificationStatus = "phone_verification_status"
-                    case userMetadata = "user_metadata"
-                }
-                
-                struct UserMetadata: Decodable {
-                    let fullName: String?
-                }
-                
-                func toDomain() -> User {
-                    let display = userMetadata?.fullName ?? phone ?? "User"
-                    // Map status string to enum
-                    let status = PhoneVerificationStatus(rawValue: phoneVerificationStatus ?? "") ?? .unverified
+                struct SupabaseUser: Decodable {
+                    let id: String
+                    let phone: String?
+                    let phoneVerified: Bool?
+                    let phoneVerificationStatus: String?
+                    let userMetadata: UserMetadata?
                     
-                    return User(
-                        id: id,
-                        email: nil,
-                        phone: phone,
-                        phoneVerified: phoneVerified ?? false,
-                        phoneVerificationStatus: status,
-                        displayName: display,
-                        avatarUrl: nil,
-                        membershipTier: .bronze,
-                        points: 0,
-                        createdAt: Date(),
-                        preferences: .default
-                    )
+                    enum CodingKeys: String, CodingKey {
+                        case id, phone
+                        case phoneVerified = "phone_verified"
+                        case phoneVerificationStatus = "phone_verification_status"
+                        case userMetadata = "user_metadata"
+                    }
+                    
+                    struct UserMetadata: Decodable {
+                        let fullName: String?
+                    }
+                    
+                    func toDomain() -> User {
+                        let display = userMetadata?.fullName ?? phone ?? "User"
+                        
+                        // Strict Status Mapping
+                        // Precedence: 
+                        // 1. phone_verification_status column (NEW schema)
+                        // 2. phone_verified boolean (Old schema/Supabase default)
+                        
+                        var status: PhoneVerificationStatus = .unverified
+                        
+                        if let statusStr = phoneVerificationStatus, !statusStr.isEmpty {
+                            if let mapped = PhoneVerificationStatus(rawValue: statusStr) {
+                                status = mapped
+                            } else {
+                                // Fallback for unknown strings, treated as unverified unless explicitly 'verified'
+                                status = (statusStr == "verified") ? .verified : .unverified
+                            }
+                        } else {
+                            // Legacy fallback
+                            if let verified = phoneVerified, verified {
+                                status = .verified
+                            } else {
+                                status = .unverified
+                            }
+                        }
+                        
+                        return User(
+                            id: id,
+                            email: nil,
+                            phone: phone,
+                            phoneVerified: status == .verified,
+                            phoneVerificationStatus: status,
+                            displayName: display,
+                            avatarUrl: nil,
+                            membershipTier: .bronze,
+                            points: 0,
+                            createdAt: Date(),
+                            preferences: .default
+                        )
+                    }
                 }
-            }
         }
         
         let response: LoginResponse = try await networkService.request(
@@ -196,6 +217,14 @@ class AuthRepository {
     }
     
     func verifyOTP(otp: String, phoneNumber: String) async throws -> User {
+        // Generate App Attest challenge before sending request
+        let attestService = AppAttestService.shared
+        
+        // Ensure App Attest is registered first
+        if attestService.isAvailable && !attestService.isRegistered {
+            _ = try? await attestService.generateKey()
+        }
+        
         struct OTPVerifyRequest: Encodable {
             let phone: String
             let otp: String

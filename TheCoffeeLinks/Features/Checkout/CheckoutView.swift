@@ -38,6 +38,13 @@ struct CheckoutView: View {
     @State private var showDeliverySheet = false
     @State private var showStoreSheet = false
     
+    @FocusState private var focusedField: CheckoutField?
+    
+    enum CheckoutField: Hashable {
+        case voucher
+        case points
+    }
+    
     private var locationDisplayString: String {
         if cartViewModel.cart.mode == .delivery {
             return deliveryViewModel.selectedAddress?.shortAddress ?? String(localized: "select_delivery_address")
@@ -325,15 +332,36 @@ struct CheckoutView: View {
                                     .font(AppFont.sectionHeader)
                                     .foregroundColor(Color.textInk)
                                 
-                                TextField("promotion_code_placeholder", text: $voucherCode)
-                                    .textFieldStyle(PlainTextFieldStyle())
-                                    .font(AppFont.monoBody)
-                                    .padding(.horizontal, 8)
-                                    .padding(.vertical, 6)
-                                    .overlay {
-                                        RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle)
-                                            .stroke(Color.borderTertiary, style: StrokeStyle(lineWidth: 1, dash: AppLayout.dashedPattern))
+                                HStack(spacing: 8) {
+                                    TextField("promotion_code_placeholder", text: $voucherCode)
+                                        .textFieldStyle(PlainTextFieldStyle())
+                                        .font(AppFont.monoBody)
+                                        .focused($focusedField, equals: .voucher)
+                                        .submitLabel(.done)
+                                        .padding(.horizontal, 8)
+                                        .padding(.vertical, 12) // Matches touch target better
+                                        .background(Color.backgroundPaper)
+                                        .overlay(
+                                            RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle)
+                                                .stroke(Color.borderTertiary, style: StrokeStyle(lineWidth: 1, dash: AppLayout.dashedPattern))
+                                        )
+                                    
+                                    Button {
+                                        focusedField = nil // Dismiss keyboard
+                                        Task {
+                                            await checkoutViewModel.applyVoucher(code: voucherCode, cartViewModel: cartViewModel)
+                                        }
+                                    } label: {
+                                        Text("Apply")
+                                            .font(AppFont.monoCaption)
+                                            .foregroundColor(voucherCode.trimmingCharacters(in: .whitespacesAndNewlines).uppercased() == checkoutViewModel.appliedVoucher ? Color.textMuted : Color.backgroundPaper)
+                                            .padding(.horizontal, 16)
+                                            .padding(.vertical, 12)
+                                            .background(voucherCode.trimmingCharacters(in: .whitespacesAndNewlines).uppercased() == checkoutViewModel.appliedVoucher ? Color.surfaceCard : Color.primaryEspresso)
+                                            .clipShape(RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle))
                                     }
+                                    .disabled(voucherCode.trimmingCharacters(in: .whitespacesAndNewlines).uppercased() == checkoutViewModel.appliedVoucher)
+                                }
                             }
                             .frame(maxWidth: .infinity, alignment: .leading)
                             
@@ -357,16 +385,53 @@ struct CheckoutView: View {
                                 )
                                 .font(AppFont.body)
                                 
-                                TextField("redeem_points_placeholder", text: $redeemPoints)
-                                    .textFieldStyle(PlainTextFieldStyle())
-                                    .font(AppFont.monoBody)
-                                    .keyboardType(.numberPad)
-                                    .padding(.horizontal, 8)
-                                    .padding(.vertical, 6)
-                                    .overlay {
-                                        RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle)
-                                            .stroke(Color.borderTertiary, style: StrokeStyle(lineWidth: 1, dash: AppLayout.dashedPattern))
+                                HStack(spacing: 8) {
+                                    TextField("redeem_points_placeholder", text: $redeemPoints)
+                                        .textFieldStyle(PlainTextFieldStyle())
+                                        .font(AppFont.monoBody)
+                                        .keyboardType(.numberPad)
+                                        .focused($focusedField, equals: .points)
+                                        .submitLabel(.done)
+                                        .padding(.horizontal, 8)
+                                        .padding(.vertical, 12)
+                                        .background(Color.backgroundPaper)
+                                        .overlay {
+                                            RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle)
+                                                .stroke(Color.borderTertiary, style: StrokeStyle(lineWidth: 1, dash: AppLayout.dashedPattern))
+                                        }
+                                    
+                                    Button {
+                                        focusedField = nil
+                                        checkoutViewModel.applyPoints(input: redeemPoints, availablePoints: points, cartViewModel: cartViewModel)
+                                    } label: {
+                                        let pointsInput = Int(redeemPoints.trimmingCharacters(in: .whitespacesAndNewlines))
+                                        let isUnchanged = pointsInput == checkoutViewModel.appliedPoints
+                                        
+                                        Text("Apply")
+                                            .font(AppFont.monoCaption)
+                                            .foregroundColor(isUnchanged ? Color.textMuted : Color.backgroundPaper)
+                                            .padding(.horizontal, 16)
+                                            .padding(.vertical, 12)
+                                            .background(isUnchanged ? Color.surfaceCard : Color.primaryEspresso)
+                                            .clipShape(RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle))
                                     }
+                                    .disabled(Int(redeemPoints.trimmingCharacters(in: .whitespacesAndNewlines)) == checkoutViewModel.appliedPoints)
+                                }
+                                
+                                // Inline Validation Error
+                                if let warning = checkoutViewModel.warning {
+                                    Text(warning)
+                                        .font(AppFont.uiCaption)
+                                        .foregroundColor(Color.semanticError)
+                                        .transition(.opacity)
+                                }
+                                
+                                // Applied Confirmation
+                                if checkoutViewModel.appliedPoints > 0 {
+                                    Text("Points applied: -\(cartViewModel.pointsDiscount.formattedVND)")
+                                        .font(AppFont.monoCaption)
+                                        .foregroundColor(Color.primaryEspresso)
+                                }
                             }
                             .frame(maxWidth: .infinity, alignment: .leading)
                             
@@ -533,6 +598,9 @@ struct CheckoutView: View {
         }
         .onAppear {
             syncCartWithSelection()
+            // Restore saved textfield values
+            voucherCode = UserDefaults.standard.string(forKey: "checkoutVoucherCode") ?? ""
+            redeemPoints = UserDefaults.standard.string(forKey: "checkoutRedeemPoints") ?? ""
         }
         .onChange(of: storeViewModel.selectedStore) { _ in
             syncCartWithSelection()
@@ -542,6 +610,23 @@ struct CheckoutView: View {
         }
         .onChange(of: cartViewModel.cart.mode) { _ in
             syncCartWithSelection()
+        }
+        .onChange(of: focusedField) { newField in
+            // Apply logic when focus is lost (newField is nil or different)
+            if newField != .voucher {
+                Task {
+                    await checkoutViewModel.applyVoucher(code: voucherCode, cartViewModel: cartViewModel)
+                }
+            }
+            if newField != .points {
+                let points = authViewModel.currentUser?.points ?? 0
+                checkoutViewModel.applyPoints(input: redeemPoints, availablePoints: points, cartViewModel: cartViewModel)
+            }
+        }
+        .onDisappear {
+            // Save textfield values when view is dismissed
+            UserDefaults.standard.set(voucherCode, forKey: "checkoutVoucherCode")
+            UserDefaults.standard.set(redeemPoints, forKey: "checkoutRedeemPoints")
         }
     }
     
@@ -564,7 +649,8 @@ struct CheckoutView: View {
         Task {
             orderLog.append(String(localized: "status_creating_order"))
             
-            let points = Int(redeemPoints)
+            // Use applied points if valid, otherwise try parsing raw input (but applied is safer)
+            let points = checkoutViewModel.appliedPoints
             _ = await checkoutViewModel.placeOrder(cart: cartViewModel.cart, pointsToRedeem: points, voucherCode: voucherCode)
             
             if checkoutViewModel.showingPaymentWebView {

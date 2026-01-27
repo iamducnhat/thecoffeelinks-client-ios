@@ -19,8 +19,8 @@ class OrdersViewModel: ObservableObject {
             do {
                 let response = try await repository.getOrders(status: nil, limit: 100, offset: 0)
                 let allOrders = response.orders
-                self.activeOrders = allOrders.filter { $0.status == .pending || $0.status == .placed || $0.status == .preparing || $0.status == .delivering }
-                self.historyOrders = allOrders.filter { $0.status == .completed || $0.status == .cancelled }
+                self.activeOrders = allOrders.filter { $0.status.isActive }
+                self.historyOrders = allOrders.filter { !$0.status.isActive }
                 self.isLoading = false
             } catch {
                 print("Error fetching orders: \(error)")

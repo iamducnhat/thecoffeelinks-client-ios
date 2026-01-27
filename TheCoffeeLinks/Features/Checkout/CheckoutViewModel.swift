@@ -20,10 +20,20 @@ final class CheckoutViewModel: ObservableObject {
     @Published var undoTimeRemaining: TimeInterval = 0
     @Published var showingUndoBanner = false
     
+    @Published var warning: String? // Non-blocking warning (e.g. invalid points)
+    
     // VNPay Support
     @Published var showingPaymentWebView = false
     @Published var paymentUrl: URL?
     @Published var paymentResult: PaymentWebView.PaymentResult?
+    
+    // Applied State
+    @Published var appliedPoints: Int = 0
+    @Published var appliedVoucher: String?
+    
+    // Constants
+    private let pointsRedemptionRate: Double = 1000.0 // 1 Point = 1000 VND
+
     
     private let orderRepository: OrderRepositoryProtocol
     private let deliveryRepository: DeliveryRepositoryProtocol
@@ -74,6 +84,61 @@ final class CheckoutViewModel: ObservableObject {
                 self?.orderStorage.saveDraft(draft)
             }
             .store(in: &cancellables)
+    }
+    
+    func applyVoucher(code: String, cartViewModel: CartViewModel) async {
+        let trimmedCode = code.trimmingCharacters(in: .whitespacesAndNewlines).uppercased()
+        
+        // Apply only once unless edited
+        guard trimmedCode != (appliedVoucher ?? "") else { return }
+        
+        if trimmedCode.isEmpty { 
+            cartViewModel.removeVoucher()
+            appliedVoucher = nil
+            return 
+        }
+        
+        await cartViewModel.applyVoucher(code: trimmedCode)
+        if let error = cartViewModel.error as? VoucherError {
+             self.warning = error.localizedDescription
+        } else {
+            self.warning = nil
+            appliedVoucher = trimmedCode
+        }
+    }
+    
+    func applyPoints(input: String, availablePoints: Int, cartViewModel: CartViewModel) {
+        let trimmedInput = input.trimmingCharacters(in: .whitespacesAndNewlines)
+        
+        guard !trimmedInput.isEmpty else {
+            if appliedPoints != 0 {
+                appliedPoints = 0
+                cartViewModel.removePointsDiscount()
+            }
+            return
+        }
+        
+        guard let points = Int(trimmedInput), points >= 0 else {
+            warning = String(localized: "invalid_points_numeric")
+            return
+        }
+        
+        // Apply only once unless edited
+        guard points != appliedPoints else { return }
+        
+        warning = nil
+        
+        guard points <= availablePoints else {
+            warning = String(localized: "insufficient_points \(availablePoints)")
+            return
+        }
+        
+        let discount = Double(points) * pointsRedemptionRate
+        
+        appliedPoints = points
+        cartViewModel.applyPointsDiscount(discount)
+        
+        Task { await hapticService.selection() }
     }
     
     func placeOrder(cart: Cart, pointsToRedeem: Int? = nil, voucherCode: String? = nil) async -> Order? {

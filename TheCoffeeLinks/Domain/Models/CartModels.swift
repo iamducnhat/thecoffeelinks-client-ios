@@ -45,6 +45,55 @@ struct CartItem: Codable, Identifiable, Hashable, Sendable {
         case storeId = "store_id"
     }
 
+    init(key: String, product: Product, quantity: Int, customization: OrderCustomization, addedAt: Date, priceSnapshot: Double, storeId: String) {
+        self.key = key
+        self.product = product
+        self.quantity = quantity
+        self.customization = customization
+        self.addedAt = addedAt
+        self.priceSnapshot = priceSnapshot
+        self.storeId = storeId
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        
+        product = try container.decode(Product.self, forKey: .product)
+        quantity = try container.decode(Int.self, forKey: .quantity)
+        customization = try container.decode(OrderCustomization.self, forKey: .customization)
+        addedAt = try container.decode(Date.self, forKey: .addedAt)
+        
+        // Backward compatibility: Handle missing price_snapshot
+        if let snapshot = try container.decodeIfPresent(Double.self, forKey: .priceSnapshot) {
+            priceSnapshot = snapshot
+        } else {
+            // Recalculate from current product state if missing
+            priceSnapshot = product.basePrice + customization.toppingsTotal
+        }
+        
+        // Backward compatibility: Handle missing store_id
+        if let sId = try container.decodeIfPresent(String.self, forKey: .storeId) {
+            storeId = sId
+        } else {
+            // Default or empty for legacy items. 
+            // Warning: Key generation might diverge if storeId changes. 
+            // Ideally we'd inject this, but for now empty string allows recovery.
+            storeId = "" 
+        }
+        
+        // Backward compatibility: If key is missing, generate it
+        if let decodedKey = try container.decodeIfPresent(String.self, forKey: .key) {
+            key = decodedKey
+        } else {
+            key = CartItem.generateKey(
+                product: product,
+                modifiers: customization,
+                priceSnapshot: priceSnapshot,
+                storeId: storeId
+            )
+        }
+    }
+
     static func == (lhs: CartItem, rhs: CartItem) -> Bool { lhs.key == rhs.key }
     func hash(into hasher: inout Hasher) { hasher.combine(key) }
     

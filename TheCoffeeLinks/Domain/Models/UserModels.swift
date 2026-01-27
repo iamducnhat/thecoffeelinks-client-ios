@@ -175,14 +175,6 @@ struct User: Codable, Identifiable, Hashable, Sendable {
     
     static func == (lhs: User, rhs: User) -> Bool { lhs.id == rhs.id }
     func hash(into hasher: inout Hasher) { hasher.combine(id) }
-    
-    static var placeholder: User {
-        User(id: "placeholder", shortId: "123456", shortIdVersion: 1, email: nil, phone: nil, 
-             phoneVerified: false, phoneVerificationStatus: .unverified,
-             displayName: "User",
-             avatarUrl: nil, membershipTier: .bronze, points: 0,
-             createdAt: Date(), preferences: .default)
-    }
 }
 
 // MARK: - Phone Verification Status

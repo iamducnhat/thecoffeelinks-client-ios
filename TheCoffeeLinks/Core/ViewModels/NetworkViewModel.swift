@@ -98,8 +98,6 @@ class NetworkViewModel: BaseViewModel {
                     // Map StorePresence to User for UI compatibility
                     self.nearbyPeople = presences.compactMap { p in
                         // Create partial User from Presence
-                        var user = User.placeholder
-                        // We need to create a new User struct with the presence info
                         // User struct is immutable (let properties), so we use the initializer
                         return User(
                             id: p.userId,

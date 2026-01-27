@@ -3,27 +3,24 @@ import Combine
 
 class AuthViewModel: BaseViewModel {
     private let authRepository: AuthRepository
-    
+
     @Published var currentUser: User? {
         didSet {
-            // Update derived state
             self.isPhoneVerified = currentUser?.phoneVerificationStatus == .verified
-            // If user exists but is not verified, we might want to ensure they see the verification screen
-            // The ContentView will handle the routing based on isPhoneVerified.
         }
     }
     @Published var isAuthenticated: Bool = false
-    @Published var isPhoneVerified: Bool = true // Strict Gate: Default true to prevent flash, server will correct it.
-    
+    @Published var isPhoneVerified: Bool = false // Default false until verified
+
     // Form fields - Phone Auth
     @Published var phoneNumber: String = ""
     @Published var otpCode: String = ""
-    
+
     // Form fields - Password / Profile
     @Published var password: String = ""
     @Published var fullName: String = ""
     @Published var dob: String = ""
-    
+
     // State management
     enum PhoneAuthState {
         case idle
@@ -31,22 +28,26 @@ class AuthViewModel: BaseViewModel {
         case error
     }
     @Published var authState: PhoneAuthState = .idle
-    
+
     init(authRepository: AuthRepository) {
         self.authRepository = authRepository
         super.init()
         checkSession()
     }
-    
+
     func checkSession() {
         if let token = DependencyContainer.shared.keychainManager.getAccessToken() {
             isAuthenticated = true
             // Sync Realtime Token
             DependencyContainer.shared.realtimeService.setAuthToken(token)
-            
+
             Task {
                 try? await fetchCurrentUser()
             }
+        } else {
+            // No token - user is not authenticated
+            isAuthenticated = false
+            isPhoneVerified = false
         }
     }
     
@@ -208,7 +209,7 @@ class AuthViewModel: BaseViewModel {
     func loginWithLinkedIn() {
         withLoading {
             print("🔗 Starting LinkedIn Login Flow...")
-            let linkedInService = await LinkedInService()
+            let linkedInService = LinkedInService()
             do {
                 let token = try await linkedInService.login()
                 print("✅ LinkedIn Token Received. Logging in to backend for LinkedIn...")

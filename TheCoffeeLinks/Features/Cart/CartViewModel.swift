@@ -53,13 +53,15 @@ final class CartViewModel: ObservableObject {
         var amount = subtotal
         if cart.mode == .delivery { amount += deliveryFee }
         amount -= discount
+        amount -= pointsDiscount
         return max(0, amount)
     }
     
     var summary: CartSummary {
         let minAmount = deliveryAvailability?.minOrderAmount ?? 0
         let remaining = max(0, minAmount - subtotal)
-        return CartSummary(subtotal: subtotal, deliveryFee: cart.mode == .delivery ? deliveryFee : 0, discount: discount,
+        let totalDiscount = discount + pointsDiscount
+        return CartSummary(subtotal: subtotal, deliveryFee: cart.mode == .delivery ? deliveryFee : 0, discount: totalDiscount,
                           total: total, itemCount: itemCount, meetsMinimum: subtotal >= minAmount,
                           minimumOrderAmount: minAmount, remainingForMinimum: remaining)
     }
@@ -136,7 +138,7 @@ final class CartViewModel: ObservableObject {
     }
     
     func clearCart() { 
-        cart.clear(); discount = 0; voucherValidation = nil; selectedAddress = nil 
+        cart.clear(); discount = 0; pointsDiscount = 0; voucherValidation = nil; selectedAddress = nil 
         Task { try? await cartService.clearCart() }
     }
     func setMode(_ mode: OrderingMode) { cart.mode = mode; if mode != .delivery { deliveryFee = 0; deliveryAvailability = nil; selectedAddress = nil } }
@@ -173,6 +175,19 @@ final class CartViewModel: ObservableObject {
     }
     
     func removeVoucher() { cart.voucherCode = nil; voucherValidation = nil; discount = 0 }
+    
+    // MARK: - Points Support
+    @Published var pointsDiscount: Double = 0
+    
+    func applyPointsDiscount(_ amount: Double) {
+        // Ensure we don't discount more than the subtotal (minus other discounts)
+        // For now, allow valid amount passed from caller
+        pointsDiscount = amount
+    }
+    
+    func removePointsDiscount() {
+        pointsDiscount = 0
+    }
 }
 
 enum VoucherError: LocalizedError {
