@@ -488,7 +488,7 @@ struct PopularProductCard: View {
                 Button {
                     cartViewModel.addItem(product: product.product, quantity: 1, customization: .default)
                 } label: {
-                    Image("plus")
+                    Text("\(Image(systemName: "plus"))")
                         .font(AppFont.body)
                         .padding(AppLayout.spacingMicro)
                         .foregroundStyle(Color.backgroundPaper)
