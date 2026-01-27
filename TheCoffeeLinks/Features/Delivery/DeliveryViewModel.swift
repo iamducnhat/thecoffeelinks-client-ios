@@ -29,18 +29,28 @@ final class DeliveryViewModel: ObservableObject {
     
     private let deliveryRepository: DeliveryRepositoryProtocol
     private let locationService: LocationServiceProtocol
+    private let storage: GenericStorageProtocol
+    private var cancellables = Set<AnyCancellable>()
     
-    init(deliveryRepository: DeliveryRepositoryProtocol, locationService: LocationServiceProtocol) {
+    init(deliveryRepository: DeliveryRepositoryProtocol, 
+         locationService: LocationServiceProtocol,
+         storage: GenericStorageProtocol = GenericStorage()) {
         self.deliveryRepository = deliveryRepository
         self.locationService = locationService
+        self.storage = storage
+        
+        loadDraft()
+        setupAutoSave()
     }
     
+    // ... Computed properties ...
     var defaultAddress: DeliveryAddress? { savedAddresses.first { $0.isDefault } ?? savedAddresses.first }
     var isInDeliveryZone: Bool { availability?.available ?? false }
     var deliveryFee: Double { availability?.fee?.amount ?? 0 }
     var estimatedETA: String? { availability?.eta?.displayRange }
     var canSaveAddress: Bool { !streetAddress.isEmpty && selectedLocation != nil }
     
+    // ... Load Addresses ...
     func loadAddresses() async {
         isLoading = true; error = nil
         do {
@@ -141,7 +151,55 @@ final class DeliveryViewModel: ObservableObject {
         Task { do { streetAddress = try await locationService.reverseGeocode(latitude: coordinate.latitude, longitude: coordinate.longitude) } catch {} }
     }
     
-    private func clearForm() { addressLabel = ""; streetAddress = ""; buildingInfo = ""; district = "" }
+    private func clearForm() { 
+        addressLabel = ""; streetAddress = ""; buildingInfo = ""; district = "" 
+        storage.remove(key: "delivery_form_draft")
+    }
+    
+    // MARK: - Draft Logic
+    
+    private struct AddressDraft: Codable {
+        let label: String
+        let street: String
+        let building: String
+        let city: String
+        let district: String
+        let lat: Double?
+        let lon: Double?
+    }
+    
+    private func loadDraft() {
+        if let draft: AddressDraft = storage.load(AddressDraft.self, key: "delivery_form_draft") {
+            self.addressLabel = draft.label
+            self.streetAddress = draft.street
+            self.buildingInfo = draft.building
+            self.city = draft.city
+            self.district = draft.district
+            if let lat = draft.lat, let lon = draft.lon {
+                self.selectedLocation = CLLocationCoordinate2D(latitude: lat, longitude: lon)
+            }
+        }
+    }
+    
+    private func setupAutoSave() {
+        Publishers.CombineLatest4($addressLabel, $streetAddress, $buildingInfo, $district)
+            .debounce(for: .seconds(0.5), scheduler: RunLoop.main)
+            .sink { [weak self] label, street, building, district in
+                guard let self = self else { return }
+                let draft = AddressDraft(label: label, street: street, building: building, city: self.city, district: district, lat: self.selectedLocation?.latitude, lon: self.selectedLocation?.longitude)
+                try? self.storage.save(draft, key: "delivery_form_draft")
+            }
+            .store(in: &cancellables)
+            
+        $selectedLocation
+             .debounce(for: .seconds(0.5), scheduler: RunLoop.main)
+             .sink { [weak self] loc in
+                 guard let self = self else { return }
+                 let draft = AddressDraft(label: self.addressLabel, street: self.streetAddress, building: self.buildingInfo, city: self.city, district: self.district, lat: loc?.latitude, lon: loc?.longitude)
+                 try? self.storage.save(draft, key: "delivery_form_draft")
+             }
+             .store(in: &cancellables)
+    }
 }
 
 struct AddressSearchResult: Identifiable {

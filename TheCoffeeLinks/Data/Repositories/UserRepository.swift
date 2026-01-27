@@ -2,56 +2,87 @@
 //  UserRepository.swift
 //  thecoffeelinks-client-ios
 //
+//
 
 import Foundation
 
-final class UserRepository: UserRepositoryProtocol, @unchecked Sendable {
+final class UserRepository: UserRepositoryProtocol, SyncableDomain, @unchecked Sendable {
     private let networkService: NetworkServiceProtocol
-    private let cacheService: CacheServiceProtocol // Assuming CacheServiceProtocol is available in this scope
-    private let userCacheKey = "user_profile"
+    private let profileStorage: ProfileStorageProtocol
+    private let syncManager: SyncManagerProtocol
     
-    init(networkService: NetworkServiceProtocol, cacheService: CacheServiceProtocol? = nil) {
+    var domainKey: String { "user_profile" }
+    
+    init(networkService: NetworkServiceProtocol, 
+         profileStorage: ProfileStorageProtocol = ProfileStorage(),
+         syncManager: SyncManagerProtocol) {
         self.networkService = networkService
-        // Fallback for circular dependency risks or if cache not passed
-        self.cacheService = cacheService ?? DependencyContainer.shared.cacheService
+        self.profileStorage = profileStorage
+        self.syncManager = syncManager
+        
+        // Register for sync
+        self.syncManager.register(domain: self)
+    }
+    
+    func sync(reason: SyncReason) async {
+        try? await refreshUser()
     }
     
     func getCachedUser() async -> User? {
-        guard let data: Data = await cacheService.get(userCacheKey) else { return nil }
-        return try? JSONDecoder().decode(User.self, from: data)
+        return profileStorage.loadUser()
     }
     
     func refreshUser() async throws -> User {
+        // 1. Fetch Remote
         let response: UserResponse = try await networkService.get("/api/user/profile", queryItems: nil)
+        let remoteUser = response.user
         
-        if let data = try? JSONEncoder().encode(response.user) {
-            await cacheService.set(userCacheKey, value: data, ttl: 86400)
-        }
-        
-        return response.user
+        // 2. Reconcile
+        profileStorage.saveUser(remoteUser)
+        return remoteUser
     }
     
     func getCurrentUser() async throws -> User {
-        let response: UserResponse = try await networkService.get("/api/user/profile", queryItems: nil)
-        // Store in cache for next time
-        if let data = try? JSONEncoder().encode(response.user) {
-            await cacheService.set(userCacheKey, value: data, ttl: 86400)
+        do {
+            return try await refreshUser()
+        } catch {
+            if let local = profileStorage.loadUser() {
+                return local
+            }
+            throw error
         }
-        return response.user
     }
     
     func updateUser(_ user: User) async throws -> User {
-        let response: UserResponse = try await networkService.put("/api/user/profile", body: user)
-        return response.user
+        // 1. Optimistic Local Update
+        profileStorage.saveUser(user)
+        
+        // 2. Background Sync
+        Task {
+            do {
+                let response: UserResponse = try await networkService.put("/api/user/profile", body: user)
+                self.profileStorage.saveUser(response.user)
+            } catch {
+                print("Background sync failed for user profile update: \(error)")
+            }
+        }
+        
+        return user
     }
     
     func updatePreferences(_ preferences: UserPreferences) async throws -> UserPreferences {
+        if var currentUser = profileStorage.loadUser() {
+            var newUser = currentUser
+            newUser.preferences = preferences
+            profileStorage.saveUser(newUser)
+        }
+        
         let response: PreferencesResponse = try await networkService.put("/api/users/me/preferences", body: preferences)
         return response.preferences
     }
     
     func getCachedStores() async -> [Store]? {
-        guard let data: Data = await cacheService.get("stores_list") else { return nil }
+        guard let data: Data = await DependencyContainer.shared.cacheService.get("stores_list") else { return nil }
         return try? JSONDecoder().decode([Store].self, from: data)
     }
     
@@ -64,14 +95,14 @@ final class UserRepository: UserRepositoryProtocol, @unchecked Sendable {
         let response: StoresResponse = try await networkService.get("/api/stores", queryItems: queryItems.isEmpty ? nil : queryItems)
         
         if let data = try? JSONEncoder().encode(response.stores) {
-            await cacheService.set("stores_list", value: data, ttl: 86400)
+            await DependencyContainer.shared.cacheService.set("stores_list", value: data, ttl: 86400)
         }
         
         return response.stores
     }
     
     func getStores(latitude: Double?, longitude: Double?) async throws -> [Store] {
-        if let data: Data = await cacheService.get("stores_list"),
+        if let data: Data = await DependencyContainer.shared.cacheService.get("stores_list"),
            let cached = try? JSONDecoder().decode([Store].self, from: data) {
             return cached
         }
@@ -106,33 +137,26 @@ private struct ClaimResponse: Codable, Sendable { let success: Bool; let treat: 
 
 final class FavoritesRepository: FavoritesRepositoryProtocol, @unchecked Sendable {
     private let networkService: NetworkServiceProtocol
-    private let cacheService: CacheServiceProtocol
-    private let favoritesCacheKey = "user_favorites"
+    private let profileStorage: ProfileStorageProtocol
     
-    init(networkService: NetworkServiceProtocol, cacheService: CacheServiceProtocol) {
+    init(networkService: NetworkServiceProtocol, profileStorage: ProfileStorageProtocol = ProfileStorage()) {
         self.networkService = networkService
-        self.cacheService = cacheService
+        self.profileStorage = profileStorage
     }
     
     func getCachedFavorites() async -> [FavoriteItem]? {
-        guard let data: Data = await cacheService.get(favoritesCacheKey) else { return nil }
-        return try? JSONDecoder().decode([FavoriteItem].self, from: data)
+        return profileStorage.loadFavorites()
     }
     
     func refreshFavorites() async throws -> [FavoriteItem] {
         let response: FavoritesResponse = try await networkService.get("/api/user/favorites", queryItems: nil)
-        
-        if let data = try? JSONEncoder().encode(response.favorites) {
-            await cacheService.set(favoritesCacheKey, value: data, ttl: 86400)
-        }
-        
+        profileStorage.saveFavorites(response.favorites)
         return response.favorites
     }
     
     func getFavorites() async throws -> [FavoriteItem] {
-        // Use locally decoded data if available
-        if let data: Data = await cacheService.get(favoritesCacheKey),
-           let cached = try? JSONDecoder().decode([FavoriteItem].self, from: data) {
+        if let cached = profileStorage.loadFavorites() {
+             Task { _ = try? await refreshFavorites() }
             return cached
         }
         return try await refreshFavorites()
@@ -140,26 +164,56 @@ final class FavoritesRepository: FavoritesRepositoryProtocol, @unchecked Sendabl
     
     func addFavorite(product: Product, customization: OrderCustomization, nickname: String?, notes: String?) async throws -> FavoriteItem {
         let response: FavoriteResponse = try await networkService.post("/api/user/favorites", body: AddFavoriteRequest(productId: product.id, customization: customization, nickname: nickname, notes: notes))
-        // Invalidate cache or optimistically update? For now, invalidate/refresh next time.
-        // Or better: update cache if possible. Simple invalidation is safer.
-        await cacheService.remove(favoritesCacheKey)
+        
+        // Optimistic update
+        if var current = profileStorage.loadFavorites() {
+            current.append(response.favorite)
+            profileStorage.saveFavorites(current)
+        } else {
+             _ = try? await refreshFavorites()
+        }
+        
         return response.favorite
     }
     
     func updateFavorite(_ favorite: FavoriteItem) async throws -> FavoriteItem {
+        // Optimistic update
+        if var current = profileStorage.loadFavorites(), let index = current.firstIndex(where: { $0.id == favorite.id }) {
+            current[index] = favorite
+            profileStorage.saveFavorites(current)
+        }
+        
         let response: FavoriteResponse = try await networkService.put("/api/user/favorites/\(favorite.id)", body: favorite)
-        await cacheService.remove(favoritesCacheKey)
+        // Confirm update
+        if var current = profileStorage.loadFavorites(), let index = current.firstIndex(where: { $0.id == favorite.id }) {
+            current[index] = response.favorite
+            profileStorage.saveFavorites(current)
+        }
         return response.favorite
     }
     
     func removeFavorite(id: String) async throws {
+        // Optimistic delete
+        if var current = profileStorage.loadFavorites() {
+            current.removeAll { $0.id == id }
+            profileStorage.saveFavorites(current)
+        }
+        
         try await networkService.delete("/api/user/favorites/\(id)", queryItems: nil)
-        await cacheService.remove(favoritesCacheKey)
     }
     
     func reorderFavorites(ids: [String]) async throws {
+        // Optimistic reorder
+        if var current = profileStorage.loadFavorites() {
+            // Sort current based on ids order
+            let map = Dictionary(uniqueKeysWithValues: current.map { ($0.id, $0) })
+            let sorted = ids.compactMap { map[$0] }
+            if sorted.count == current.count {
+                profileStorage.saveFavorites(sorted)
+            }
+        }
+        
         let _: EmptyResponse = try await networkService.put("/api/user/favorites/reorder", body: ReorderRequest(ids: ids))
-        await cacheService.remove(favoritesCacheKey)
     }
 }
 
@@ -167,44 +221,32 @@ final class FavoritesRepository: FavoritesRepositoryProtocol, @unchecked Sendabl
 
 final class VoucherRepository: VoucherRepositoryProtocol, @unchecked Sendable {
     private let networkService: NetworkServiceProtocol
-    private let cacheService: CacheServiceProtocol
-    private let syncManager: SyncManager
-    private let vouchersCacheKey = "user_vouchers"
+    private let profileStorage: ProfileStorageProtocol
+    private let syncManager: SyncManagerProtocol
     
-    init(networkService: NetworkServiceProtocol, cacheService: CacheServiceProtocol, syncManager: SyncManager) {
+    var domainKey: String { "user_vouchers" }
+    
+    init(networkService: NetworkServiceProtocol, 
+         profileStorage: ProfileStorageProtocol = ProfileStorage(), 
+         syncManager: SyncManagerProtocol) {
         self.networkService = networkService
-        self.cacheService = cacheService
+        self.profileStorage = profileStorage
         self.syncManager = syncManager
     }
     
     func getCachedVouchers() async -> [Voucher]? {
-        guard let data: Data = await cacheService.get(vouchersCacheKey) else { return nil }
-        return try? JSONDecoder().decode([Voucher].self, from: data)
+        return profileStorage.loadVouchers()
     }
     
     func refreshVouchers() async throws -> [Voucher] {
         let response: VouchersResponse = try await networkService.get("/api/vouchers", queryItems: nil)
-        
-        if let data = try? JSONEncoder().encode(response.vouchers) {
-             await cacheService.set(vouchersCacheKey, value: data, ttl: 86400)
-        }
-        
-        // Update local version if we have a server version from sync manager
-        if let serverVersion = syncManager.serverVersion(for: "vouchers") {
-            syncManager.updateLocalVersion(key: "vouchers", version: serverVersion)
-        }
-        
+        profileStorage.saveVouchers(response.vouchers)
         return response.vouchers
     }
     
     func getVouchers() async throws -> [Voucher] {
-        if let cached = await getCachedVouchers() {
-            // Check if stale
-            if let serverVersion = syncManager.serverVersion(for: "vouchers") {
-                if syncManager.isStale(key: "vouchers", serverVersion: serverVersion) {
-                    return try await refreshVouchers()
-                }
-            }
+        if let cached = profileStorage.loadVouchers() {
+             Task { _ = try? await refreshVouchers() }
             return cached
         }
         return try await refreshVouchers()
@@ -215,7 +257,6 @@ final class VoucherRepository: VoucherRepositoryProtocol, @unchecked Sendable {
             let code: String
             let orderTotal: Double
         }
-        // Server uses POST /api/vouchers for validation if code and orderTotal are present
         let response: VoucherValidationResponse = try await networkService.post("/api/vouchers", body: ValidateRequest(code: code, orderTotal: subtotal))
         return response.validation
     }
@@ -223,11 +264,7 @@ final class VoucherRepository: VoucherRepositoryProtocol, @unchecked Sendable {
     func fetchAndDistributeVouchers(userId: String) async throws -> [Voucher] {
         struct DistributeRequest: Encodable { let userId: String }
         let response: VouchersResponse = try await networkService.post("/api/vouchers/distribute", body: DistributeRequest(userId: userId))
-        
-        if let data = try? JSONEncoder().encode(response.vouchers) {
-             await cacheService.set(vouchersCacheKey, value: data, ttl: 86400)
-        }
-        
+        profileStorage.saveVouchers(response.vouchers)
         return response.vouchers
     }
 }
@@ -236,31 +273,52 @@ final class VoucherRepository: VoucherRepositoryProtocol, @unchecked Sendable {
 
 final class SocialRepository: SocialRepositoryProtocol, @unchecked Sendable {
     private let networkService: NetworkServiceProtocol
+    private let storeStorage: StoreStorageProtocol
     
-    init(networkService: NetworkServiceProtocol) { self.networkService = networkService }
+    init(networkService: NetworkServiceProtocol, storeStorage: StoreStorageProtocol = StoreStorage()) {
+        self.networkService = networkService
+        self.storeStorage = storeStorage
+    }
     
     func getPresences(storeId: String) async throws -> [StorePresence] {
+        if let cached = storeStorage.loadPresence(for: storeId) {
+            Task { _ = try? await refreshPresences(storeId: storeId) }
+            return cached
+        }
+        return try await refreshPresences(storeId: storeId)
+    }
+    
+    private func refreshPresences(storeId: String) async throws -> [StorePresence] {
         let response: PresenceResponse = try await networkService.get("/api/social/presence", queryItems: [URLQueryItem(name: "storeId", value: storeId)])
+        storeStorage.savePresence(response.presences, for: storeId)
         return response.presences
     }
     
     func checkIn(storeId: String, status: PresenceStatus) async throws -> StorePresence {
         let response: CheckInResponse = try await networkService.post("/api/social/check-in", body: CheckInRequest(storeId: storeId, status: status))
+        
+        if var cached = storeStorage.loadPresence(for: storeId) {
+            cached.removeAll { $0.userId == response.presence.userId }
+            cached.append(response.presence)
+            storeStorage.savePresence(cached, for: storeId)
+        } else {
+             storeStorage.savePresence([response.presence], for: storeId)
+        }
+        
         return response.presence
     }
     
     func checkOut(storeId: String) async throws {
         let _: EmptyResponse = try await networkService.post("/api/social/check-out", body: CheckOutRequest(storeId: storeId))
+        _ = try? await refreshPresences(storeId: storeId)
     }
     
     func updateStatus(_ status: PresenceStatus) async throws {
-        // 'Status' in client maps to 'Mode' (open/focus) on server PATCH /api/social/presence
         struct ModeRequest: Encodable { let mode: String }
         let _: EmptyResponse = try await networkService.patch("/api/social/presence", body: ModeRequest(mode: status.rawValue))
     }
     
     func updateMode(_ mode: ConnectionMode) async throws {
-        // Redundant with updateStatus but keeping for API compatibility
         struct ModeRequest: Encodable { let mode: String }
         let _: EmptyResponse = try await networkService.patch("/api/social/presence", body: ModeRequest(mode: mode.rawValue))
     }
@@ -271,15 +329,12 @@ final class SocialRepository: SocialRepositoryProtocol, @unchecked Sendable {
     }
     
     func sendConnectionRequest(toUserId: String, message: String?) async throws -> ConnectionRequest {
-        // Server uses /api/social/connect for creating requests
         struct ConnectBody: Encodable { let targetUserId: String }
         let response: ConnectResponse = try await networkService.post("/api/social/connect", body: ConnectBody(targetUserId: toUserId))
         return response.request
     }
     
     func respondToRequest(id: String, accept: Bool) async throws {
-        // Likely /api/social/connections/[id] with PATCH status? Or [id]/respond?
-        // Assuming [id]/respond based on convention, but verify if fails.
         let _: EmptyResponse = try await networkService.post("/api/social/connections/\(id)/respond", body: RespondRequest(accept: accept))
     }
     
@@ -298,12 +353,10 @@ final class SocialRepository: SocialRepositoryProtocol, @unchecked Sendable {
     }
     
     func sendTreat(toUserId: String, amount: Double, message: String?) async throws -> CoffeeTreat {
-        // FEATURE MISSING ON SERVER
-        throw SocialError.reportFailed // Re-using error or add new one
+        throw SocialError.reportFailed
     }
     
     func claimTreat(id: String) async throws -> CoffeeTreat {
-        // FEATURE MISSING ON SERVER
          throw SocialError.reportFailed
     }
 }

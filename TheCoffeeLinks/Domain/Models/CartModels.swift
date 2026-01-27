@@ -9,30 +9,65 @@ import Foundation
 
 // MARK: - Cart Item
 
+// MARK: - Cart Item
+
 struct CartItem: Codable, Identifiable, Hashable, Sendable {
-    let id: UUID
+    /// Deterministic identity key
+    let key: String
+    
+    /// Conformance to Identifiable
+    var id: String { key }
+    
     let product: Product
     var quantity: Int
     var customization: OrderCustomization
     let addedAt: Date
     
+    /// The price per unit at the time of addition (used for strict equality)
+    let priceSnapshot: Double
+    
+    /// Store ID determines cart context (used for key generation)
+    let storeId: String
+    
     var unitPrice: Double {
-        product.price(for: customization.size) + customization.toppingsTotal
+        // We use the snapshot price as the source of truth for calculations
+        // to ensure the total doesn't fluctuate if backend price changes
+        priceSnapshot
     }
     
     var totalPrice: Double { unitPrice * Double(quantity) }
     var displayCustomization: String { customization.displayText }
     
     enum CodingKeys: String, CodingKey {
-        case id, product, quantity, customization
+        case key, product, quantity, customization
         case addedAt = "added_at"
+        case priceSnapshot = "price_snapshot"
+        case storeId = "store_id"
     }
 
-    static func == (lhs: CartItem, rhs: CartItem) -> Bool { lhs.id == rhs.id }
-    func hash(into hasher: inout Hasher) { hasher.combine(id) }
+    static func == (lhs: CartItem, rhs: CartItem) -> Bool { lhs.key == rhs.key }
+    func hash(into hasher: inout Hasher) { hasher.combine(key) }
     
-    func canMerge(with other: CartItem) -> Bool {
-        product.id == other.product.id && customization == other.customization
+    /// Generates a deterministic key for the item
+    static func generateKey(product: Product, modifiers: OrderCustomization, priceSnapshot: Double, storeId: String) -> String {
+        // Normalizing modifiers
+        // 1. Toppings sorted by ID to ensure order independence
+        let sortedToppings = modifiers.toppings.sorted { $0.id < $1.id }
+        let toppingsStr = sortedToppings.map { "\($0.id):\($0.quantity)" }.joined(separator: ",")
+        
+        // 2. Build parts list
+        let components: [String] = [
+            storeId,
+            product.id,
+            modifiers.size.rawValue,
+            modifiers.sugar?.rawValue ?? "nil",
+            modifiers.ice?.rawValue ?? "nil",
+            toppingsStr,
+            String(format: "%.2f", priceSnapshot) // 2 decimal places strictness
+        ]
+        
+        // 3. Create hash string
+        return components.joined(separator: "|")
     }
 }
 
@@ -46,6 +81,7 @@ struct Cart: Codable, Sendable {
     var tableId: String?
     var voucherCode: String?
     var staffNotes: String?
+    var lastUpdated: Date?
     
     enum CodingKeys: String, CodingKey {
         case items, mode
@@ -62,22 +98,29 @@ struct Cart: Codable, Sendable {
     var subtotal: Double { items.reduce(0) { $0 + $1.totalPrice } }
     
     mutating func addItem(_ item: CartItem) {
-        if let existingIndex = items.firstIndex(where: { $0.canMerge(with: item) }) {
+        // Check local state for existing key
+        if let existingIndex = items.firstIndex(where: { $0.key == item.key }) {
+            // Increment quantity
             items[existingIndex].quantity += item.quantity
+            // Update updated_at implied by persistence
         } else {
+            // Insert new cart item
             items.append(item)
         }
     }
     
-    mutating func updateQuantity(for itemId: UUID, delta: Int) {
-        guard let index = items.firstIndex(where: { $0.id == itemId }) else { return }
+    mutating func updateQuantity(for itemKey: String, delta: Int) {
+        guard let index = items.firstIndex(where: { $0.key == itemKey }) else { return }
         let newQuantity = items[index].quantity + delta
-        if newQuantity <= 0 { items.remove(at: index) }
-        else { items[index].quantity = newQuantity }
+        if newQuantity <= 0 { 
+            items.remove(at: index) 
+        } else { 
+            items[index].quantity = newQuantity 
+        }
     }
     
-    mutating func removeItem(_ itemId: UUID) {
-        items.removeAll { $0.id == itemId }
+    mutating func removeItem(_ itemKey: String) {
+        items.removeAll { $0.key == itemKey }
     }
     
     mutating func clear() {

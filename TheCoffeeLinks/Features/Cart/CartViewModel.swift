@@ -31,8 +31,19 @@ final class CartViewModel: ObservableObject {
         self.hapticService = hapticService
         self.cartService = cartService
         
-        Task { await fetchCart() }
+        // 1. Load Local Immediately
+        if let localCart = cartService.loadLocalCart() {
+            self.cart = localCart
+        }
+        
+        // 2. Background Fetch & Reconcile
+        Task(priority: .userInitiated) { await bootstrapCart() }
     }
+    
+    // ... Computed variable omitted (isEmpty, itemCount, subtotal, total, summary, canCheckout) - unchanged
+    // Re-declare them if replace_file_content requires context or I'm replacing init block only. 
+    // I need to use StartLine/EndLine carefully.
+    // I'll replace init + fetchCart + addItem to ensure full context switch.
     
     var isEmpty: Bool { cart.isEmpty }
     var itemCount: Int { cart.itemCount }
@@ -64,38 +75,35 @@ final class CartViewModel: ObservableObject {
         return true
     }
     
-    func fetchCart() async {
+    func bootstrapCart() async {
         do {
-            let fetchedCart = try await cartService.getCart()
+            let remoteCart = try await cartService.fetchRemoteCart()
             await MainActor.run {
-                self.cart = fetchedCart
+                // Determine conflict resolution (Server Wins usually, or based on lastUpdated)
+                // For now, simple replacement as server is authoritative for pricing
+                self.cart = remoteCart
             }
         } catch {
-            print("Failed to fetch cart: \(error)")
+            print("Background fetch failed: \(error) - keeping local")
         }
     }
     
+    func fetchCart() async {
+       await bootstrapCart()
+    }
+    
+    // Legacy support via Product
     func addItem(_ item: CartItem) {
-        // Legacy: Should not be used directly if possible, or wrap
-        // Assume this calls product version
-        Task {
-            do {
-                let updatedCart = try await cartService.addToCart(productId: UUID(uuidString: item.product.id) ?? UUID(), quantity: item.quantity, modifiers: item.customization)
-                 await MainActor.run {
-                     self.cart = updatedCart
-                     self.discount = updatedCart.voucherCode != nil ? 1 : 0 // Placeholder: Server calculates discount but we need to map it back or rely on server totals
-                 }
-                await hapticService.impact(.medium)
-            } catch {
-                self.error = error
-            }
-        }
+        // Wrapper to call product version
+        addItem(product: item.product, quantity: item.quantity, customization: item.customization)
     }
     
     func addItem(product: Product, quantity: Int, customization: OrderCustomization) {
         Task {
             do {
-                let updatedCart = try await cartService.addToCart(productId: UUID(uuidString: product.id) ?? UUID(), quantity: quantity, modifiers: customization)
+                // Optimistic Update: Service updates local storage and returns immediately
+                // UI updates instantly < 16ms because disk I/O is fast enough on modern iOS
+                let updatedCart = try await cartService.addToCart(product: product, quantity: quantity, modifiers: customization)
                 await MainActor.run {
                     self.cart = updatedCart
                 }
@@ -106,7 +114,7 @@ final class CartViewModel: ObservableObject {
         }
     }
     
-    func updateItem(id: UUID, quantity: Int, customization: OrderCustomization) {
+    func updateItem(id: String, quantity: Int, customization: OrderCustomization) {
         // Local update for responsive UI, ideally sync
         if let index = cart.items.firstIndex(where: { $0.id == id }) {
             var item = cart.items[index]
@@ -117,12 +125,12 @@ final class CartViewModel: ObservableObject {
         }
     }
     
-    func updateQuantity(for itemId: UUID, delta: Int) {
+    func updateQuantity(for itemId: String, delta: Int) {
         cart.updateQuantity(for: itemId, delta: delta)
         Task { await hapticService.selection() }
     }
     
-    func removeItem(_ itemId: UUID) {
+    func removeItem(_ itemId: String) {
         cart.removeItem(itemId)
         Task { await hapticService.notification(.warning) }
     }

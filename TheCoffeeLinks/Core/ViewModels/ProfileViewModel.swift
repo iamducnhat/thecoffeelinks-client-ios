@@ -15,13 +15,25 @@ class ProfileViewModel: BaseViewModel {
     @Published var editMode: Bool = false
     @Published var editName: String = ""
     
-    init(userRepository: UserRepository, voucherRepository: VoucherRepository, socialRepository: SocialRepository, authRepository: AuthRepository, orderRepository: OrderRepositoryProtocol) {
+    private let storage: GenericStorageProtocol
+    private var cancellables = Set<AnyCancellable>()
+    
+    init(userRepository: UserRepository, 
+         voucherRepository: VoucherRepository, 
+         socialRepository: SocialRepository, 
+         authRepository: AuthRepository, 
+         orderRepository: OrderRepositoryProtocol,
+         storage: GenericStorageProtocol = GenericStorage()) {
         self.userRepository = userRepository
         self.voucherRepository = voucherRepository
         self.socialRepository = socialRepository
         self.authRepository = authRepository
         self.orderRepository = orderRepository
+        self.storage = storage
         super.init()
+        
+        loadDraft()
+        setupAutoSave()
     }
     
     func loadProfile() {
@@ -118,8 +130,32 @@ class ProfileViewModel: BaseViewModel {
             await MainActor.run {
                 self.userProfile = updatedUser
                 self.editMode = false
+                self.storage.remove(key: "profile_name_draft")
                 DependencyContainer.shared.hapticManager.playSuccess()
             }
         }
+    }
+    
+    private func loadDraft() {
+        if let draftName: String = storage.load(String.self, key: "profile_name_draft"), !draftName.isEmpty {
+            self.editName = draftName
+            self.editMode = true 
+        }
+    }
+    
+    private func setupAutoSave() {
+        $editName
+            .debounce(for: .seconds(0.5), scheduler: RunLoop.main)
+            .dropFirst()
+            .sink { [weak self] name in
+                guard let self = self else { return }
+                // Only save if different from current profile name
+                if let current = self.userProfile?.displayName, name != current {
+                    try? self.storage.save(name, key: "profile_name_draft")
+                } else if name.isEmpty {
+                    self.storage.remove(key: "profile_name_draft")
+                }
+            }
+            .store(in: &cancellables)
     }
 }

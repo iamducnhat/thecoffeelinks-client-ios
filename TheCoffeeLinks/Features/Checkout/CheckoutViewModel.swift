@@ -31,17 +31,49 @@ final class CheckoutViewModel: ObservableObject {
     private let predictionRepository: PredictionRepositoryProtocol
     private let analyticsService: AnalyticsServiceProtocol
     private let hapticService: HapticServiceProtocol
+    private let orderStorage: OrderStorageProtocol
+    
     private var undoTimer: Timer?
     private let undoWindowDuration: TimeInterval = 30
+    private var cancellables = Set<AnyCancellable>()
     
-    init(orderRepository: OrderRepositoryProtocol, deliveryRepository: DeliveryRepositoryProtocol, voucherRepository: VoucherRepositoryProtocol,
-         predictionRepository: PredictionRepositoryProtocol, analyticsService: AnalyticsServiceProtocol, hapticService: HapticServiceProtocol) {
+    init(orderRepository: OrderRepositoryProtocol, 
+         deliveryRepository: DeliveryRepositoryProtocol, 
+         voucherRepository: VoucherRepositoryProtocol,
+         predictionRepository: PredictionRepositoryProtocol, 
+         analyticsService: AnalyticsServiceProtocol, 
+         hapticService: HapticServiceProtocol,
+         orderStorage: OrderStorageProtocol = OrderStorage()) {
         self.orderRepository = orderRepository
         self.deliveryRepository = deliveryRepository
         self.voucherRepository = voucherRepository
         self.predictionRepository = predictionRepository
         self.analyticsService = analyticsService
         self.hapticService = hapticService
+        self.orderStorage = orderStorage
+        
+        loadDraft()
+        setupDraftPersistence()
+    }
+    
+    private func loadDraft() {
+        if let draft = orderStorage.loadDraft() {
+            self.paymentMethod = draft.paymentMethod
+            self.selectedAddressId = draft.selectedAddressId
+            self.tableId = draft.tableId
+            // staffNotes handled via Cart, not here directly, but if moved here:
+            // self.staffNotes = draft.staffNotes
+        }
+    }
+    
+    private func setupDraftPersistence() {
+        Publishers.CombineLatest3($paymentMethod, $selectedAddressId, $tableId)
+            .debounce(for: .seconds(0.5), scheduler: RunLoop.main)
+            .sink { [weak self] method, addressId, tableId in
+                let draft = OrderDraft(paymentMethod: method, selectedAddressId: addressId, tableId: tableId, staffNotes: nil)
+                self?.orderStorage.saveDraft(draft)
+            }
+            .store(in: &cancellables)
     }
     
     func placeOrder(cart: Cart, pointsToRedeem: Int? = nil, voucherCode: String? = nil) async -> Order? {
@@ -76,6 +108,8 @@ final class CheckoutViewModel: ObservableObject {
             }
             
             orderPlaced = order
+            orderStorage.clearDraft() // Clear draft on success
+            
             await predictionRepository.recordOrder(items: cart.items, context: .current)
             await analyticsService.trackPurchase(orderId: order.id, amount: order.totalAmount, items: order.items)
             await hapticService.notification(.success)
@@ -138,10 +172,9 @@ final class CheckoutViewModel: ObservableObject {
         switch result {
         case .success(let orderId):
             // Success! The order is already updated on the backend.
-            // We can fetch the updated order or just show success.
-            // For now, let's just clear errors and perhaps fetch it or assume success.
             isPlacingOrder = false
-            // Note: In a real app, you might want to fetch the order now to get its definitive status.
+            orderStorage.clearDraft() // Clear draft on payment success
+            
             Task {
                 do {
                     let updatedOrder = try await orderRepository.getOrder(id: orderId)
@@ -173,3 +206,4 @@ enum CheckoutError: LocalizedError {
         }
     }
 }
+

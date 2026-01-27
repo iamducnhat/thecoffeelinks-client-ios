@@ -6,7 +6,11 @@ class DependencyContainer: ObservableObject {
     
     // MARK: - Core Services
     private(set) lazy var keychainManager = KeychainManager()
-    private(set) lazy var userPreferences = UserPreferencesManager()
+    private(set) lazy var userPreferences: UserPreferencesManager = {
+        let manager = UserPreferencesManager()
+        manager.configure(userRepository: userRepository, syncManager: syncManager)
+        return manager
+    }()
     private(set) lazy var networkService = NetworkService(keychainManager: keychainManager)
     
     // Config Extraction (Redundant but consistent with NetworkService logic)
@@ -47,17 +51,20 @@ class DependencyContainer: ObservableObject {
     private(set) lazy var syncRepository = SyncRepository(networkService: networkService)
     private(set) lazy var orderRepository = OrderRepository(networkService: networkService)
     private(set) lazy var deliveryRepository = DeliveryRepository(networkService: networkService)
-    private(set) lazy var storeRepository = StoreRepository(networkService: networkService)
-    private(set) lazy var socialRepository = SocialRepository(networkService: networkService)
-    private(set) lazy var userRepository = UserRepository(networkService: networkService)
-    private(set) lazy var voucherRepository = VoucherRepository(networkService: networkService, cacheService: cacheService, syncManager: syncManager)
-    private(set) lazy var favoritesRepository = FavoritesRepository(networkService: networkService, cacheService: cacheService)
+    private(set) lazy var storeRepository = StoreRepository(networkService: networkService, storeStorage: storeStorage, syncManager: syncManager)
+    private(set) lazy var socialRepository = SocialRepository(networkService: networkService, storeStorage: storeStorage)
+    private(set) lazy var userRepository = UserRepository(networkService: networkService, profileStorage: profileStorage, syncManager: syncManager)
+    private(set) lazy var voucherRepository = VoucherRepository(networkService: networkService, profileStorage: profileStorage, syncManager: syncManager)
+    private(set) lazy var favoritesRepository = FavoritesRepository(networkService: networkService, profileStorage: profileStorage)
     private(set) lazy var predictionRepository = PredictionRepository()
 
     // MARK: - Services
     private(set) lazy var analyticsService = AnalyticsService()
     private(set) lazy var predictionSyncService = PredictionSyncService(orderRepository: orderRepository, predictionRepository: predictionRepository)
-    private(set) lazy var cartService = CartService(networkService: networkService)
+    private(set) lazy var cartStorage = CartStorage()
+    private(set) lazy var storeStorage = StoreStorage()
+    private(set) lazy var profileStorage = ProfileStorage()
+    private(set) lazy var cartService = CartService(networkService: networkService, cartStorage: cartStorage)
     
     private var cancellables = Set<AnyCancellable>()
     

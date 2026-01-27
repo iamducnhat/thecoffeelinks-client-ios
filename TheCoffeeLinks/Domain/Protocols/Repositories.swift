@@ -47,10 +47,21 @@ protocol DeliveryRepositoryProtocol: Sendable {
     func getDeliveryTracking(orderId: String) async throws -> DeliveryTracking
 }
 
+// MARK: - Store Repository
+
+protocol StoreRepositoryProtocol: Sendable {
+    func getStores() async throws -> [Store]
+    func refreshStores() async throws -> [Store]
+    func getStore(id: String) async throws -> Store
+    func getNearestStore(latitude: Double, longitude: Double) async throws -> Store?
+}
+
 // MARK: - User Repository
 
 protocol UserRepositoryProtocol: Sendable {
     func getCurrentUser() async throws -> User
+    func getCachedUser() async -> User?
+    func refreshUser() async throws -> User
     func updateUser(_ user: User) async throws -> User
     func updatePreferences(_ preferences: UserPreferences) async throws -> UserPreferences
     func getStores(latitude: Double?, longitude: Double?) async throws -> [Store]
