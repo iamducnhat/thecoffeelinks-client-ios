@@ -10,7 +10,8 @@ struct thecoffeelinks_client_iosApp: App {
     @StateObject private var cartViewModel = CartViewModel(
         deliveryRepository: DependencyContainer.shared.deliveryRepository,
         voucherRepository: DependencyContainer.shared.voucherRepository,
-        hapticService: DependencyContainer.shared.hapticManager
+        hapticService: DependencyContainer.shared.hapticManager,
+        cartService: DependencyContainer.shared.cartService
     )
     @StateObject private var storeViewModel = StoreViewModel(
         storeRepository: DependencyContainer.shared.storeRepository,

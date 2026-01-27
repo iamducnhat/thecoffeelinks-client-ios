@@ -57,6 +57,7 @@ class DependencyContainer: ObservableObject {
     // MARK: - Services
     private(set) lazy var analyticsService = AnalyticsService()
     private(set) lazy var predictionSyncService = PredictionSyncService(orderRepository: orderRepository, predictionRepository: predictionRepository)
+    private(set) lazy var cartService = CartService(networkService: networkService)
     
     private var cancellables = Set<AnyCancellable>()
     

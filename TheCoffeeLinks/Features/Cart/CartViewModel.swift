@@ -23,11 +23,15 @@ final class CartViewModel: ObservableObject {
     private let deliveryRepository: DeliveryRepositoryProtocol
     private let voucherRepository: VoucherRepositoryProtocol
     private let hapticService: HapticServiceProtocol
+    private let cartService: CartServiceProtocol
     
-    init(deliveryRepository: DeliveryRepositoryProtocol, voucherRepository: VoucherRepositoryProtocol, hapticService: HapticServiceProtocol) {
+    init(deliveryRepository: DeliveryRepositoryProtocol, voucherRepository: VoucherRepositoryProtocol, hapticService: HapticServiceProtocol, cartService: CartServiceProtocol) {
         self.deliveryRepository = deliveryRepository
         self.voucherRepository = voucherRepository
         self.hapticService = hapticService
+        self.cartService = cartService
+        
+        Task { await fetchCart() }
     }
     
     var isEmpty: Bool { cart.isEmpty }
@@ -60,17 +64,50 @@ final class CartViewModel: ObservableObject {
         return true
     }
     
+    func fetchCart() async {
+        do {
+            let fetchedCart = try await cartService.getCart()
+            await MainActor.run {
+                self.cart = fetchedCart
+            }
+        } catch {
+            print("Failed to fetch cart: \(error)")
+        }
+    }
+    
     func addItem(_ item: CartItem) {
-        cart.addItem(item)
-        Task { await hapticService.impact(.medium) }
+        // Legacy: Should not be used directly if possible, or wrap
+        // Assume this calls product version
+        Task {
+            do {
+                let updatedCart = try await cartService.addToCart(productId: UUID(uuidString: item.product.id) ?? UUID(), quantity: item.quantity, modifiers: item.customization)
+                 await MainActor.run {
+                     self.cart = updatedCart
+                     self.discount = updatedCart.voucherCode != nil ? 1 : 0 // Placeholder: Server calculates discount but we need to map it back or rely on server totals
+                 }
+                await hapticService.impact(.medium)
+            } catch {
+                self.error = error
+            }
+        }
     }
     
     func addItem(product: Product, quantity: Int, customization: OrderCustomization) {
-        let item = CartItem(id: UUID(), product: product, quantity: quantity, customization: customization, addedAt: Date())
-        addItem(item)
+        Task {
+            do {
+                let updatedCart = try await cartService.addToCart(productId: UUID(uuidString: product.id) ?? UUID(), quantity: quantity, modifiers: customization)
+                await MainActor.run {
+                    self.cart = updatedCart
+                }
+                await hapticService.impact(.medium)
+            } catch {
+                await MainActor.run { self.error = error }
+            }
+        }
     }
     
     func updateItem(id: UUID, quantity: Int, customization: OrderCustomization) {
+        // Local update for responsive UI, ideally sync
         if let index = cart.items.firstIndex(where: { $0.id == id }) {
             var item = cart.items[index]
             item.quantity = quantity
@@ -90,7 +127,10 @@ final class CartViewModel: ObservableObject {
         Task { await hapticService.notification(.warning) }
     }
     
-    func clearCart() { cart.clear(); discount = 0; voucherValidation = nil; selectedAddress = nil }
+    func clearCart() { 
+        cart.clear(); discount = 0; voucherValidation = nil; selectedAddress = nil 
+        Task { try? await cartService.clearCart() }
+    }
     func setMode(_ mode: OrderingMode) { cart.mode = mode; if mode != .delivery { deliveryFee = 0; deliveryAvailability = nil; selectedAddress = nil } }
     func setStore(_ storeId: String) { cart.storeId = storeId }
     func setDeliveryAddress(_ addressId: String, address: DeliveryAddress?) { 
