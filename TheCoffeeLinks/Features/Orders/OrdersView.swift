@@ -24,7 +24,7 @@ struct OrdersView: View {
             // Fixed Navigation Header
             HStack(alignment: .center, spacing: AppLayout.spacing) {
                 Button { dismiss() } label: {
-                    Image(isPresentedModally ? "xmark" : "chevron.left")
+                    Image(systemName: isPresentedModally ? "xmark" : "chevron.left")
                         .font(AppFont.navIcon)
                         .foregroundStyle(Color.textInk)
                         .frame(minWidth: AppLayout.touchTarget, minHeight: AppLayout.touchTarget)
@@ -57,7 +57,7 @@ struct OrdersView: View {
                     // Navigation Header (Scrollable)
                     HStack(alignment: .center, spacing: AppLayout.spacing) {
                         // Invisible placeholder to align title
-                        Image(isPresentedModally ? "xmark" : "chevron.left")
+                        Image(systemName: isPresentedModally ? "xmark" : "chevron.left")
                             .font(AppFont.navIcon)
                             .foregroundStyle(Color.clear)
                             .frame(minWidth: AppLayout.touchTarget, minHeight: AppLayout.touchTarget)

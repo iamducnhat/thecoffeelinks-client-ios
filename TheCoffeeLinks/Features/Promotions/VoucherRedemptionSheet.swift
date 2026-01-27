@@ -46,7 +46,7 @@ struct VoucherRedemptionSheet: View {
                     Button {
                         dismiss()
                     } label: {
-                        Image("xmark")
+                        Image(systemName: "xmark")
                             .font(AppFont.body)
                             .foregroundStyle(Color.textInk)
                             .frame(width: 44, height: 44)

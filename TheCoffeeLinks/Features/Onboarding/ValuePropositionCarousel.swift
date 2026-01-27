@@ -22,7 +22,7 @@ struct ValuePropositionCarousel: View {
         Slide(
             title: "Discover\nGreat Coffee",
             subtitle: "Find the finest local roasters and explore new flavors from your favorite cafés.",
-            image: "cup.and.saucer"
+            image: "coffee"
         ),
         Slide(
             title: "Skip\nThe Line",

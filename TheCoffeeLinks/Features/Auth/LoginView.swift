@@ -119,7 +119,7 @@ struct LoginView: View {
                     Button {
                         dismiss()
                     } label: {
-                        Image("xmark")
+                        Image(systemName: "xmark")
                             .font(AppFont.navIcon)
                             .foregroundStyle(Color.textMuted)
                             .frame(width: 44, height: 44)

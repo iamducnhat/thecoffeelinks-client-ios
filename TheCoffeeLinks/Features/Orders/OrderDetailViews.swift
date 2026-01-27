@@ -20,7 +20,7 @@ struct OrderDetailView: View {
             // Fixed Navigation Header
             HStack(alignment: .center, spacing: AppLayout.spacing) {
                 Button { dismiss() } label: {
-                    Image("xmark")
+                    Image(systemName: "xmark")
                         .font(AppFont.navIcon)
                         .foregroundStyle(Color.textInk)
                         .frame(minWidth: AppLayout.touchTarget, minHeight: AppLayout.touchTarget)
@@ -51,7 +51,7 @@ struct OrderDetailView: View {
                 ScrollView(.vertical) {
                     // Navigation Header (Scrollable)
                     HStack(alignment: .center, spacing: AppLayout.spacing) {
-                        Image("xmark")
+                        Image(systemName: "xmark")
                             .font(AppFont.navIcon)
                             .foregroundStyle(Color.textInk)
                             .frame(minWidth: AppLayout.touchTarget, minHeight: AppLayout.touchTarget)

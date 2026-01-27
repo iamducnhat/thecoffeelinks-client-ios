@@ -155,7 +155,7 @@ struct StoreDetailSheet: View {
                             HStack(spacing: AppLayout.spacingSmall) {
                                 ForEach(amenities.prefix(3), id: \.self) { amenity in
                                     HStack(spacing: 4) {
-                                        Image(amenity.iconName)
+                                        Image(systemName: amenity.iconName)
                                             .font(.system(size: 12))
                                             .foregroundStyle(Color.primaryEspresso)
                                         Text(amenity.displayName)

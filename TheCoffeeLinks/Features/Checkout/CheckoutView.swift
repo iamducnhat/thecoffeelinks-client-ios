@@ -81,7 +81,7 @@ struct CheckoutView: View {
                 // Fixed Navigation Header
                 HStack(alignment: .center, spacing: AppLayout.spacing) {
                     Button { dismiss() } label: {
-                        Image("arrow.left")
+                        Image(systemName: "arrow.left")
                             .font(AppFont.navIcon)
                             .foregroundStyle(Color.textInk)
                             .frame(minWidth: AppLayout.touchTarget, minHeight: AppLayout.touchTarget)
@@ -112,7 +112,7 @@ struct CheckoutView: View {
                     ScrollView(.vertical) {
                         // Navigation Header (Scrollable)
                         HStack(alignment: .center, spacing: AppLayout.spacing) {
-                            Image("arrow.left")
+                            Image(systemName: "arrow.left")
                                 .font(AppFont.navIcon)
                                 .foregroundStyle(Color.textInk)
                                 .frame(minWidth: AppLayout.touchTarget, minHeight: AppLayout.touchTarget)
@@ -163,7 +163,7 @@ struct CheckoutView: View {
                                             Text(cartViewModel.cart.mode.displayName)
                                                 .textCase(.uppercase)
                                                 .font(AppFont.monoBody)
-                                            Image("arrow.left.arrow.right")
+                                            Image(systemName: "arrow.left.arrow.right")
                                                 .font(AppFont.monoCaption)
                                         }
                                         .padding(AppLayout.spacingMicro)
@@ -386,7 +386,7 @@ struct CheckoutView: View {
                                                 checkoutViewModel.paymentMethod = method
                                             } label: {
                                                 VStack(spacing: 4) {
-                                                    Image(method.iconName)
+                                                    Image(systemName: method.iconName)
                                                         .font(AppFont.navIcon)
                                                     Text(method.displayName)
                                                         .font(AppFont.monoBody)

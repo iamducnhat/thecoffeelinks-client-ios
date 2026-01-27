@@ -27,7 +27,7 @@ struct SearchView: View {
             // Fixed Navigation Header
             HStack(alignment: .center, spacing: AppLayout.spacing) {
                 Button { dismiss() } label: {
-                    Image("xmark")
+                    Image(systemName: "xmark")
                         .font(AppFont.navIcon)
                         .foregroundStyle(Color.textInk)
                         .frame(minWidth: AppLayout.touchTarget, minHeight: AppLayout.touchTarget)
@@ -58,7 +58,7 @@ struct SearchView: View {
                 ScrollView(.vertical) {
                     // Navigation Header (Scrollable)
                     HStack(alignment: .center, spacing: AppLayout.spacing) {
-                        Image("xmark")
+                        Image(systemName: "xmark")
                             .font(AppFont.navIcon)
                             .foregroundStyle(Color.textInk)
                             .frame(minWidth: AppLayout.touchTarget, minHeight: AppLayout.touchTarget)
@@ -136,7 +136,7 @@ struct SearchView: View {
                                                     
                                                     Spacer()
                                                     
-                                                    Image("arrow.up.left")
+                                                    Image(systemName: "arrow.up.left")
                                                         .font(.system(size: 12))
                                                         .foregroundStyle(Color.textMuted)
                                                 }

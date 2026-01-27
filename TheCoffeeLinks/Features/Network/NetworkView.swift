@@ -301,7 +301,7 @@ struct NetworkCheckInSheet: View {
                     Spacer()
                     
                     Button { isPresented = false } label: {
-                        Image("xmark")
+                        Image(systemName: "xmark")
                             .font(AppFont.navIcon)
                             .foregroundStyle(Color.textInk)
                     }

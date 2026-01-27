@@ -111,7 +111,7 @@ struct EditorialQRCheckInView: View {
                     Button {
                         dismiss()
                     } label: {
-                        Image("xmark")
+                        Image(systemName: "xmark")
                             .font(.system(size: 18, weight: .semibold))
                             .foregroundStyle(.white)
                             .frame(width: 40, height: 40)

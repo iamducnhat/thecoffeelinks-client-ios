@@ -17,7 +17,7 @@ struct QRRenderView: View {
                     .scaledToFit()
                     .frame(width: 200, height: 200)
             } else {
-                Image("xmark.circle")
+                Image(systemName: "xmark.circle")
                     .resizable()
                     .frame(width: 200, height: 200)
                     .foregroundColor(.red)

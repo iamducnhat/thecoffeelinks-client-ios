@@ -34,7 +34,7 @@ struct StoreDetailView: View {
             // Fixed Navigation Header
             HStack(alignment: .center, spacing: AppLayout.spacing) {
                 Button { dismiss() } label: {
-                    Image("xmark")
+                    Image(systemName: "xmark")
                         .font(AppFont.navIcon)
                         .foregroundStyle(Color.textInk)
                         .frame(minWidth: AppLayout.touchTarget, minHeight: AppLayout.touchTarget)
@@ -65,7 +65,7 @@ struct StoreDetailView: View {
                 ScrollView(.vertical) {
                     // Navigation Header (Scrollable)
                     HStack(alignment: .center, spacing: AppLayout.spacing) {
-                        Image("xmark")
+                        Image(systemName: "xmark")
                             .font(AppFont.navIcon)
                             .foregroundStyle(Color.textInk)
                             .frame(minWidth: AppLayout.touchTarget, minHeight: AppLayout.touchTarget)
@@ -219,7 +219,7 @@ struct StoreDetailView: View {
                                 LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: AppLayout.spacingMedium) {
                                     ForEach(amenities, id: \.self) { amenity in
                                         HStack(spacing: 4) {
-                                            Image(amenity.iconName)
+                                            Image(systemName: amenity.iconName)
                                                 .foregroundStyle(Color.primaryEspresso)
                                                 .font(.system(size: 14))
                                             Text(amenity.displayName)
@@ -305,7 +305,7 @@ struct StoreDetailView: View {
                                 UIApplication.shared.open(url)
                             } label: {
                                 HStack {
-                                    Image("arrow.triangle.turn.up.right.circle")
+                                    Image(systemName: "arrow.triangle.turn.up.right.circle")
                                         .font(.system(size: 16))
                                     Text("store_get_directions")
                                         .font(AppFont.monoBody)

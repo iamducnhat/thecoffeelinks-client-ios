@@ -24,7 +24,7 @@ struct SavedLocationsView: View {
                 // Header
                 HStack {
                     Button(action: { dismiss() }) {
-                        Image("chevron.left")
+                        Image(systemName: "chevron.left")
                             .font(AppFont.body)
                             .foregroundStyle(Color.textInk)
                     }
@@ -38,7 +38,7 @@ struct SavedLocationsView: View {
                     Spacer()
                     
                     // Invisible button to balance layout
-                    Image("chevron.left").opacity(0)
+                    Image(systemName: "chevron.left").opacity(0)
                         
                 }
                 .padding(AppLayout.spacing)

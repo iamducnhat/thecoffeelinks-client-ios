@@ -343,7 +343,7 @@ struct CheckInSheet: View {
                     Spacer()
                     
                     Button { dismiss() } label: {
-                        Image("xmark")
+                        Image(systemName: "xmark")
                             .font(AppFont.navIcon)
                             .foregroundStyle(Color.textInk)
                     }
@@ -453,7 +453,7 @@ struct ModeSheet: View {
                     Spacer()
                     
                     Button { dismiss() } label: {
-                        Image("xmark")
+                        Image(systemName: "xmark")
                             .font(AppFont.navIcon)
                             .foregroundStyle(Color.textInk)
                     }
@@ -513,7 +513,7 @@ struct UserProfileSheet: View {
                 HStack {
                     Spacer()
                     Button { dismiss() } label: {
-                        Image("xmark")
+                        Image(systemName: "xmark")
                             .font(AppFont.navIcon)
                             .foregroundStyle(Color.textInk)
                     }
@@ -666,7 +666,7 @@ struct ReportSheet: View {
                     Spacer()
                     
                     Button { dismiss() } label: {
-                        Image("xmark")
+                        Image(systemName: "xmark")
                             .font(AppFont.navIcon)
                             .foregroundStyle(Color.textInk)
                     }
