@@ -103,80 +103,67 @@ final class AppAttestService: ObservableObject {
             throw AppAttestError.unavailable
         }
         
-        
         // Generate a challenge hash
         let challenge = generateChallenge()
         
-        return try await withCheckedThrowingContinuation { continuation in
+        // 1. Get Key ID
+        let keyId: String = try await withCheckedThrowingContinuation { continuation in
             service.generateKey { keyId, error in
                 if let error = error {
                     continuation.resume(throwing: AppAttestError.attestationFailed(error))
                     return
                 }
-                
                 guard let keyId = keyId else {
                     continuation.resume(throwing: AppAttestError.invalidResponse)
                     return
                 }
-                
-                
-                // Create attestation for this key
-                self.attestKey(keyId: keyId, challenge: challenge) { result in
-                    switch result {
-                    case .success(let attestation):
-                        let key = AppAttestKey(
-                            keyId: keyId,
-                            challenge: challenge,
-                            attestation: attestation,
-                            createdAt: Date()
-                        )
-                        
-                        // Save to keychain
-                        self.saveKeyToKeychain(key)
-                        self.currentKey = key
-                        self.isRegistered = true
-                        
-                        continuation.resume(returning: key)
-                        
-                    case .failure(let error):
-                        continuation.resume(throwing: error)
-                    }
-                }
+                continuation.resume(returning: keyId)
             }
         }
+        
+        // 2. Attest Key
+        let attestation = try await attestKey(keyId: keyId, challenge: challenge)
+        
+        let key = AppAttestKey(
+            keyId: keyId,
+            challenge: challenge,
+            attestation: attestation,
+            createdAt: Date()
+        )
+        
+        // 3. Save to keychain (MainActor isolated)
+        self.saveKeyToKeychain(key)
+        self.currentKey = key
+        self.isRegistered = true
+        
+        return key
     }
     
     // MARK: - Attestation
     
-    private func attestKey(keyId: String, challenge: String, completion: @escaping (Result<String, Error>) -> Void) {
+    private func attestKey(keyId: String, challenge: String) async throws -> String {
         guard let service = attestService else {
-            completion(.failure(AppAttestError.unavailable))
-            return
+            throw AppAttestError.unavailable
         }
         
         guard let challengeData = challenge.data(using: .utf8) else {
-            completion(.failure(AppAttestError.invalidResponse))
-            return
+            throw AppAttestError.invalidResponse
         }
         
+        let clientDataHash = Data(CryptoKit.SHA256.hash(data: challengeData))
         
-        service.attestKey(
-            keyId,
-            clientDataHash: Data(CryptoKit.SHA256.hash(data: challengeData))
-        ) { attestation, error in
-            if let error = error {
-                completion(.failure(AppAttestError.attestationFailed(error)))
-                return
+        return try await withCheckedThrowingContinuation { continuation in
+            service.attestKey(keyId, clientDataHash: clientDataHash) { attestation, error in
+                if let error = error {
+                    continuation.resume(throwing: AppAttestError.attestationFailed(error))
+                    return
+                }
+                guard let attestation = attestation else {
+                    continuation.resume(throwing: AppAttestError.invalidResponse)
+                    return
+                }
+                continuation.resume(returning: attestation.base64EncodedString())
             }
-            
-            guard let attestation = attestation else {
-                completion(.failure(AppAttestError.invalidResponse))
-                return
-            }
-            
-            // Convert attestation to base64 string
-            let base64String = attestation.base64EncodedString()
-            completion(.success(base64String))
         }
     }
     

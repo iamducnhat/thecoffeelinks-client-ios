@@ -39,7 +39,7 @@ final class AppAttestNetworkInterceptor {
         body: Data? = nil
     ) async throws -> (keyId: String, assertion: String, challenge: String)? {
         // Check if endpoint requires App Attest
-        guard let protectedEndpoint = ProtectedEndpoint.allCases.first(where: {
+        guard ProtectedEndpoint.allCases.contains(where: {
             endpoint.hasPrefix($0.rawValue)
         }) else {
             return nil
