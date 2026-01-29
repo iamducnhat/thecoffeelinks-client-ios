@@ -609,10 +609,8 @@ struct CheckoutView: View {
             if !savedStoreId.isEmpty {
                 // Find and select the store if it exists
                 Task {
-                    if let stores = await storeViewModel.fetchStores() {
-                        if let store = stores.first(where: { $0.id == savedStoreId }) {
-                            storeViewModel.selectedStore = store
-                        }
+                    if let store = storeViewModel.stores.first(where: { $0.id == savedStoreId }) {
+                        storeViewModel.selectedStore = store
                     }
                 }
             }

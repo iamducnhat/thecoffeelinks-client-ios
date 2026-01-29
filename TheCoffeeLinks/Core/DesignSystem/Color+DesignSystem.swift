@@ -4,63 +4,41 @@ import SwiftUI
 /// 
 /// Warm coffee-inspired palette with full Light/Dark mode support.
 /// Uses SwiftUI semantic colors where possible for automatic adaptation.
+/// Now backed by Asset Catalog for thread-safe dynamic resolution.
 ///
 /// ACCENT USAGE (STRICT):
 /// - `Color.accentColor` is ONLY for primary CTA buttons
 /// - All other UI uses `.primary`, `.secondary`, `.tertiary`
-///
-/// LIGHT MODE:
-/// - Background: Warm off-white paper (#F9F7F4)
-/// - Surface: Subtle cream (#F0ECE6)
-/// - Text Primary: Deep coffee brown (#1A1512)
-/// - Text Secondary: Muted brown (#5C4D42)
-/// - Accent CTA: Moss green (#3B5D48)
-///
-/// DARK MODE:
-/// - Background: Near black, warm (#0F0D0B)
-/// - Surface: Dark brown (#1A1714)
-/// - Text Primary: Warm white (#F5F2EE)
-/// - Text Secondary: Muted cream (#B8ADA2)
-/// - Accent CTA: Mint/sage (#6E8F78)
 
 extension Color {
-    
-    // MARK: - Adaptive Color Helper
-    
-    init(light: String, dark: String) {
-        self.init(uiColor: UIColor { (traits) -> UIColor in
-            let hex = traits.userInterfaceStyle == .dark ? dark : light
-            return UIColor(Color(hex: hex))
-        })
-    }
     
     // MARK: - Background Colors
     
     /// Primary background - Paper white (light) / Near black (dark)
     static var backgroundPaper: Color {
-        Color(light: "#F9F7F4", dark: "#0F0D0B")
+        Color("Colors/BackgroundPaper")
     }
     
     /// Surface/Card background - Subtle cream (light) / Dark brown (dark)
     static var surfaceCard: Color {
-        Color(light: "#F0ECE6", dark: "#1A1714")
+        Color("Colors/SurfaceCard")
     }
     
     // MARK: - Text Colors
     
     /// Primary text - Very dark chocolate brown (light) / Warm white (dark)
     static var textInk: Color {
-        Color(light: "#1A110D", dark: "#F5F2EE")
+        Color("Colors/TextInk")
     }
     
     /// Secondary text - Warm cocoa brown (light) / Muted cream (dark)
     static var textMuted: Color {
-        Color(light: "#4D3A31", dark: "#B8ADA2")
+        Color("Colors/TextMuted")
     }
     
     /// Tertiary text - Light coffee-stain tone (light) / Muted tan (dark)
     static var textTertiary: Color {
-        Color(light: "#8C7368", dark: "#7A7068")
+        Color("Colors/TextTertiary")
     }
     
     // MARK: - Accent Colors
@@ -68,36 +46,36 @@ extension Color {
     /// Primary accent (SINGLE ACCENT) - Moss green (light) / Mint (dark)
     /// Used for: primary actions, prices, selection states.
     static var primaryEspresso: Color {
-        Color(light: "#3B5D48", dark: "#6E8F78")
+        Color("Colors/PrimaryEspresso")
     }
     
     // MARK: - Border Colors
     
     /// Border/Separator - Warm gray (light) / Dark brown (dark)
     static var border: Color {
-        Color(light: "#D4CCC2", dark: "#2A2520")
+        Color("Colors/Border")
     }
     
     /// Tertiary border for dashed inputs
     static var borderTertiary: Color {
-        Color(light: "#C4BAB0", dark: "#3A352F")
+        Color("Colors/BorderTertiary")
     }
     
     // MARK: - Semantic Colors
     
     /// Error state - Warm red
     static var semanticError: Color {
-        Color(light: "#B91C1C", dark: "#DC2626")
+        Color("Colors/SemanticError")
     }
     
     /// Success state - Forest/Lime green
     static var semanticSuccess: Color {
-        Color(light: "#15803D", dark: "#22C55E")
+        Color("Colors/SemanticSuccess")
     }
     
     /// Warning state - Amber
     static var semanticWarning: Color {
-        Color(light: "#D97706", dark: "#F59E0B")
+        Color("Colors/SemanticWarning")
     }
     
     // MARK: - Legacy Aliases (Compatibility)
@@ -108,7 +86,7 @@ extension Color {
     static var accentTerminal: Color { primaryEspresso }
 }
 
-// MARK: - Hex Color Helper
+// MARK: - Hex Color Helper (Retained for utilities if needed elsewhere, but no longer used for system colors)
 
 extension Color {
     init(hex: String) {

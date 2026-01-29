@@ -64,6 +64,13 @@ class NetworkService: ObservableObject {
     private var refreshToken: String?
     private var refreshTask: Task<Bool, Never>?
     
+    // Helper to safely read token from any thread
+    private var currentToken: String? {
+        get async {
+            await MainActor.run { authToken }
+        }
+    }
+    
     init(keychainManager: KeychainManager) {
         let config = URLSessionConfiguration.default
         config.timeoutIntervalForRequest = 30
@@ -125,34 +132,33 @@ class NetworkService: ObservableObject {
         }
     }
     
-    func setAuthSession(accessToken: String, refreshToken: String?) async {
-        await MainActor.run {
-            self.authToken = accessToken
-            self.keychainManager.saveAccessToken(accessToken)
-            
-            if let refresh = refreshToken {
-                self.refreshToken = refresh
-                self.keychainManager.saveRefreshToken(refresh)
-            }
+    @MainActor
+    func setAuthSession(accessToken: String, refreshToken: String?) {
+        self.authToken = accessToken
+        self.keychainManager.saveAccessToken(accessToken)
+        
+        if let refresh = refreshToken {
+            self.refreshToken = refresh
+            self.keychainManager.saveRefreshToken(refresh)
         }
     }
     
-    func clearAuthToken() async {
-        await MainActor.run {
-            self.authToken = nil
-            self.refreshToken = nil
-            self.keychainManager.deleteAccessToken()
-            self.keychainManager.deleteRefreshToken()
-        }
+    @MainActor
+    func clearAuthToken() {
+        self.authToken = nil
+        self.refreshToken = nil
+        self.keychainManager.deleteAccessToken()
+        self.keychainManager.deleteRefreshToken()
     }
     
     // Thread-safe token refresh with task deduplication
+    @MainActor
     private func refreshAuthToken() async -> Bool {
         if let existingTask = refreshTask {
             return await existingTask.value
         }
         
-        let task = Task<Bool, Never> {
+        let task = Task<Bool, Never> { @MainActor in
             guard let currentRefreshToken = self.refreshToken else { return false }
             
             struct RefreshRequest: Encodable {
@@ -171,13 +177,14 @@ class NetworkService: ObservableObject {
             
             do {
                 // We use a raw request here to avoid infinite loops if this fails with 401
+                // Note: _performRequest is async, so we await it. It doesn't need MainActor but we are calling it from MainActor.
                 let response: RefreshResponse = try await _performRequest("/api/auth/refresh", method: "POST", body: RefreshRequest(refresh_token: currentRefreshToken), isRetry: true)
                 
-                await setAuthSession(accessToken: response.session.access_token, refreshToken: response.session.refresh_token)
+                self.setAuthSession(accessToken: response.session.access_token, refreshToken: response.session.refresh_token)
                 return true
             } catch {
                 print("❌ Token Refresh Failed: \(error)")
-                await clearAuthToken()
+                self.clearAuthToken()
                 return false
             }
         }
@@ -223,7 +230,7 @@ class NetworkService: ObservableObject {
             }
         }
         
-        if let token = authToken {
+        if let token = await currentToken {
             request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
         }
         
@@ -357,7 +364,7 @@ class NetworkService: ObservableObject {
         request.httpMethod = method
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         
-        if let token = authToken {
+        if let token = await currentToken {
             request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
         }
         
@@ -403,7 +410,7 @@ class NetworkService: ObservableObject {
         var request = URLRequest(url: url)
         request.httpMethod = method
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        if let token = authToken {
+        if let token = await currentToken {
             request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
         }
         if let body = body {
@@ -430,7 +437,7 @@ class NetworkService: ObservableObject {
         case 200...299:
             return data
         case 401:
-            await clearAuthToken()
+            await MainActor.run { self.clearAuthToken() }
             throw NetworkError.unauthorized
         case 403:
             throw NetworkError.forbidden
