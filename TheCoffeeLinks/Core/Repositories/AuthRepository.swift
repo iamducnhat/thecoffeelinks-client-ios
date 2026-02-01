@@ -118,7 +118,7 @@ class AuthRepository {
         
         struct LoginResponse: Decodable {
             let session: SessionData
-            let user: SupabaseUser
+            let user: ServerUser
             
             struct SessionData: Decodable {
                 let accessToken: String
@@ -129,66 +129,6 @@ class AuthRepository {
                     case refreshToken = "refresh_token"
                 }
             }
-            
-                struct SupabaseUser: Decodable {
-                    let id: String
-                    let phone: String?
-                    let phoneVerified: Bool?
-                    let phoneVerificationStatus: String?
-                    let userMetadata: UserMetadata?
-                    
-                    enum CodingKeys: String, CodingKey {
-                        case id, phone
-                        case phoneVerified = "phone_verified"
-                        case phoneVerificationStatus = "phone_verification_status"
-                        case userMetadata = "user_metadata"
-                    }
-                    
-                    struct UserMetadata: Decodable {
-                        let fullName: String?
-                    }
-                    
-                    func toDomain() -> User {
-                        let display = userMetadata?.fullName ?? phone ?? "User"
-                        
-                        // Strict Status Mapping
-                        // Precedence: 
-                        // 1. phone_verification_status column (NEW schema)
-                        // 2. phone_verified boolean (Old schema/Supabase default)
-                        
-                        var status: PhoneVerificationStatus = .unverified
-                        
-                        if let statusStr = phoneVerificationStatus, !statusStr.isEmpty {
-                            if let mapped = PhoneVerificationStatus(rawValue: statusStr) {
-                                status = mapped
-                            } else {
-                                // Fallback for unknown strings, treated as unverified unless explicitly 'verified'
-                                status = (statusStr == "verified") ? .verified : .unverified
-                            }
-                        } else {
-                            // Legacy fallback
-                            if let verified = phoneVerified, verified {
-                                status = .verified
-                            } else {
-                                status = .unverified
-                            }
-                        }
-                        
-                        return User(
-                            id: id,
-                            email: nil,
-                            phone: phone,
-                            phoneVerified: status == .verified,
-                            phoneVerificationStatus: status,
-                            displayName: display,
-                            avatarUrl: nil,
-                            membershipTier: .bronze,
-                            points: 0,
-                            createdAt: Date(),
-                            preferences: .default
-                        )
-                    }
-                }
         }
         
         let response: LoginResponse = try await networkService.request(
@@ -198,7 +138,7 @@ class AuthRepository {
         )
         
         await networkService.setAuthSession(accessToken: response.session.accessToken, refreshToken: response.session.refreshToken)
-        return response.user.toDomain()
+        return mapToDomain(response.user)
     }
 
     // MARK: - Phone OTP Authentication
@@ -233,7 +173,7 @@ class AuthRepository {
         struct OTPResponse: Decodable {
             let session: SessionData
             // The server returns Supabase User object in 'user' field
-            let user: SupabaseUser
+            let user: ServerUser
             
             struct SessionData: Decodable {
                 let accessToken: String
@@ -244,55 +184,6 @@ class AuthRepository {
                     case refreshToken = "refresh_token"
                 }
             }
-            
-             struct SupabaseUser: Decodable {
-                let id: String
-                let shortId: String?
-                let shortIdVersion: Int?
-                let email: String?
-                let phone: String?
-                let phoneVerified: Bool?
-                let phoneVerificationStatus: String?
-                let userMetadata: UserMetadata?
-                let createdAt: String?
-                
-                enum CodingKeys: String, CodingKey {
-                    case id, email, phone
-                    case shortId = "short_id"
-                    case shortIdVersion = "short_id_version"
-                    case phoneVerified = "phone_verified"
-                    case phoneVerificationStatus = "phone_verification_status"
-                    case userMetadata = "user_metadata"
-                    case createdAt = "created_at"
-                }
-                
-                struct UserMetadata: Decodable {
-                    let fullName: String?
-                }
-                
-                func toDomain() -> User {
-                    let display = userMetadata?.fullName ?? phone ?? "User"
-                    // Map status string to enum
-                    let status = PhoneVerificationStatus(rawValue: phoneVerificationStatus ?? "") ?? .unverified
-                    
-                    return User(
-                        id: id,
-                        shortId: shortId,
-                        shortIdVersion: shortIdVersion,
-                        email: email,
-                        phone: phone,
-                        phoneVerified: phoneVerified ?? false,
-                        phoneVerificationStatus: status,
-                        displayName: display,
-                        avatarUrl: nil,
-                        membershipTier: .bronze,
-                        points: 0,
-                        createdAt: Date(), // Simplified for now, or parse createdAt
-                        preferences: .default
-                    )
-                }
-            }
-
         }
         
         let response: OTPResponse = try await networkService.request(
@@ -302,7 +193,7 @@ class AuthRepository {
         )
         
         await networkService.setAuthSession(accessToken: response.session.accessToken, refreshToken: response.session.refreshToken)
-        return response.user.toDomain()
+        return mapToDomain(response.user)
     }
     
     func bypassOTP(phoneNumber: String) async throws -> User {
@@ -368,5 +259,81 @@ class AuthRepository {
             createdAt: Date(),
             preferences: .default
         )
+    }
+
+    // MARK: - Shared Helpers
+
+    private func mapToDomain(_ serverUser: ServerUser) -> User {
+        let display = serverUser.userMetadata?.fullName ?? serverUser.phone ?? "User"
+        
+        // Strict Status Mapping
+        // Precedence: 
+        // 1. phone_verification_status column (NEW schema)
+        // 2. phone_verified boolean (Old schema/Supabase default)
+        
+        var status: PhoneVerificationStatus = .unverified
+        
+        if let statusStr = serverUser.phoneVerificationStatus, !statusStr.isEmpty {
+            if let mapped = PhoneVerificationStatus(rawValue: statusStr) {
+                status = mapped
+            } else {
+                status = (statusStr == "verified") ? .verified : .unverified
+            }
+        } else {
+            // Legacy fallback
+            if let verified = serverUser.phoneVerified, verified {
+                status = .verified
+            } else {
+                status = .unverified
+            }
+        }
+        
+        return User(
+            id: serverUser.id,
+            shortId: serverUser.shortId,
+            shortIdVersion: serverUser.shortIdVersion,
+            email: serverUser.email,
+            phone: serverUser.phone,
+            phoneVerified: status == .verified,
+            phoneVerificationStatus: status,
+            displayName: display,
+            avatarUrl: nil,
+            membershipTier: .bronze,
+            points: 0,
+            createdAt: Date(), // Ideally parse serverUser.createdAt
+            preferences: .default
+        )
+    }
+}
+
+// MARK: - Server DTOs
+
+struct ServerUser: Decodable {
+    let id: String
+    let shortId: String?
+    let shortIdVersion: Int?
+    let email: String?
+    let phone: String?
+    let phoneVerified: Bool?
+    let phoneVerificationStatus: String?
+    let userMetadata: UserMetadata?
+    let createdAt: String?
+    
+    enum CodingKeys: String, CodingKey {
+        case id, email, phone
+        case shortId = "short_id"
+        case shortIdVersion = "short_id_version"
+        case phoneVerified = "phone_verified"
+        case phoneVerificationStatus = "phone_verification_status"
+        case userMetadata = "user_metadata"
+        case createdAt = "created_at"
+    }
+    
+    struct UserMetadata: Decodable {
+        let fullName: String?
+        
+        enum CodingKeys: String, CodingKey {
+            case fullName = "full_name"
+        }
     }
 }

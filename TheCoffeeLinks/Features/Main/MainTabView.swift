@@ -10,39 +10,23 @@ import SwiftUI
 
 struct MainTabView: View {
     @EnvironmentObject var appState: AppState
-    @StateObject private var menuViewModel = MenuViewModel(
-        productRepository: DependencyContainer.shared.productRepository,
-        cacheService: DependencyContainer.shared.cacheService,
-        refreshCoordinator: DependencyContainer.shared.refreshCoordinator
-    )
-    @EnvironmentObject var cartViewModel: CartViewModel
-    @StateObject private var homeViewModel = HomeViewModel(
-        productRepository: DependencyContainer.shared.productRepository,
-        voucherRepository: DependencyContainer.shared.voucherRepository,
-        favoritesRepository: DependencyContainer.shared.favoritesRepository,
-        predictionRepository: DependencyContainer.shared.predictionRepository,
-        userRepository: DependencyContainer.shared.userRepository,
-        analyticsService: DependencyContainer.shared.analyticsService,
-        networkService: DependencyContainer.shared.networkService,
-        predictionSyncService: DependencyContainer.shared.predictionSyncService,
-        refreshCoordinator: DependencyContainer.shared.refreshCoordinator
-    )
-    @StateObject private var profileViewModel = ProfileViewModel(
-        userRepository: DependencyContainer.shared.userRepository,
-        voucherRepository: DependencyContainer.shared.voucherRepository,
-        socialRepository: DependencyContainer.shared.socialRepository,
-        authRepository: DependencyContainer.shared.authRepository,
-        orderRepository: DependencyContainer.shared.orderRepository
-    )
-    @StateObject private var storesViewModel = StoresViewModel(
-        userRepository: DependencyContainer.shared.userRepository,
-        locationService: DependencyContainer.shared.locationManager,
-        refreshCoordinator: DependencyContainer.shared.refreshCoordinator
-    )
+    @EnvironmentObject var cartViewModel: CartViewModel // Injected from parent
     
-
+    // Use factory methods for consistent DI
+    @StateObject private var menuViewModel: MenuViewModel
+    @StateObject private var homeViewModel: HomeViewModel
+    @StateObject private var profileViewModel: ProfileViewModel
+    @StateObject private var storesViewModel: StoresViewModel
+    @StateObject private var trackingViewModel: OrderTrackingViewModel
     
     init() {
+        let container = DependencyContainer.shared
+        _menuViewModel = StateObject(wrappedValue: container.makeMenuViewModel())
+        _homeViewModel = StateObject(wrappedValue: container.makeHomeViewModel())
+        _profileViewModel = StateObject(wrappedValue: container.makeProfileViewModel())
+        _storesViewModel = StateObject(wrappedValue: container.makeStoresViewModel())
+        _trackingViewModel = StateObject(wrappedValue: container.makeOrderTrackingViewModel())
+        
         // Receipt-style tab bar customization
         let appearance = UITabBarAppearance()
         appearance.configureWithOpaqueBackground()
@@ -119,6 +103,7 @@ struct MainTabView: View {
             HomeView()
                 .environmentObject(menuViewModel)
                 .environmentObject(homeViewModel)
+                .environmentObject(trackingViewModel)
                 .tabItem {
                     Image("home").renderingMode(.template)
                 }

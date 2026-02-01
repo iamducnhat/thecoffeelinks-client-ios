@@ -17,11 +17,8 @@ struct HomeView: View {
     @EnvironmentObject var homeViewModel: HomeViewModel
     @EnvironmentObject var cartViewModel: CartViewModel
     
-    // Tracking active orders
-    @StateObject private var trackingViewModel = OrderTrackingViewModel(
-        orderRepository: DependencyContainer.shared.orderRepository,
-        realtimeService: DependencyContainer.shared.realtimeService
-    )
+    // Tracking active orders - injected from MainTabView to prevent duplicate instances
+    @EnvironmentObject var trackingViewModel: OrderTrackingViewModel
     
     @State private var showAIModal = false
     @State private var scrollOffset = CGFloat.zero

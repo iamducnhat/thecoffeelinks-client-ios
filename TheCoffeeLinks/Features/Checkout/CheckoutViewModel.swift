@@ -43,7 +43,7 @@ final class CheckoutViewModel: ObservableObject {
     private let hapticService: HapticServiceProtocol
     private let orderStorage: OrderStorageProtocol
     
-    private nonisolated(unsafe) var undoTimer: Timer?
+    private var undoTimerTask: Task<Void, Never>?
     private let undoWindowDuration: TimeInterval = 30
     private var cancellables = Set<AnyCancellable>()
     
@@ -216,20 +216,25 @@ final class CheckoutViewModel: ObservableObject {
     
     private func startUndoTimer() {
         stopUndoTimer()
-        undoTimer = Timer.scheduledTimer(withTimeInterval: 0.1, repeats: true) { [weak self] _ in
-            Task { @MainActor [weak self] in
-                guard let self = self else { return }
-                if self.undoTimeRemaining > 0 { self.undoTimeRemaining -= 0.1 }
-                else { self.showingUndoBanner = false; self.orderCancelled = nil; self.stopUndoTimer() }
+        undoTimerTask = Task { [weak self] in
+            let tickInterval: UInt64 = 100_000_000 // 0.1 seconds in nanoseconds
+            while !Task.isCancelled {
+                try? await Task.sleep(nanoseconds: tickInterval)
+                guard let self = self, !Task.isCancelled else { break }
+                if self.undoTimeRemaining > 0 {
+                    self.undoTimeRemaining -= 0.1
+                } else {
+                    self.showingUndoBanner = false
+                    self.orderCancelled = nil
+                    break
+                }
             }
         }
     }
     
-    private func stopUndoTimer() { undoTimer?.invalidate(); undoTimer = nil }
-    
-    deinit {
-        // Timer invalidation in deinit to prevent memory leaks
-        undoTimer?.invalidate()
+    private func stopUndoTimer() { 
+        undoTimerTask?.cancel()
+        undoTimerTask = nil 
     }
     
     // MARK: - Payment Handlers

@@ -18,10 +18,9 @@ final class OrderRepository: OrderRepositoryProtocol, @unchecked Sendable {
     }
     
     func getOrder(id: String) async throws -> Order {
-        // SERVER MISSING ENDPOINT /api/orders/:id
-        // WORKAROUND: Fetch all and filter
-        let allOrdersResponse = try await getOrders(status: nil, limit: 100, offset: 0)
-        guard let order = allOrdersResponse.orders.first(where: { $0.id == id }) else {
+        // Use dedicated endpoint for single order
+        let response: OrderResponse = try await networkService.get("/api/orders/\(id)", queryItems: nil)
+        guard let order = response.order else {
             throw OrderError.notFound
         }
         return order
@@ -31,10 +30,8 @@ final class OrderRepository: OrderRepositoryProtocol, @unchecked Sendable {
         var queryItems = [URLQueryItem(name: "limit", value: String(limit)), URLQueryItem(name: "offset", value: String(offset))]
         if let status = status { queryItems.append(URLQueryItem(name: "status", value: status.rawValue)) }
         
-        // API returns snake_case format
-        // NOTE: Server GET /api/orders ignores params and returns all orders.
-        // We might get too much data, but we process what we get.
-        let apiResponse: APIOrdersResponse = try await networkService.get("/api/orders", queryItems: queryItems)
+        // Use standardized API response model
+        let apiResponse: APIOrderResponse = try await networkService.get("/api/orders", queryItems: queryItems)
         
         var orders = apiResponse.toOrders()
         

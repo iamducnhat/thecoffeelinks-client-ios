@@ -131,6 +131,7 @@ struct Cart: Codable, Sendable {
     var voucherCode: String?
     var staffNotes: String?
     var lastUpdated: Date?
+    var isDirty: Bool? // Track if local changes are unsynced
     
     enum CodingKeys: String, CodingKey {
         case items, mode
@@ -139,6 +140,7 @@ struct Cart: Codable, Sendable {
         case tableId = "table_id"
         case voucherCode = "voucher_code"
         case staffNotes = "staff_notes"
+        case isDirty = "is_dirty"
     }
     
     var isEmpty: Bool { items.isEmpty }

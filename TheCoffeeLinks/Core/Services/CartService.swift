@@ -2,12 +2,12 @@
 //  CartService.swift
 //  TheCoffeeLinks
 //
-//  Created by AI Agent on 2026-01-27.
+//  Cart service with operation queue for reliable sync
 //
 
 import Foundation
 import Combine
-import SwiftUI // For Task priority if needed
+import SwiftUI
 
 protocol CartServiceProtocol {
     func loadLocalCart() -> Cart?
@@ -15,14 +15,24 @@ protocol CartServiceProtocol {
     func addToCart(productId: UUID, quantity: Int, modifiers: OrderCustomization) async throws -> Cart
     func addToCart(product: Product, quantity: Int, modifiers: OrderCustomization) async throws -> Cart
     func clearCart() async throws
+    func getOperationQueueSize() -> Int
 }
 
 final class CartService: CartServiceProtocol {
     private let networkService: NetworkServiceProtocol
-    private let cartStorage: CartStorageProtocol
+    private nonisolated(unsafe) let cartStorage: CartStorageProtocol
     private let productRepository: ProductRepositoryProtocol
     
-    // In-memory dirty flag or queue could be added here for robust sync manager
+    // Operation queue for reliable sync
+    private let syncQueue = DispatchQueue(label: "com.thecoffeelinks.cart.sync", qos: .userInitiated)
+    private var pendingOperations: [CartOperation] = []
+    private var isSyncing = false
+    private var syncTask: Task<Void, Never>?
+    private let syncDebounceInterval: TimeInterval = 0.5
+    
+    // Notification for sync failures
+    static let syncFailedNotification = Notification.Name("CartSyncFailed")
+    static let syncSuccessNotification = Notification.Name("CartSyncSuccess")
     
     init(networkService: NetworkServiceProtocol, cartStorage: CartStorageProtocol, productRepository: ProductRepositoryProtocol) {
         self.networkService = networkService
@@ -30,35 +40,100 @@ final class CartService: CartServiceProtocol {
         self.productRepository = productRepository
     }
     
-    // MARK: - Local First API
+    // MARK: - Public API
     
     func loadLocalCart() -> Cart? {
         return cartStorage.loadCart()
     }
     
     func fetchRemoteCart() async throws -> Cart {
-        // Fetch from server
-        let payload = GetCartPayload(store_id: nil) // Or generic fetch
+        // 1. Check for pending local changes
+        if syncQueue.sync(execute: { !pendingOperations.isEmpty }) {
+            print("⚠️ [CartService] Pending operations exist, syncing first...")
+            await performSync()
+        }
+        
+        // 2. Fetch from server
+        let payload = GetCartPayload(store_id: nil)
         let response: CartResponse = try await networkService.post("/api/cart", body: payload, encoder: nil)
         
         guard response.success, let cartData = response.cart else {
             throw CartError.failedToFetch
         }
         
-        // Hydrate from product repository
-        let mappedCart = try await mapToDomainCart(cartData)
+        // 3. Hydrate from product repository
+        var mappedCart = try await mapToDomainCart(cartData)
         
-        // RECONCILE: Simple Last-Write-Wins or Server Authoritative
-        // For Cart, Server is usually authoritative on Price/Availability.
-        // So we overwrite local with server version.
-        // Persist to disk
+        // 4. Mark clean and persist
+        mappedCart.isDirty = false
         try? cartStorage.saveCart(mappedCart)
         
         return mappedCart
     }
     
+    func addToCart(product: Product, quantity: Int, modifiers: OrderCustomization) async throws -> Cart {
+        return try await withCheckedThrowingContinuation { continuation in
+            syncQueue.async {
+                do {
+                    // 1. Load current cart
+                    var cart = self.cartStorage.loadCart() ?? .empty
+                    let storeId = cart.storeId ?? ""
+                    
+                    // 2. Calculate price snapshot
+                    let priceSnapshot = product.price(for: modifiers.size) + modifiers.toppingsTotal
+                    
+                    // 3. Generate key
+                    let key = CartItem.generateKey(
+                        product: product,
+                        modifiers: modifiers,
+                        priceSnapshot: priceSnapshot,
+                        storeId: storeId
+                    )
+                    
+                    // 4. Create new item
+                    let newItem = CartItem(
+                        key: key,
+                        product: product,
+                        quantity: quantity,
+                        customization: modifiers,
+                        addedAt: Date(),
+                        priceSnapshot: priceSnapshot,
+                        storeId: storeId
+                    )
+                    
+                    // 5. Apply optimistic update
+                    cart.addItem(newItem)
+                    cart.lastUpdated = Date()
+                    cart.isDirty = true
+                    
+                    // 6. Persist optimistically
+                    try? self.cartStorage.saveCart(cart)
+                    
+                    // 7. Queue operation
+                    let operation = CartOperation.add(
+                        productId: product.id,
+                        quantity: quantity,
+                        customization: modifiers,
+                        priceSnapshot: priceSnapshot,
+                        storeId: storeId
+                    )
+                    self.pendingOperations.append(operation)
+                    
+                    // 8. Return immediately for responsive UI
+                    continuation.resume(returning: cart)
+                    
+                    // 9. Schedule debounced sync
+                    self.scheduleSyncIfNeeded()
+                    
+                } catch {
+                    continuation.resume(throwing: error)
+                }
+            }
+        }
+    }
+    
     func addToCart(productId: UUID, quantity: Int, modifiers: OrderCustomization) async throws -> Cart {
-        // Fallback for when Product object is not available (Non-Optimistic)
+        // Fallback for when Product object is not available
         let payload = AddItemPayload(product_id: productId.uuidString, quantity: quantity, modifiers: modifiers, key: nil)
         let response: CartResponse = try await networkService.post("/api/cart/items", body: payload, encoder: nil)
         
@@ -71,83 +146,132 @@ final class CartService: CartServiceProtocol {
         return mappedCart
     }
     
-    func addToCart(product: Product, quantity: Int, modifiers: OrderCustomization) async throws -> Cart {
-        var currentCart = cartStorage.loadCart() ?? Cart.empty
-        
-        // Ensure we have a valid storeId. If the cart is empty/new, we might not have one yet.
-        // Ideally the VM sets the store before adding, or we pass it here.
-        // For now, we rely on the cart's existing storeId or empty string if it's a fresh implicit cart.
-        let storeId = currentCart.storeId ?? ""
-        
-        // 1. Calculate Price Snapshot
-        let priceSnapshot = product.price(for: modifiers.size) + modifiers.toppingsTotal
-        
-        // 2. Generate Deterministic Key
-        let key = CartItem.generateKey(
-            product: product, 
-            modifiers: modifiers, 
-            priceSnapshot: priceSnapshot, 
-            storeId: storeId
-        )
-        
-        // 3. Optimistic Update
-        let newItem = CartItem(
-            key: key,
-            product: product,
-            quantity: quantity,
-            customization: modifiers,
-            addedAt: Date(),
-            priceSnapshot: priceSnapshot,
-            storeId: storeId
-        )
-        
-        currentCart.addItem(newItem)
-        currentCart.lastUpdated = Date()
-        
-        // Find final quantity after merge to send to server (for upsert)
-        let finalQuantity = currentCart.items.first(where: { $0.key == key })?.quantity ?? quantity
-        
-        // 4. Persist
-        try? cartStorage.saveCart(currentCart)
-        
-        // 5. Background Sync
-        Task {
-            do {
-                let payload = AddItemPayload(
-                    product_id: product.id, 
-                    quantity: finalQuantity, // Send Total Quantity
-                    modifiers: modifiers,
-                    key: key
-                )
-                let response: CartResponse = try await networkService.post("/api/cart/items", body: payload, encoder: nil)
-                
-                if response.success, let serverCartData = response.cart {
-                    let serverCart = try await mapToDomainCart(serverCartData)
-                    // Replace Local to ensure consistency
-                    try? cartStorage.saveCart(serverCart)
-                    // Ideally notify listeners here
-                }
-            } catch {
-                print("Sync failed: \(error)")
-            }
+    func clearCart() async throws {
+        syncQueue.sync {
+            pendingOperations.removeAll()
+            pendingOperations.append(.clear)
         }
         
-        return currentCart
-    }
-
-    func clearCart() async throws {
         cartStorage.clearCart()
-        // server sync logic...
+        await performSync()
+    }
+    
+    func getOperationQueueSize() -> Int {
+        syncQueue.sync { pendingOperations.count }
+    }
+    
+    // MARK: - Sync Logic
+    
+    private func scheduleSyncIfNeeded() {
+        // Cancel existing task
+        syncTask?.cancel()
+        
+        // Schedule new debounced sync
+        syncTask = Task {
+            do {
+                try await Task.sleep(nanoseconds: UInt64(syncDebounceInterval * 1_000_000_000))
+                await performSync()
+            } catch {
+                // Task cancelled - normal
+            }
+        }
+    }
+    
+    private func performSync() async {
+        // Prevent concurrent syncs
+        guard !isSyncing else {
+            print("⚠️ [CartService] Sync already in progress")
+            return
+        }
+        
+        isSyncing = true
+        defer { isSyncing = false }
+        
+        // Get operations to sync
+        let operations = syncQueue.sync {
+            let ops = self.pendingOperations
+            self.pendingOperations.removeAll()
+            return ops
+        }
+        
+        guard !operations.isEmpty else { return }
+        
+        print("🔄 [CartService] Syncing \(operations.count) operations...")
+        
+        do {
+            // Batch sync operations
+            let serverCart = try await syncOperations(operations)
+            
+            // Check for new operations that arrived during sync
+            let newOperations = syncQueue.sync { self.pendingOperations }
+            
+            // Merge server state with new local operations
+            var finalCart = serverCart
+            for op in newOperations {
+                finalCart.applyOperation(op)
+            }
+            
+            finalCart.isDirty = !newOperations.isEmpty
+            try? cartStorage.saveCart(finalCart)
+            
+            print("✅ [CartService] Sync completed successfully")
+            NotificationCenter.default.post(name: Self.syncSuccessNotification, object: nil)
+            
+        } catch {
+            print("❌ [CartService] Sync failed: \(error)")
+            
+            // Re-queue failed operations
+            syncQueue.async {
+                self.pendingOperations.insert(contentsOf: operations, at: 0)
+            }
+            
+            // Notify UI
+            NotificationCenter.default.post(name: Self.syncFailedNotification, object: error)
+        }
+    }
+    
+    private func syncOperations(_ operations: [CartOperation]) async throws -> Cart {
+        // For now, implement simple strategy: send all items to server
+        // Server should handle upsert/merge logic
+        
+        var cart = cartStorage.loadCart() ?? .empty
+        
+        // Apply all operations locally first to get target state
+        for operation in operations {
+            cart.applyOperation(operation)
+        }
+        
+        // Sync with server by sending full cart state
+        // This is simpler than sending individual operations
+        // but less efficient - can be optimized later
+        
+        if operations.contains(where: { $0.operationType == "clear" }) {
+            // Clear on server
+            try await networkService.delete("/api/cart", queryItems: nil)
+            return .empty
+        }
+        
+        // For adds/updates, send items to server
+        for item in cart.items {
+            let payload = AddItemPayload(
+                product_id: item.product.id,
+                quantity: item.quantity,
+                modifiers: item.customization,
+                key: item.key
+            )
+            _ = try await networkService.post("/api/cart/items", body: payload, encoder: nil) as CartResponse
+        }
+        
+        // Fetch final state from server
+        return try await fetchRemoteCart()
     }
     
     // MARK: - Mappers
     
     private func mapToDomainCart(_ serverCart: ServerCart) async throws -> Cart {
         var mergedItems: [String: CartItem] = [:]
-        var orderedKeys: [String] = [] // To preserve server order if possible, or just stability
         
         // Fetch full menu to resolve products
-        // This is efficient because getMenu() caches aggressively
         let menu = try await productRepository.getMenu()
         let productsMap = Dictionary(uniqueKeysWithValues: menu.products.map { ($0.id, $0) })
         
@@ -155,7 +279,6 @@ final class CartService: CartServiceProtocol {
         
         for item in serverCart.items {
             if let product = productsMap[item.product_id] {
-                // Parse Customization
                 var customization = OrderCustomization.default
                 if let mods = item.modifiers {
                     customization = mods
@@ -163,61 +286,75 @@ final class CartService: CartServiceProtocol {
                 
                 let priceSnapshot = item.price_snapshot
                 let key = CartItem.generateKey(
-                    product: product, 
-                    modifiers: customization, 
-                    priceSnapshot: priceSnapshot, 
-                    storeId: storeId
-                )
-                
-                let domainItem = CartItem(
-                    key: key,
                     product: product,
-                    quantity: item.quantity,
-                    customization: customization,
-                    addedAt: Date(), // or parse if available
+                    modifiers: customization,
                     priceSnapshot: priceSnapshot,
                     storeId: storeId
                 )
                 
-                if var existing = mergedItems[key] {
-                    // MERGE DUPLICATE FROM SERVER
-                    existing.quantity += domainItem.quantity
-                    mergedItems[key] = existing
-                } else {
-                    mergedItems[key] = domainItem
-                    orderedKeys.append(key)
-                }
+                let cartItem = CartItem(
+                    key: key,
+                    product: product,
+                    quantity: item.quantity,
+                    customization: customization,
+                    addedAt: Date(),
+                    priceSnapshot: priceSnapshot,
+                    storeId: storeId
+                )
+                
+                mergedItems[key] = cartItem
             }
         }
         
-        var cart = Cart.empty
-        cart.items = orderedKeys.compactMap { mergedItems[$0] }
-        cart.storeId = serverCart.store_id
-        cart.voucherCode = serverCart.voucher_code
-        cart.lastUpdated = Date()
-        
-        return cart
+        return Cart(
+            items: Array(mergedItems.values),
+            mode: .pickup,
+            storeId: storeId.isEmpty ? nil : storeId,
+            deliveryAddressId: nil,
+            tableId: nil,
+            voucherCode: nil,
+            staffNotes: nil,
+            lastUpdated: Date(),
+            isDirty: false
+        )
+    }
+}
+
+// MARK: - Supporting Types (Private)
+
+private struct CartServiceEmptyResponse: Codable {
+    let success: Bool?
+}
+
+enum CartError: LocalizedError {
+    case failedToFetch
+    case failedToAdd
+    case syncFailed(Error)
+    
+    var errorDescription: String? {
+        switch self {
+        case .failedToFetch: return "Failed to fetch cart"
+        case .failedToAdd: return "Failed to add item to cart"
+        case .syncFailed(let error): return "Cart sync failed: \(error.localizedDescription)"
+        }
     }
 }
 
 // MARK: - DTOs
 
-enum CartError: Error {
-    case failedToFetch
-    case failedToAdd
-}
-
 struct GetCartPayload: Encodable {
     let store_id: String?
 }
 
-struct CartResponse: Decodable {
+struct CartResponse {
     let success: Bool
     let cart: ServerCart?
     let error: String?
 }
 
-struct ServerCart: Decodable {
+nonisolated extension CartResponse: Decodable {}
+
+struct ServerCart {
     let id: String
     let items: [ServerCartItem]
     let subtotal: Double
@@ -244,7 +381,9 @@ struct ServerCart: Decodable {
     }
 }
 
-struct ServerCartItem: Decodable {
+nonisolated extension ServerCart: Decodable {}
+
+struct ServerCartItem {
     let id: String
     let product_id: String
     let quantity: Int
@@ -252,7 +391,7 @@ struct ServerCartItem: Decodable {
     let price_snapshot: Double
 }
 
-
+nonisolated extension ServerCartItem: Decodable {}
 
 struct AddItemPayload: Encodable {
     let product_id: String
@@ -271,3 +410,4 @@ struct SafeDecodable<T: Decodable>: Decodable {
         self.value = try? container.decode(T.self)
     }
 }
+

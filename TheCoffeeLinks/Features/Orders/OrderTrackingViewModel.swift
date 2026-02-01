@@ -10,18 +10,7 @@ import Foundation
 import Combine
 import SwiftUI
 
-//
-//  OrderTrackingViewModel.swift
-//  thecoffeelinks-client-ios
-//
-//  ViewModel for Order Tracking Card
-//  Handles fetching active order and realtime status updates.
-//
-
-import Foundation
-import Combine
-import SwiftUI
-
+@MainActor
 class OrderTrackingViewModel: ObservableObject {
     @Published var activeOrders: [Order] = []
     @Published var isLoading = false

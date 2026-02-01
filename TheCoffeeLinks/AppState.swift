@@ -60,9 +60,8 @@ class AppState: ObservableObject {
     
     init() {
         determineTimeMode()
-        Task {
-            await DependencyContainer.shared.initialize()
-        }
+        // NOTE: DependencyContainer.shared.initialize() is called from TheCoffeeLinksApp.task
+        // Do not duplicate here to avoid race conditions
     }
     
     func determineTimeMode() {

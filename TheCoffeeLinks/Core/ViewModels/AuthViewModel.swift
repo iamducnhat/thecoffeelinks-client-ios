@@ -6,7 +6,9 @@ class AuthViewModel: BaseViewModel {
 
     @Published var currentUser: User? {
         didSet {
-            self.isPhoneVerified = currentUser?.phoneVerificationStatus == .verified
+            let verified = currentUser?.phoneVerificationStatus == .verified
+            self.isPhoneVerified = verified
+            UserDefaults.standard.set(verified, forKey: "isPhoneVerified_cached")
         }
     }
     @Published var isAuthenticated: Bool = false
@@ -32,6 +34,7 @@ class AuthViewModel: BaseViewModel {
     init(authRepository: AuthRepository) {
         self.authRepository = authRepository
         super.init()
+        // DO NOT restore from cache - always fetch server truth
         checkSession()
     }
 
@@ -41,13 +44,29 @@ class AuthViewModel: BaseViewModel {
             // Sync Realtime Token
             DependencyContainer.shared.realtimeService.setAuthToken(token)
 
+            // CRITICAL: Always fetch server truth for verification status
             Task {
-                try? await fetchCurrentUser()
+                do {
+                    let user = try await fetchCurrentUser()
+                    // didSet on currentUser will update isPhoneVerified from server data
+                    await MainActor.run {
+                        // Update cache after server fetch succeeds
+                        UserDefaults.standard.set(self.isPhoneVerified, forKey: "isPhoneVerified_cached")
+                    }
+                } catch {
+                    // Fallback to cache only on network failure
+                    await MainActor.run {
+                        let cachedVerification = UserDefaults.standard.bool(forKey: "isPhoneVerified_cached")
+                        self.isPhoneVerified = cachedVerification
+                        print("⚠️ Using cached verification status (\(cachedVerification)) - network unavailable")
+                    }
+                }
             }
         } else {
             // No token - user is not authenticated
             isAuthenticated = false
             isPhoneVerified = false
+            UserDefaults.standard.removeObject(forKey: "isPhoneVerified_cached")
         }
     }
     

@@ -3,30 +3,27 @@ import Combine
 
 @main
 struct thecoffeelinks_client_iosApp: App {
-    // Shared Singletons - Use .shared if init is private, or just use shared instance directly
+    // Shared Singletons
     @StateObject private var appState = AppState()
     @StateObject private var networkMonitor = NetworkMonitor()
-    @StateObject private var authViewModel = AuthViewModel(authRepository: DependencyContainer.shared.authRepository)
-    @StateObject private var cartViewModel = CartViewModel(
-        deliveryRepository: DependencyContainer.shared.deliveryRepository,
-        voucherRepository: DependencyContainer.shared.voucherRepository,
-        hapticService: DependencyContainer.shared.hapticManager,
-        cartService: DependencyContainer.shared.cartService
-    )
-    @StateObject private var storeViewModel = StoreViewModel(
-        storeRepository: DependencyContainer.shared.storeRepository,
-        locationManager: DependencyContainer.shared.locationManager
-    )
-    @StateObject private var deliveryViewModel = DeliveryViewModel(
-        deliveryRepository: DependencyContainer.shared.deliveryRepository,
-        locationService: DependencyContainer.shared.locationManager
-    )
     
-    // Core Dependencies injected via environment
-    // Use shared instance for repositories if they are singletons or created once
+    // Use factory methods for ViewModels
+    @StateObject private var authViewModel: AuthViewModel
+    @StateObject private var cartViewModel: CartViewModel
+    @StateObject private var storeViewModel: StoreViewModel
+    @StateObject private var deliveryViewModel: DeliveryViewModel
+    
+    // Core Dependencies
     private let dependencyContainer = DependencyContainer.shared
     
     init() {
+        // Use factory methods for consistent DI
+        let container = DependencyContainer.shared
+        _authViewModel = StateObject(wrappedValue: container.makeAuthViewModel())
+        _cartViewModel = StateObject(wrappedValue: container.makeCartViewModel())
+        _storeViewModel = StateObject(wrappedValue: container.makeStoreViewModel())
+        _deliveryViewModel = StateObject(wrappedValue: container.makeDeliveryViewModel())
+        
         checkFreshInstall()
     }
     

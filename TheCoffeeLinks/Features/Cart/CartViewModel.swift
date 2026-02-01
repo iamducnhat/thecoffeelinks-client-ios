@@ -139,7 +139,13 @@ final class CartViewModel: ObservableObject {
     
     func clearCart() { 
         cart.clear(); discount = 0; pointsDiscount = 0; voucherValidation = nil; selectedAddress = nil 
-        Task { try? await cartService.clearCart() }
+        Task { 
+            do {
+                try await cartService.clearCart()
+            } catch {
+                print("⚠️ [CartViewModel] Failed to clear cart on server: \(error)")
+            }
+        }
     }
     func setMode(_ mode: OrderingMode) { cart.mode = mode; if mode != .delivery { deliveryFee = 0; deliveryAvailability = nil; selectedAddress = nil } }
     func setStore(_ storeId: String) { cart.storeId = storeId }

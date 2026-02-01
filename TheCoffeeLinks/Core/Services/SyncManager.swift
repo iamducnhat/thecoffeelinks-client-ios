@@ -117,15 +117,33 @@ final class SyncManager: SyncManagerProtocol, @unchecked Sendable {
     
     func triggerSync(reason: SyncReason) async {
         // 1. Refresh Versions first (Global State)
-        try? await refreshVersions()
+        do {
+            try await refreshVersions()
+        } catch {
+            print("⚠️ [SyncManager] Version refresh failed: \\(error), skipping selective sync")
+            return
+        }
         
-        // 2. Notify all domains
+        // 2. Notify only stale domains
         let domains = getValidDomains()
         
         await withTaskGroup(of: Void.self) { group in
             for domain in domains {
-                group.addTask {
-                    await domain.sync(reason: reason)
+                // Check if domain is stale before syncing
+                if let serverVersion = serverVersion(for: domain.domainKey) {
+                    if isStale(key: domain.domainKey, serverVersion: serverVersion) {
+                        group.addTask {
+                            print("🔄 [SyncManager] Syncing stale domain: \\(domain.domainKey)")
+                            await domain.sync(reason: reason)
+                        }
+                    } else {
+                        print("✅ [SyncManager] Skipping fresh domain: \\(domain.domainKey)")
+                    }
+                } else {
+                    // No version info, sync by default
+                    group.addTask {
+                        await domain.sync(reason: reason)
+                    }
                 }
             }
         }

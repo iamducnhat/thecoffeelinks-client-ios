@@ -22,21 +22,12 @@ final class MapTrackingViewModel: ObservableObject {
     private let orderId: String
     private let deliveryRepository: DeliveryRepositoryProtocol
     private let locationService: LocationServiceProtocol
-    private nonisolated(unsafe) var refreshTimer: Timer?
+    private var refreshTask: Task<Void, Never>?
     
     init(orderId: String, deliveryRepository: DeliveryRepositoryProtocol, locationService: LocationServiceProtocol) {
         self.orderId = orderId
         self.deliveryRepository = deliveryRepository
         self.locationService = locationService
-    }
-    
-    nonisolated(unsafe) func getRefreshTimer() -> Timer? {
-        refreshTimer
-    }
-    
-    deinit {
-        // Timer invalidation in deinit to prevent memory leaks
-        getRefreshTimer()?.invalidate()
     }
     
     var driverName: String { tracking?.driverName ?? "Driver" }
@@ -56,7 +47,10 @@ final class MapTrackingViewModel: ObservableObject {
         isLoading = false
     }
     
-    func stopTracking() { refreshTimer?.invalidate(); refreshTimer = nil }
+    func stopTracking() { 
+        refreshTask?.cancel()
+        refreshTask = nil 
+    }
     
     private func loadTracking() async {
         do {
@@ -69,8 +63,14 @@ final class MapTrackingViewModel: ObservableObject {
     }
     
     private func startAutoRefresh() {
-        refreshTimer = Timer.scheduledTimer(withTimeInterval: 10, repeats: true) { [weak self] _ in
-            Task { @MainActor [weak self] in await self?.loadTracking() }
+        refreshTask?.cancel()
+        refreshTask = Task { [weak self] in
+            let refreshInterval: UInt64 = 10_000_000_000 // 10 seconds in nanoseconds
+            while !Task.isCancelled {
+                try? await Task.sleep(nanoseconds: refreshInterval)
+                guard let self = self, !Task.isCancelled else { break }
+                await self.loadTracking()
+            }
         }
     }
     

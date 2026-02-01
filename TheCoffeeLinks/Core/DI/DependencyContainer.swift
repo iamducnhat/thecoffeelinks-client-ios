@@ -70,6 +70,109 @@ class DependencyContainer: ObservableObject {
     
     private init() {}
     
+    // MARK: - ViewModel Factory Methods
+    
+    @MainActor
+    func makeCartViewModel() -> CartViewModel {
+        CartViewModel(
+            deliveryRepository: deliveryRepository,
+            voucherRepository: voucherRepository,
+            hapticService: hapticManager,
+            cartService: cartService
+        )
+    }
+    
+    @MainActor
+    func makeHomeViewModel() -> HomeViewModel {
+        HomeViewModel(
+            productRepository: productRepository,
+            voucherRepository: voucherRepository,
+            favoritesRepository: favoritesRepository,
+            predictionRepository: predictionRepository,
+            userRepository: userRepository,
+            analyticsService: analyticsService,
+            networkService: networkService,
+            predictionSyncService: predictionSyncService,
+            refreshCoordinator: refreshCoordinator
+        )
+    }
+    
+    @MainActor
+    func makeMenuViewModel() -> MenuViewModel {
+        MenuViewModel(
+            productRepository: productRepository,
+            cacheService: cacheService,
+            refreshCoordinator: refreshCoordinator
+        )
+    }
+    
+    @MainActor
+    func makeProfileViewModel() -> ProfileViewModel {
+        ProfileViewModel(
+            userRepository: userRepository,
+            voucherRepository: voucherRepository,
+            socialRepository: socialRepository,
+            authRepository: authRepository,
+            orderRepository: orderRepository
+        )
+    }
+    
+    @MainActor
+    func makeStoresViewModel() -> StoresViewModel {
+        StoresViewModel(
+            userRepository: userRepository,
+            locationService: locationManager,
+            refreshCoordinator: refreshCoordinator
+        )
+    }
+    
+    @MainActor
+    func makeOrderTrackingViewModel() -> OrderTrackingViewModel {
+        OrderTrackingViewModel(
+            orderRepository: orderRepository,
+            realtimeService: realtimeService
+        )
+    }
+    
+    @MainActor
+    func makeCheckoutViewModel() -> CheckoutViewModel {
+        CheckoutViewModel(
+            orderRepository: orderRepository,
+            deliveryRepository: deliveryRepository,
+            voucherRepository: voucherRepository,
+            predictionRepository: predictionRepository,
+            analyticsService: analyticsService,
+            hapticService: hapticManager,
+            orderStorage: OrderStorage()
+        )
+    }
+    
+    @MainActor
+    func makeOrdersViewModel() -> OrdersViewModel {
+        OrdersViewModel(repository: orderRepository)
+    }
+    
+    @MainActor
+    func makeAuthViewModel() -> AuthViewModel {
+        AuthViewModel(authRepository: authRepository)
+    }
+    
+    @MainActor
+    func makeStoreViewModel() -> StoreViewModel {
+        StoreViewModel(
+            storeRepository: storeRepository,
+            locationManager: locationManager
+        )
+    }
+    
+    @MainActor
+    func makeDeliveryViewModel() -> DeliveryViewModel {
+        DeliveryViewModel(
+            deliveryRepository: deliveryRepository,
+            locationService: locationManager
+        )
+    }
+    
     func initialize() async {
         // Pre-warm services
         _ = keychainManager

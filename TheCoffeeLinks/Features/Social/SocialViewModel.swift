@@ -25,21 +25,12 @@ final class SocialViewModel: ObservableObject {
     private let socialRepository: SocialRepositoryProtocol
     private let presenceService: PresenceServiceProtocol
     private let userRepository: UserRepositoryProtocol
-    private nonisolated(unsafe) var refreshTimer: Timer?
+    private var refreshTask: Task<Void, Never>?
     
     init(socialRepository: SocialRepositoryProtocol, presenceService: PresenceServiceProtocol, userRepository: UserRepositoryProtocol) {
         self.socialRepository = socialRepository
         self.presenceService = presenceService
         self.userRepository = userRepository
-    }
-    
-    nonisolated(unsafe) func getRefreshTimer() -> Timer? {
-        refreshTimer
-    }
-    
-    deinit {
-        // Timer invalidation in deinit to prevent memory leaks
-        getRefreshTimer()?.invalidate()
     }
     
     var visiblePresences: [StorePresence] {
@@ -115,15 +106,20 @@ final class SocialViewModel: ObservableObject {
     
     private func startAutoRefresh() {
         stopAutoRefresh()
-        refreshTimer = Timer.scheduledTimer(withTimeInterval: 30, repeats: true) { [weak self] _ in
-            Task { @MainActor [weak self] in
-                guard let self = self, let storeId = self.currentStoreId else { return }
+        refreshTask = Task { [weak self] in
+            let refreshInterval: UInt64 = 30_000_000_000 // 30 seconds in nanoseconds
+            while !Task.isCancelled {
+                try? await Task.sleep(nanoseconds: refreshInterval)
+                guard let self = self, !Task.isCancelled, let storeId = self.currentStoreId else { break }
                 await self.loadPresences(storeId: storeId)
             }
         }
     }
     
-    private func stopAutoRefresh() { refreshTimer?.invalidate(); refreshTimer = nil }
+    private func stopAutoRefresh() { 
+        refreshTask?.cancel()
+        refreshTask = nil 
+    }
     
     func sendConnectionRequest(to userId: String, message: String?) async -> ConnectionRequest? {
         do { return try await socialRepository.sendConnectionRequest(toUserId: userId, message: message) }
