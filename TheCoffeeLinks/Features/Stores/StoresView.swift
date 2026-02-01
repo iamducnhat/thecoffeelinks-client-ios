@@ -1,128 +1,56 @@
-//
-//  StoresView.swift
-//  thecoffeelinks-client-ios
-//
-//  Receipt-Editorial Design
-//  Aligned with canonical CheckoutView.swift
-//
-
 import SwiftUI
-import CachedAsyncImage // CHANGED
 
+/// Refactored StoresView - Design System v2
+/// Clean list with capsule search and view toggle
 struct StoresView: View {
     @EnvironmentObject var viewModel: StoresViewModel
     @State private var selectedStore: Store?
-    @State private var viewMode: StoreViewMode = .list
-    @State private var scrollOffset = CGFloat.zero
-    
-    enum StoreViewMode: String, CaseIterable {
-        case list = "List"
-        case map = "Map"
-    }
+    @State private var viewMode = 0 // 0: List, 1: Map
     
     var body: some View {
-        ZStack(alignment: .top) {
-            Color.backgroundPaper.ignoresSafeArea()
-            ScrollView(.vertical) { LazyVStack(alignment: .leading, spacing: AppLayout.spacing) {
+        ZStack {
+            Color.bgPrimary.ignoresSafeArea()
+            
+            VStack(spacing: 0) {
                 // Header
-                VStack(alignment: .leading, spacing: AppLayout.spacing) {
-                    Text(String(localized: "stores_find_title"))
-                        .font(AppFont.displayTitle)
-                        .foregroundColor(Color.textInk)
-                        .padding(.top, AppLayout.spacing)
+                VStack(spacing: AppSpacing.lg) {
+                    SectionHeader(title: "Stores", subtitle: "Find a location near you")
+                        .padding(.horizontal, AppSpacing.screenPadding)
                     
                     // Search
-                    HStack(spacing: AppLayout.spacingMedium) {
-                        Image("magnifyingglass")
-                            .font(AppFont.body)
-                            .foregroundStyle(Color.textMuted)
-                        
-                        TextField("Search by name or address...", text: $viewModel.searchQuery)
-                            .textFieldStyle(PlainTextFieldStyle())
-                            .font(AppFont.body)
-                            .foregroundStyle(Color.textInk)
-                        
-                        if !viewModel.searchQuery.isEmpty {
-                            Button {
-                                viewModel.searchQuery = ""
-                            } label: {
-                                Image("circle_x")
-                                    .font(AppFont.body)
-                                    .foregroundStyle(Color.textMuted)
-                            }
-                        }
-                    }
-                    .padding(.horizontal, 8)
-                    .padding(.vertical, 6)
-                    .overlay {
-                        RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle)
-                            .stroke(Color.borderTertiary, style: StrokeStyle(lineWidth: 1, dash: AppLayout.dashedPattern))
-                    }
-                    
-                    // View Mode Toggle
-                    HStack(spacing: 0) {
-                        ForEach(StoreViewMode.allCases, id: \.self) { mode in
-                            Button {
-                                withAnimation(.easeInOut(duration: 0.2)) {
-                                    viewMode = mode
-                                }
-                            } label: {
-                                Text(mode.rawValue.uppercased())
-                                    .font(AppFont.monoBody)
-                                    .foregroundStyle(viewMode == mode ? Color.backgroundPaper : Color.textMuted)
-                                    .frame(maxWidth: .infinity)
-                                    .frame(height: 36)
-                                    .background(viewMode == mode ? Color.textInk : Color.clear)
-                                    .contentShape(Rectangle())
-                            }
-                        }
-                    }
-                    .overlay(
-                        RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle)
-                            .stroke(Color.textInk, lineWidth: 1)
+                    CapsuleTextField(
+                        placeholder: "Search by name or address...",
+                        text: $viewModel.searchQuery,
+                        icon: "magnifyingglass"
                     )
-                    .clipShape(RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle))
+                    .padding(.horizontal, AppSpacing.screenPadding)
                     
-                    Color.secondary.frame(height: 1)
-                        .padding(.horizontal, -AppLayout.spacing)
+                    // View mode toggle
+                    CapsuleSegmentedPicker(
+                        selection: $viewMode,
+                        options: [
+                            (0, "List"),
+                            (1, "Map")
+                        ]
+                    )
+                    .padding(.horizontal, AppSpacing.screenPadding)
+                    
+                    Divider().background(Color.borderSecondary)
                 }
-                .padding(.horizontal, AppLayout.spacing)
-                .background(GeometryReader {
-                    Color.clear.preference(key: ViewOffsetKey.self, value: -$0.frame(in: .named("scroll")).origin.y)
-                })
-                .onPreferenceChange(ViewOffsetKey.self) {
-                    self.scrollOffset = $0
-                }
+                .padding(.top, AppSpacing.sm)
+                .background(Color.bgPrimary)
                 
                 // Content
-                if !viewModel.filteredStores.isEmpty {
-                    switch viewMode {
-                    case .list:
-                        StoreListContent(
-                            stores: viewModel.filteredStores,
-                            viewModel: viewModel,
-                            selectedStore: $selectedStore
-                        )
-                    case .map:
-                        StoreMapView(
-                            stores: viewModel.filteredStores,
-                            selectedStore: $selectedStore
-                        )
-                        .frame(height: 400)
-                        .padding(.horizontal, AppLayout.spacing)
-                    }
-                } else if viewModel.isLoading {
-                    // Initial load (no cache) - Show clean state (no skeleton)
-                    // Alternatively, show a minimal "Locating..." text if desired, but requirements say "no loading indicators"
-                    // We will render nothing until content arrives, or EmptyStoreState if it finishes empty.
-                    // To avoid looking broken, we might want a simple spacer.
-                    Spacer().frame(height: 200)
+                if viewModel.filteredStores.isEmpty && !viewModel.isLoading {
+                    emptyState
                 } else {
-                    EmptyStoresState()
+                    if viewMode == 0 {
+                        listView
+                    } else {
+                        mapView
+                    }
                 }
-            }}
-            .coordinateSpace(name: "scroll")
-            .scrollIndicators(.hidden)
+            }
         }
         .fullScreenCover(item: $selectedStore) { store in
             StoreDetailView(store: store, viewModel: viewModel)
@@ -131,170 +59,137 @@ struct StoresView: View {
             Task { await viewModel.load() }
         }
     }
-}
-
-// MARK: - Store List Content
-
-struct StoreListContent: View {
-    let stores: [Store]
-    let viewModel: StoresViewModel
-    @Binding var selectedStore: Store?
     
-    var body: some View {
-        LazyVStack(spacing: AppLayout.spacing) {
-            ForEach(stores) { store in
-                StoreCard(store: store, viewModel: viewModel)
-                    .onTapGesture {
-                        selectedStore = store
-                    }
+    // MARK: - List View
+    
+    private var listView: some View {
+        ScrollView {
+            LazyVStack(spacing: AppSpacing.md) {
+                ForEach(viewModel.filteredStores) { store in
+                    StoreCard_v2(store: store, viewModel: viewModel)
+                        .onTapGesture {
+                            selectedStore = store
+                        }
+                }
             }
+            .padding(AppSpacing.screenPadding)
         }
-        .padding(.horizontal, AppLayout.spacing)
-        .padding(.bottom, 100)
+    }
+    
+    // MARK: - Map View
+    
+    private var mapView: some View {
+        StoreMapView(
+            stores: viewModel.filteredStores,
+            selectedStore: $selectedStore
+        )
+        .padding(AppSpacing.screenPadding)
+    }
+    
+    // MARK: - Empty State
+    
+    private var emptyState: some View {
+        VStack(spacing: AppSpacing.lg) {
+            Image(systemName: "mappin.slash")
+                .font(.system(size: 48))
+                .foregroundStyle(Color.textTertiary)
+            
+            Text("No stores found")
+                .font(AppTypography.displayMedium)
+                .foregroundStyle(Color.textPrimary)
+            
+            Text("Try adjusting your search")
+                .font(AppTypography.bodyMedium)
+                .foregroundStyle(Color.textSecondary)
+        }
+        .frame(maxHeight: .infinity)
+        .padding(AppSpacing.xxl)
     }
 }
 
-// MARK: - Store Card
+// MARK: - Store Card v2
 
-struct StoreCard: View {
+struct StoreCard_v2: View {
     let store: Store
     let viewModel: StoresViewModel
-    @State private var distance: String?
     
     var body: some View {
-        VStack(alignment: .leading, spacing: 0) {
-            // Store Image
-            // CHANGED: Using CachedAsyncImage
-            CachedAsyncImage(url: URL(string: store.imageUrl ?? "")) { phase in // CHANGED
-                switch phase { // CHANGED
-                case .empty: // CHANGED
-                    Rectangle() // CHANGED
-                        .fill(Color.surfaceCard) // CHANGED
-                        .overlay { // CHANGED
-                            ProgressView() // CHANGED
-                                .tint(Color.primaryEspresso) // CHANGED
-                        } // CHANGED
-                case .success(let image): // CHANGED
-                    image // CHANGED
-                        .resizable() // CHANGED
-                        .aspectRatio(contentMode: .fill) // CHANGED
-                case .failure: // CHANGED
-                    Rectangle() // CHANGED
-                        .fill(Color.surfaceCard) // CHANGED
-                        .overlay { // CHANGED
-                            Text(String(store.name.prefix(1))) // CHANGED
-                                .font(AppFont.displayTitle) // CHANGED
-                                .foregroundStyle(Color.textMuted) // CHANGED
-                        } // CHANGED
-                @unknown default: // CHANGED
-                    EmptyView() // CHANGED
-                } // CHANGED
-            } // CHANGED
-            .frame(height: 160)
-            .clipped()
+        HStack(spacing: AppSpacing.lg) {
+            // Store image
+            if let imageUrl = store.imageUrl {
+                AsyncImage(url: URL(string: imageUrl)) { phase in
+                    switch phase {
+                    case .success(let image):
+                        image
+                            .resizable()
+                            .aspectRatio(contentMode: .fill)
+                    case .empty:
+                        Rectangle()
+                            .fill(Color.surfacePrimary)
+                            .overlay {
+                                ProgressView()
+                                    .tint(Color.textTertiary)
+                            }
+                    case .failure:
+                        Rectangle()
+                            .fill(Color.surfacePrimary)
+                            .overlay {
+                                Image(systemName: "building.2")
+                                    .font(.system(size: 24))
+                                    .foregroundStyle(Color.textTertiary)
+                            }
+                    @unknown default:
+                        EmptyView()
+                    }
+                }
+                .frame(width: 80, height: 80)
+                .clipShape(RoundedRectangle(cornerRadius: AppRadius.small, style: .continuous))
+            } else {
+                Rectangle()
+                    .fill(Color.surfacePrimary)
+                    .frame(width: 80, height: 80)
+                    .overlay {
+                        Image(systemName: "building.2")
+                            .font(.system(size: 24))
+                            .foregroundStyle(Color.textTertiary)
+                    }
+                    .clipShape(RoundedRectangle(cornerRadius: AppRadius.small, style: .continuous))
+            }
             
-            // Store Info
-            VStack(alignment: .leading, spacing: AppLayout.spacingMedium) {
+            VStack(alignment: .leading, spacing: AppSpacing.xs) {
                 Text(store.name)
-                    .font(AppFont.headline)
-                    .foregroundStyle(Color.textInk)
+                    .font(AppTypography.labelLarge)
+                    .foregroundStyle(Color.textPrimary)
+                    .lineLimit(1)
                 
                 Text(store.address)
-                    .font(AppFont.uiCaption)
-                    .foregroundStyle(Color.textMuted)
+                    .font(AppTypography.bodySmall)
+                    .foregroundStyle(Color.textSecondary)
                     .lineLimit(2)
                 
-                // Status Row
-                HStack(spacing: AppLayout.spacingMedium) {
-                    // Distance
-                    if let distance = distance {
-                        HStack(spacing: 4) {
-                            Image("map_pin")
-                                .font(.system(size: 10))
-                            Text(distance)
-                                .font(AppFont.monoBody)
-                        }
-                        .foregroundStyle(Color.textMuted)
-                    }
-                    
-                    // Open/Closed Status
-                    HStack(spacing: 4) {
-                        Circle()
-                            .fill(store.isCurrentlyOpen ? Color.semanticSuccess : Color.semanticError)
-                            .frame(width: 6, height: 6)
-                        Text(store.isCurrentlyOpen ? "Open" : "Closed")
-                            .font(AppFont.monoBody)
-                            .foregroundStyle(store.isCurrentlyOpen ? Color.semanticSuccess : Color.semanticError)
-                    }
-                    
-                    Spacer()
-                    
-                    Image("chevron.right")
-                        .font(.system(size: 12))
-                        .foregroundStyle(Color.textMuted)
-                }
+                // Distance calculation would go here if location services enabled
+                // For now, hide distance display
             }
-            .padding(AppLayout.spacing)
-            .background(Color.surfaceCard)
+            
+            Spacer()
+            
+            Image(systemName: "chevron.right")
+                .font(.system(size: 14, weight: .semibold))
+                .foregroundStyle(Color.textTertiary)
         }
+        .padding(AppSpacing.lg)
+        .background(Color.surfacePrimary)
+        .clipShape(RoundedRectangle(cornerRadius: AppRadius.medium, style: .continuous))
         .overlay(
-            RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle)
-                .stroke(Color.border, lineWidth: 1)
+            RoundedRectangle(cornerRadius: AppRadius.medium, style: .continuous)
+                .stroke(Color.borderSecondary, lineWidth: 0.5)
         )
-        .clipShape(RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle))
-        .task {
-            distance = await viewModel.getDistance(to: store)
-        }
     }
 }
 
-// MARK: - Skeleton
+// MARK: - Preview
 
-struct StoreListSkeleton: View {
-    var body: some View {
-        LazyVStack(spacing: AppLayout.spacing) {
-            ForEach(0..<4, id: \.self) { _ in
-                VStack(alignment: .leading, spacing: 0) {
-                    Rectangle()
-                        .fill(Color.surfaceCard)
-                        .frame(height: 160)
-                    
-                    VStack(alignment: .leading, spacing: 8) {
-                        Rectangle().fill(Color.border).frame(height: 16)
-                        Rectangle().fill(Color.border).frame(width: 200, height: 12)
-                        Rectangle().fill(Color.border).frame(width: 100, height: 12)
-                    }
-                    .padding(AppLayout.spacing)
-                }
-                .overlay(
-                    RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle)
-                        .stroke(Color.border, lineWidth: 1)
-                )
-                .clipShape(RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle))
-            }
-        }
-        .padding(.horizontal, AppLayout.spacing)
-    }
-}
-
-// MARK: - Empty State
-
-struct EmptyStoresState: View {
-    var body: some View {
-        VStack(spacing: AppLayout.spacingXL) {
-            Image("mappin.slash")
-                .font(.system(size: 48))
-                .foregroundStyle(Color.textMuted)
-            
-            Text(String(localized: "stores_empty_search"))
-                .font(AppFont.sectionHeader)
-                .foregroundStyle(Color.textInk)
-            
-            Text(String(localized: "stores_empty_suggestion"))
-                .font(AppFont.body)
-                .foregroundStyle(Color.textMuted)
-                .multilineTextAlignment(.center)
-        }
-        .padding(60)
-    }
+#Preview {
+    StoresView()
+        .environmentObject(DependencyContainer.shared.makeStoresViewModel())
 }

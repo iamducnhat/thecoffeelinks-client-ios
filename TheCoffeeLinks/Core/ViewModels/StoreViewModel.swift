@@ -10,10 +10,26 @@ class StoreViewModel: BaseViewModel {
     @Published var nearestStore: Store?
     @Published var selectedStore: Store?
     
+    private var cancellables = Set<AnyCancellable>()
+    
     init(storeRepository: StoreRepository, locationManager: LocationManager) {
         self.storeRepository = storeRepository
         self.locationManager = locationManager
         super.init()
+        setupPersistence()
+    }
+    
+    private func setupPersistence() {
+        $selectedStore
+            .dropFirst()
+            .removeDuplicates()
+            .sink { [weak self] store in
+                if let store = store {
+                    print("💾 [StoreViewModel] Saving preference: \(store.name)")
+                    DependencyContainer.shared.userPreferences.selectedStoreId = store.id
+                }
+            }
+            .store(in: &cancellables)
     }
     
     func requestLocationAuthorization() async {
@@ -26,13 +42,20 @@ class StoreViewModel: BaseViewModel {
             await MainActor.run {
                 self.stores = fetched
                 self.updateNearest()
+                
+                // Initialize from preferences if available and not already selected
+                if self.selectedStore == nil,
+                   let savedId = DependencyContainer.shared.userPreferences.selectedStoreId,
+                   let store = fetched.first(where: { $0.id == savedId }) {
+                    self.selectedStore = store
+                }
             }
         }
     }
     
     func selectStore(_ store: Store) {
         self.selectedStore = store
-        DependencyContainer.shared.userPreferences.selectedStoreId = store.id
+        // Subscription handles persistence
     }
     
     private func updateNearest() {

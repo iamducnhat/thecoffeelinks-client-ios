@@ -94,9 +94,22 @@ final class StoresViewModel: ObservableObject {
     func selectStore(_ store: Store) {
         selectedStore = store
         UserDefaults.standard.set(store.id, forKey: "lastSelectedStoreId")
+        // Sync with global user preferences
+        DependencyContainer.shared.userPreferences.selectedStoreId = store.id
     }
     
     private func loadLastSelectedStore() {
+        // Priority: User Preferences > Local Cache
+        if let prefId = DependencyContainer.shared.userPreferences.selectedStoreId {
+            Task {
+                await load()
+                if let store = stores.first(where: { $0.id == prefId }) {
+                    selectedStore = store
+                }
+            }
+            return
+        }
+        
         guard let id = UserDefaults.standard.string(forKey: "lastSelectedStoreId") else { return }
         Task {
             await load()
