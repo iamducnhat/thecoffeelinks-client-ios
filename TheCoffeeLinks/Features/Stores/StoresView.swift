@@ -66,7 +66,7 @@ struct StoresView: View {
         ScrollView {
             LazyVStack(spacing: AppSpacing.md) {
                 ForEach(viewModel.filteredStores) { store in
-                    StoreCard_v2(store: store, viewModel: viewModel)
+                    StoreCard(store: store, viewModel: viewModel)
                         .onTapGesture {
                             selectedStore = store
                         }
@@ -107,9 +107,9 @@ struct StoresView: View {
     }
 }
 
-// MARK: - Store Card v2
+// MARK: - Store Card
 
-struct StoreCard_v2: View {
+struct StoreCard: View {
     let store: Store
     let viewModel: StoresViewModel
     

@@ -53,7 +53,7 @@ struct MenuView: View {
                 // Product Grid
                 ScrollView {
                     if menuViewModel.isLoading && menuViewModel.filteredProducts.isEmpty {
-                        ProductGridSkeleton()
+                        ProgressView().tint(Color.textTertiary)
                     } else if menuViewModel.filteredProducts.isEmpty {
                         emptyState
                     } else {
@@ -65,7 +65,7 @@ struct MenuView: View {
                             spacing: AppSpacing.lg
                         ) {
                             ForEach(menuViewModel.filteredProducts) { product in
-                                ProductCard_v2(product: product)
+                                ProductCard(product: product)
                                     .onTapGesture {
                                         selectedProduct = product
                                     }
@@ -132,9 +132,9 @@ struct CategoryChip: View {
     }
 }
 
-// MARK: - Product Card v2
+// MARK: - Product Card
 
-struct ProductCard_v2: View {
+struct ProductCard: View {
     let product: Product
     
     var body: some View {

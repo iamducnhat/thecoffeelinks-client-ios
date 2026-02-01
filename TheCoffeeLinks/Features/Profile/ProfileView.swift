@@ -135,7 +135,7 @@ struct ProfileView: View {
             }
         }
         .fullScreenCover(isPresented: $showLogin) {
-            LoginView_v2()
+            LoginView()
         }
         .sheet(isPresented: $showEditProfile) {
             EditProfileView()

@@ -35,10 +35,10 @@ struct PhoneVerificationView: View {
                 
                 // OTP Input
                 VStack(spacing: 32) {
-                    AuthTextField(
-                        icon: "key",
+                    CapsuleTextField(
                         placeholder: "000000",
                         text: $authViewModel.otpCode,
+                        icon: "number",
                         keyboardType: .numberPad
                     )
                     .onChange(of: authViewModel.otpCode) { newValue in
