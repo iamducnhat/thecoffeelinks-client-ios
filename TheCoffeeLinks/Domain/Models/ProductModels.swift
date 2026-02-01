@@ -7,6 +7,9 @@
 
 import Foundation
 
+// MARK: - Type Aliases for External Access
+typealias ProductCategory = Category
+
 // Retrigger check
 // MARK: - Product
 //

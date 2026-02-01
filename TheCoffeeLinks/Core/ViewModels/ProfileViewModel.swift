@@ -7,6 +7,7 @@ class ProfileViewModel: BaseViewModel {
     private let socialRepository: SocialRepository
     private let authRepository: AuthRepository
     private let orderRepository: OrderRepositoryProtocol
+    private let profileStorage: ProfileStorageProtocol
     
     @Published var userProfile: User?
     @Published var vouchers: [Voucher] = []
@@ -14,6 +15,15 @@ class ProfileViewModel: BaseViewModel {
     @Published var orderCount: Int = 0
     @Published var editMode: Bool = false
     @Published var editName: String = ""
+    
+    // MARK: - Data Freshness & UI States
+    @Published var isProfileStale: Bool = true
+    @Published var isOrderCountStale: Bool = true
+    @Published var lastProfileSync: Date?
+    @Published var lastOrderCountSync: Date?
+    @Published var isRefreshingProfile: Bool = false
+    @Published var refreshError: AppError?
+    @Published var showErrorAlert: Bool = false
     
     private let storage: GenericStorageProtocol
     private var cancellables = Set<AnyCancellable>()
@@ -23,12 +33,14 @@ class ProfileViewModel: BaseViewModel {
          socialRepository: SocialRepository, 
          authRepository: AuthRepository, 
          orderRepository: OrderRepositoryProtocol,
+         profileStorage: ProfileStorageProtocol,
          storage: GenericStorageProtocol = GenericStorage()) {
         self.userRepository = userRepository
         self.voucherRepository = voucherRepository
         self.socialRepository = socialRepository
         self.authRepository = authRepository
         self.orderRepository = orderRepository
+        self.profileStorage = profileStorage
         self.storage = storage
         super.init()
         
@@ -47,16 +59,31 @@ class ProfileViewModel: BaseViewModel {
     private func loadCachedProfile() async {
         // Load cached user
         if let cachedUser = await userRepository.getCachedUser() {
-            await MainActor.run { self.userProfile = cachedUser; self.editName = cachedUser.fullName }
+            await MainActor.run { 
+                self.userProfile = cachedUser
+                self.editName = cachedUser.fullName
+                self.lastProfileSync = profileStorage.getLastSyncTimestamp(key: "user_profile")
+                self.isProfileStale = profileStorage.isDataStale(key: "user_profile", maxAge: 300)
+            }
         }
         
         // Load cached vouchers
         if let cachedVouchers = await voucherRepository.getCachedVouchers() {
             await MainActor.run { self.vouchers = cachedVouchers }
         }
+        
+        // Load cached order count - CRITICAL for offline-first UX
+        if let cachedCount = await MainActor.run(body: { profileStorage.loadOrderCount() }) {
+            await MainActor.run { 
+                self.orderCount = cachedCount
+                self.lastOrderCountSync = profileStorage.getLastSyncTimestamp(key: "order_count")
+                self.isOrderCountStale = profileStorage.isDataStale(key: "order_count", maxAge: 300)
+            }
+        }
     }
     
     private func performProfileRefresh() async {
+        isRefreshingProfile = true
         do {
             async let userTask = userRepository.refreshUser()
             async let vouchersTask = voucherRepository.refreshVouchers()
@@ -106,9 +133,37 @@ class ProfileViewModel: BaseViewModel {
                 }
                 self.orderCount = updatedOrders.totalCount
                 self.editName = finalUser.fullName
+                
+                // CRITICAL: Cache order count and timestamps for offline-first experience
+                self.profileStorage.saveOrderCount(updatedOrders.totalCount)
+                self.profileStorage.saveLastSyncTimestamp(key: "user_profile")
+                self.profileStorage.saveLastSyncTimestamp(key: "order_count")
+                
+                // Update freshness indicators
+                self.lastProfileSync = Date()
+                self.lastOrderCountSync = Date()
+                self.isProfileStale = false
+                self.isOrderCountStale = false
+                self.isRefreshingProfile = false
             }
         } catch {
             print("Profile refresh failed: \(error)")
+            await MainActor.run {
+                self.isRefreshingProfile = false
+                // Keep stale flags as they were - data is still old
+                
+                // Set user-friendly error
+                if let urlError = error as? URLError {
+                    if urlError.code == .notConnectedToInternet {
+                        self.refreshError = .networkError("No internet connection")
+                    } else {
+                        self.refreshError = .networkError(urlError.localizedDescription)
+                    }
+                } else {
+                    self.refreshError = .serverError(error.localizedDescription)
+                }
+                self.showErrorAlert = true
+            }
         }
     }
     
@@ -131,9 +186,19 @@ class ProfileViewModel: BaseViewModel {
                 self.userProfile = updatedUser
                 self.editMode = false
                 self.storage.remove(key: "profile_name_draft")
+                // Update sync timestamp after successful save
+                self.profileStorage.saveLastSyncTimestamp(key: "user_profile")
+                self.lastProfileSync = Date()
+                self.isProfileStale = false
                 DependencyContainer.shared.hapticManager.playSuccess()
             }
         }
+    }
+    
+    /// Manual refresh with proper loading states for pull-to-refresh
+    func manualRefresh() async {
+        guard !isRefreshingProfile else { return } // Prevent duplicate refreshes
+        await performProfileRefresh()
     }
     
     private func loadDraft() {

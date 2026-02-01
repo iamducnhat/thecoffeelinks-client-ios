@@ -264,6 +264,9 @@ class AuthRepository {
     // MARK: - Shared Helpers
 
     private func mapToDomain(_ serverUser: ServerUser) -> User {
+        // Priority: 1. user_metadata.full_name, 2. phone (temporary), 3. "User" (last resort)
+        // NOTE: This is a minimal user object from auth response.
+        // The full profile should be fetched from /api/user/profile after auth succeeds.
         let display = serverUser.userMetadata?.fullName ?? serverUser.phone ?? "User"
         
         // Strict Status Mapping

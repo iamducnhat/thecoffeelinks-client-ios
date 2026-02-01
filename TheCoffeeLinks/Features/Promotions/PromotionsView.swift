@@ -52,6 +52,18 @@ struct PromotionsView: View {
                 }
                 .coordinateSpace(name: "scroll")
                 .scrollIndicators(.hidden)
+                .refreshable {
+                    await profileViewModel.manualRefresh()
+                }
+            }
+        }
+        .alert("Error", isPresented: $profileViewModel.showErrorAlert) {
+            Button("OK", role: .cancel) {
+                profileViewModel.refreshError = nil
+            }
+        } message: {
+            if let error = profileViewModel.refreshError {
+                Text(error.userFriendlyMessage)
             }
         }
         .fullScreenCover(isPresented: $showLogin) {
@@ -71,19 +83,42 @@ struct PromotionsView: View {
     }
     
     private var memberCard: some View {
-        DigitalCredentialContent(
-            memberId: profileViewModel.userProfile?.shortId ?? "******",
-            userName: profileViewModel.userProfile?.fullName ?? "Member",
-            tier: profileViewModel.userProfile?.membershipTier.displayName ?? "Member",
-            points: profileViewModel.userProfile?.points ?? 0,
-            vouchersCount: profileViewModel.vouchers.count,
-            ordersCount: profileViewModel.orderCount,
-            onRefresh: {
-                profileViewModel.loadProfile()
+        VStack(spacing: 0) {
+            DigitalCredentialContent(
+                memberId: profileViewModel.userProfile?.shortId ?? "******",
+                userName: profileViewModel.userProfile?.fullName ?? "Member",
+                tier: profileViewModel.userProfile?.membershipTier.displayName ?? "Member",
+                points: profileViewModel.userProfile?.points ?? 0,
+                vouchersCount: profileViewModel.vouchers.count,
+                ordersCount: profileViewModel.orderCount,
+                onRefresh: {
+                    Task {
+                        await profileViewModel.manualRefresh()
+                    }
+                }
+            )
+            
+            // Stale data indicator
+            if profileViewModel.isOrderCountStale || profileViewModel.isProfileStale {
+                HStack(spacing: 4) {
+                    Image(systemName: "clock.arrow.circlepath")
+                        .font(.caption2)
+                    Text("Data may be outdated")
+                        .font(AppFont.uiCaption)
+                    if profileViewModel.isRefreshingProfile {
+                        ProgressView()
+                            .scaleEffect(0.7)
+                    }
+                }
+                .foregroundColor(Color.textMuted)
+                .padding(.vertical, 8)
+                .padding(.horizontal, AppLayout.spacing)
+                .frame(maxWidth: .infinity)
+                .background(Color.yellow.opacity(0.1))
             }
-        )
+        }
         .padding(AppLayout.spacing)
-        .background(Color.surfaceCard) // Optional: If we want a card background for the inline version
+        .background(Color.surfaceCard)
         .clipShape(RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle))
         .overlay(
              RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle)

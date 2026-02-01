@@ -528,6 +528,14 @@ struct OrdersListResponse: Codable, Sendable {
 struct APIOrdersResponse: Codable {
     let success: Bool
     let orders: [APIOrder]
+    let totalCount: Int?
+    let hasMore: Bool?
+    
+    enum CodingKeys: String, CodingKey {
+        case success, orders
+        case totalCount = "totalCount"
+        case hasMore = "hasMore"
+    }
     
     struct APIOrder: Codable {
         let id: String?

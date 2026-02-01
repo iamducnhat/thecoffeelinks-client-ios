@@ -113,7 +113,8 @@ class DependencyContainer: ObservableObject {
             voucherRepository: voucherRepository,
             socialRepository: socialRepository,
             authRepository: authRepository,
-            orderRepository: orderRepository
+            orderRepository: orderRepository,
+            profileStorage: profileStorage
         )
     }
     
@@ -154,7 +155,7 @@ class DependencyContainer: ObservableObject {
     
     @MainActor
     func makeAuthViewModel() -> AuthViewModel {
-        AuthViewModel(authRepository: authRepository)
+        AuthViewModel(authRepository: authRepository, profileStorage: profileStorage)
     }
     
     @MainActor

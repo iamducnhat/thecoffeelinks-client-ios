@@ -36,11 +36,6 @@ extension Color {
         Color("Colors/TextMuted")
     }
     
-    /// Tertiary text - Light coffee-stain tone (light) / Muted tan (dark)
-    static var textTertiary: Color {
-        Color("Colors/TextTertiary")
-    }
-    
     // MARK: - Accent Colors
     
     /// Primary accent (SINGLE ACCENT) - Moss green (light) / Mint (dark)

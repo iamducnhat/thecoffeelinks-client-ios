@@ -43,8 +43,8 @@ final class OrderRepository: OrderRepositoryProtocol, @unchecked Sendable {
         return OrdersListResponse(
             success: apiResponse.success,
             orders: orders,
-            totalCount: orders.count,
-            hasMore: false
+            totalCount: apiResponse.totalCount ?? orders.count, // Use server count if available
+            hasMore: apiResponse.hasMore ?? false
         )
     }
     

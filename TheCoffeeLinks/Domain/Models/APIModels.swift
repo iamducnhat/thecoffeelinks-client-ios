@@ -144,8 +144,8 @@ struct APICategory: Codable {
     let id: String
     let name: String
     
-    func toDomain() -> Category {
-        Category(
+    func toDomain() -> ProductCategory {
+        ProductCategory(
             id: id,
             name: name,
             displayName: name.capitalized.replacingOccurrences(of: "_", with: " "),
@@ -187,6 +187,8 @@ struct APIOrderResponse: Codable {
     let success: Bool
     let order: APIOrder?
     let orders: [APIOrder]?
+    let totalCount: Int?
+    let hasMore: Bool?
     let error: String?
     let message: String?
     
@@ -303,7 +305,7 @@ struct APIOrder: Codable {
 
 struct APIOrderItem: Codable {
     let id: String?
-    let order_id: String
+    let order_id: String?
     let product_id: String?
     let product_name: String
     let quantity: Int
@@ -313,7 +315,7 @@ struct APIOrderItem: Codable {
     func toDomain() -> OrderItem {
         OrderItem(
             id: id ?? UUID().uuidString,
-            orderId: order_id,
+            orderId: order_id ?? "",
             productId: product_id ?? "",
             productName: product_name,
             productImage: nil,

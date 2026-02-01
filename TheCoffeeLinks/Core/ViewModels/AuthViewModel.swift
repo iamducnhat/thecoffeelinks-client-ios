@@ -3,12 +3,18 @@ import Combine
 
 class AuthViewModel: BaseViewModel {
     private let authRepository: AuthRepository
+    private let profileStorage: ProfileStorageProtocol
 
     @Published var currentUser: User? {
         didSet {
             let verified = currentUser?.phoneVerificationStatus == .verified
             self.isPhoneVerified = verified
             UserDefaults.standard.set(verified, forKey: "isPhoneVerified_cached")
+            
+            // CRITICAL: Save to ProfileStorage for single source of truth
+            if let user = currentUser {
+                profileStorage.saveUser(user)
+            }
         }
     }
     @Published var isAuthenticated: Bool = false
@@ -31,8 +37,9 @@ class AuthViewModel: BaseViewModel {
     }
     @Published var authState: PhoneAuthState = .idle
 
-    init(authRepository: AuthRepository) {
+    init(authRepository: AuthRepository, profileStorage: ProfileStorageProtocol = ProfileStorage()) {
         self.authRepository = authRepository
+        self.profileStorage = profileStorage
         super.init()
         // DO NOT restore from cache - always fetch server truth
         checkSession()
@@ -44,13 +51,19 @@ class AuthViewModel: BaseViewModel {
             // Sync Realtime Token
             DependencyContainer.shared.realtimeService.setAuthToken(token)
 
-            // CRITICAL: Always fetch server truth for verification status
+            // CRITICAL: Load from local cache first for immediate display
+            if let cachedUser = profileStorage.loadUser() {
+                self.currentUser = cachedUser
+                self.isPhoneVerified = cachedUser.phoneVerificationStatus == .verified
+            }
+
+            // CRITICAL: Always fetch server truth for verification status in background
             Task {
                 do {
                     let user = try await fetchCurrentUser()
                     // didSet on currentUser will update isPhoneVerified from server data
                     await MainActor.run {
-                        // Update cache after server fetch succeeds
+                        // Update cache after server fetch succeeds (done automatically in didSet)
                         UserDefaults.standard.set(self.isPhoneVerified, forKey: "isPhoneVerified_cached")
                     }
                 } catch {
@@ -94,6 +107,8 @@ class AuthViewModel: BaseViewModel {
                     dob: formattedDob
                 )
                 print("✅ Registered. Waiting for OTP.")
+                // NOTE: After OTP verification, fetchCurrentUser() will be called
+                // in verifyOTP() to get the full profile with the name we just registered
                 await MainActor.run {
                     self.authState = .otpSent
                     self.error = nil // Clear error
@@ -120,8 +135,10 @@ class AuthViewModel: BaseViewModel {
                     DependencyContainer.shared.realtimeService.setAuthToken(token)
                 }
                 
+                // CRITICAL: Fetch full user profile from /api/user/profile to get actual name
+                try await self.fetchCurrentUser()
+                
                 await MainActor.run {
-                    self.currentUser = user
                     self.isAuthenticated = true
                     self.authState = .idle
                     self.error = nil
@@ -178,14 +195,16 @@ class AuthViewModel: BaseViewModel {
                     DependencyContainer.shared.realtimeService.setAuthToken(token)
                 }
                 
+                // CRITICAL: Fetch full user profile from /api/user/profile to get actual name
+                try await self.fetchCurrentUser()
+                
                 await MainActor.run {
-                    self.currentUser = user
                     self.isAuthenticated = true
                     self.authState = .idle
                     self.error = nil
                     
                     // If verified, isPhoneVerified will be set via didSet
-                    if user.phoneVerificationStatus == .verified {
+                    if self.currentUser?.phoneVerificationStatus == .verified {
                          print("✅ Phone verified.")
                     }
                 }
@@ -260,6 +279,9 @@ class AuthViewModel: BaseViewModel {
             await DependencyContainer.shared.cacheService.clear()
             DependencyContainer.shared.realtimeService.disconnect()
             
+            // CRITICAL: Clear ProfileStorage
+            profileStorage.clearUser()
+            
             URLCache.shared.removeAllCachedResponses()
             
             await MainActor.run {
@@ -273,14 +295,15 @@ class AuthViewModel: BaseViewModel {
         }
     }
     
-    func fetchCurrentUser() async throws {
+    func fetchCurrentUser() async throws -> User {
         let user = try await authRepository.getCurrentUser()
         await MainActor.run {
-            self.currentUser = user
+            self.currentUser = user  // This will trigger didSet and save to ProfileStorage
             if let bio = user.bio {
                 DependencyContainer.shared.userPreferences.userBio = bio
             }
         }
+        return user
     }
     
     func updateProfile(name: String, bio: String) {

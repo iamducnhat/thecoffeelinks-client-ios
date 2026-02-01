@@ -139,12 +139,11 @@ struct User: Codable, Identifiable, Hashable, Sendable {
         phoneVerified = try container.decodeIfPresent(Bool.self, forKey: .phoneVerified) ?? false
         phoneVerificationStatus = try container.decodeIfPresent(PhoneVerificationStatus.self, forKey: .phoneVerificationStatus) ?? .unverified
         
-        // Fix for "Hello, User" issue:
-        // If the name is generic "User" (case-insensitive) or empty, and we have a phone number,
-        // prefer showing the phone number to match the initial login experience.
-        if (rawName.isEmpty || rawName.caseInsensitiveCompare("user") == .orderedSame),
-           let phoneIdx = phone, !phoneIdx.isEmpty {
-            displayName = phoneIdx
+        // Display name logic: Prefer actual name, fallback to phone only if name is truly empty
+        // CRITICAL: Do not show phone number if server provided a real name (even if it's "User")
+        // The real fix is to ensure server always returns proper name from user_metadata or database
+        if rawName.isEmpty {
+            displayName = phone ?? "User"
         } else {
             displayName = rawName
         }
