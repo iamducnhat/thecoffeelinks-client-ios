@@ -205,7 +205,7 @@ struct CheckoutView: View {
                                         
                                         Spacer()
                                         
-                                        Image("chevron.right")
+                                        Image(systemName: "chevron.right")
                                             .font(.system(size: 14))
                                             .foregroundStyle(Color.textSecondary)
                                     }

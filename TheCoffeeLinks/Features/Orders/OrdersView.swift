@@ -207,7 +207,7 @@ struct OrderRow: View {
                 
                 Spacer()
                 
-                Image("chevron.right")
+                Image(systemName: "chevron.right")
                     .font(.system(size: 12))
                     .foregroundStyle(Color.textSecondary)
             }

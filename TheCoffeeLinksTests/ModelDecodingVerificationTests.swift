@@ -1,6 +1,6 @@
 
 import XCTest
-@testable import thecoffeelinks_client_ios
+@testable import TheCoffeeLinks
 
 final class ModelDecodingVerificationTests: XCTestCase {
 

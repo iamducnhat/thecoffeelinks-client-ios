@@ -1,6 +1,6 @@
 import XCTest
 import Combine
-@testable import thecoffeelinks_client_ios
+@testable import TheCoffeeLinks
 
 @MainActor
 final class DeliveryServiceTests: XCTestCase {

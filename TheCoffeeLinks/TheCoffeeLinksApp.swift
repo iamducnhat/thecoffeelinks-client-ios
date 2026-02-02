@@ -2,7 +2,7 @@ import SwiftUI
 import Combine
 
 @main
-struct thecoffeelinks_client_iosApp: App {
+struct TheCoffeeLinksApp: App {
     // Shared Singletons
     @StateObject private var appState = AppState()
     @StateObject private var networkMonitor = NetworkMonitor()

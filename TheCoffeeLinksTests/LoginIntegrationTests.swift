@@ -1,5 +1,5 @@
 import XCTest
-@testable import thecoffeelinks_client_ios
+@testable import TheCoffeeLinks
 
 /// Integration test for actual login with real credentials
 final class LoginIntegrationTests: XCTestCase {

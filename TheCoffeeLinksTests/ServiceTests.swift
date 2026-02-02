@@ -1,5 +1,5 @@
 import XCTest
-@testable import thecoffeelinks_client_ios
+@testable import TheCoffeeLinks
 
 /// Tests for APIClient HTTP functionality
 final class APIClientTests: XCTestCase {

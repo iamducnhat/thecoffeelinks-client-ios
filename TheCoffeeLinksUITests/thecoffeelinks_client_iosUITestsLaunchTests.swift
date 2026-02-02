@@ -1,5 +1,5 @@
 //
-//  thecoffeelinks_client_iosUITestsLaunchTests.swift
+//  TheCoffeeLinksUITestsLaunchTests.swift
 //  thecoffeelinks-client-iosUITests
 //
 //  Created by Nguyen Duc Nhat on 12/1/26.
@@ -7,7 +7,7 @@
 
 import XCTest
 
-final class thecoffeelinks_client_iosUITestsLaunchTests: XCTestCase {
+final class TheCoffeeLinksUITestsLaunchTests: XCTestCase {
 
     override class var runsForEachTargetApplicationUIConfiguration: Bool {
         true
