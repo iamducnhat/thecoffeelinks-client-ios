@@ -4,10 +4,10 @@ import SwiftUI
 
 final class ColorDynamicTests: XCTestCase {
     func testDynamicColorResolvesOffMainThread() {
-        let color = UIColor(Color.bgPrimary)
         let exp = expectation(description: "resolve")
         DispatchQueue.global(qos: .userInitiated).async {
-            // Should not assert or crash when resolved off the main thread
+            // Should not assert or crash when initialized and resolved off the main thread
+            let color = UIColor(Color.bgPrimary)
             _ = color.resolvedColor(with: UITraitCollection(userInterfaceStyle: .dark))
             _ = color.resolvedColor(with: UITraitCollection(userInterfaceStyle: .light))
             exp.fulfill()

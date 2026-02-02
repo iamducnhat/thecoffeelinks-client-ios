@@ -104,10 +104,21 @@ fileprivate static func dynamicUIColor(light: UIColor, dark: UIColor) -> UIColor
 
     init(light: Color, dark: Color) {
         #if canImport(UIKit)
-        // Convert `SwiftUI.Color` to `UIColor` and build a dynamic provider
-        // that constructs UIColors from numeric components (thread-safe).
-        let uiLight = UIColor(light)
-        let uiDark = UIColor(dark)
+        // Convert `SwiftUI.Color` to `UIColor` in a thread-safe way. Some
+        // platforms may attempt to initialize static Colors off the main
+        // thread, so we ensure conversion happens on the main thread.
+        func uiColorFrom(_ color: Color) -> UIColor {
+            if Thread.isMainThread {
+                return UIColor(color)
+            } else {
+                var result: UIColor?
+                DispatchQueue.main.sync { result = UIColor(color) }
+                return result!
+            }
+        }
+
+        let uiLight = uiColorFrom(light)
+        let uiDark = uiColorFrom(dark)
         self.init(uiColor: Self.dynamicUIColor(light: uiLight, dark: uiDark))
         #else
         self = light
