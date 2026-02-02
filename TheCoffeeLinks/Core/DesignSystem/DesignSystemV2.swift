@@ -27,43 +27,46 @@ struct IconView: View {
 extension Color {
     // MARK: - Backgrounds
     
-    static let bgPrimary = Color(light: Color("Colors/BackgroundPaper"), dark: .black)
-    static let bgSecondary = Color(light: Color("Colors/SurfaceCard"), dark: Color(white: 0.1))
-    static let bgTertiary = Color(light: Color(white: 0.94), dark: Color(white: 0.15))
+    static let bgPrimary = Color.backgroundPaper
+    static let bgSecondary = Color.surfaceCard
+    // Tertiary background is intentionally a simple gray that does not need
+    // an asset; we choose a neutral static value that is acceptable in both
+    // schemes to avoid dynamic providers.
+    static let bgTertiary = Color(white: 0.94)
     
     // MARK: - Surfaces (Cards, Sheets)
     
-    static let surfacePrimary = Color(light: Color("Colors/SurfaceCard"), dark: Color(white: 0.12))
-    static let surfaceElevated = Color(light: .white, dark: Color(white: 0.18))
+    static let surfacePrimary = Color.surfaceCard
+    static let surfaceElevated = Color.white
     
     // MARK: - Text
     
-    static let textPrimary = Color(light: Color("Colors/TextInk"), dark: .white)
-    static let textSecondary = Color(light: Color("Colors/TextMuted"), dark: Color(white: 0.7))
-    static let textTertiary = Color(light: Color(white: 0.5), dark: Color(white: 0.5))
-    static let textDisabled = Color(light: Color(white: 0.7), dark: Color(white: 0.35))
+    static let textPrimary = Color.textInk
+    static let textSecondary = Color.textMuted
+    static let textTertiary = Color(white: 0.5)
+    static let textDisabled = Color(white: 0.7)
     
     // MARK: - Borders
     
-    static let borderPrimary = Color(light: Color("Colors/Border"), dark: Color(white: 0.25))
-    static let borderSecondary = Color(light: Color("Colors/BorderTertiary"), dark: Color(white: 0.15))
+    static let borderPrimary = Color.border
+    static let borderSecondary = Color.borderTertiary
     
     // MARK: - Accent (from existing design system)
     
-    static let accentPrimary = Color("Colors/PrimaryEspresso") // Moss green light / Mint dark
+    static let accentPrimary = Color.primaryEspresso // Moss green light / Mint dark
     
     // MARK: - Button Colors
     
     // Light mode: 80% black for secondary buttons, accent for primary
     // Dark mode: white for highlighted
-    static let buttonHighlight = Color(light: Color(white: 0.2, opacity: 0.8), dark: .white)
-    static let buttonHighlightSecondary = Color(light: Color(white: 0.2, opacity: 0.8), dark: Color(white: 0.7))
+    static let buttonHighlight = Color(white: 0.2).opacity(0.8)
+    static let buttonHighlightSecondary = Color(white: 0.2).opacity(0.8)
     
     // MARK: - States (Minimal semantic colors)
     
-    static let stateError = Color(light: Color("Colors/SemanticError"), dark: .red)
-    static let stateSuccess = Color(light: Color("Colors/SemanticSuccess"), dark: .green)
-    static let stateWarning = Color(light: Color("Colors/SemanticWarning"), dark: .orange)
+    static let stateError = Color.semanticError
+    static let stateSuccess = Color.semanticSuccess
+    static let stateWarning = Color.semanticWarning
     
     // MARK: - Light/Dark Initializer
 
