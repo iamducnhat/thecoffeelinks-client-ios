@@ -70,25 +70,42 @@ extension Color {
 #if canImport(UIKit)
 // Helper: build a dynamic UIColor provider from plain UIColors in non-actor
 // context so the provider closure is not implicitly MainActor-isolated.
+// This version extracts RGBA components on the caller (main actor) and
+// uses numeric components inside the dynamic provider to avoid capturing
+// MainActor-isolated UIColor instances.
 fileprivate static func dynamicUIColor(light: UIColor, dark: UIColor) -> UIColor {
+    // Extract RGBA components safely on the caller thread
+    func rgba(from color: UIColor) -> (CGFloat, CGFloat, CGFloat, CGFloat) {
+        var r: CGFloat = 0
+        var g: CGFloat = 0
+        var b: CGFloat = 0
+        var a: CGFloat = 0
+        if color.getRed(&r, green: &g, blue: &b, alpha: &a) {
+            return (r, g, b, a)
+        } else {
+            let ci = CIColor(color: color)
+            return (ci.red, ci.green, ci.blue, ci.alpha)
+        }
+    }
+
+    let (lr, lg, lb, la) = rgba(from: light)
+    let (dr, dg, db, da) = rgba(from: dark)
+
     return UIColor(dynamicProvider: { traits in
         switch traits.userInterfaceStyle {
         case .dark:
-            return dark
+            return UIColor(red: dr, green: dg, blue: db, alpha: da)
         default:
-            return light
+            return UIColor(red: lr, green: lg, blue: lb, alpha: la)
         }
     })
 }
 #endif
 
-    @MainActor
     init(light: Color, dark: Color) {
         #if canImport(UIKit)
-        // Ensure conversion from `SwiftUI.Color` to `UIColor` runs on the main
-        // actor so that any main-thread-only work is performed safely. The
-        // dynamic provider is created by `dynamicUIColor` in non-actor
-        // context so it won't be MainActor-isolated.
+        // Convert `SwiftUI.Color` to `UIColor` and build a dynamic provider
+        // that constructs UIColors from numeric components (thread-safe).
         let uiLight = UIColor(light)
         let uiDark = UIColor(dark)
         self.init(uiColor: Self.dynamicUIColor(light: uiLight, dark: uiDark))
