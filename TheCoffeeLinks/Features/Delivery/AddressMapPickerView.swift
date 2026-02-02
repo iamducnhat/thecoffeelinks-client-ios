@@ -8,6 +8,7 @@
 
 import SwiftUI
 import MapKit
+import CoreLocation
 
 struct AddressMapPickerView: View {
     @Environment(\.dismiss) var dismiss
@@ -18,6 +19,8 @@ struct AddressMapPickerView: View {
         center: CLLocationCoordinate2D(latitude: 10.7769, longitude: 106.7009), // HCMC Default
         span: MKCoordinateSpan(latitudeDelta: 0.01, longitudeDelta: 0.01)
     )
+
+    @State private var isGeocoding = false
     
     var body: some View {
         ZStack {
@@ -50,22 +53,58 @@ struct AddressMapPickerView: View {
                 Spacer()
                 
                 Button {
-                    selectedLocation = region.center
-                    // TODO: Implement proper reverse geocoding to convert coordinates to readable address
-                    addressString = "Selected location (\(String(format: "%.2f", region.center.latitude)), \(String(format: "%.2f", region.center.longitude)))"
-                    dismiss()
+                    isGeocoding = true
+                    let center = region.center
+                    let location = CLLocation(latitude: center.latitude, longitude: center.longitude)
+
+                    CLGeocoder().reverseGeocodeLocation(location) { placemarks, error in
+                        DispatchQueue.main.async {
+                            defer { isGeocoding = false }
+                            selectedLocation = center
+
+                            if let placemark = placemarks?.first {
+                                let parts = [
+                                    placemark.name,
+                                    placemark.thoroughfare,
+                                    placemark.subThoroughfare,
+                                    placemark.locality,
+                                    placemark.administrativeArea,
+                                    placemark.postalCode,
+                                    placemark.country
+                                ].compactMap { $0 }
+
+                                if !parts.isEmpty {
+                                    addressString = parts.joined(separator: ", ")
+                                } else {
+                                    addressString = String(format: NSLocalizedString("Selected location (%@, %@)", comment: "Fallback coordinate string for selected location"), String(format: "%.2f", center.latitude), String(format: "%.2f", center.longitude))
+                                }
+                            } else {
+                                addressString = String(format: NSLocalizedString("Selected location (%@, %@)", comment: "Fallback coordinate string for selected location"), String(format: "%.2f", center.latitude), String(format: "%.2f", center.longitude))
+                            }
+
+                            dismiss()
+                        }
+                    }
                 } label: {
-                    Text("Confirm Location")
-                        .font(AppFont.monoCTA)
-                        .foregroundStyle(Color.bgPrimary)
-                        .padding(.vertical, 14)
-                        .frame(maxWidth: .infinity)
-                        .background(Color.accentPrimary)
-                        .clipShape(Capsule())
-                        .shadow(radius: 4)
+                    Group {
+                        if isGeocoding {
+                            ProgressView()
+                                .progressViewStyle(CircularProgressViewStyle(tint: Color.bgPrimary))
+                        } else {
+                            Text("Confirm Location")
+                                .font(AppFont.monoCTA)
+                        }
+                    }
+                    .foregroundStyle(Color.bgPrimary)
+                    .padding(.vertical, 14)
+                    .frame(maxWidth: .infinity)
+                    .background(Color.accentPrimary)
+                    .clipShape(Capsule())
+                    .shadow(radius: 4)
                 }
                 .padding(AppLayout.spacing)
                 .padding(.bottom, 20)
+                .disabled(isGeocoding)
             }
         }
         .navigationBarHidden(true)
