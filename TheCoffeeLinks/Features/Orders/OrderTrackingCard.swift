@@ -203,8 +203,8 @@ struct OrderTrackingCard: View {
         }
         .clipShape(RoundedRectangle(cornerRadius: AppRadius.medium, style: .continuous))
         .overlay(
-            Capsule()
-                .stroke(Color.border, lineWidth: AppLayout.borderWidth)
+            RoundedRectangle(cornerRadius: AppRadius.medium, style: .continuous)
+                .strokeBorder(Color.border, lineWidth: AppLayout.borderWidth)
         )
         .shadow(color: Color.black.opacity(0.04), radius: 12, x: 0, y: 6)
         .padding(.horizontal, AppLayout.margin)
@@ -226,7 +226,7 @@ private struct ProgressPoint: View {
             .frame(width: 8, height: 8)
             .background(
                 Circle()
-                    .stroke(Color.surfacePrimary, lineWidth: 4)
+                    .strokeBorder(Color.surfacePrimary, lineWidth: 4)
             )
     }
 }

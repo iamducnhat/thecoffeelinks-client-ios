@@ -12,7 +12,7 @@ struct LiquidGlass: ViewModifier {
             .shadow(color: Color.black.opacity(0.05), radius: 10, x: 0, y: 5)
             .overlay(
                 RoundedRectangle(cornerRadius: cornerRadius)
-                    .stroke(LinearGradient(
+                    .strokeBorder(LinearGradient(
                         colors: [.white.opacity(0.6), .white.opacity(0.1)],
                         startPoint: .topLeading,
                         endPoint: .bottomTrailing

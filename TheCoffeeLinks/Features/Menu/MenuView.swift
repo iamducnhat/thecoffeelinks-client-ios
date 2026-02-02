@@ -91,7 +91,7 @@ struct MenuView: View {
     
     private var emptyState: some View {
         VStack(spacing: AppSpacing.lg) {
-            Image(systemName: "magnifyingglass")
+            Image("search")
                 .font(.system(size: 48))
                 .foregroundStyle(Color.textTertiary)
             
@@ -160,7 +160,7 @@ struct ProductCard: View {
                         Rectangle()
                             .fill(Color.surfacePrimary)
                             .overlay {
-                                Image(systemName: "photo")
+                                Image("image")
                                     .font(.system(size: 24))
                                     .foregroundStyle(Color.textTertiary)
                             }

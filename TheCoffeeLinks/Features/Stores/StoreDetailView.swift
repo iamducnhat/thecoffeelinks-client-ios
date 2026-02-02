@@ -44,7 +44,7 @@ struct StoreDetailView: View {
                         }
                         .overlay {
                             Capsule()
-                                .stroke(Color.textPrimary, lineWidth: min(66.6, max(scrollOffset, 0.0)) / 66.6)
+                                .strokeBorder(Color.textPrimary, lineWidth: min(66.6, max(scrollOffset, 0.0)) / 66.6)
                                 .opacity(min(88.8, max(scrollOffset, 0.0)) / 99.9)
                         }
                 }
@@ -130,7 +130,7 @@ struct StoreDetailView: View {
                         }
                         .overlay(
                             Capsule()
-                                .stroke(Color.border, lineWidth: 1)
+                                .strokeBorder(Color.border, lineWidth: 1)
                         )
                         .clipShape(Capsule())
                         .padding(.horizontal, AppLayout.spacing)
@@ -151,7 +151,7 @@ struct StoreDetailView: View {
                         .frame(height: 200)
                         .overlay(
                             Capsule()
-                                .stroke(Color.border, lineWidth: 1)
+                                .strokeBorder(Color.border, lineWidth: 1)
                         )
                         .clipShape(Capsule())
                         .padding(.horizontal, AppLayout.spacing)
@@ -204,7 +204,7 @@ struct StoreDetailView: View {
                         .background(Color.bgPrimary)
                         .overlay(
                             Capsule()
-                                .stroke(Color.border, lineWidth: 1)
+                                .strokeBorder(Color.border, lineWidth: 1)
                         )
                         .padding(.horizontal, AppLayout.spacing)
                         
@@ -219,7 +219,7 @@ struct StoreDetailView: View {
                                 LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: AppLayout.spacingMedium) {
                                     ForEach(amenities, id: \.self) { amenity in
                                         HStack(spacing: 4) {
-                                            Image(systemName: amenity.iconName)
+                                            IconView(name: amenity.iconName)
                                                 .foregroundStyle(Color.accentPrimary)
                                                 .font(.system(size: 14))
                                             Text(amenity.displayName)
@@ -305,7 +305,7 @@ struct StoreDetailView: View {
                                 UIApplication.shared.open(url)
                             } label: {
                                 HStack {
-                                    Image(systemName: "arrow.triangle.turn.up.right.circle")
+                                    Image("map")
                                         .font(.system(size: 16))
                                     Text("store_get_directions")
                                         .font(AppFont.monoBody)
@@ -315,7 +315,7 @@ struct StoreDetailView: View {
                                 .frame(maxWidth: .infinity)
                                 .overlay(
                                     Capsule()
-                                        .stroke(Color.accentPrimary, lineWidth: 1)
+                                        .strokeBorder(Color.accentPrimary, lineWidth: 1)
                                 )
                             }
                         }

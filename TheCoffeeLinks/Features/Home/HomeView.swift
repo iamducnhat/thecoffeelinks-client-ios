@@ -208,7 +208,7 @@ struct AIQuickOrderPrompt: View {
             .background(Color.surfacePrimary)
             .overlay(
                 Capsule()
-                    .stroke(Color.accentPrimary, lineWidth: 1)
+                    .strokeBorder(Color.accentPrimary, lineWidth: 1)
             )
             .clipShape(Capsule())
         }

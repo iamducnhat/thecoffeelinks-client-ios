@@ -38,7 +38,7 @@ struct FavoritesView: View {
                         }
                         .overlay {
                             Capsule()
-                                .stroke(Color.textPrimary, lineWidth: min(66.6, max(scrollOffset, 0.0)) / 66.6)
+                                .strokeBorder(Color.textPrimary, lineWidth: min(66.6, max(scrollOffset, 0.0)) / 66.6)
                                 .opacity(min(88.8, max(scrollOffset, 0.0)) / 99.9)
                         }
                 }
@@ -103,7 +103,7 @@ struct FavoritesView: View {
                         .padding(60)
                         .overlay(
                             Capsule()
-                                .stroke(Color.border, style: StrokeStyle(lineWidth: 1, dash: AppLayout.dashedPattern))
+                                .strokeBorder(Color.border, style: StrokeStyle(lineWidth: 1, dash: AppLayout.dashedPattern))
                         )
                         .padding(AppLayout.spacing)
                     } else {
@@ -184,7 +184,7 @@ struct FavoriteItemRow: View {
                     .clipShape(RoundedRectangle(cornerRadius: AppRadius.medium, style: .continuous))
         .overlay(
                         Capsule()
-                            .stroke(Color.border, lineWidth: 1)
+                            .strokeBorder(Color.border, lineWidth: 1)
                     )
                     
                     VStack(alignment: .leading, spacing: 4) {

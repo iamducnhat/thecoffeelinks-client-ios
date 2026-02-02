@@ -61,7 +61,7 @@ struct StoreSelectionSheet: View {
                     .padding(.vertical, 6)
                     .overlay {
                         Capsule()
-                            .stroke(Color.borderSecondary, style: StrokeStyle(lineWidth: 1, dash: AppLayout.dashedPattern))
+                            .strokeBorder(Color.borderSecondary, style: StrokeStyle(lineWidth: 1, dash: AppLayout.dashedPattern))
                     }
                 }
                 .padding(AppLayout.spacing)

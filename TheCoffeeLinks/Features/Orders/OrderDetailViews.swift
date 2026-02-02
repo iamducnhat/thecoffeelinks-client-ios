@@ -30,7 +30,7 @@ struct OrderDetailView: View {
                         }
                         .overlay {
                             Capsule()
-                                .stroke(Color.textPrimary, lineWidth: min(66.6, max(scrollOffset, 0.0)) / 66.6)
+                                .strokeBorder(Color.textPrimary, lineWidth: min(66.6, max(scrollOffset, 0.0)) / 66.6)
                                 .opacity(min(88.8, max(scrollOffset, 0.0)) / 99.9)
                         }
                 }
@@ -104,14 +104,14 @@ struct OrderDetailView: View {
                                     .padding(.vertical, 4)
                                     .overlay(
                                         Capsule()
-                                            .stroke(order.status.isActive ? Color.accentPrimary : Color.border, lineWidth: 1)
+                                            .strokeBorder(order.status.isActive ? Color.accentPrimary : Color.border, lineWidth: 1)
                                     )
                             }
                             .padding(AppLayout.spacing)
                             .background(Color.surfacePrimary)
                             .overlay(
                                 Capsule()
-                                    .stroke(Color.border, lineWidth: 1)
+                                    .strokeBorder(Color.border, lineWidth: 1)
                             )
                         }
                         .padding(.horizontal, AppLayout.spacing)
@@ -131,7 +131,7 @@ struct OrderDetailView: View {
                         
                         // Divider
                         WaveSeparator(stepWidth: AppLayout.waveStepWidth)
-                            .stroke(Color.secondary, lineWidth: 1)
+    .stroke(Color.secondary, lineWidth: 1)
                             .frame(height: 1)
                             .padding(.horizontal, AppLayout.spacing)
                         
@@ -154,7 +154,7 @@ struct OrderDetailView: View {
                             .background(Color.bgPrimary)
                             .overlay(
                                 Capsule()
-                                    .stroke(Color.border, lineWidth: 1)
+                                    .strokeBorder(Color.border, lineWidth: 1)
                             )
                         }
                         .padding(.horizontal, AppLayout.spacing)
@@ -168,7 +168,7 @@ struct OrderDetailView: View {
                         .background(Color.bgPrimary)
                         .overlay(
                             Capsule()
-                                .stroke(Color.textPrimary, lineWidth: 2)
+                                .strokeBorder(Color.textPrimary, lineWidth: 2)
                         )
                         .padding(.horizontal, AppLayout.spacing)
                         
@@ -187,7 +187,7 @@ struct OrderDetailView: View {
                             .background(Color.bgPrimary)
                             .overlay(
                                 Capsule()
-                                    .stroke(Color.border, lineWidth: 1)
+                                    .strokeBorder(Color.border, lineWidth: 1)
                             )
                         }
                         .padding(.horizontal, AppLayout.spacing)
@@ -258,7 +258,7 @@ struct OrderProgressBar: View {
         .background(Color.surfacePrimary)
         .overlay(
             Capsule()
-                .stroke(Color.border, lineWidth: 1)
+                .strokeBorder(Color.border, lineWidth: 1)
         )
     }
     

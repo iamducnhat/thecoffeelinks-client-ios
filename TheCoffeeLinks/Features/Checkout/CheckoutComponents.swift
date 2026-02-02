@@ -24,7 +24,7 @@ struct UndoCountdownView: View {
             
             ZStack {
                 Circle()
-                    .stroke(Color.border, lineWidth: 2)
+                    .strokeBorder(Color.border, lineWidth: 2)
                     .frame(width: 80, height: 80)
                 
                 Circle()

@@ -21,7 +21,7 @@ struct DeliveryModeBanner: View {
         VStack(spacing: AppLayout.spacing) {
             Button(action: onChangeMode) {
                 HStack(spacing: AppLayout.spacing) {
-                    Image(currentMode.iconName)
+                    IconView(name: currentMode.iconName)
                         .font(.system(size: 20))
                         .foregroundStyle(Color.accentPrimary)
                         .frame(width: 24)
@@ -83,7 +83,7 @@ struct DeliveryModeBanner: View {
                     .background(Color.bgPrimary)
                     .overlay(
                         Capsule()
-                            .stroke(Color.border, style: StrokeStyle(lineWidth: 1, dash: AppLayout.dashedPattern))
+                            .strokeBorder(Color.border, style: StrokeStyle(lineWidth: 1, dash: AppLayout.dashedPattern))
                     )
                 } else if let availability = deliveryAvailability, availability.available {
                     DeliveryInfoCard(availability: availability)
@@ -111,7 +111,7 @@ struct DeliveryUnavailableWarning: View {
         .background(Color.stateError.opacity(0.1))
         .overlay(
             Capsule()
-                .stroke(Color.stateError.opacity(0.3), lineWidth: 1)
+                .strokeBorder(Color.stateError.opacity(0.3), lineWidth: 1)
         )
         .clipShape(Capsule())
     }
@@ -168,7 +168,7 @@ struct DeliveryInfoCard: View {
         .background(Color.bgPrimary)
         .overlay(
             Capsule()
-                .stroke(Color.stateSuccess, lineWidth: 1)
+                .strokeBorder(Color.stateSuccess, lineWidth: 1)
         )
         .clipShape(Capsule())
     }
@@ -245,7 +245,7 @@ struct ModeOptionCard: View {
     var body: some View {
         Button(action: onTap) {
             HStack(spacing: AppLayout.spacing) {
-                Image(mode.iconName)
+                IconView(name: mode.iconName)
                     .font(.system(size: 24))
                     .foregroundStyle(isSelected ? Color.accentPrimary : Color.textSecondary)
                     .frame(width: 40)
@@ -275,7 +275,7 @@ struct ModeOptionCard: View {
             .background(isSelected ? Color.surfacePrimary : Color.bgPrimary)
             .overlay(
                 Capsule()
-                    .stroke(isSelected ? Color.accentPrimary : Color.border, lineWidth: 1)
+                    .strokeBorder(isSelected ? Color.accentPrimary : Color.border, lineWidth: 1)
             )
             .clipShape(Capsule())
         }

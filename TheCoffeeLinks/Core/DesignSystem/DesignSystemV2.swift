@@ -3,6 +3,23 @@ import SwiftUI
 import UIKit
 #endif
 
+// Lightweight Icon wrapper: prefer bundled Lucide assets; fall back to SF Symbols
+struct IconView: View {
+    let name: String
+    var body: some View {
+        #if canImport(UIKit)
+        if UIImage(named: name) != nil {
+            Image(name)
+                .renderingMode(.template)
+        } else {
+            Image(systemName: name)
+        }
+        #else
+        Image(systemName: name)
+        #endif
+    }
+}
+
 // MARK: - Colors (Adaptive Light/Dark Mode)
 // Light mode: Original Receipt-Editorial colors
 // Dark mode: Black/grey/white only
@@ -387,7 +404,7 @@ struct ListRow<Destination: View>: View {
     private var rowContent: some View {
         HStack(spacing: AppSpacing.md) {
             if let icon {
-                Image(systemName: icon)
+                IconView(name: icon)
                     .font(.system(size: 20))
                     .foregroundStyle(Color.textSecondary)
                     .frame(width: 24)

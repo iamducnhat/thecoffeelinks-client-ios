@@ -196,7 +196,7 @@ struct ReceiptTextField: View {
             .padding(.vertical, 6)
             .overlay {
                 RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle)
-                    .stroke(Color.borderTertiary, style: StrokeStyle(lineWidth: 1, dash: AppLayout.dashedPattern))
+                    .strokeBorder(Color.borderTertiary, style: StrokeStyle(lineWidth: 1, dash: AppLayout.dashedPattern))
             }
             .keyboardType(keyboardType)
     }
@@ -217,7 +217,7 @@ struct ReceiptPlaceholderButton: View {
                 .padding(.vertical, 6)
                 .overlay {
                     RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle)
-                        .stroke(Color.borderTertiary, style: StrokeStyle(lineWidth: 1, dash: AppLayout.dashedPattern))
+                        .strokeBorder(Color.borderTertiary, style: StrokeStyle(lineWidth: 1, dash: AppLayout.dashedPattern))
                 }
         }
     }
@@ -405,7 +405,7 @@ struct ReceiptLoadingLog: View {
         .background(Color.backgroundPaper)
         .overlay(
             RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle)
-                .stroke(Color.primaryEspresso, lineWidth: 1)
+                .strokeBorder(Color.primaryEspresso, lineWidth: 1)
         )
     }
 }
@@ -501,7 +501,7 @@ struct VoucherCard: View {
                             .background(Color.surfaceCard)
                             .overlay(
                                 RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle)
-                                    .stroke(Color.border, lineWidth: 1)
+                                    .strokeBorder(Color.border, lineWidth: 1)
                             )
                     }
                 }
@@ -512,7 +512,7 @@ struct VoucherCard: View {
         .clipShape(RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle))
         .overlay(
             RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle)
-                .stroke(Color.border, lineWidth: 1)
+                .strokeBorder(Color.border, lineWidth: 1)
         )
     }
     

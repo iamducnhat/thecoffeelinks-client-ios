@@ -116,7 +116,7 @@ struct AddAddressView: View {
                              .background(Color.bgPrimary)
                              .overlay(
                                  Capsule()
-                                     .stroke(Color.border, lineWidth: 1)
+                                     .strokeBorder(Color.border, lineWidth: 1)
                              )
                         }
                         
@@ -173,7 +173,7 @@ struct CustomTextField: View {
                 .background(Color.bgPrimary)
                 .overlay(
                     Capsule()
-                        .stroke(Color.border, lineWidth: 1)
+                        .strokeBorder(Color.border, lineWidth: 1)
                 )
         }
     }

@@ -113,7 +113,7 @@ struct VoucherRedemptionSheet: View {
                         .shadow(color: Color.black.opacity(0.1), radius: 12, x: 0, y: 6)
                         .overlay(
                             Capsule()
-                                .stroke(Color.border.opacity(0.5), lineWidth: 1)
+                                .strokeBorder(Color.border.opacity(0.5), lineWidth: 1)
                         )
                         
                         // 4. Voucher Code (Copyable)

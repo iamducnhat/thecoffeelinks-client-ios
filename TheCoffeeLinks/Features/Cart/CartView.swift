@@ -36,7 +36,7 @@ struct CartView: View {
                             }
                             .overlay {
                                 Capsule()
-                                    .stroke(Color.textPrimary, lineWidth: min(66.6, max(scrollOffset, 0.0)) / 66.6)
+                                    .strokeBorder(Color.textPrimary, lineWidth: min(66.6, max(scrollOffset, 0.0)) / 66.6)
                                     .opacity(min(88.8, max(scrollOffset, 0.0)) / 99.9)
                             }
                     }
@@ -159,7 +159,7 @@ struct CartView: View {
                                 .background(Color.surfacePrimary)
                                 .overlay(
                                     Capsule()
-                                        .stroke(Color.border, lineWidth: 1)
+                                        .strokeBorder(Color.border, lineWidth: 1)
                                 )
                             }
                             .frame(maxWidth: .infinity, alignment: .leading)
@@ -212,7 +212,7 @@ struct CartView: View {
                     }
                     .overlay(alignment: .top) {
                         WaveSeparator(stepWidth: AppLayout.waveStepWidth)
-                            .stroke(Color.secondary, lineWidth: 1)
+    .stroke(Color.secondary, lineWidth: 1)
                             .frame(height: 1)
                             .offset(x: 0, y: -9)
                     }
@@ -412,7 +412,7 @@ struct VoucherSection: View {
                     .padding(.vertical, 6)
                     .overlay {
                         Capsule()
-                            .stroke(Color.borderSecondary, style: StrokeStyle(lineWidth: 1, dash: AppLayout.dashedPattern))
+                            .strokeBorder(Color.borderSecondary, style: StrokeStyle(lineWidth: 1, dash: AppLayout.dashedPattern))
                     }
                 
                 Button {
@@ -566,7 +566,7 @@ struct EditCartItemSheet: View {
                                 .padding(.vertical, 6)
                                 .overlay {
                                     Capsule()
-                                        .stroke(Color.borderSecondary, style: StrokeStyle(lineWidth: 1, dash: AppLayout.dashedPattern))
+                                        .strokeBorder(Color.borderSecondary, style: StrokeStyle(lineWidth: 1, dash: AppLayout.dashedPattern))
                                 }
                         }
                     }

@@ -24,7 +24,7 @@ struct DigitalCredentialContent: View {
                 Spacer()
                 // Refresh Button
                 Button(action: onRefresh) {
-                    Image(systemName: "arrow.clockwise")
+                    Image("rotate_cw")
                         .font(.system(size: 16, weight: .medium))
                         .foregroundColor(Color.textSecondary)
                 }
@@ -60,7 +60,7 @@ struct DigitalCredentialContent: View {
             }
         }
         .padding(AppLayout.spacing)
-        .background(Color.bgPrimary)
+        .background(Color.surfacePrimary)
     }
     
     private func statItem(value: String, label: String) -> some View {

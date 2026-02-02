@@ -201,7 +201,7 @@ struct ProductDetailSheet: View {
                                             .foregroundColor(selectedSize == option.size ? Color.bgPrimary : Color.textPrimary)
                                             .overlay(
                                                 Capsule()
-                                                    .stroke(selectedSize == option.size ? Color.accentPrimary : Color.border, lineWidth: 1)
+                                                    .strokeBorder(selectedSize == option.size ? Color.accentPrimary : Color.border, lineWidth: 1)
                                             )
                                             .clipShape(Capsule())
                                         }
@@ -220,27 +220,13 @@ struct ProductDetailSheet: View {
                                 .font(AppFont.sectionHeader)
                                 .foregroundStyle(Color.textPrimary)
                             
-                            HStack(spacing: AppLayout.spacingMedium) {
-                                ForEach(SugarLevel.allCases, id: \.self) { level in
-                                    Button {
-                                        sugarLevel = level
-                                    } label: {
-                                        Text(level.rawValue)
-                                            .font(AppFont.monoBody)
-                                            .padding(.vertical, 12)
-                                            .frame(maxWidth: .infinity)
-                                            .background(sugarLevel == level ? Color.accentPrimary : Color.bgPrimary)
-                                            .foregroundColor(sugarLevel == level ? Color.bgPrimary : Color.textPrimary)
-                                            .overlay(
-                                                Capsule()
-                                                    .stroke(sugarLevel == level ? Color.accentPrimary : Color.border, lineWidth: 1)
-                                            )
-                                            .clipShape(Capsule())
-                                    }
-                                }
-                            }
+                            CapsuleSegmentedPicker(
+                                selection: $sugarLevel,
+                                options: SugarLevel.allCases.map { ($0, $0.displayName) }
+                            )
+                            .padding(.top, 4)
                         }
-                        .padding(.horizontal, AppLayout.spacing)
+                        .padding(.horizontal, AppLayout.spacing) 
                         
                         Divider().hidden()
                         
@@ -251,25 +237,11 @@ struct ProductDetailSheet: View {
                                 .font(AppFont.sectionHeader)
                                 .foregroundStyle(Color.textPrimary)
                             
-                            HStack(spacing: AppLayout.spacingMedium) {
-                                ForEach(IceLevel.allCases, id: \.self) { level in
-                                    Button {
-                                        iceLevel = level
-                                    } label: {
-                                        Text(level.rawValue.capitalized)
-                                            .font(AppFont.monoBody)
-                                            .padding(.vertical, 12)
-                                            .frame(maxWidth: .infinity)
-                                            .background(iceLevel == level ? Color.accentPrimary : Color.bgPrimary)
-                                            .foregroundColor(iceLevel == level ? Color.bgPrimary : Color.textPrimary)
-                                            .overlay(
-                                                Capsule()
-                                                    .stroke(iceLevel == level ? Color.accentPrimary : Color.border, lineWidth: 1)
-                                            )
-                                            .clipShape(Capsule())
-                                    }
-                                }
-                            }
+                            CapsuleSegmentedPicker(
+                                selection: $iceLevel,
+                                options: IceLevel.allCases.map { ($0, $0.displayName.capitalized) }
+                            )
+                            .padding(.top, 4)
                         }
                         .padding(.horizontal, AppLayout.spacing)
                         
@@ -293,7 +265,7 @@ struct ProductDetailSheet: View {
                                             }
                                         } label: {
                                             HStack {
-                                                Image(systemName: selectedToppings.contains(toppingId) ? "checkmark.square.fill" : "square")
+                                                Image(systemName: !selectedToppings.contains(toppingId) ? "circle" : "checkmark.circle.fill")
                                                     .foregroundStyle(selectedToppings.contains(toppingId) ? Color.accentPrimary : Color.textSecondary)
                                                 
                                                 Text(topping.name)
@@ -310,7 +282,7 @@ struct ProductDetailSheet: View {
                                             .background(Color.surfacePrimary)
                                             .overlay(
                                                 Capsule()
-                                                    .stroke(Color.border, lineWidth: 1)
+                                                    .strokeBorder(Color.border, lineWidth: 1)
                                             )
                                             .clipShape(Capsule())
                                         }
@@ -334,8 +306,8 @@ struct ProductDetailSheet: View {
                                 .font(AppFont.body)
                                 .padding(AppLayout.spacing)
                                 .overlay {
-                                    Capsule()
-                                        .stroke(Color.borderSecondary, style: StrokeStyle(lineWidth: 1, dash: AppLayout.dashedPattern))
+                                    RoundedRectangle(cornerRadius: AppRadius.medium, style: .continuous)
+                                        .strokeBorder(Color.borderSecondary, style: StrokeStyle(lineWidth: 1, dash: AppLayout.dashedPattern))
                                 }
                                 .lineLimit(2...4)
                         }

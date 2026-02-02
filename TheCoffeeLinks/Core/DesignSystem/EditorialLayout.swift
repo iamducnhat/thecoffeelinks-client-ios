@@ -140,7 +140,7 @@ struct EditorialSecondaryButton: View {
                 .background(Color.backgroundPaper)
                 .overlay(
                     RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle)
-                        .stroke(Color.border, lineWidth: AppLayout.borderWidth)
+                        .strokeBorder(Color.border, lineWidth: AppLayout.borderWidth)
                 )
         }
     }
@@ -185,7 +185,7 @@ struct EditorialTextField: View {
         .background(Color.backgroundPaper)
         .overlay(
             RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle)
-                .stroke(Color.border, lineWidth: AppLayout.borderWidth)
+                .strokeBorder(Color.border, lineWidth: AppLayout.borderWidth)
         )
     }
 }
@@ -205,7 +205,7 @@ struct EditorialToggleRow: View {
         .background(Color.backgroundPaper)
         .overlay(
             RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle)
-                .stroke(Color.border, lineWidth: AppLayout.borderWidth)
+                .strokeBorder(Color.border, lineWidth: AppLayout.borderWidth)
         )
     }
 }
@@ -247,14 +247,14 @@ struct EditorialStepperRow: View {
             }
             .overlay(
                 RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle)
-                    .stroke(Color.border, lineWidth: AppLayout.borderWidth)
+                    .strokeBorder(Color.border, lineWidth: AppLayout.borderWidth)
             )
         }
         .padding(Editorial.Spacing.md)
         .background(Color.backgroundPaper)
         .overlay(
             RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle)
-                .stroke(Color.border, lineWidth: AppLayout.borderWidth)
+                .strokeBorder(Color.border, lineWidth: AppLayout.borderWidth)
         )
     }
 }
@@ -282,7 +282,7 @@ struct EditorialPermissionTile: View {
                     .background(isGranted ? Color.semanticSuccess.opacity(0.1) : Color.backgroundPaper)
                     .overlay(
                         RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle)
-                            .stroke(isGranted ? Color.semanticSuccess : Color.border, lineWidth: AppLayout.borderWidth)
+                            .strokeBorder(isGranted ? Color.semanticSuccess : Color.border, lineWidth: AppLayout.borderWidth)
                     )
                 
                 VStack(alignment: .leading, spacing: 4) {
@@ -310,7 +310,7 @@ struct EditorialPermissionTile: View {
             .background(Color.backgroundPaper)
             .overlay(
                 RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle)
-                    .stroke(isGranted ? Color.semanticSuccess : Color.border, lineWidth: AppLayout.borderWidth)
+                    .strokeBorder(isGranted ? Color.semanticSuccess : Color.border, lineWidth: AppLayout.borderWidth)
             )
         }
         .disabled(isGranted)
@@ -340,7 +340,7 @@ struct EditorialSelectableRow: View {
             .background(isSelected ? Color.primaryEspresso.opacity(0.1) : Color.backgroundPaper)
             .overlay(
                 RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle)
-                    .stroke(isSelected ? Color.primaryEspresso : Color.border, lineWidth: AppLayout.borderWidth)
+                    .strokeBorder(isSelected ? Color.primaryEspresso : Color.border, lineWidth: AppLayout.borderWidth)
             )
         }
     }
@@ -362,7 +362,7 @@ struct EditorialCategoryPill: View {
                 .background(isSelected ? Color.primaryEspresso : Color.backgroundPaper)
                 .overlay(
                     RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle)
-                        .stroke(Color.primaryEspresso, lineWidth: AppLayout.borderWidth)
+                        .strokeBorder(Color.primaryEspresso, lineWidth: AppLayout.borderWidth)
                 )
                 .clipShape(RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle))
         }

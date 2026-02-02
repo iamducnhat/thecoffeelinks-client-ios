@@ -32,7 +32,7 @@ struct BrandTextField: View {
             .cornerRadius(12)
             .overlay(
                 RoundedRectangle(cornerRadius: 12)
-                    .stroke(Editorial.Colors.separator, lineWidth: 1)
+                    .strokeBorder(Editorial.Colors.separator, lineWidth: 1)
             )
         }
     }

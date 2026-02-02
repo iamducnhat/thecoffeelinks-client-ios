@@ -62,7 +62,7 @@ struct StoreMapView: View {
                         Circle()
                             .fill(Color.bgPrimary)
                             .frame(width: 12, height: 12)
-                            .overlay(Circle().stroke(Color.accentPrimary, lineWidth: 2))
+                            .overlay(Circle().strokeBorder(Color.accentPrimary, lineWidth: 2))
                     }
                 }
             }

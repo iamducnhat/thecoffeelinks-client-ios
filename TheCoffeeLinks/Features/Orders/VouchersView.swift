@@ -75,7 +75,7 @@ struct VouchersView: View {
                                     .background(selectedTab == tab ? Color.accentPrimary : Color.surfacePrimary)
                                     .overlay(
                                         Rectangle()
-                                            .stroke(Color.borderPrimary, lineWidth: 1)
+                                            .strokeBorder(Color.borderPrimary, lineWidth: 1)
                                     )
                             }
                         }
@@ -109,7 +109,7 @@ struct VouchersView: View {
                             .padding(60)
                             .overlay(
                                 Capsule()
-                                    .stroke(Color.border, style: StrokeStyle(lineWidth: 1, dash: AppLayout.dashedPattern))
+                                    .strokeBorder(Color.border, style: StrokeStyle(lineWidth: 1, dash: AppLayout.dashedPattern))
                             )
                         } else {
                             ForEach(filteredVouchers) { voucher in

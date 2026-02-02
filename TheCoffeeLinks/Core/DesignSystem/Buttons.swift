@@ -68,7 +68,7 @@ struct ReceiptUtilityButton: View {
                     .textCase(.uppercase)
                     .font(AppFont.monoBody)
                 if let icon = icon {
-                    Image(icon)
+                    IconView(name: icon)
                         .font(AppFont.monoCaption)
                 }
             }
@@ -78,7 +78,7 @@ struct ReceiptUtilityButton: View {
             .clipShape(RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle))
             .overlay(
                 RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle)
-                    .stroke(Color.textInk, lineWidth: isSelected ? 0 : 1)
+                    .strokeBorder(Color.textInk, lineWidth: isSelected ? 0 : 1)
             )
         }
     }
@@ -93,7 +93,7 @@ struct ReceiptStepperButton: View {
     
     var body: some View {
         Button(action: action) {
-            Text("\(Image(systemName: icon))")
+            IconView(name: icon)
                 .font(AppFont.body)
                 .padding(AppLayout.spacingMicro)
                 .foregroundStyle(Color.backgroundPaper)
@@ -115,7 +115,7 @@ struct ReceiptIconButton: View {
     
     var body: some View {
         Button(action: action) {
-            Image(icon)
+            IconView(name: icon)
                 .font(AppFont.navIcon)
                 .foregroundStyle(Color.textInk)
                 .frame(minWidth: AppLayout.touchTarget, minHeight: AppLayout.touchTarget)
@@ -129,7 +129,7 @@ struct ReceiptIconButton: View {
                 .overlay {
                     if showBorder {
                         RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle)
-                            .stroke(Color.textInk, lineWidth: AppLayout.borderWidth)
+                            .strokeBorder(Color.textInk, lineWidth: AppLayout.borderWidth)
                             .opacity(borderOpacity)
                     }
                 }
@@ -185,7 +185,7 @@ struct SecondaryButton: View {
             .cornerRadius(AppLayout.cornerRadius)
             .overlay(
                 RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle)
-                    .stroke(Color.primaryEspresso, lineWidth: 1)
+                    .strokeBorder(Color.primaryEspresso, lineWidth: 1)
             )
         }
     }

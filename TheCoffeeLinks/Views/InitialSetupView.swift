@@ -237,7 +237,7 @@ struct PermissionTile: View {
                             .font(.system(size: 16))
                             .foregroundColor(isGranted ? Color.semanticSuccess : Color.textMuted)
                     }
-                    .overlay(Circle().stroke(isGranted ? Color.semanticSuccess : Color.border, lineWidth: 1))
+                    .overlay(Circle().strokeBorder(isGranted ? Color.semanticSuccess : Color.border, lineWidth: 1))
                 
                 VStack(alignment: .leading, spacing: 2) {
                     Text(title)
@@ -257,7 +257,7 @@ struct PermissionTile: View {
                         .padding(.vertical, 4)
                         .overlay(
                             RoundedRectangle(cornerRadius: 4)
-                                .stroke(Color.primaryEspresso, lineWidth: 1)
+                                .strokeBorder(Color.primaryEspresso, lineWidth: 1)
                         )
                         .foregroundColor(Color.primaryEspresso)
                 }
@@ -266,7 +266,7 @@ struct PermissionTile: View {
             .background(Color.backgroundPaper)
             .overlay(
                 RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle)
-                    .stroke(isGranted ? Color.semanticSuccess : Color.border, lineWidth: 1)
+                    .strokeBorder(isGranted ? Color.semanticSuccess : Color.border, lineWidth: 1)
             )
             .clipShape(RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle))
         }
@@ -302,7 +302,7 @@ struct SelectableRow: View {
             .background(isSelected ? Color.surfaceCard : Color.backgroundPaper)
             .overlay(
                 RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle)
-                    .stroke(isSelected ? Color.primaryEspresso : Color.border, lineWidth: 1)
+                    .strokeBorder(isSelected ? Color.primaryEspresso : Color.border, lineWidth: 1)
             )
             .clipShape(RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle))
         }

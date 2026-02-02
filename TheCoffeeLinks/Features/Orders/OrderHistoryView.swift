@@ -35,7 +35,7 @@ struct OrderHistoryView: View {
             // Fixed Navigation Header
             HStack(alignment: .center, spacing: AppLayout.spacing) {
                 Button { dismiss() } label: {
-                    Image(systemName: "arrow.left")
+                    Image(systemName: "chevron.left")
                         .font(AppFont.navIcon)
                         .foregroundStyle(Color.textPrimary)
                         .frame(minWidth: AppLayout.touchTarget, minHeight: AppLayout.touchTarget)

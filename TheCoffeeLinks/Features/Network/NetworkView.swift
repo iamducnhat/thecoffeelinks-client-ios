@@ -109,7 +109,7 @@ struct IntentCard: View {
             .background(Color.surfacePrimary)
             .overlay(
                 Capsule()
-                    .stroke(Color.border, lineWidth: 1)
+                    .strokeBorder(Color.border, lineWidth: 1)
             )
         }
         .buttonStyle(.plain)
@@ -152,7 +152,7 @@ struct ActiveNetworkingContent: View {
                             .padding(.vertical, 6)
                             .overlay(
                                 Capsule()
-                                    .stroke(Color.stateError, lineWidth: 1)
+                                    .strokeBorder(Color.stateError, lineWidth: 1)
                             )
                     }
                 }
@@ -160,7 +160,7 @@ struct ActiveNetworkingContent: View {
                 .background(Color.surfacePrimary)
                 .overlay(
                     Capsule()
-                        .stroke(Color.accentPrimary, lineWidth: 1)
+                        .strokeBorder(Color.accentPrimary, lineWidth: 1)
                 )
             }
             .padding(.horizontal, AppLayout.spacing)
@@ -195,7 +195,7 @@ struct ActiveNetworkingContent: View {
                     .padding(60)
                     .overlay(
                         Capsule()
-                            .stroke(Color.border, style: StrokeStyle(lineWidth: 1, dash: AppLayout.dashedPattern))
+                            .strokeBorder(Color.border, style: StrokeStyle(lineWidth: 1, dash: AppLayout.dashedPattern))
                     )
                 } else {
                     VStack(spacing: 0) {
@@ -212,7 +212,7 @@ struct ActiveNetworkingContent: View {
                     .background(Color.bgPrimary)
                     .overlay(
                         Capsule()
-                            .stroke(Color.border, lineWidth: 1)
+                            .strokeBorder(Color.border, lineWidth: 1)
                     )
                 }
             }
@@ -242,7 +242,7 @@ struct PersonRow: View {
             .clipShape(RoundedRectangle(cornerRadius: AppRadius.medium, style: .continuous))
         .overlay(
                 Capsule()
-                    .stroke(Color.border, lineWidth: 1)
+                    .strokeBorder(Color.border, lineWidth: 1)
             )
             
             VStack(alignment: .leading, spacing: 2) {
@@ -333,7 +333,7 @@ struct NetworkCheckInSheet: View {
                             .background(Color.surfacePrimary)
                             .overlay(
                                 Capsule()
-                                    .stroke(Color.border, lineWidth: 1)
+                                    .strokeBorder(Color.border, lineWidth: 1)
                             )
                         }
                         
@@ -358,7 +358,7 @@ struct NetworkCheckInSheet: View {
                                 .background(Color.surfacePrimary)
                                 .overlay(
                                     Capsule()
-                                        .stroke(Color.accentPrimary, lineWidth: 1)
+                                        .strokeBorder(Color.accentPrimary, lineWidth: 1)
                                 )
                             } else {
                                 HStack {

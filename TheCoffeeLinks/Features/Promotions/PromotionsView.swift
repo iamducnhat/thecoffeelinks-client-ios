@@ -101,7 +101,7 @@ struct PromotionsView: View {
             // Stale data indicator
             if profileViewModel.isOrderCountStale || profileViewModel.isProfileStale {
                 HStack(spacing: 4) {
-                    Image(systemName: "clock.arrow.circlepath")
+                    Image("rotate_cw")
                         .font(.caption2)
                     Text("Data may be outdated")
                         .font(AppFont.uiCaption)
@@ -117,12 +117,12 @@ struct PromotionsView: View {
                 .background(Color.yellow.opacity(0.1))
             }
         }
-        .padding(AppLayout.spacing)
+        //.padding(AppLayout.spacing)
         .background(Color.surfacePrimary)
         .clipShape(RoundedRectangle(cornerRadius: AppRadius.medium, style: .continuous))
         .overlay(
-             Capsule()
-                 .stroke(Color.border, lineWidth: 1)
+            RoundedRectangle(cornerRadius: AppRadius.medium, style: .continuous)
+                 .strokeBorder(Color.border, lineWidth: 1)
         )
     }
     
@@ -157,7 +157,7 @@ struct PromotionsView: View {
         .background(Color.surfacePrimary)
         .overlay(
             Capsule()
-                .stroke(Color.border, lineWidth: 1)
+                .strokeBorder(Color.border, lineWidth: 1)
         )
         .clipShape(Capsule())
     }

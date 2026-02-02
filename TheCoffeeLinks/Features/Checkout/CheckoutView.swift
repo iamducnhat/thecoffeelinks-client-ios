@@ -89,7 +89,7 @@ struct CheckoutView: View {
                 // Fixed Navigation Header
                 HStack(alignment: .center, spacing: AppLayout.spacing) {
                     Button { dismiss() } label: {
-                        Image(systemName: "arrow.left")
+                        Image(systemName: "chevron.left")
                             .font(AppFont.navIcon)
                             .foregroundStyle(Color.textPrimary)
                             .frame(minWidth: AppLayout.touchTarget, minHeight: AppLayout.touchTarget)
@@ -99,7 +99,7 @@ struct CheckoutView: View {
                             }
                             .overlay {
                                 Capsule()
-                                    .stroke(Color.textPrimary, lineWidth: min(66.6, max(scrollOffset, 0.0)) / 66.6)
+                                    .strokeBorder(Color.textPrimary, lineWidth: min(66.6, max(scrollOffset, 0.0)) / 66.6)
                                     .opacity(min(88.8, max(scrollOffset, 0.0)) / 99.9)
                             }
                     }
@@ -120,7 +120,7 @@ struct CheckoutView: View {
                     ScrollView(.vertical) {
                         // Navigation Header (Scrollable)
                         HStack(alignment: .center, spacing: AppLayout.spacing) {
-                            Image(systemName: "arrow.left")
+                            Image(systemName: "chevron.left")
                                 .font(AppFont.navIcon)
                                 .foregroundStyle(Color.textPrimary)
                                 .frame(minWidth: AppLayout.touchTarget, minHeight: AppLayout.touchTarget)
@@ -212,7 +212,7 @@ struct CheckoutView: View {
                                     .padding(12)
                                     .overlay {
                                         Capsule()
-                                            .stroke(isLocationSelected ? Color.border : Color.borderSecondary, style: StrokeStyle(lineWidth: 1, dash: isLocationSelected ? [] : AppLayout.dashedPattern))
+                                            .strokeBorder(isLocationSelected ? Color.border : Color.borderSecondary, style: StrokeStyle(lineWidth: 1, dash: isLocationSelected ? [] : AppLayout.dashedPattern))
                                     }
                                 }
                             }
@@ -444,7 +444,7 @@ struct CheckoutView: View {
                                                 checkoutViewModel.paymentMethod = method
                                             } label: {
                                                 VStack(spacing: 4) {
-                                                    Image(systemName: method.iconName)
+                                                    IconView(name: method.iconName)
                                                         .font(AppFont.navIcon)
                                                     Text(method.displayName)
                                                         .font(AppFont.monoBody)
@@ -456,7 +456,7 @@ struct CheckoutView: View {
                                                 .foregroundColor(checkoutViewModel.paymentMethod == method ? Color.bgPrimary : Color.textPrimary)
                                                 .overlay(
                                                     Capsule()
-                                                        .stroke(Color.border, lineWidth: 1)
+                                                        .strokeBorder(Color.border, lineWidth: 1)
                                                 )
                                                 .clipShape(Capsule())
                                             }
@@ -484,7 +484,7 @@ struct CheckoutView: View {
                                 .background(Color.stateError.opacity(0.1))
                                 .overlay(
                                     Capsule()
-                                        .stroke(Color.stateError, lineWidth: 1)
+                                        .strokeBorder(Color.stateError, lineWidth: 1)
                                 )
                             }
                             
@@ -502,7 +502,7 @@ struct CheckoutView: View {
                                 .background(Color.bgPrimary)
                                 .overlay(
                                     Capsule()
-                                        .stroke(Color.accentPrimary, lineWidth: 1)
+                                        .strokeBorder(Color.accentPrimary, lineWidth: 1)
                                 )
                             }
                         }
@@ -553,7 +553,7 @@ struct CheckoutView: View {
                     }
                     .overlay(alignment: .top) {
                         WaveSeparator(stepWidth: AppLayout.waveStepWidth)
-                            .stroke(Color.secondary, lineWidth: 1)
+    .stroke(Color.secondary, lineWidth: 1)
                             .frame(height: 1)
                             .offset(x: 0, y: -9)
                     }

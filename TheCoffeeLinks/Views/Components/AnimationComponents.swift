@@ -31,7 +31,7 @@ struct ConfettiView: View {
                     RoundedRectangle(cornerRadius: 2)
                         .fill(piece.color)
                         .frame(width: piece.size, height: piece.size * 0.6)
-                        .rotationEffect(.degrees(piece.rotation + (isAnimating ? 360 : 0)))
+                        .rotationEffect(Angle.degrees(piece.rotation + (isAnimating ? 360 : 0)))
                         .offset(
                             x: piece.x - geometry.size.width / 2,
                             y: isAnimating ? geometry.size.height + 50 : -50
@@ -82,8 +82,8 @@ struct SuccessCheckmark: View {
                 .trim(from: 0, to: isAnimating ? 1 : 0)
                 .stroke(Editorial.Colors.semanticSuccess, style: StrokeStyle(lineWidth: 4, lineCap: .round))
                 .frame(width: 80, height: 80)
-                .rotationEffect(.degrees(-90))
-                .animation(.easeInOut(duration: 0.6), value: isAnimating)
+                .rotationEffect(Angle.degrees(-90))
+                .animation(Animation.easeInOut(duration: 0.6), value: isAnimating)
             
             // Checkmark
             Path { path in
@@ -93,7 +93,7 @@ struct SuccessCheckmark: View {
             }
             .trim(from: 0, to: isAnimating ? 1 : 0)
             .stroke(Editorial.Colors.semanticSuccess, style: StrokeStyle(lineWidth: 4, lineCap: .round, lineJoin: .round))
-            .animation(.easeInOut(duration: 0.4).delay(0.4), value: isAnimating)
+            .animation(Animation.easeInOut(duration: 0.4).delay(0.4), value: isAnimating)
         }
         .onAppear {
             isAnimating = true
@@ -156,7 +156,7 @@ struct PulseModifier: ViewModifier {
         content
             .scaleEffect(isPulsing ? 1.05 : 1)
             .animation(
-                .easeInOut(duration: duration)
+                Animation.easeInOut(duration: duration)
                 .repeatForever(autoreverses: true),
                 value: isPulsing
             )
@@ -181,7 +181,7 @@ struct ShakeModifier: ViewModifier {
         content
             .offset(x: isShaking ? -10 : 0)
             .animation(
-                isShaking ? .default.repeatCount(5, autoreverses: true).speed(6) : .default,
+                isShaking ? Animation.default.repeatCount(5, autoreverses: true).speed(6) : Animation.default,
                 value: isShaking
             )
             .onChange(of: isShaking) { newValue in
@@ -208,7 +208,7 @@ struct BounceModifier: ViewModifier {
     func body(content: Content) -> some View {
         content
             .scaleEffect(isBouncing ? 1.2 : 1)
-            .animation(.spring(response: 0.3, dampingFraction: 0.4), value: isBouncing)
+            .animation(Animation.spring(response: 0.3, dampingFraction: 0.4), value: isBouncing)
             .onChange(of: isBouncing) { newValue in
                 if newValue {
                     DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
@@ -236,7 +236,7 @@ struct SlideInModifier: ViewModifier {
         content
             .offset(x: offsetX, y: offsetY)
             .opacity(isVisible ? 1 : 0)
-            .animation(.spring(response: 0.5, dampingFraction: 0.7).delay(delay), value: isVisible)
+            .animation(Animation.spring(response: 0.5, dampingFraction: 0.7).delay(delay), value: isVisible)
             .onAppear {
                 isVisible = true
             }

@@ -42,7 +42,7 @@ struct EditorialPostComposerSheet: View {
                         // Flat
                         .overlay(
                             Rectangle()
-                                .stroke(Color.border, lineWidth: 1)
+                                .strokeBorder(Color.border, lineWidth: 1)
                         )
                         .cornerRadius(0)
                 }

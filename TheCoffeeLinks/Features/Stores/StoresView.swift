@@ -90,7 +90,7 @@ struct StoresView: View {
     
     private var emptyState: some View {
         VStack(spacing: AppSpacing.lg) {
-            Image(systemName: "mappin.slash")
+            Image("map_pin")
                 .font(.system(size: 48))
                 .foregroundStyle(Color.textTertiary)
             
@@ -134,7 +134,7 @@ struct StoreCard: View {
                         Rectangle()
                             .fill(Color.surfacePrimary)
                             .overlay {
-                                Image(systemName: "building.2")
+                                Image("store")
                                     .font(.system(size: 24))
                                     .foregroundStyle(Color.textTertiary)
                             }
@@ -149,7 +149,7 @@ struct StoreCard: View {
                     .fill(Color.surfacePrimary)
                     .frame(width: 80, height: 80)
                     .overlay {
-                        Image(systemName: "building.2")
+                        Image("store")
                             .font(.system(size: 24))
                             .foregroundStyle(Color.textTertiary)
                     }

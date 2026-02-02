@@ -623,7 +623,7 @@ struct UserProfileSheet: View {
                                             .frame(maxWidth: .infinity)
                                             .overlay(
                                                 Capsule()
-                                                    .stroke(Color.border, lineWidth: 1)
+                                                    .strokeBorder(Color.border, lineWidth: 1)
                                             )
                                     }
                                 }

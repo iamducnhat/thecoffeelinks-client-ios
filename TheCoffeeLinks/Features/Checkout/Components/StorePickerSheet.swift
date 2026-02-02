@@ -118,7 +118,7 @@ struct StoreCardSimple: View {
         .background(isSelected ? Color.surfacePrimary : Color.bgPrimary)
         .overlay(
             Capsule()
-                .stroke(isSelected ? Color.accentPrimary : Color.border, lineWidth: 1)
+                .strokeBorder(isSelected ? Color.accentPrimary : Color.border, lineWidth: 1)
         )
         .clipShape(Capsule())
     }

@@ -26,7 +26,7 @@ struct MetricBox: View {
         .background(Color.surfacePrimary)
         .overlay(
             Capsule()
-                .stroke(Color.border, lineWidth: 1)
+                .strokeBorder(Color.border, lineWidth: 1)
         )
     }
 }
@@ -133,7 +133,7 @@ struct ToggleRow: View {
         .background(Color.bgPrimary)
         .overlay(
             Capsule()
-                .stroke(Color.border, lineWidth: 1)
+                .strokeBorder(Color.border, lineWidth: 1)
         )
     }
 }

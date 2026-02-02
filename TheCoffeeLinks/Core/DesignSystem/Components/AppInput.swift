@@ -29,7 +29,7 @@ struct AppInput: View {
             .cornerRadius(AppLayout.cornerRadius)
             .overlay(
                 RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle)
-                    .stroke(Color.border, lineWidth: AppLayout.borderWidth)
+                    .strokeBorder(Color.border, lineWidth: AppLayout.borderWidth)
             )
             .keyboardType(keyboardType)
         }

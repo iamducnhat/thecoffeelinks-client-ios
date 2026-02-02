@@ -43,9 +43,9 @@ struct ProfileView: View {
                         
                         VStack(spacing: 1) {
                             if authViewModel.isAuthenticated {
-                                ListRow(title: "Order History", icon: "list.bullet", destination: OrdersView(isPresentedModally: false))
+                                ListRow(title: "Order History", icon: "list", destination: OrdersView(isPresentedModally: false))
                                 Divider().background(Color.borderSecondary)
-                                ListRow(title: "Saved Locations", icon: "mappin.circle", destination: SavedLocationsView())
+                                ListRow(title: "Saved Locations", icon: "map_pin", destination: SavedLocationsView())
                                 Divider().background(Color.borderSecondary)
                                 ListRow(title: "My Vouchers", icon: "ticket") {
                                     appState.selectedTab = 3
@@ -73,7 +73,7 @@ struct ProfileView: View {
                             .padding(.horizontal, AppSpacing.screenPadding)
                         
                         VStack(spacing: 1) {
-                            ListRow(title: "Edit Profile", icon: "person.circle") {
+                            ListRow(title: "Edit Profile", icon: "user") {
                                 if authViewModel.isAuthenticated {
                                     showEditProfile = true
                                 } else {
@@ -83,13 +83,13 @@ struct ProfileView: View {
                             Divider().background(Color.borderSecondary)
                             
                             if authViewModel.isAuthenticated {
-                                ListRow(title: "Security", icon: "lock.shield", destination: SecurityView())
+                                ListRow(title: "Security", icon: "lock", destination: SecurityView())
                             } else {
-                                ListRow(title: "Security", icon: "lock.shield") { showLogin = true }
+                                ListRow(title: "Security", icon: "lock") { showLogin = true }
                             }
                             Divider().background(Color.borderSecondary)
                             
-                            ListRow(title: "Notifications", icon: "bell.badge", destination: NotificationsView())
+                            ListRow(title: "Notifications", icon: "bell", destination: NotificationsView())
                         }
                         .clipShape(RoundedRectangle(cornerRadius: AppRadius.medium, style: .continuous))
         .overlay(
@@ -156,7 +156,7 @@ struct ProfileView: View {
                                     .resizable()
                                     .aspectRatio(contentMode: .fill)
                             } else {
-                                Image(systemName: "person.fill")
+                                Image("user")
                                     .font(.system(size: 28))
                                     .foregroundStyle(Color.textTertiary)
                             }
@@ -194,7 +194,7 @@ struct ProfileView: View {
     
     private var guestPrompt: some View {
         VStack(spacing: AppSpacing.lg) {
-            Image(systemName: "person.crop.circle")
+            Image("user")
                 .font(.system(size: 48))
                 .foregroundStyle(Color.textTertiary)
             

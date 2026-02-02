@@ -61,7 +61,7 @@ struct AppButton: View {
             .cornerRadius(AppLayout.cornerRadius)
             .overlay(
                 RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle)
-                    .stroke(borderColor, lineWidth: AppLayout.borderWidth)
+                    .strokeBorder(borderColor, lineWidth: AppLayout.borderWidth)
             )
             .opacity(isDisabled || isLoading ? 0.6 : 1.0)
             .overlay(

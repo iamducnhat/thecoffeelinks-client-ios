@@ -256,9 +256,15 @@ struct QuantityStepper: View {
                 if quantity > minValue { quantity -= 1 }
                 else if let onDelete = onDelete { onDelete() }
             } label: {
-                Text("\(Image(systemName: quantity <= minValue && onDelete != nil ? "trash" : "minus"))")
-                    .font(.system(size: 14, weight: .semibold))
-                    .frame(width: 36, height: 36)
+                if quantity <= minValue && onDelete != nil {
+                    IconView(name: "trash")
+                        .font(.system(size: 14, weight: .semibold))
+                        .frame(width: 36, height: 36)
+                } else {
+                    IconView(name: "minus")
+                        .font(.system(size: 14, weight: .semibold))
+                        .frame(width: 36, height: 36)
+                }
             }
             .foregroundStyle(quantity <= minValue && onDelete != nil ? .red : Editorial.Colors.label)
             
@@ -270,7 +276,7 @@ struct QuantityStepper: View {
             Button {
                 if quantity < maxValue { quantity += 1 }
             } label: {
-                Text("\(Image(systemName: "plus"))")
+                IconView(name: "plus")
                     .font(.system(size: 14, weight: .semibold))
                     .frame(width: 36, height: 36)
             }
