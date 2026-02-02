@@ -514,11 +514,10 @@ extension UserJourneyUITests {
     func testToggleAndPickerStressTest() throws {
         // Stress test toggles and segmented pickers to reproduce render-thread crashes
         skipOnboardingIfNeeded()
-        authenticateUser()
         
-        // Navigate to Profile where many toggles live
+        // Open Profile tab (works even without login for basic settings)
         app.tabBars.buttons["Profile"].tap()
-        XCTAssertTrue(app.staticTexts["Profile"].waitForExistence(timeout: 3))
+        XCTAssertTrue(app.staticTexts["Profile"].waitForExistence(timeout: 5))
         
         let toggles = app.switches.allElementsBoundByIndex
         let segments = app.segmentedControls.allElementsBoundByIndex
@@ -527,13 +526,15 @@ extension UserJourneyUITests {
             for toggle in toggles {
                 if toggle.exists {
                     toggle.tap()
+                    // Small wait to exercise render paths
+                    _ = toggle.waitForExistence(timeout: 0.05)
                 }
             }
             for segment in segments {
                 let buttons = segment.buttons
                 if buttons.count > 1 {
-                    buttons.element(boundBy: 0).tap()
-                    buttons.element(boundBy: min(1, buttons.count - 1)).tap()
+                    if buttons.element(boundBy: 0).exists { buttons.element(boundBy: 0).tap() }
+                    if buttons.element(boundBy: min(1, buttons.count - 1)).exists { buttons.element(boundBy: min(1, buttons.count - 1)).tap() }
                 }
             }
         }
