@@ -27,7 +27,7 @@ struct CartMonitor: View {
                 Text(cartViewModel.total.formattedVND)
                     .font(AppFont.monoBody.bold())
             }
-            .foregroundColor(Color.textInk)
+            .foregroundColor(Color.textPrimary)
             //.padding(.vertical, 8)
             .padding(.horizontal, AppLayout.spacing)
         }

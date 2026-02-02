@@ -38,7 +38,7 @@ struct VouchersView: View {
     
     var body: some View {
         ZStack {
-            Color.backgroundPaper.ignoresSafeArea()
+            Color.bgPrimary.ignoresSafeArea()
             
             VStack(spacing: 0) {
                 // Header
@@ -46,14 +46,14 @@ struct VouchersView: View {
                     HStack {
                         Text(String(localized: "vouchers_title"))
                             .font(AppFont.displayTitle)
-                            .foregroundStyle(Color.textInk)
+                            .foregroundStyle(Color.textPrimary)
                         
                         Spacer()
                         
                         Button { dismiss() } label: {
                             Image(systemName: "xmark")
                                 .font(AppFont.navIcon)
-                                .foregroundStyle(Color.textInk)
+                                .foregroundStyle(Color.textPrimary)
                         }
                     }
                     
@@ -69,21 +69,21 @@ struct VouchersView: View {
                             } label: {
                                 Text(tab.rawValue)
                                     .font(AppFont.monoBody)
-                                    .foregroundStyle(selectedTab == tab ? Color.backgroundPaper : Color.textInk)
+                                    .foregroundStyle(selectedTab == tab ? .white : Color.textPrimary)
                                     .frame(maxWidth: .infinity)
                                     .padding(.vertical, AppLayout.spacingCompact)
-                                    .background(selectedTab == tab ? Color.primaryEspresso : Color.backgroundPaper)
+                                    .background(selectedTab == tab ? Color.accentPrimary : Color.surfacePrimary)
                                     .overlay(
                                         Rectangle()
-                                            .stroke(Color.border, lineWidth: 1)
+                                            .stroke(Color.borderPrimary, lineWidth: 1)
                                     )
                             }
                         }
                     }
-                    .clipShape(RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle))
+                    .clipShape(Capsule())
                     .overlay(
-                        RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle)
-                            .stroke(Color.border, lineWidth: 1)
+                        Capsule()
+                            .strokeBorder(Color.borderPrimary, lineWidth: 1)
                     )
                 }
                 .padding(AppLayout.spacing)
@@ -96,19 +96,19 @@ struct VouchersView: View {
                             VStack(spacing: AppLayout.spacing) {
                                 Text(String(localized: "vouchers_empty"))
                                     .font(AppFont.sectionHeader)
-                                    .foregroundStyle(Color.textInk)
+                                    .foregroundStyle(Color.textPrimary)
                                 
                                 Text(selectedTab == .available 
                                      ? "No vouchers available at this time." 
                                      : "You haven't used any vouchers yet.")
                                     .font(AppFont.body)
-                                    .foregroundStyle(Color.textMuted)
+                                    .foregroundStyle(Color.textSecondary)
                                     .multilineTextAlignment(.center)
                             }
                             .frame(maxWidth: .infinity)
                             .padding(60)
                             .overlay(
-                                RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle)
+                                Capsule()
                                     .stroke(Color.border, style: StrokeStyle(lineWidth: 1, dash: AppLayout.dashedPattern))
                             )
                         } else {

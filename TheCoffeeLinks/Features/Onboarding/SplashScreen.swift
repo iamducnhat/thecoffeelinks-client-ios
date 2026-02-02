@@ -15,7 +15,7 @@ struct SplashScreen: View {
     
     var body: some View {
         ZStack {
-            Color.backgroundPaper.ignoresSafeArea()
+            Color.bgPrimary.ignoresSafeArea()
             
             VStack(spacing: AppLayout.spacingXL) {
                 // Brand Mark
@@ -23,16 +23,16 @@ struct SplashScreen: View {
                     .resizable()
                     .scaledToFit()
                     .frame(width: 80, height: 80)
-                    .foregroundStyle(Color.primaryEspresso)
+                    .foregroundStyle(Color.accentPrimary)
                 
                 VStack(spacing: AppLayout.spacing) {
                     Text(String(localized: "app_name"))
                         .font(AppFont.displayTitle)
-                        .foregroundStyle(Color.textInk)
+                        .foregroundStyle(Color.textPrimary)
                     
                     Text(String(localized: "splash_tagline"))
                         .font(AppFont.body)
-                        .foregroundStyle(Color.textMuted)
+                        .foregroundStyle(Color.textSecondary)
                 }
             }
             .opacity(opacity)

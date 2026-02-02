@@ -18,7 +18,7 @@ struct PromotionsView: View {
     
     var body: some View {
         ZStack(alignment: .top) {
-            Color.backgroundPaper.ignoresSafeArea()
+            Color.bgPrimary.ignoresSafeArea()
             
             VStack(spacing: 0) {
                 ScrollView(.vertical) {
@@ -26,7 +26,7 @@ struct PromotionsView: View {
                     VStack(alignment: .leading, spacing: AppLayout.spacing) {
                         Text(String(localized: "promotions_title"))
                             .font(AppFont.displayTitle)
-                            .foregroundColor(Color.textInk)
+                            .foregroundColor(Color.textPrimary)
                             .padding(.top, AppLayout.spacing)
                         
                         Color.secondary.frame(height: 1)
@@ -110,7 +110,7 @@ struct PromotionsView: View {
                             .scaleEffect(0.7)
                     }
                 }
-                .foregroundColor(Color.textMuted)
+                .foregroundColor(Color.textSecondary)
                 .padding(.vertical, 8)
                 .padding(.horizontal, AppLayout.spacing)
                 .frame(maxWidth: .infinity)
@@ -118,10 +118,10 @@ struct PromotionsView: View {
             }
         }
         .padding(AppLayout.spacing)
-        .background(Color.surfaceCard)
-        .clipShape(RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle))
+        .background(Color.surfacePrimary)
+        .clipShape(RoundedRectangle(cornerRadius: AppRadius.medium, style: .continuous))
         .overlay(
-             RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle)
+             Capsule()
                  .stroke(Color.border, lineWidth: 1)
         )
     }
@@ -130,15 +130,15 @@ struct PromotionsView: View {
         VStack(spacing: AppLayout.spacingXL) {
             Image("ticket")
                 .font(.system(size: 48))
-                .foregroundStyle(Color.textMuted)
+                .foregroundStyle(Color.textSecondary)
             
             Text(String(localized: "promo_sign_in_title"))
                 .font(AppFont.sectionHeader)
-                .foregroundStyle(Color.textInk)
+                .foregroundStyle(Color.textPrimary)
             
             Text(String(localized: "promo_sign_in_desc"))
                 .font(AppFont.body)
-                .foregroundStyle(Color.textMuted)
+                .foregroundStyle(Color.textSecondary)
                 .multilineTextAlignment(.center)
             
             Button {
@@ -146,19 +146,19 @@ struct PromotionsView: View {
             } label: {
                 Text(String(localized: "auth_sign_in_or_join"))
                     .font(AppFont.monoCTA)
-                    .foregroundStyle(Color.backgroundPaper)
+                    .foregroundStyle(Color.bgPrimary)
                     .padding(.vertical, 12)
                     .frame(maxWidth: .infinity, alignment: .center)
-                    .background(Color.accentColor)
-                    .clipShape(RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle))
+                    .background(Color.accentPrimary)
+                    .clipShape(Capsule())
             }
         }
         .padding(AppLayout.spacing)
-        .background(Color.surfaceCard)
+        .background(Color.surfacePrimary)
         .overlay(
-            RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle)
+            Capsule()
                 .stroke(Color.border, lineWidth: 1)
         )
-        .clipShape(RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle))
+        .clipShape(Capsule())
     }
 }

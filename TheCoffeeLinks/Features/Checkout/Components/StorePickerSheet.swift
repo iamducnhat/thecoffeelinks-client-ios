@@ -18,7 +18,7 @@ struct StorePickerSheet: View {
     
     var body: some View {
         ZStack(alignment: .top) {
-            Color.backgroundPaper.ignoresSafeArea()
+            Color.bgPrimary.ignoresSafeArea()
             
             VStack(spacing: 0) {
                 // Header
@@ -26,14 +26,14 @@ struct StorePickerSheet: View {
                     Button { dismiss() } label: {
                         Text(String(localized: "common_close"))
                             .font(AppFont.body)
-                            .foregroundStyle(Color.textMuted)
+                            .foregroundStyle(Color.textSecondary)
                     }
                     
                     Spacer()
                     
                     Text(String(localized: "store_selection_title"))
                         .font(AppFont.displayTitle)
-                        .foregroundStyle(Color.textInk)
+                        .foregroundStyle(Color.textPrimary)
                     
                     Spacer()
                     
@@ -51,7 +51,7 @@ struct StorePickerSheet: View {
                         if storeViewModel.stores.isEmpty {
                             Text("Loading stores...")
                                 .font(AppFont.body)
-                                .foregroundStyle(Color.textMuted)
+                                .foregroundStyle(Color.textSecondary)
                                 .padding(.top, 40)
                         } else {
                             ForEach(storeViewModel.stores) { store in
@@ -89,20 +89,20 @@ struct StoreCardSimple: View {
             VStack(alignment: .leading, spacing: 4) {
                 Text(store.name)
                     .font(AppFont.headline)
-                    .foregroundStyle(Color.textInk)
+                    .foregroundStyle(Color.textPrimary)
                 
                 Text(store.address)
                     .font(AppFont.uiCaption)
-                    .foregroundStyle(Color.textMuted)
+                    .foregroundStyle(Color.textSecondary)
                     .lineLimit(2)
                 
                 HStack(spacing: 6) {
                     Circle()
-                        .fill(store.isCurrentlyOpen ? Color.semanticSuccess : Color.semanticError)
+                        .fill(store.isCurrentlyOpen ? Color.stateSuccess : Color.stateError)
                         .frame(width: 6, height: 6)
                     Text(store.isCurrentlyOpen ? "Open" : "Closed")
                         .font(AppFont.uiCaption)
-                        .foregroundStyle(store.isCurrentlyOpen ? Color.semanticSuccess : Color.semanticError)
+                        .foregroundStyle(store.isCurrentlyOpen ? Color.stateSuccess : Color.stateError)
                 }
             }
             
@@ -111,15 +111,15 @@ struct StoreCardSimple: View {
             if isSelected {
                 Image("circle_check")
                     .font(.system(size: 20))
-                    .foregroundStyle(Color.primaryEspresso)
+                    .foregroundStyle(Color.accentPrimary)
             }
         }
         .padding(AppLayout.spacing)
-        .background(isSelected ? Color.surfaceCard : Color.backgroundPaper)
+        .background(isSelected ? Color.surfacePrimary : Color.bgPrimary)
         .overlay(
-            RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle)
-                .stroke(isSelected ? Color.primaryEspresso : Color.border, lineWidth: 1)
+            Capsule()
+                .stroke(isSelected ? Color.accentPrimary : Color.border, lineWidth: 1)
         )
-        .clipShape(RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle))
+        .clipShape(Capsule())
     }
 }

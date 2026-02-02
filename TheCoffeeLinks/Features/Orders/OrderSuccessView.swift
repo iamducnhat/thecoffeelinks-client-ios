@@ -27,7 +27,7 @@ struct OrderSuccessView: View {
     
     var body: some View {
         ZStack {
-            Color.backgroundPaper.ignoresSafeArea()
+            Color.bgPrimary.ignoresSafeArea()
             
             VStack(alignment: .leading, spacing: AppLayout.spacing) {
                 Spacer()
@@ -36,7 +36,7 @@ struct OrderSuccessView: View {
                 ForEach(lines, id: \.self) { line in
                     Text(line)
                         .font(AppFont.monoBody)
-                        .foregroundStyle(line.contains("successfully") || line.contains("✓") ? Color.primaryEspresso : Color.textInk)
+                        .foregroundStyle(line.contains("successfully") || line.contains("✓") ? Color.accentPrimary : Color.textPrimary)
                 }
                 
                 if showDone {
@@ -44,11 +44,11 @@ struct OrderSuccessView: View {
                         VStack(alignment: .leading, spacing: AppLayout.spacing) {
                             Text(String(localized: "order_success_title"))
                                 .font(AppFont.displayTitle)
-                                .foregroundStyle(Color.textInk)
+                                .foregroundStyle(Color.textPrimary)
                             
                             Text(String(localized: "order_success_message"))
                                 .font(AppFont.body)
-                                .foregroundStyle(Color.textMuted)
+                                .foregroundStyle(Color.textSecondary)
                         }
                         .padding(.top, AppLayout.spacingXL)
                         
@@ -57,11 +57,11 @@ struct OrderSuccessView: View {
                         } label: {
                             Text(String(localized: "common_done"))
                                 .font(AppFont.monoCTA)
-                                .foregroundStyle(Color.backgroundPaper)
+                                .foregroundStyle(Color.bgPrimary)
                                 .padding(.vertical, 12)
                                 .frame(maxWidth: .infinity)
-                                .background(Color.accentColor)
-                                .clipShape(RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle))
+                                .background(Color.accentPrimary)
+                                .clipShape(Capsule())
                         }
                     }
                     .transition(.opacity)

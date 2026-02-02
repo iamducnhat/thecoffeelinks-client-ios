@@ -23,22 +23,22 @@ struct FavoritesView: View {
     
     var body: some View {
         ZStack(alignment: .top) {
-            Color.backgroundPaper.ignoresSafeArea()
+            Color.bgPrimary.ignoresSafeArea()
             
             // Fixed Navigation Header
             HStack(alignment: .center, spacing: AppLayout.spacing) {
                 Button { dismiss() } label: {
                     Image(systemName: "xmark")
                         .font(AppFont.navIcon)
-                        .foregroundStyle(Color.textInk)
+                        .foregroundStyle(Color.textPrimary)
                         .frame(minWidth: AppLayout.touchTarget, minHeight: AppLayout.touchTarget)
                         .background {
-                            RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle)
-                                .fill(Color.backgroundPaper)
+                            Capsule()
+                                .fill(Color.bgPrimary)
                         }
                         .overlay {
-                            RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle)
-                                .stroke(Color.textInk, lineWidth: min(66.6, max(scrollOffset, 0.0)) / 66.6)
+                            Capsule()
+                                .stroke(Color.textPrimary, lineWidth: min(66.6, max(scrollOffset, 0.0)) / 66.6)
                                 .opacity(min(88.8, max(scrollOffset, 0.0)) / 99.9)
                         }
                 }
@@ -46,7 +46,7 @@ struct FavoritesView: View {
                 Text("favorites_title")
                     .font(AppFont.displayTitle)
                     .lineLimit(1)
-                    .foregroundStyle(Color.textInk)
+                    .foregroundStyle(Color.textPrimary)
                     .padding(.vertical, 24)
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .hidden()
@@ -61,14 +61,14 @@ struct FavoritesView: View {
                     HStack(alignment: .center, spacing: AppLayout.spacing) {
                         Image(systemName: "xmark")
                             .font(AppFont.navIcon)
-                            .foregroundStyle(Color.textInk)
+                            .foregroundStyle(Color.textPrimary)
                             .frame(minWidth: AppLayout.touchTarget, minHeight: AppLayout.touchTarget)
                             .hidden()
                         
                         Text("favorites_title")
                             .font(AppFont.displayTitle)
                             .lineLimit(1)
-                            .foregroundStyle(Color.textInk)
+                            .foregroundStyle(Color.textPrimary)
                             .padding(.vertical, 24)
                             .frame(maxWidth: .infinity, alignment: .leading)
                     }
@@ -92,17 +92,17 @@ struct FavoritesView: View {
                         VStack(spacing: AppLayout.spacing) {
                             Text("favorites_empty_title")
                                 .font(AppFont.sectionHeader)
-                                .foregroundStyle(Color.textInk)
+                                .foregroundStyle(Color.textPrimary)
                             
                             Text("favorites_empty_message")
                                 .font(AppFont.body)
-                                .foregroundStyle(Color.textMuted)
+                                .foregroundStyle(Color.textSecondary)
                                 .multilineTextAlignment(.center)
                         }
                         .frame(maxWidth: .infinity)
                         .padding(60)
                         .overlay(
-                            RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle)
+                            Capsule()
                                 .stroke(Color.border, style: StrokeStyle(lineWidth: 1, dash: AppLayout.dashedPattern))
                         )
                         .padding(AppLayout.spacing)
@@ -159,10 +159,10 @@ struct FavoriteItemRow: View {
                         switch phase { // CHANGED
                         case .empty: // CHANGED
                             Rectangle() // CHANGED
-                                .fill(Color.surfaceCard) // CHANGED
+                                .fill(Color.surfacePrimary) // CHANGED
                                 .overlay { // CHANGED
                                     ProgressView() // CHANGED
-                                        .tint(Color.primaryEspresso) // CHANGED
+                                        .tint(Color.accentPrimary) // CHANGED
                                 } // CHANGED
                         case .success(let image): // CHANGED
                             image // CHANGED
@@ -170,20 +170,20 @@ struct FavoriteItemRow: View {
                                 .aspectRatio(contentMode: .fill) // CHANGED
                         case .failure: // CHANGED
                             Rectangle() // CHANGED
-                                .fill(Color.surfaceCard) // CHANGED
+                                .fill(Color.surfacePrimary) // CHANGED
                                 .overlay { // CHANGED
                                     Text(String(favorite.product.name.prefix(1))) // CHANGED
                                         .font(AppFont.sectionHeader) // CHANGED
-                                        .foregroundStyle(Color.textMuted) // CHANGED
+                                        .foregroundStyle(Color.textSecondary) // CHANGED
                                 } // CHANGED
                         @unknown default: // CHANGED
                             EmptyView() // CHANGED
                         } // CHANGED
                     } // CHANGED
                     .frame(width: 70, height: 70)
-                    .clipShape(RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle))
-                    .overlay(
-                        RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle)
+                    .clipShape(RoundedRectangle(cornerRadius: AppRadius.medium, style: .continuous))
+        .overlay(
+                        Capsule()
                             .stroke(Color.border, lineWidth: 1)
                     )
                     
@@ -191,21 +191,21 @@ struct FavoriteItemRow: View {
                         Text(favorite.displayName)
                             .font(AppFont.body)
                             .lineLimit(2)
-                            .foregroundStyle(Color.textInk)
+                            .foregroundStyle(Color.textPrimary)
                         
                         Text(favorite.customization.displayText)
                             .font(AppFont.uiCaption)
-                            .foregroundStyle(Color.textMuted)
+                            .foregroundStyle(Color.textSecondary)
                         
                         HStack(spacing: 4) {
                             Text(favorite.product.priceRange)
                                 .font(AppFont.monoBody)
-                                .foregroundStyle(Color.primaryEspresso)
+                                .foregroundStyle(Color.accentPrimary)
                             
                             if favorite.orderCount > 0 {
                                 Text(String(localized: "favorite_ordered_count_format \(favorite.orderCount)"))
                                     .font(AppFont.uiMicro)
-                                    .foregroundStyle(Color.textMuted)
+                                    .foregroundStyle(Color.textSecondary)
                             }
                         }
                     }
@@ -214,7 +214,7 @@ struct FavoriteItemRow: View {
                     
                     Image("chevron.right")
                         .font(.system(size: 12))
-                        .foregroundStyle(Color.textMuted)
+                        .foregroundStyle(Color.textSecondary)
                 }
                 .padding(.vertical, AppLayout.spacing)
                 

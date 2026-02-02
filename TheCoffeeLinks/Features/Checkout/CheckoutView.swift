@@ -76,7 +76,7 @@ struct CheckoutView: View {
     
     var body: some View {
         ZStack(alignment: .top) {
-            Color.backgroundPaper.ignoresSafeArea()
+            Color.bgPrimary.ignoresSafeArea()
                 .zIndex(-Double.infinity)
             
             if cartViewModel.cart.items.isEmpty {
@@ -91,15 +91,15 @@ struct CheckoutView: View {
                     Button { dismiss() } label: {
                         Image(systemName: "arrow.left")
                             .font(AppFont.navIcon)
-                            .foregroundStyle(Color.textInk)
+                            .foregroundStyle(Color.textPrimary)
                             .frame(minWidth: AppLayout.touchTarget, minHeight: AppLayout.touchTarget)
                             .background {
-                                RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle)
-                                    .fill(Color.backgroundPaper)
+                                Capsule()
+                                    .fill(Color.surfacePrimary)
                             }
                             .overlay {
-                                RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle)
-                                    .stroke(Color.textInk, lineWidth: min(66.6, max(scrollOffset, 0.0)) / 66.6)
+                                Capsule()
+                                    .stroke(Color.textPrimary, lineWidth: min(66.6, max(scrollOffset, 0.0)) / 66.6)
                                     .opacity(min(88.8, max(scrollOffset, 0.0)) / 99.9)
                             }
                     }
@@ -107,7 +107,7 @@ struct CheckoutView: View {
                     Text("checkout_title")
                         .font(AppFont.displayTitle)
                         .lineLimit(1)
-                        .foregroundColor(Color.textInk)
+                        .foregroundColor(Color.textPrimary)
                         .padding(.vertical, 24)
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .hidden()
@@ -122,14 +122,14 @@ struct CheckoutView: View {
                         HStack(alignment: .center, spacing: AppLayout.spacing) {
                             Image(systemName: "arrow.left")
                                 .font(AppFont.navIcon)
-                                .foregroundStyle(Color.textInk)
+                                .foregroundStyle(Color.textPrimary)
                                 .frame(minWidth: AppLayout.touchTarget, minHeight: AppLayout.touchTarget)
                                 .hidden()
                             
                             Text("Checkout")
                                 .font(AppFont.displayTitle)
                                 .lineLimit(1)
-                                .foregroundColor(Color.textInk)
+                                .foregroundColor(Color.textPrimary)
                                 .padding(.vertical, 24)
                                 .frame(maxWidth: .infinity, alignment: .leading)
                         }
@@ -155,7 +155,7 @@ struct CheckoutView: View {
                                     Text("order_type_section")
                                         .textCase(.uppercase)
                                         .font(AppFont.sectionHeader)
-                                        .foregroundColor(Color.textInk)
+                                        .foregroundColor(Color.textPrimary)
                                     
                                     Spacer(minLength: 0)
                                     
@@ -177,9 +177,9 @@ struct CheckoutView: View {
                                                 .font(AppFont.monoCaption)
                                         }
                                         .padding(AppLayout.spacingMicro)
-                                        .foregroundStyle(Color.backgroundPaper)
-                                        .background(Color.primaryEspresso)
-                                        .clipShape(RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle))
+                                        .foregroundStyle(Color.bgPrimary)
+                                        .background(Color.accentPrimary)
+                                        .clipShape(Capsule())
                                     }
                                 }
                                 
@@ -195,11 +195,11 @@ struct CheckoutView: View {
                                         VStack(alignment: .leading, spacing: 2) {
                                             Text(cartViewModel.cart.mode == .delivery ? "delivery_address_header" : "store_location_header")
                                                 .font(AppFont.uiMicro)
-                                                .foregroundStyle(Color.textMuted)
+                                                .foregroundStyle(Color.textSecondary)
                                             
                                             Text(locationDisplayString)
                                                 .font(AppFont.body)
-                                                .foregroundStyle(isLocationSelected ? Color.textInk : Color.textTertiary)
+                                                .foregroundStyle(isLocationSelected ? Color.textPrimary : Color.textTertiary)
                                                 .lineLimit(1)
                                         }
                                         
@@ -207,12 +207,12 @@ struct CheckoutView: View {
                                         
                                         Image("chevron.right")
                                             .font(.system(size: 14))
-                                            .foregroundStyle(Color.textMuted)
+                                            .foregroundStyle(Color.textSecondary)
                                     }
                                     .padding(12)
                                     .overlay {
-                                        RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle)
-                                            .stroke(isLocationSelected ? Color.border : Color.borderTertiary, style: StrokeStyle(lineWidth: 1, dash: isLocationSelected ? [] : AppLayout.dashedPattern))
+                                        Capsule()
+                                            .stroke(isLocationSelected ? Color.border : Color.borderSecondary, style: StrokeStyle(lineWidth: 1, dash: isLocationSelected ? [] : AppLayout.dashedPattern))
                                     }
                                 }
                             }
@@ -229,10 +229,10 @@ struct CheckoutView: View {
                                     switch phase { // CHANGED
                                     case .empty: // CHANGED
                                         Rectangle() // CHANGED
-                                            .fill(Color.surfaceCard) // CHANGED
+                                            .fill(Color.surfacePrimary) // CHANGED
                                             .overlay { // CHANGED
                                                 ProgressView() // CHANGED
-                                                    .tint(Color.primaryEspresso) // CHANGED
+                                                    .tint(Color.accentPrimary) // CHANGED
                                             } // CHANGED
                                     case .success(let image): // CHANGED
                                         image // CHANGED
@@ -240,11 +240,11 @@ struct CheckoutView: View {
                                             .aspectRatio(contentMode: .fill) // CHANGED
                                     case .failure: // CHANGED
                                         Rectangle() // CHANGED
-                                            .fill(Color.textInk.opacity(0.1)) // CHANGED
+                                            .fill(Color.textPrimary.opacity(0.1)) // CHANGED
                                             .overlay { // CHANGED
                                                 Image("photo") // CHANGED
                                                     .font(AppFont.productTitle) // CHANGED
-                                                    .foregroundStyle(Color.textInk) // CHANGED
+                                                    .foregroundStyle(Color.textPrimary) // CHANGED
                                             } // CHANGED
                                     @unknown default: // CHANGED
                                         EmptyView() // CHANGED
@@ -257,12 +257,12 @@ struct CheckoutView: View {
                                         Text(item.product.name)
                                             .font(AppFont.productTitle)
                                             .lineLimit(3)
-                                            .foregroundColor(Color.textInk)
+                                            .foregroundColor(Color.textPrimary)
                                         
                                         if !item.displayCustomization.isEmpty {
                                             Text(item.displayCustomization)
                                                 .font(AppFont.uiCaption)
-                                                .foregroundStyle(Color.textMuted)
+                                                .foregroundStyle(Color.textSecondary)
                                         }
                                         
                                         Spacer(minLength: AppLayout.spacing)
@@ -272,7 +272,7 @@ struct CheckoutView: View {
                                                 .font(AppFont.monoBody)
                                                 .lineLimit(1)
                                                 .minimumScaleFactor(0.5)
-                                                .foregroundColor(Color.primaryEspresso)
+                                                .foregroundColor(Color.accentPrimary)
                                             
                                             Spacer(minLength: 0)
                                             
@@ -288,9 +288,9 @@ struct CheckoutView: View {
                                                     Text("\(Image(systemName: "minus"))")
                                                         .font(AppFont.body)
                                                         .padding(AppLayout.spacingMicro)
-                                                        .foregroundStyle(Color.backgroundPaper)
-                                                        .background(Color.primaryEspresso)
-                                                        .clipShape(RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle))
+                                                        .foregroundStyle(Color.bgPrimary)
+                                                        .background(Color.accentPrimary)
+                                                        .clipShape(Capsule())
                                                 }
                                                 .disabled(item.quantity <= 1)
                                                 .opacity(item.quantity <= 1 ? 0.666 : 1.0)
@@ -305,9 +305,9 @@ struct CheckoutView: View {
                                                     Text("\(Image(systemName: "plus"))")
                                                         .font(AppFont.body)
                                                         .padding(AppLayout.spacingMicro)
-                                                        .foregroundStyle(Color.backgroundPaper)
-                                                        .background(Color.primaryEspresso)
-                                                        .clipShape(RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle))
+                                                        .foregroundStyle(Color.bgPrimary)
+                                                        .background(Color.accentPrimary)
+                                                        .clipShape(Capsule())
                                                 }
                                             }
                                             .fixedSize()
@@ -333,35 +333,30 @@ struct CheckoutView: View {
                                 Text("voucher_section_title")
                                     .textCase(.uppercase)
                                     .font(AppFont.sectionHeader)
-                                    .foregroundColor(Color.textInk)
+                                    .foregroundColor(Color.textPrimary)
                                 
                                 HStack(spacing: 8) {
-                                    TextField("promotion_code_placeholder", text: $voucherCode)
-                                        .textFieldStyle(PlainTextFieldStyle())
-                                        .font(AppFont.monoBody)
-                                        .focused($focusedField, equals: .voucher)
-                                        .submitLabel(.done)
-                                        .padding(.horizontal, 8)
-                                        .padding(.vertical, 6) // Matches touch target better
-                                        .background(Color.backgroundPaper)
-                                        .overlay(
-                                            RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle)
-                                                .stroke(Color.borderTertiary, style: StrokeStyle(lineWidth: 1, dash: AppLayout.dashedPattern))
-                                        )
+                                    CapsuleTextField(
+                                        placeholder: String(localized: "promotion_code_placeholder"),
+                                        text: $voucherCode,
+                                        icon: "ticket"
+                                    )
+                                    .focused($focusedField, equals: .voucher)
+                                    .submitLabel(.done)
                                     
                                     Button {
-                                        focusedField = nil // Dismiss keyboard
+                                        focusedField = nil
                                         Task {
                                             await checkoutViewModel.applyVoucher(code: voucherCode, cartViewModel: cartViewModel)
                                         }
                                     } label: {
                                         Text("Apply")
                                             .font(AppFont.monoBody)
-                                            .foregroundColor(voucherCode.trimmingCharacters(in: .whitespacesAndNewlines).uppercased() == checkoutViewModel.appliedVoucher ? Color.textMuted : Color.backgroundPaper)
+                                            .foregroundColor(voucherCode.trimmingCharacters(in: .whitespacesAndNewlines).uppercased() == checkoutViewModel.appliedVoucher ? Color.textSecondary : Color.bgPrimary)
                                             .padding(.horizontal, 16)
                                             .padding(.vertical, 6)
-                                            .background(voucherCode.trimmingCharacters(in: .whitespacesAndNewlines).uppercased() == checkoutViewModel.appliedVoucher ? Color.surfaceCard : Color.primaryEspresso)
-                                            .clipShape(RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle))
+                                            .background(voucherCode.trimmingCharacters(in: .whitespacesAndNewlines).uppercased() == checkoutViewModel.appliedVoucher ? Color.surfacePrimary : Color.accentPrimary)
+                                            .clipShape(Capsule())
                                     }
                                     .disabled(voucherCode.trimmingCharacters(in: .whitespacesAndNewlines).uppercased() == checkoutViewModel.appliedVoucher)
                                 }
@@ -375,33 +370,28 @@ struct CheckoutView: View {
                                 Text("redeem_point_section")
                                     .textCase(.uppercase)
                                     .font(AppFont.sectionHeader)
-                                    .foregroundColor(Color.textInk)
+                                    .foregroundColor(Color.textPrimary)
                                 
                                 let points = authViewModel.currentUser?.points ?? 0
                                 (
                                     Text("points_balance_info \(points)")
-                                        .foregroundColor(Color.textMuted)
+                                        .foregroundColor(Color.textSecondary)
                                     +
                                     Text("points_info_link")
                                         .underline(pattern: .dot)
-                                        .foregroundColor(Color.primaryEspresso)
+                                        .foregroundColor(Color.accentPrimary)
                                 )
                                 .font(AppFont.body)
                                 
                                 HStack(spacing: 8) {
-                                    TextField("redeem_points_placeholder", text: $redeemPoints)
-                                        .textFieldStyle(PlainTextFieldStyle())
-                                        .font(AppFont.monoBody)
-                                        .keyboardType(.numberPad)
-                                        .focused($focusedField, equals: .points)
-                                        .submitLabel(.done)
-                                        .padding(.horizontal, 8)
-                                        .padding(.vertical, 6)
-                                        .background(Color.backgroundPaper)
-                                        .overlay {
-                                            RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle)
-                                                .stroke(Color.borderTertiary, style: StrokeStyle(lineWidth: 1, dash: AppLayout.dashedPattern))
-                                        }
+                                    CapsuleTextField(
+                                        placeholder: String(localized: "redeem_points_placeholder"),
+                                        text: $redeemPoints,
+                                        icon: "star",
+                                        keyboardType: .numberPad
+                                    )
+                                    .focused($focusedField, equals: .points)
+                                    .submitLabel(.done)
                                     
                                     Button {
                                         focusedField = nil
@@ -412,11 +402,11 @@ struct CheckoutView: View {
                                         
                                         Text("Apply")
                                             .font(AppFont.monoBody)
-                                            .foregroundColor(isUnchanged ? Color.textMuted : Color.backgroundPaper)
+                                            .foregroundColor(isUnchanged ? Color.textSecondary : Color.bgPrimary)
                                             .padding(.horizontal, 16)
                                             .padding(.vertical, 6)
-                                            .background(isUnchanged ? Color.surfaceCard : Color.primaryEspresso)
-                                            .clipShape(RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle))
+                                            .background(isUnchanged ? Color.surfacePrimary : Color.accentPrimary)
+                                            .clipShape(Capsule())
                                     }
                                     .disabled(Int(redeemPoints.trimmingCharacters(in: .whitespacesAndNewlines)) == checkoutViewModel.appliedPoints)
                                 }
@@ -425,7 +415,7 @@ struct CheckoutView: View {
                                 if let warning = checkoutViewModel.warning {
                                     Text(warning)
                                         .font(AppFont.uiCaption)
-                                        .foregroundColor(Color.semanticError)
+                                        .foregroundColor(Color.stateError)
                                         .transition(.opacity)
                                 }
                                 
@@ -433,7 +423,7 @@ struct CheckoutView: View {
                                 if checkoutViewModel.appliedPoints > 0 {
                                     Text("Points applied: -\(cartViewModel.pointsDiscount.formattedVND)")
                                         .font(AppFont.monoCaption)
-                                        .foregroundColor(Color.primaryEspresso)
+                                        .foregroundColor(Color.accentPrimary)
                                 }
                             }
                             .frame(maxWidth: .infinity, alignment: .leading)
@@ -445,7 +435,7 @@ struct CheckoutView: View {
                                 Text("payment_method_section")
                                     .textCase(.uppercase)
                                     .font(AppFont.sectionHeader)
-                                    .foregroundColor(Color.textInk)
+                                    .foregroundColor(Color.textPrimary)
                                 
                                 ScrollView(.horizontal, showsIndicators: false) {
                                     HStack(spacing: AppLayout.spacingMedium) {
@@ -462,13 +452,13 @@ struct CheckoutView: View {
                                                 .padding(.vertical, 12)
                                                 .padding(.horizontal, 16)
                                                 .frame(minWidth: 100)
-                                                .background(checkoutViewModel.paymentMethod == method ? Color.primaryEspresso : Color.clear)
-                                                .foregroundColor(checkoutViewModel.paymentMethod == method ? Color.backgroundPaper : Color.textInk)
+                                                .background(checkoutViewModel.paymentMethod == method ? Color.accentPrimary : Color.clear)
+                                                .foregroundColor(checkoutViewModel.paymentMethod == method ? Color.bgPrimary : Color.textPrimary)
                                                 .overlay(
-                                                    RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle)
+                                                    Capsule()
                                                         .stroke(Color.border, lineWidth: 1)
                                                 )
-                                                .clipShape(RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle))
+                                                .clipShape(Capsule())
                                             }
                                         }
                                     }
@@ -484,17 +474,17 @@ struct CheckoutView: View {
                             if let error = orderError {
                                 HStack {
                                     Image("triangle_alert")
-                                        .foregroundColor(Color.semanticError)
+                                        .foregroundColor(Color.stateError)
                                     Text(error)
                                         .font(AppFont.uiMicro)
-                                        .foregroundColor(Color.semanticError)
+                                        .foregroundColor(Color.stateError)
                                 }
                                 .padding(12)
                                 .frame(maxWidth: .infinity, alignment: .leading)
-                                .background(Color.semanticError.opacity(0.1))
+                                .background(Color.stateError.opacity(0.1))
                                 .overlay(
-                                    RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle)
-                                        .stroke(Color.semanticError, lineWidth: 1)
+                                    Capsule()
+                                        .stroke(Color.stateError, lineWidth: 1)
                                 )
                             }
                             
@@ -504,15 +494,15 @@ struct CheckoutView: View {
                                     ForEach(orderLog, id: \.self) { log in
                                         Text("> \(log)")
                                             .font(AppFont.uiMicro)
-                                            .foregroundColor(Color.primaryEspresso)
+                                            .foregroundColor(Color.accentPrimary)
                                     }
                                 }
                                 .padding(16)
                                 .frame(maxWidth: .infinity, alignment: .leading)
-                                .background(Color.backgroundPaper)
+                                .background(Color.bgPrimary)
                                 .overlay(
-                                    RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle)
-                                        .stroke(Color.primaryEspresso, lineWidth: 1)
+                                    Capsule()
+                                        .stroke(Color.accentPrimary, lineWidth: 1)
                                 )
                             }
                         }
@@ -529,13 +519,13 @@ struct CheckoutView: View {
                             Text("total_label")
                                 .font(AppFont.totalLabel)
                                 .lineLimit(1)
-                                .foregroundColor(Color.textInk)
+                                .foregroundColor(Color.textPrimary)
                             
                             Spacer(minLength: AppLayout.spacing)
                             
                             Text(cartViewModel.total.formattedVND)
                                 .font(AppFont.monoTitle)
-                                .foregroundColor(Color.textInk)
+                                .foregroundColor(Color.textPrimary)
                         }
                         
                         Button {
@@ -543,11 +533,11 @@ struct CheckoutView: View {
                         } label: {
                             Text(checkoutViewModel.isPlacingOrder ? "placing_order_state" : "place_order_button")
                                 .font(AppFont.monoCTA)
-                                .foregroundColor(Color.backgroundPaper)
+                                .foregroundColor(Color.bgPrimary)
                                 .padding(.vertical, 12)
                                 .frame(maxWidth: .infinity, alignment: .center)
-                                .background(Color.primaryEspresso)
-                                .clipShape(RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle))
+                                .background(Color.accentPrimary)
+                                .clipShape(Capsule())
                         }
                         .disabled(!cartViewModel.canCheckout || checkoutViewModel.isPlacingOrder)
                     }
@@ -555,10 +545,10 @@ struct CheckoutView: View {
                     .frame(minHeight: AppLayout.touchTarget)
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .padding(.horizontal, AppLayout.spacing)
-                    .background(Color.backgroundPaper, ignoresSafeAreaEdges: .all)
+                    .background(Color.bgPrimary, ignoresSafeAreaEdges: .all)
                     .background {
                         WaveRect(stepWidth: AppLayout.waveStepWidth, waveEdge: .top)
-                            .fill(Color.backgroundPaper)
+                            .fill(Color.bgPrimary)
                             .offset(x: 0, y: -9)
                     }
                     .overlay(alignment: .top) {
@@ -717,11 +707,11 @@ struct CheckoutEmptyState: View {
         VStack(spacing: AppLayout.spacingXL) {
             Text("cart_empty_title")
                 .font(AppFont.displayTitle)
-                .foregroundColor(Color.textInk)
+                .foregroundColor(Color.textPrimary)
             
             Text("cart_empty_message_checkout")
                 .font(AppFont.body)
-                .foregroundColor(Color.textMuted)
+                .foregroundColor(Color.textSecondary)
                 .multilineTextAlignment(.center)
                 .padding(.horizontal, 40)
             
@@ -730,11 +720,11 @@ struct CheckoutEmptyState: View {
             } label: {
                 Text("return_to_menu_button")
                     .font(AppFont.monoCTA)
-                    .foregroundColor(Color.backgroundPaper)
+                    .foregroundColor(Color.bgPrimary)
                     .padding(.vertical, 12)
                     .frame(width: 200)
-                    .background(Color.primaryEspresso)
-                    .clipShape(RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle))
+                    .background(Color.accentPrimary)
+                    .clipShape(Capsule())
             }
         }
     }

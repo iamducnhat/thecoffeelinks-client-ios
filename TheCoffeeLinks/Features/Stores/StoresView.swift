@@ -181,8 +181,7 @@ struct StoreCard: View {
         .background(Color.surfacePrimary)
         .clipShape(RoundedRectangle(cornerRadius: AppRadius.medium, style: .continuous))
         .overlay(
-            RoundedRectangle(cornerRadius: AppRadius.medium, style: .continuous)
-                .stroke(Color.borderSecondary, lineWidth: 0.5)
+            RoundedRectangle(cornerRadius: AppRadius.medium, style: .continuous).strokeBorder(Color.borderSecondary, lineWidth: 0.5)
         )
     }
 }

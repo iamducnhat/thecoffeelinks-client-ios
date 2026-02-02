@@ -44,10 +44,10 @@ struct StoreMapView: View {
                         if let waitMinutes = store.currentWaitMinutes {
                             Text("\(waitMinutes)m")
                                 .font(AppFont.uiMicro)
-                                .foregroundStyle(Color.backgroundPaper)
+                                .foregroundStyle(Color.bgPrimary)
                                 .padding(.horizontal, 6)
                                 .padding(.vertical, 2)
-                                .background(Color.primaryEspresso)
+                                .background(Color.accentPrimary)
                                 .clipShape(Capsule())
                                 .shadow(radius: 2, y: 1)
                         }
@@ -55,14 +55,14 @@ struct StoreMapView: View {
                         Image("triangle")
                             .resizable()
                             .frame(width: 8, height: 6)
-                            .foregroundStyle(Color.primaryEspresso)
+                            .foregroundStyle(Color.accentPrimary)
                             .rotationEffect(.degrees(180))
                             .offset(y: -2)
                         
                         Circle()
-                            .fill(Color.backgroundPaper)
+                            .fill(Color.bgPrimary)
                             .frame(width: 12, height: 12)
-                            .overlay(Circle().stroke(Color.primaryEspresso, lineWidth: 2))
+                            .overlay(Circle().stroke(Color.accentPrimary, lineWidth: 2))
                     }
                 }
             }

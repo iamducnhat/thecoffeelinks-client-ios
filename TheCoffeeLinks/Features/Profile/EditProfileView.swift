@@ -19,7 +19,7 @@ struct EditProfileView: View {
     
     var body: some View {
         ZStack(alignment: .top) {
-            Color.backgroundPaper.ignoresSafeArea()
+            Color.bgPrimary.ignoresSafeArea()
             
             VStack(spacing: 0) {
                 // Header
@@ -28,13 +28,13 @@ struct EditProfileView: View {
                         dismiss()
                     }
                     .font(AppFont.body)
-                    .foregroundStyle(Color.textMuted)
+                    .foregroundStyle(Color.textSecondary)
                     
                     Spacer()
                     
                     Text(String(localized: "profile_edit_title"))
                         .font(AppFont.sectionHeader)
-                        .foregroundStyle(Color.textInk)
+                        .foregroundStyle(Color.textPrimary)
                     
                     Spacer()
                     
@@ -42,7 +42,7 @@ struct EditProfileView: View {
                         saveProfile()
                     }
                     .font(AppFont.body)
-                    .foregroundStyle(Color.primaryEspresso)
+                    .foregroundStyle(Color.accentPrimary)
                     .disabled(name.isEmpty || authViewModel.isLoading)
                 }
                 .padding(AppLayout.spacing)
@@ -56,7 +56,7 @@ struct EditProfileView: View {
                         VStack(alignment: .leading, spacing: AppLayout.spacing) {
                             Text(String(localized: "profile_public_label"))
                                 .font(AppFont.uiCaption)
-                                .foregroundStyle(Color.textMuted)
+                                .foregroundStyle(Color.textSecondary)
                                 .padding(.horizontal, AppLayout.spacingCompact)
                             
                             AppInput(title: "Name", text: $name, placeholder: "Your name")

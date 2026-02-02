@@ -19,22 +19,22 @@ struct OrdersView: View {
     
     var body: some View {
         ZStack(alignment: .top) {
-            Color.backgroundPaper.ignoresSafeArea()
+            Color.bgPrimary.ignoresSafeArea()
             
             // Fixed Navigation Header
             HStack(alignment: .center, spacing: AppLayout.spacing) {
                 Button { dismiss() } label: {
                     Image(systemName: isPresentedModally ? "xmark" : "chevron.left")
                         .font(AppFont.navIcon)
-                        .foregroundStyle(Color.textInk)
+                        .foregroundStyle(Color.textPrimary)
                         .frame(minWidth: AppLayout.touchTarget, minHeight: AppLayout.touchTarget)
                         .background {
-                            RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle)
-                                .fill(Color.backgroundPaper)
+                            Capsule()
+                                .fill(Color.bgPrimary)
                         }
                         .overlay {
-                            RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle)
-                                .stroke(Color.textInk, lineWidth: min(66.6, max(scrollOffset, 0.0)) / 66.6)
+                            Capsule()
+                                .strokeBorder(Color.textPrimary, lineWidth: min(66.6, max(scrollOffset, 0.0)) / 66.6)
                                 .opacity(min(88.8, max(scrollOffset, 0.0)) / 99.9)
                         }
                 }
@@ -42,7 +42,7 @@ struct OrdersView: View {
                 Text(String(localized: "orders_title"))
                     .font(AppFont.displayTitle)
                     .lineLimit(1)
-                    .foregroundStyle(Color.textInk)
+                    .foregroundStyle(Color.textPrimary)
                     .padding(.vertical, 24)
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .hidden()
@@ -66,7 +66,7 @@ struct OrdersView: View {
                         Text(String(localized: "orders_title"))
                             .font(AppFont.displayTitle)
                             .lineLimit(1)
-                            .foregroundStyle(Color.textInk)
+                            .foregroundStyle(Color.textPrimary)
                             .padding(.vertical, 24)
                             .frame(maxWidth: .infinity, alignment: .leading)
                     }
@@ -93,9 +93,10 @@ struct OrdersView: View {
                                 selectedTab = 1
                             }
                         }
+                        .clipShape(RoundedRectangle(cornerRadius: AppRadius.medium, style: .continuous))
                         .overlay(
-                            RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle)
-                                .stroke(Color.textInk, lineWidth: 1)
+                            RoundedRectangle(cornerRadius: AppRadius.medium, style: .continuous)
+                                .strokeBorder(Color.textPrimary, lineWidth: 1)
                         )
                         
                         // Content
@@ -104,15 +105,16 @@ struct OrdersView: View {
                                 ForEach(0..<5, id: \.self) { i in
                                     Text(String(localized: "order_fetching_status \(i+1)"))
                                         .font(AppFont.uiMicro)
-                                        .foregroundStyle(Color.primaryEspresso)
+                                        .foregroundStyle(Color.accentPrimary)
                                 }
                             }
                             .frame(maxWidth: .infinity, alignment: .leading)
                             .padding(AppLayout.spacing)
-                            .background(Color.backgroundPaper)
+                            .background(Color.bgPrimary)
+                            .clipShape(RoundedRectangle(cornerRadius: AppRadius.medium, style: .continuous))
                             .overlay(
-                                RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle)
-                                    .stroke(Color.primaryEspresso, lineWidth: 1)
+                                RoundedRectangle(cornerRadius: AppRadius.medium, style: .continuous)
+                                    .strokeBorder(Color.accentPrimary, lineWidth: 1)
                             )
                         } else {
                             let orders = selectedTab == 0 ? viewModel.activeOrders : viewModel.historyOrders
@@ -120,16 +122,17 @@ struct OrdersView: View {
                                 VStack(spacing: AppLayout.spacing) {
                                     Text(String(localized: "orders_empty_title"))
                                         .font(AppFont.sectionHeader)
-                                        .foregroundStyle(Color.textInk)
+                                        .foregroundStyle(Color.textPrimary)
                                     Text(String(localized: "orders_empty_message"))
                                         .font(AppFont.body)
-                                        .foregroundStyle(Color.textMuted)
+                                        .foregroundStyle(Color.textSecondary)
                                 }
                                 .frame(maxWidth: .infinity)
                                 .padding(60)
+                                .clipShape(RoundedRectangle(cornerRadius: AppRadius.medium, style: .continuous))
                                 .overlay(
-                                    RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle)
-                                        .stroke(Color.border, style: StrokeStyle(lineWidth: 1, dash: AppLayout.dashedPattern))
+                                    RoundedRectangle(cornerRadius: AppRadius.medium, style: .continuous)
+                                        .strokeBorder(Color.border, style: StrokeStyle(lineWidth: 1, dash: AppLayout.dashedPattern))
                                 )
                             } else {
                                 ForEach(orders) { order in
@@ -167,10 +170,10 @@ struct OrderTabButton: View {
         Button(action: action) {
             Text(title)
                 .font(AppFont.monoBody)
-                .foregroundColor(isSelected ? Color.backgroundPaper : Color.textInk)
+                .foregroundColor(isSelected ? Color.bgPrimary : Color.textPrimary)
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 12)
-                .background(isSelected ? Color.primaryEspresso : Color.backgroundPaper)
+                .background(isSelected ? Color.accentPrimary : Color.bgPrimary)
         }
     }
 }
@@ -185,11 +188,11 @@ struct OrderRow: View {
             HStack {
                 Text(String(localized: "order_number_format \(order.id.prefix(8).uppercased())"))
                     .font(AppFont.monoBody.bold())
-                    .foregroundStyle(Color.textInk)
+                    .foregroundStyle(Color.textPrimary)
                 Spacer()
                 Text(order.totalAmount.formattedVND)
                     .font(AppFont.monoBody)
-                    .foregroundStyle(Color.primaryEspresso)
+                    .foregroundStyle(Color.accentPrimary)
             }
             
             HStack {
@@ -200,26 +203,27 @@ struct OrderRow: View {
                         .font(AppFont.monoBody)
                         .foregroundStyle(statusColor)
                 }
-                .foregroundStyle(Color.textMuted)
+                .foregroundStyle(Color.textSecondary)
                 
                 Spacer()
                 
                 Image("chevron.right")
                     .font(.system(size: 12))
-                    .foregroundStyle(Color.textMuted)
+                    .foregroundStyle(Color.textSecondary)
             }
         }
         .padding(AppLayout.spacing)
-        .background(Color.backgroundPaper)
+        .background(Color.bgPrimary)
+        .clipShape(RoundedRectangle(cornerRadius: AppRadius.medium, style: .continuous))
         .overlay(
-            RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle)
-                .stroke(Color.border, lineWidth: 1)
+            RoundedRectangle(cornerRadius: AppRadius.medium, style: .continuous)
+                .strokeBorder(Color.border, lineWidth: 1)
         )
     }
     
     private var statusColor: Color {
-        if order.status.isActive { return Color.primaryEspresso }
-        if order.status == .cancelled { return Color.semanticError }
-        return Color.textMuted
+        if order.status.isActive { return Color.accentPrimary }
+        if order.status == .cancelled { return Color.stateError }
+        return Color.textSecondary
     }
 }

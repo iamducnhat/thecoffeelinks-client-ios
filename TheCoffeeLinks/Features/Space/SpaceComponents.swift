@@ -18,15 +18,15 @@ struct EditorialBookingSheet: View {
                     VStack(alignment: .leading, spacing: AppLayout.spacing) {
                         Text(String(localized: "space_date_time_label"))
                             .font(AppFont.sectionHeader)
-                            .foregroundStyle(Color.textInk)
+                            .foregroundStyle(Color.textPrimary)
 
                         DatePicker("", selection: $selectedDate, in: Date()...)
                             .datePickerStyle(.graphical)
-                            .background(Color.backgroundPaper)
-                            .clipShape(RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle))
+                            .background(Color.bgPrimary)
+                            .clipShape(RoundedRectangle(cornerRadius: AppRadius.medium, style: .continuous))
                             .overlay(
-                                RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle)
-                                    .stroke(Color.border, lineWidth: 1)
+                                RoundedRectangle(cornerRadius: AppRadius.medium, style: .continuous)
+                                    .strokeBorder(Color.border, lineWidth: 1)
                             )
                     }
 
@@ -59,7 +59,7 @@ struct EditorialBookingSheet: View {
                     VStack(alignment: .leading, spacing: AppLayout.spacing) {
                         Text(String(localized: "space_preferences_label"))
                             .font(AppFont.sectionHeader)
-                            .foregroundStyle(Color.textInk)
+                            .foregroundStyle(Color.textPrimary)
 
                         EditorialToggleRow(title: "Need Power Outlet", isOn: $needsPower)
                     }
@@ -73,23 +73,23 @@ struct EditorialBookingSheet: View {
                     } label: {
                         Text(String(localized: "space_confirm_booking"))
                             .font(AppFont.monoCTA)
-                            .foregroundStyle(Color.backgroundPaper)
+                            .foregroundStyle(Color.bgPrimary)
                             .padding(.vertical, 12)
                             .frame(maxWidth: .infinity)
-                            .background(Color.accentColor)
-                            .clipShape(RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle))
+                            .background(Color.accentPrimary)
+                            .clipShape(Capsule())
                     }
                 }
                 .padding(AppLayout.spacing)
                 .padding(.vertical, 24)
             }
-            .background(Color.backgroundPaper.ignoresSafeArea())
+            .background(Color.bgPrimary.ignoresSafeArea())
             .navigationTitle(String(localized: "space_book_space"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button(String(localized: "common_cancel")) { isPresented = false }
-                        .foregroundColor(Color.textInk)
+                        .foregroundColor(Color.textPrimary)
                 }
             }
         }
@@ -129,7 +129,7 @@ struct EditorialQRCheckInView: View {
 
                 // Scanner Frame (Sharp)
                 Rectangle()
-                    .stroke(Color.white, style: StrokeStyle(lineWidth: 4, dash: [20]))
+                    .strokeBorder(Color.white, style: StrokeStyle(lineWidth: 4, dash: [20]))
                     .frame(width: 280, height: 280)
                     .overlay(
                         VStack(spacing: AppLayout.spacing) {

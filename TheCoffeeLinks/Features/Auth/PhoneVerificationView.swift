@@ -8,26 +8,26 @@ struct PhoneVerificationView: View {
     
     var body: some View {
         ZStack(alignment: .top) {
-            Color.backgroundPaper.ignoresSafeArea()
+            Color.bgPrimary.ignoresSafeArea()
             
             VStack(spacing: 32) {
                 // Header
                 VStack(spacing: 12) {
                     Text("Verify Phone Number")
                         .font(AppFont.displayTitle)
-                        .foregroundStyle(Color.textInk)
+                        .foregroundStyle(Color.textPrimary)
                         .multilineTextAlignment(.center)
                     
                     Text("We sent a 6-digit code to your phone number.\nPlease enter it to continue.")
                         .font(AppFont.body)
-                        .foregroundStyle(Color.textMuted)
+                        .foregroundStyle(Color.textSecondary)
                         .multilineTextAlignment(.center)
                         .padding(.horizontal, 32)
                     
                     if let phone = authViewModel.currentUser?.phone {
                         Text(phone)
                             .font(AppFont.monoBody)
-                            .foregroundStyle(Color.textInk)
+                            .foregroundStyle(Color.textPrimary)
                             .padding(.top, 4)
                     }
                 }
@@ -49,10 +49,10 @@ struct PhoneVerificationView: View {
                     
                     if authViewModel.isLoading {
                         HStack(spacing: 8) {
-                            ProgressView().tint(Color.primaryEspresso)
+                            ProgressView().tint(Color.accentPrimary)
                             Text("Verifying...")
                                 .font(AppFont.body)
-                                .foregroundStyle(Color.textMuted)
+                                .foregroundStyle(Color.textSecondary)
                         }
                     }
                     
@@ -60,7 +60,7 @@ struct PhoneVerificationView: View {
                     if let error = authViewModel.error {
                         Text(error)
                             .font(AppFont.uiCaption)
-                            .foregroundStyle(Color.semanticError)
+                            .foregroundStyle(Color.stateError)
                             .multilineTextAlignment(.center)
                     }
                     
@@ -71,7 +71,7 @@ struct PhoneVerificationView: View {
                         } label: {
                             Text("Log Out")
                                 .font(AppFont.uiCaption)
-                                .foregroundStyle(Color.textMuted)
+                                .foregroundStyle(Color.textSecondary)
                                 .underline()
                         }
                         
@@ -83,11 +83,11 @@ struct PhoneVerificationView: View {
                             if cooldownSeconds > 0 {
                                 Text("Resend in \(cooldownSeconds)s")
                                     .font(AppFont.uiCaption)
-                                    .foregroundStyle(Color.textMuted)
+                                    .foregroundStyle(Color.textSecondary)
                             } else {
                                 Text("Resend Code")
                                     .font(AppFont.uiCaption)
-                                    .foregroundStyle(Color.primaryEspresso)
+                                    .foregroundStyle(Color.accentPrimary)
                             }
                         }
                         .disabled(cooldownSeconds > 0)

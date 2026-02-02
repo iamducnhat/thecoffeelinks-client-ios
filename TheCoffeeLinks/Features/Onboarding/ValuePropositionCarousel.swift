@@ -38,14 +38,14 @@ struct ValuePropositionCarousel: View {
     
     var body: some View {
         ZStack {
-            Color.backgroundPaper.ignoresSafeArea()
+            Color.bgPrimary.ignoresSafeArea()
             
             VStack(spacing: 0) {
                 // Progress Indicator
                 HStack(spacing: 8) {
                     ForEach(0..<slides.count, id: \.self) { index in
                         RoundedRectangle(cornerRadius: 2)
-                            .fill(currentPage >= index ? Color.primaryEspresso : Color.border)
+                            .fill(currentPage >= index ? Color.accentPrimary : Color.border)
                             .frame(height: 2)
                     }
                 }
@@ -58,26 +58,26 @@ struct ValuePropositionCarousel: View {
                 VStack(alignment: .leading, spacing: AppLayout.spacingXL) {
                     // Image Placeholder (Icon)
                     Circle()
-                        .fill(Color.backgroundPaper)
+                        .fill(Color.bgPrimary)
                         .frame(width: 80, height: 80)
                         .overlay(
                             Image(slides[currentPage].image)
                                 .font(.system(size: 32))
-                                .foregroundStyle(Color.primaryEspresso)
+                                .foregroundStyle(Color.accentPrimary)
                         )
                         .overlay(
-                            Circle().stroke(Color.border, lineWidth: 1)
+                            Circle().strokeBorder(Color.border, lineWidth: 1)
                         )
                     
                     VStack(alignment: .leading, spacing: AppLayout.spacing) {
                         Text(slides[currentPage].title)
                             .font(AppFont.displayTitle)
-                            .foregroundStyle(Color.textInk)
+                            .foregroundStyle(Color.textPrimary)
                             .lineLimit(2)
                         
                         Text(slides[currentPage].subtitle)
                             .font(AppFont.body)
-                            .foregroundStyle(Color.textMuted)
+                            .foregroundStyle(Color.textSecondary)
                             .lineSpacing(4)
                     }
                 }
@@ -93,7 +93,7 @@ struct ValuePropositionCarousel: View {
                             onFinished()
                         }
                         .font(AppFont.monoBody)
-                        .foregroundColor(Color.textMuted)
+                        .foregroundColor(Color.textSecondary)
                         
                         Spacer()
                         
@@ -104,7 +104,7 @@ struct ValuePropositionCarousel: View {
                         } label: {
                             Text(String(localized: "common_next"))
                                 .font(AppFont.monoBody)
-                                .foregroundColor(Color.primaryEspresso)
+                                .foregroundColor(Color.accentPrimary)
                         }
                     } else {
                         Button {
@@ -112,12 +112,12 @@ struct ValuePropositionCarousel: View {
                         } label: {
                             Text(String(localized: "common_get_started"))
                                 .font(AppFont.monoCTA)
-                                .foregroundColor(Color.backgroundPaper)
+                                .foregroundColor(Color.bgPrimary)
                                 .padding(.horizontal, 32)
                                 .padding(.vertical, 14)
                                 .frame(maxWidth: .infinity)
-                                .background(Color.accentColor)
-                                .clipShape(RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle))
+                                .background(Color.accentPrimary)
+                                .clipShape(Capsule())
                         }
                     }
                 }

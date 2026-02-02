@@ -30,28 +30,28 @@ struct OrderHistoryView: View {
     
     var body: some View {
         ZStack(alignment: .top) {
-            Color.backgroundPaper.ignoresSafeArea()
+            Color.bgPrimary.ignoresSafeArea()
             
             // Fixed Navigation Header
             HStack(alignment: .center, spacing: AppLayout.spacing) {
                 Button { dismiss() } label: {
                     Image(systemName: "arrow.left")
                         .font(AppFont.navIcon)
-                        .foregroundStyle(Color.textInk)
+                        .foregroundStyle(Color.textPrimary)
                         .frame(minWidth: AppLayout.touchTarget, minHeight: AppLayout.touchTarget)
                 }
                 
                 Text(String(localized: "history_title"))
                     .font(AppFont.displayTitle)
                     .lineLimit(1)
-                    .foregroundStyle(Color.textInk)
+                    .foregroundStyle(Color.textPrimary)
                     .padding(.vertical, 24)
                     .frame(maxWidth: .infinity, alignment: .leading)
             }
             .frame(minHeight: AppLayout.touchTarget)
             .frame(maxWidth: .infinity, alignment: .center)
             .padding(.horizontal, AppLayout.spacing)
-            .background(Color.backgroundPaper)
+            .background(Color.bgPrimary)
             .overlay(alignment: .bottom) {
                 Color.secondary.frame(height: 1)
             }
@@ -65,11 +65,11 @@ struct OrderHistoryView: View {
                         VStack(spacing: AppLayout.spacing) {
                             Text(String(localized: "orders_empty_generic"))
                                 .font(AppFont.sectionHeader)
-                                .foregroundStyle(Color.textInk)
+                                .foregroundStyle(Color.textPrimary)
                             
                             Text(String(localized: "orders_empty_description"))
                                 .font(AppFont.uiCaption)
-                                .foregroundStyle(Color.textMuted)
+                                .foregroundStyle(Color.textSecondary)
                                 .multilineTextAlignment(.center)
                         }
                         .frame(maxWidth: .infinity)
@@ -98,15 +98,15 @@ struct OrderHistoryRow: View {
                 VStack(alignment: .leading, spacing: 4) {
                     Text(order.createdAt.formatted(.dateTime.day().month().year()))
                         .font(AppFont.uiCaption)
-                        .foregroundStyle(Color.textMuted)
+                        .foregroundStyle(Color.textSecondary)
                     
                     Text(order.storeId) // Ideally fetch store name
                         .font(AppFont.headline)
-                        .foregroundStyle(Color.textInk)
+                        .foregroundStyle(Color.textPrimary)
                     
                     Text("\(order.items.count) items")
                         .font(AppFont.body)
-                        .foregroundStyle(Color.textInk)
+                        .foregroundStyle(Color.textPrimary)
                 }
                 
                 Spacer()
@@ -114,7 +114,7 @@ struct OrderHistoryRow: View {
                 VStack(alignment: .trailing, spacing: 4) {
                     Text(order.totalAmount.formattedVND)
                         .font(AppFont.monoBody)
-                        .foregroundStyle(Color.primaryEspresso)
+                        .foregroundStyle(Color.accentPrimary)
                     
                     Text(order.status.displayName)
                         .font(AppFont.uiMicro)
@@ -122,21 +122,21 @@ struct OrderHistoryRow: View {
                         .padding(.vertical, 2)
                         .background(statusColor.opacity(0.1))
                         .foregroundStyle(statusColor)
-                        .clipShape(RoundedRectangle(cornerRadius: 4))
+                        .clipShape(Capsule())
                 }
                 
                 Image("chevron.right")
                     .font(.system(size: 12))
-                    .foregroundStyle(Color.textMuted)
+                    .foregroundStyle(Color.textSecondary)
                     .padding(.leading, 8)
             }
             .padding(AppLayout.spacing)
-            .background(Color.backgroundPaper)
+            .background(Color.bgPrimary)
+            .clipShape(RoundedRectangle(cornerRadius: AppRadius.medium, style: .continuous))
             .overlay(
-                RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle)
-                    .stroke(Color.border, lineWidth: 1)
+                RoundedRectangle(cornerRadius: AppRadius.medium, style: .continuous)
+                    .strokeBorder(Color.border, lineWidth: 1)
             )
-            .clipShape(RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle))
             
             // Hit testing for potential navigation
             NavigationLink(destination: OrderDetailView(order: order)) {
@@ -149,9 +149,9 @@ struct OrderHistoryRow: View {
     
     private var statusColor: Color {
         switch order.status {
-        case .completed: return Color.textMuted
-        case .cancelled: return Color.semanticError
-        default: return Color.semanticSuccess
+        case .completed: return Color.textSecondary
+        case .cancelled: return Color.stateError
+        default: return Color.stateSuccess
         }
     }
 }

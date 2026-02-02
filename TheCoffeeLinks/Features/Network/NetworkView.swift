@@ -16,7 +16,7 @@ struct NetworkView: View {
     
     var body: some View {
         ZStack(alignment: .top) {
-            Color.backgroundPaper.ignoresSafeArea()
+            Color.bgPrimary.ignoresSafeArea()
             
             VStack(spacing: 0) {
                 ScrollView(.vertical) {
@@ -24,12 +24,12 @@ struct NetworkView: View {
                     VStack(alignment: .leading, spacing: AppLayout.spacing) {
                         Text(String(localized: "space_title"))
                             .font(AppFont.displayTitle)
-                            .foregroundColor(Color.textInk)
+                            .foregroundColor(Color.textPrimary)
                             .padding(.top, AppLayout.spacing)
                         
                         Text("Connect with friends at your favorite coffee spot")
                             .font(AppFont.body)
-                            .foregroundStyle(Color.textMuted)
+                            .foregroundStyle(Color.textSecondary)
                         
                         Color.secondary.frame(height: 1)
                     }
@@ -70,7 +70,7 @@ struct IntentSelectorContent: View {
                 Text(String(localized: "network_intent_prompt"))
                     .textCase(.uppercase)
                     .font(AppFont.sectionHeader)
-                    .foregroundStyle(Color.textInk)
+                    .foregroundStyle(Color.textPrimary)
                 
                 LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: AppLayout.spacing) {
                     ForEach(NetworkViewModel.NetworkIntent.allCases, id: \.self) { intent in
@@ -97,18 +97,18 @@ struct IntentCard: View {
             VStack(spacing: AppLayout.spacingMedium) {
                 Image(intent.icon)
                     .font(.system(size: 24))
-                    .foregroundColor(Color.primaryEspresso)
+                    .foregroundColor(Color.accentPrimary)
                 
                 Text(intent.title)
                     .font(AppFont.monoBody)
-                    .foregroundColor(Color.textInk)
+                    .foregroundColor(Color.textPrimary)
                     .multilineTextAlignment(.center)
             }
             .frame(maxWidth: .infinity)
             .padding(.vertical, 24)
-            .background(Color.surfaceCard)
+            .background(Color.surfacePrimary)
             .overlay(
-                RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle)
+                Capsule()
                     .stroke(Color.border, lineWidth: 1)
             )
         }
@@ -128,16 +128,16 @@ struct ActiveNetworkingContent: View {
                 Text(String(localized: "home_active_checkin"))
                     .textCase(.uppercase)
                     .font(AppFont.sectionHeader)
-                    .foregroundStyle(Color.textInk)
+                    .foregroundStyle(Color.textPrimary)
                 
                 HStack {
                     VStack(alignment: .leading, spacing: 4) {
                         Text(networkViewModel.currentIntent.title)
                             .font(AppFont.headline)
-                            .foregroundStyle(Color.textInk)
+                            .foregroundStyle(Color.textPrimary)
                         Text("Auto-ends in \(networkViewModel.remainingTimeDisplay)")
                             .font(AppFont.uiMicro)
-                            .foregroundStyle(Color.textMuted)
+                            .foregroundStyle(Color.textSecondary)
                     }
                     
                     Spacer()
@@ -147,20 +147,20 @@ struct ActiveNetworkingContent: View {
                     } label: {
                         Text(String(localized: "common_end"))
                             .font(AppFont.monoBody)
-                            .foregroundStyle(Color.semanticError)
+                            .foregroundStyle(Color.stateError)
                             .padding(.horizontal, 12)
                             .padding(.vertical, 6)
                             .overlay(
-                                RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle)
-                                    .stroke(Color.semanticError, lineWidth: 1)
+                                Capsule()
+                                    .stroke(Color.stateError, lineWidth: 1)
                             )
                     }
                 }
                 .padding(AppLayout.spacing)
-                .background(Color.surfaceCard)
+                .background(Color.surfacePrimary)
                 .overlay(
-                    RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle)
-                        .stroke(Color.primaryEspresso, lineWidth: 1)
+                    Capsule()
+                        .stroke(Color.accentPrimary, lineWidth: 1)
                 )
             }
             .padding(.horizontal, AppLayout.spacing)
@@ -172,29 +172,29 @@ struct ActiveNetworkingContent: View {
                     Text(String(localized: "network_nearby_title"))
                         .textCase(.uppercase)
                         .font(AppFont.sectionHeader)
-                        .foregroundStyle(Color.textInk)
+                        .foregroundStyle(Color.textPrimary)
                     
                     Spacer()
                     
                     Text("\(networkViewModel.nearbyPeople.count)")
                         .font(AppFont.monoBody)
-                        .foregroundStyle(Color.textMuted)
+                        .foregroundStyle(Color.textSecondary)
                 }
                 
                 if networkViewModel.nearbyPeople.isEmpty {
                     VStack(spacing: AppLayout.spacing) {
                         Text(String(localized: "network_nearby_empty"))
                             .font(AppFont.sectionHeader)
-                            .foregroundStyle(Color.textInk)
+                            .foregroundStyle(Color.textPrimary)
                         
                         Text(String(localized: "network_nearby_prompt"))
                             .font(AppFont.body)
-                            .foregroundStyle(Color.textMuted)
+                            .foregroundStyle(Color.textSecondary)
                     }
                     .frame(maxWidth: .infinity)
                     .padding(60)
                     .overlay(
-                        RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle)
+                        Capsule()
                             .stroke(Color.border, style: StrokeStyle(lineWidth: 1, dash: AppLayout.dashedPattern))
                     )
                 } else {
@@ -209,9 +209,9 @@ struct ActiveNetworkingContent: View {
                             }
                         }
                     }
-                    .background(Color.backgroundPaper)
+                    .background(Color.bgPrimary)
                     .overlay(
-                        RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle)
+                        Capsule()
                             .stroke(Color.border, lineWidth: 1)
                     )
                 }
@@ -232,27 +232,27 @@ struct PersonRow: View {
             // Avatar
             ZStack {
                 Rectangle()
-                    .fill(Color.surfaceCard)
+                    .fill(Color.surfacePrimary)
                     .frame(width: 44, height: 44)
                 
                 Text(user.fullName.prefix(1).uppercased())
                     .font(AppFont.monoBody.bold())
-                    .foregroundStyle(Color.primaryEspresso)
+                    .foregroundStyle(Color.accentPrimary)
             }
-            .clipShape(RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle))
-            .overlay(
-                RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle)
+            .clipShape(RoundedRectangle(cornerRadius: AppRadius.medium, style: .continuous))
+        .overlay(
+                Capsule()
                     .stroke(Color.border, lineWidth: 1)
             )
             
             VStack(alignment: .leading, spacing: 2) {
                 Text(user.fullName)
                     .font(AppFont.body)
-                    .foregroundStyle(Color.textInk)
+                    .foregroundStyle(Color.textPrimary)
                 
                 Text(user.jobTitle ?? "Coffee Enthusiast")
                     .font(AppFont.uiMicro)
-                    .foregroundStyle(Color.textMuted)
+                    .foregroundStyle(Color.textSecondary)
             }
             
             Spacer()
@@ -267,11 +267,11 @@ struct PersonRow: View {
                 if isConnecting {
                     ProgressView()
                         .scaleEffect(0.8)
-                        .tint(Color.primaryEspresso)
+                        .tint(Color.accentPrimary)
                 } else {
                     Text(String(localized: "network_connect_action"))
                         .font(AppFont.monoBody)
-                        .foregroundStyle(Color.primaryEspresso)
+                        .foregroundStyle(Color.accentPrimary)
                 }
             }
             .disabled(isConnecting)
@@ -289,21 +289,21 @@ struct NetworkCheckInSheet: View {
     
     var body: some View {
         ZStack(alignment: .top) {
-            Color.backgroundPaper.ignoresSafeArea()
+            Color.bgPrimary.ignoresSafeArea()
             
             VStack(spacing: 0) {
                 // Header
                 HStack {
                     Text(String(localized: "network_check_in_action"))
                         .font(AppFont.displayTitle)
-                        .foregroundStyle(Color.textInk)
+                        .foregroundStyle(Color.textPrimary)
                     
                     Spacer()
                     
                     Button { isPresented = false } label: {
                         Image(systemName: "xmark")
                             .font(AppFont.navIcon)
-                            .foregroundStyle(Color.textInk)
+                            .foregroundStyle(Color.textPrimary)
                     }
                 }
                 .padding(AppLayout.spacing)
@@ -317,22 +317,22 @@ struct NetworkCheckInSheet: View {
                             Text("Your intent")
                                 .textCase(.uppercase)
                                 .font(AppFont.sectionHeader)
-                                .foregroundStyle(Color.textInk)
+                                .foregroundStyle(Color.textPrimary)
                             
                             HStack(spacing: AppLayout.spacing) {
                                 Image(networkViewModel.currentIntent.icon)
                                     .font(.system(size: 20))
-                                    .foregroundStyle(Color.primaryEspresso)
+                                    .foregroundStyle(Color.accentPrimary)
                                 
                                 Text(networkViewModel.currentIntent.title)
                                     .font(AppFont.headline)
-                                    .foregroundStyle(Color.textInk)
+                                    .foregroundStyle(Color.textPrimary)
                             }
                             .padding(AppLayout.spacing)
                             .frame(maxWidth: .infinity, alignment: .leading)
-                            .background(Color.surfaceCard)
+                            .background(Color.surfacePrimary)
                             .overlay(
-                                RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle)
+                                Capsule()
                                     .stroke(Color.border, lineWidth: 1)
                             )
                         }
@@ -342,30 +342,30 @@ struct NetworkCheckInSheet: View {
                             Text(String(localized: "common_location"))
                                 .textCase(.uppercase)
                                 .font(AppFont.sectionHeader)
-                                .foregroundStyle(Color.textInk)
+                                .foregroundStyle(Color.textPrimary)
                             
                             if let store = storeViewModel.nearestStore {
                                 VStack(alignment: .leading, spacing: 4) {
                                     Text(store.name)
                                         .font(AppFont.headline)
-                                        .foregroundStyle(Color.textInk)
+                                        .foregroundStyle(Color.textPrimary)
                                     Text(store.address)
                                         .font(AppFont.uiCaption)
-                                        .foregroundStyle(Color.textMuted)
+                                        .foregroundStyle(Color.textSecondary)
                                 }
                                 .padding(AppLayout.spacing)
                                 .frame(maxWidth: .infinity, alignment: .leading)
-                                .background(Color.surfaceCard)
+                                .background(Color.surfacePrimary)
                                 .overlay(
-                                    RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle)
-                                        .stroke(Color.primaryEspresso, lineWidth: 1)
+                                    Capsule()
+                                        .stroke(Color.accentPrimary, lineWidth: 1)
                                 )
                             } else {
                                 HStack {
-                                    ProgressView().tint(Color.primaryEspresso)
+                                    ProgressView().tint(Color.accentPrimary)
                                     Text(String(localized: "network_finding_location"))
                                         .font(AppFont.body)
-                                        .foregroundStyle(Color.textMuted)
+                                        .foregroundStyle(Color.textSecondary)
                                 }
                             }
                         }
@@ -375,14 +375,14 @@ struct NetworkCheckInSheet: View {
                             Text(String(localized: "common_duration"))
                                 .textCase(.uppercase)
                                 .font(AppFont.sectionHeader)
-                                .foregroundStyle(Color.textInk)
+                                .foregroundStyle(Color.textPrimary)
                             
                             Slider(value: $networkViewModel.checkInDuration, in: 1800...7200, step: 1800)
-                                .tint(Color.primaryEspresso)
+                                .tint(Color.accentPrimary)
                             
                             Text("\(Int(networkViewModel.checkInDuration / 60)) minutes")
                                 .font(AppFont.monoBody)
-                                .foregroundStyle(Color.textInk)
+                                .foregroundStyle(Color.textPrimary)
                         }
                         
                         Spacer(minLength: 40)
@@ -396,11 +396,11 @@ struct NetworkCheckInSheet: View {
                         } label: {
                             Text(String(localized: "network_check_in_action"))
                                 .font(AppFont.monoCTA)
-                                .foregroundStyle(Color.backgroundPaper)
+                                .foregroundStyle(Color.bgPrimary)
                                 .padding(.vertical, 12)
                                 .frame(maxWidth: .infinity, alignment: .center)
-                                .background(Color.accentColor)
-                                .clipShape(RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle))
+                                .background(Color.accentPrimary)
+                                .clipShape(Capsule())
                         }
                     }
                     .padding(AppLayout.spacing)

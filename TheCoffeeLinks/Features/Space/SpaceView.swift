@@ -27,7 +27,7 @@ struct SpaceView: View {
                     Circle()
                         .fill(Color.accentColor)
                         .frame(width: 24, height: 24)
-                        .overlay(Circle().stroke(Color.backgroundPaper, lineWidth: 2))
+                        .overlay(Circle().strokeBorder(Color.bgPrimary, lineWidth: 2))
                         .onTapGesture {
                             storeViewModel.selectStore(store)
                         }
@@ -58,7 +58,7 @@ struct SpaceView: View {
                 }
                 .background(
                     LinearGradient(
-                        colors: [.clear, Color.backgroundPaper.opacity(0.95)],
+                        colors: [.clear, Color.bgPrimary.opacity(0.95)],
                         startPoint: .top,
                         endPoint: .bottom
                     )
@@ -84,42 +84,42 @@ struct StoreCardCompact: View {
         VStack(alignment: .leading, spacing: 0) {
             // Image
             Rectangle()
-                .fill(Color.surfaceCard)
+                .fill(Color.surfacePrimary)
                 .frame(height: 80)
                 .overlay(
                     Text(String(store.name.prefix(1)))
                         .font(AppFont.displayTitle)
-                        .foregroundStyle(Color.textMuted)
+                        .foregroundStyle(Color.textSecondary)
                 )
             
             VStack(alignment: .leading, spacing: 4) {
                 Text(store.name)
                     .font(AppFont.body)
-                    .foregroundStyle(Color.textInk)
+                    .foregroundStyle(Color.textPrimary)
                     .lineLimit(1)
                 
                 Text(store.address)
                     .font(AppFont.uiCaption)
-                    .foregroundStyle(Color.textMuted)
+                    .foregroundStyle(Color.textSecondary)
                     .lineLimit(1)
                 
                 HStack(spacing: 4) {
                     Circle()
-                        .fill(store.isCurrentlyOpen ? Color.semanticSuccess : Color.semanticError)
+                        .fill(store.isCurrentlyOpen ? Color.stateSuccess : Color.stateError)
                         .frame(width: 6, height: 6)
                     Text(store.isCurrentlyOpen ? "Open" : "Closed")
                         .font(AppFont.uiMicro)
-                        .foregroundStyle(store.isCurrentlyOpen ? Color.semanticSuccess : Color.semanticError)
+                        .foregroundStyle(store.isCurrentlyOpen ? Color.stateSuccess : Color.stateError)
                 }
             }
             .padding(AppLayout.spacingMedium)
         }
-        .background(Color.backgroundPaper)
+        .background(Color.bgPrimary)
         .overlay(
-            RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle)
-                .stroke(Color.border, lineWidth: 1)
+            Capsule()
+                .strokeBorder(Color.border, lineWidth: 1)
         )
-        .clipShape(RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle))
+        .clipShape(Capsule())
         .frame(width: 180)
     }
 }
@@ -135,7 +135,7 @@ struct StoreDetailSheet: View {
         VStack(spacing: 0) {
             // Drag Indicator
             Capsule()
-                .fill(Color.textMuted)
+                .fill(Color.textSecondary)
                 .frame(width: 40, height: 4)
                 .padding(.top, AppLayout.spacingMedium)
             
@@ -143,11 +143,11 @@ struct StoreDetailSheet: View {
                 VStack(alignment: .leading, spacing: AppLayout.spacing) {
                     Text(store.name)
                         .font(AppFont.sectionHeader)
-                        .foregroundStyle(Color.textInk)
+                        .foregroundStyle(Color.textPrimary)
                     
                     Text(store.address)
                         .font(AppFont.body)
-                        .foregroundStyle(Color.textMuted)
+                        .foregroundStyle(Color.textSecondary)
                     
                     // Amenities (if available)
                     if let amenities = store.amenities, !amenities.isEmpty {
@@ -157,15 +157,15 @@ struct StoreDetailSheet: View {
                                     HStack(spacing: 4) {
                                         Image(systemName: amenity.iconName)
                                             .font(.system(size: 12))
-                                            .foregroundStyle(Color.primaryEspresso)
+                                            .foregroundStyle(Color.accentPrimary)
                                         Text(amenity.displayName)
                                             .font(AppFont.uiMicro)
-                                            .foregroundStyle(Color.textInk)
+                                            .foregroundStyle(Color.textPrimary)
                                     }
                                     .padding(.horizontal, 8)
                                     .padding(.vertical, 4)
-                                    .background(Color.surfaceCard)
-                                    .clipShape(RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle))
+                                    .background(Color.surfacePrimary)
+                                    .clipShape(Capsule())
                                 }
                             }
                             .padding(.horizontal, -AppLayout.spacing)
@@ -180,11 +180,11 @@ struct StoreDetailSheet: View {
                     } label: {
                         Text(String(localized: "space_book_table"))
                             .font(AppFont.monoCTA)
-                            .foregroundStyle(Color.backgroundPaper)
+                            .foregroundStyle(Color.bgPrimary)
                             .padding(.vertical, 12)
                             .frame(maxWidth: .infinity)
-                            .background(Color.accentColor)
-                            .clipShape(RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle))
+                            .background(Color.accentPrimary)
+                            .clipShape(Capsule())
                     }
                     
                     Button {
@@ -192,19 +192,19 @@ struct StoreDetailSheet: View {
                     } label: {
                         Text(String(localized: "common_close"))
                             .font(AppFont.monoBody)
-                            .foregroundStyle(Color.textMuted)
+                            .foregroundStyle(Color.textSecondary)
                             .padding(.vertical, 12)
                             .frame(maxWidth: .infinity)
                             .overlay(
-                                RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle)
-                                    .stroke(Color.border, lineWidth: 1)
+                                Capsule()
+                                    .strokeBorder(Color.border, lineWidth: 1)
                             )
                     }
                 }
                 .padding(AppLayout.spacing)
             }
         }
-        .background(Color.backgroundPaper)
+        .background(Color.bgPrimary)
         .clipShape(RoundedCorner(radius: 16, corners: [.topLeft, .topRight]))
         .sheet(isPresented: $showBooking) {
             EditorialBookingSheet(store: store, isPresented: $showBooking)

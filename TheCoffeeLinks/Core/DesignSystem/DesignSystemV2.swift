@@ -3,37 +3,67 @@ import SwiftUI
 import UIKit
 #endif
 
-// MARK: - Colors
+// MARK: - Colors (Adaptive Light/Dark Mode)
+// Light mode: Original Receipt-Editorial colors
+// Dark mode: Black/grey/white only
 
 extension Color {
     // MARK: - Backgrounds
     
-    static let bgPrimary = Color.black
-    static let bgSecondary = Color(white: 0.1)
-    static let bgTertiary = Color(white: 0.15)
+    static let bgPrimary = Color(light: Color("Colors/BackgroundPaper"), dark: .black)
+    static let bgSecondary = Color(light: Color("Colors/SurfaceCard"), dark: Color(white: 0.1))
+    static let bgTertiary = Color(light: Color(white: 0.94), dark: Color(white: 0.15))
     
     // MARK: - Surfaces (Cards, Sheets)
     
-    static let surfacePrimary = Color(white: 0.12)
-    static let surfaceElevated = Color(white: 0.18)
+    static let surfacePrimary = Color(light: Color("Colors/SurfaceCard"), dark: Color(white: 0.12))
+    static let surfaceElevated = Color(light: .white, dark: Color(white: 0.18))
     
     // MARK: - Text
     
-    static let textPrimary = Color.white
-    static let textSecondary = Color(white: 0.7)
-    static let textTertiary = Color(white: 0.5)
-    static let textDisabled = Color(white: 0.35)
+    static let textPrimary = Color(light: Color("Colors/TextInk"), dark: .white)
+    static let textSecondary = Color(light: Color("Colors/TextMuted"), dark: Color(white: 0.7))
+    static let textTertiary = Color(light: Color(white: 0.5), dark: Color(white: 0.5))
+    static let textDisabled = Color(light: Color(white: 0.7), dark: Color(white: 0.35))
     
     // MARK: - Borders
     
-    static let borderPrimary = Color(white: 0.25)
-    static let borderSecondary = Color(white: 0.15)
+    static let borderPrimary = Color(light: Color("Colors/Border"), dark: Color(white: 0.25))
+    static let borderSecondary = Color(light: Color("Colors/BorderTertiary"), dark: Color(white: 0.15))
+    
+    // MARK: - Accent (from existing design system)
+    
+    static let accentPrimary = Color("Colors/PrimaryEspresso") // Moss green light / Mint dark
+    
+    // MARK: - Button Colors
+    
+    // Light mode: 80% black for secondary buttons, accent for primary
+    // Dark mode: white for highlighted
+    static let buttonHighlight = Color(light: Color(white: 0.2, opacity: 0.8), dark: .white)
+    static let buttonHighlightSecondary = Color(light: Color(white: 0.2, opacity: 0.8), dark: Color(white: 0.7))
     
     // MARK: - States (Minimal semantic colors)
     
-    static let stateError = Color.red
-    static let stateSuccess = Color.green
-    static let stateWarning = Color.orange
+    static let stateError = Color(light: Color("Colors/SemanticError"), dark: .red)
+    static let stateSuccess = Color(light: Color("Colors/SemanticSuccess"), dark: .green)
+    static let stateWarning = Color(light: Color("Colors/SemanticWarning"), dark: .orange)
+    
+    // MARK: - Light/Dark Initializer
+    
+    init(light: Color, dark: Color) {
+        #if canImport(UIKit)
+        self.init(uiColor: UIColor(dynamicProvider: { traits in
+            switch traits.userInterfaceStyle {
+            case .dark:
+                return UIColor(dark)
+            default:
+                return UIColor(light)
+            }
+        }))
+        #else
+        self = light
+        #endif
+    }
 }
 
 // MARK: - Spacing
@@ -97,6 +127,8 @@ struct CapsuleButton: View {
     let isDisabled: Bool
     let action: () -> Void
     
+    @Environment(\.colorScheme) private var colorScheme
+    
     init(
         _ title: String,
         style: CapsuleButtonStyle = .primary,
@@ -138,22 +170,31 @@ struct CapsuleButton: View {
     private var background: some View {
         switch style {
         case .primary:
-            ZStack {
-                Capsule().fill(.ultraThinMaterial)
-                Capsule().fill(Color.white.opacity(0.15))
-                Capsule()
-                    .strokeBorder(
-                        LinearGradient(
-                            colors: [.white.opacity(0.5), .white.opacity(0.1)],
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        ),
-                        lineWidth: 0.5
-                    )
-            }
-            .shadow(color: Color.white.opacity(0.1), radius: 8, x: 0, y: 4)
+            // Accent color button (green)
+            Color.accentPrimary
+                .shadow(color: Color.accentPrimary.opacity(0.2), radius: 8, x: 0, y: 4)
         case .secondary:
-            Color.clear
+            // Light mode: black/80% black, Dark mode: liquid glass effect
+            Group {
+                if colorScheme == .dark {
+                    ZStack {
+                        Capsule().fill(.ultraThinMaterial)
+                        Capsule().fill(Color.white.opacity(0.15))
+                        Capsule()
+                            .strokeBorder(
+                                LinearGradient(
+                                    colors: [.white.opacity(0.5), .white.opacity(0.1)],
+                                    startPoint: .topLeading,
+                                    endPoint: .bottomTrailing
+                                ),
+                                lineWidth: 0.5
+                            )
+                    }
+                    .shadow(color: Color.white.opacity(0.1), radius: 8, x: 0, y: 4)
+                } else {
+                    Color.buttonHighlight
+                }
+            }
         case .ghost:
             Color.clear
         }
@@ -161,9 +202,8 @@ struct CapsuleButton: View {
     
     @ViewBuilder
     private var border: some View {
-        if style == .secondary {
-            Capsule().stroke(Color.borderPrimary, lineWidth: 1)
-        }
+        // No border needed for any style now
+        EmptyView()
     }
     
     private var foregroundColor: Color {
@@ -171,7 +211,7 @@ struct CapsuleButton: View {
         case .primary:
             return .white
         case .secondary:
-            return .textPrimary
+            return colorScheme == .dark ? .white : .white
         case .ghost:
             return .textSecondary
         }
@@ -222,7 +262,7 @@ struct CapsuleTextField: View {
         .background(Color.surfacePrimary)
         .clipShape(Capsule())
         .overlay(
-            Capsule().stroke(Color.borderPrimary, lineWidth: 0.5)
+            Capsule().strokeBorder(Color.borderPrimary, lineWidth: 0.5)
         )
     }
 }
@@ -233,6 +273,7 @@ struct CapsuleSegmentedPicker<SelectionValue: Hashable>: View {
     @Binding var selection: SelectionValue
     let options: [(value: SelectionValue, label: String)]
     @Namespace private var animation
+    @Environment(\.colorScheme) private var colorScheme
     
     var body: some View {
         HStack(spacing: 0) {
@@ -244,13 +285,13 @@ struct CapsuleSegmentedPicker<SelectionValue: Hashable>: View {
                 } label: {
                     Text(option.label)
                         .font(AppTypography.labelMedium)
-                        .foregroundStyle(selection == option.value ? Color.white : Color.textSecondary)
+                        .foregroundStyle(selection == option.value ? (colorScheme == .dark ? Color.black : Color.white) : Color.textSecondary)
                         .frame(maxWidth: .infinity)
                         .frame(height: 40)
                         .background {
                             if selection == option.value {
                                 Capsule()
-                                    .fill(Color.white.opacity(0.2))
+                                    .fill(Color.accentPrimary)
                                     .matchedGeometryEffect(id: "SelectedTab", in: animation)
                             }
                         }
@@ -263,7 +304,7 @@ struct CapsuleSegmentedPicker<SelectionValue: Hashable>: View {
         .background(Color.surfacePrimary)
         .clipShape(Capsule())
         .overlay(
-            Capsule().stroke(Color.borderSecondary, lineWidth: 0.5)
+            Capsule().strokeBorder(Color.borderSecondary, lineWidth: 0.5)
         )
     }
 }

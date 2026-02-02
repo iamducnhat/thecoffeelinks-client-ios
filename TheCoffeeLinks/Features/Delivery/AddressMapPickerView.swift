@@ -27,7 +27,7 @@ struct AddressMapPickerView: View {
             // Center Pin
             Image("mappin")
                 .font(.system(size: 40))
-                .foregroundStyle(Color.primaryEspresso)
+                .foregroundStyle(Color.accentPrimary)
                 .shadow(radius: 4)
                 .padding(.bottom, 40)
             
@@ -39,7 +39,7 @@ struct AddressMapPickerView: View {
                     } label: {
                         Image("circle_x")
                             .font(.system(size: 32))
-                            .foregroundStyle(Color.backgroundPaper)
+                            .foregroundStyle(Color.bgPrimary)
                             .shadow(radius: 4)
                     }
                     Spacer()
@@ -57,11 +57,11 @@ struct AddressMapPickerView: View {
                 } label: {
                     Text("Confirm Location")
                         .font(AppFont.monoCTA)
-                        .foregroundStyle(Color.backgroundPaper)
+                        .foregroundStyle(Color.bgPrimary)
                         .padding(.vertical, 14)
                         .frame(maxWidth: .infinity)
-                        .background(Color.accentColor)
-                        .clipShape(RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle))
+                        .background(Color.accentPrimary)
+                        .clipShape(Capsule())
                         .shadow(radius: 4)
                 }
                 .padding(AppLayout.spacing)

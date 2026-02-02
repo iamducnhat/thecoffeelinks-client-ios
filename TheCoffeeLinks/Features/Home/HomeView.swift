@@ -25,31 +25,22 @@ struct HomeView: View {
     
     var body: some View {
         ZStack(alignment: .center) {
-            Color.backgroundPaper.ignoresSafeArea()
+            Color.bgPrimary.ignoresSafeArea()
             
             VStack(spacing: 0) {
                 ScrollView(.vertical) { LazyVStack(spacing: 0) {
                     // MARK: Header
-                    VStack(alignment: .leading, spacing: AppLayout.spacing) {
-                        HStack {
-                            VStack(alignment: .leading, spacing: 4) {
-                                Text(String(localized: "home_hello_user \(authViewModel.currentUser?.displayName ?? String(localized: "guest_name"))"))
-                                    .font(AppFont.headline)
-                                    .foregroundStyle(Color.primaryEspresso)
-                                
-                                Text(LocalizedStringKey("The Coffee Links")) // Brand name, keep or use app_name
-                                    .font(AppFont.displayTitle)
-                                    .foregroundColor(Color.textInk)
-                            }
-                            
-                            Spacer()
-                        }
+                    VStack(spacing: AppSpacing.lg) {
+                        SectionHeader(
+                            title: "The Coffee Links",
+                            subtitle: String(localized: "home_hello_user \(authViewModel.currentUser?.displayName ?? String(localized: "guest_name"))")
+                        )
+                        .padding(.horizontal, AppSpacing.screenPadding)
                         
-                        Color.secondary.frame(height: 1)
-                            .padding(.horizontal, -AppLayout.spacing)
+                        Divider().background(Color.borderSecondary)
                     }
-                    .padding(.horizontal, AppLayout.spacing)
-                    .padding(.top, AppLayout.spacing)
+                    .padding(.top, AppSpacing.sm)
+                    .background(Color.bgPrimary)
                     .background(GeometryReader {
                         Color.clear.preference(key: ViewOffsetKey.self, value: -$0.frame(in: .named("scroll")).origin.y)
                     })
@@ -168,7 +159,7 @@ struct ActiveOrdersSection: View {
             Text(String(localized: "active_orders_section \(orders.count)"))
                 .textCase(.uppercase)
                 .font(AppFont.sectionHeader)
-                .foregroundStyle(Color.textInk)
+                .foregroundStyle(Color.textPrimary)
                 .padding(.horizontal, AppLayout.spacing)
                 .frame(maxWidth: .infinity, alignment: .leading)
             
@@ -195,30 +186,31 @@ struct AIQuickOrderPrompt: View {
             HStack(spacing: AppLayout.spacing) {
                 Image("sparkles")
                     .font(.system(size: 24))
-                    .foregroundStyle(Color.primaryEspresso)
+                    .foregroundStyle(Color.accentPrimary)
                 
                 VStack(alignment: .leading, spacing: 4) {
                     Text(String(localized: "ai_recommendation_label"))
                         .font(AppFont.uiCaption)
-                        .foregroundStyle(Color.primaryEspresso)
+                        .foregroundStyle(Color.accentPrimary)
                     
                     Text(cart.reason.displayText)
                         .font(AppFont.headline)
-                        .foregroundStyle(Color.textInk)
+                        .foregroundStyle(Color.textPrimary)
                 }
                 
                 Spacer()
                 
                 Image("chevron_right")
                     .font(.system(size: 14))
-                    .foregroundStyle(Color.textMuted)
+                    .foregroundStyle(Color.textSecondary)
             }
             .padding(AppLayout.spacing)
-            .background(Color.surfaceCard)
+            .background(Color.surfacePrimary)
             .overlay(
-                RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle)
-                    .stroke(Color.primaryEspresso, lineWidth: 1)
+                Capsule()
+                    .stroke(Color.accentPrimary, lineWidth: 1)
             )
+            .clipShape(Capsule())
         }
     }
 }
@@ -234,15 +226,15 @@ struct AIQuickOrderModal: View {
             VStack(alignment: .leading, spacing: 8) {
                 Text(String(localized: "ai_modal_title"))
                     .font(AppFont.uiCaption)
-                    .foregroundStyle(Color.primaryEspresso)
+                    .foregroundStyle(Color.accentPrimary)
                 
                 Text(cart.reason.displayText)
                     .font(AppFont.sectionHeader)
-                    .foregroundStyle(Color.textInk)
+                    .foregroundStyle(Color.textPrimary)
             }
             .padding(AppLayout.spacing)
             .frame(maxWidth: .infinity, alignment: .leading)
-            .background(Color.surfaceCard)
+            .background(Color.surfacePrimary)
             
             Color.secondary.frame(height: 1)
             
@@ -253,18 +245,18 @@ struct AIQuickOrderModal: View {
                         VStack(alignment: .leading, spacing: 4) {
                             Text(item.product.name)
                                 .font(AppFont.body)
-                                .foregroundColor(Color.textInk)
+                                .foregroundColor(Color.textPrimary)
 
                             Text(item.customization.displayText)
                                 .font(AppFont.uiCaption)
-                                .foregroundColor(Color.textMuted)
+                                .foregroundColor(Color.textSecondary)
                         }
 
                         Spacer()
 
                         Text(item.totalPrice.formattedVND)
                             .font(AppFont.monoBody)
-                            .foregroundColor(Color.primaryEspresso)
+                            .foregroundColor(Color.accentPrimary)
                     }
                 }
 
@@ -273,15 +265,15 @@ struct AIQuickOrderModal: View {
                 HStack {
                     Text(String(localized: "total_label"))
                         .font(AppFont.headline)
-                        .foregroundColor(Color.textInk)
+                        .foregroundColor(Color.textPrimary)
                     Spacer()
                     Text(cart.totalPrice.formattedVND)
                         .font(AppFont.monoHeadline)
-                        .foregroundColor(Color.primaryEspresso)
+                        .foregroundColor(Color.accentPrimary)
                 }
             }
             .padding(AppLayout.spacing)
-            .background(Color.backgroundPaper)
+            .background(Color.bgPrimary)
             
             Color.secondary.frame(height: 1)
             
@@ -290,26 +282,26 @@ struct AIQuickOrderModal: View {
                 Button(action: onDismiss) {
                     Text(String(localized: "btn_not_now"))
                         .font(AppFont.body)
-                        .foregroundStyle(Color.textMuted)
+                        .foregroundStyle(Color.textSecondary)
                         .frame(maxWidth: .infinity)
                         .frame(height: 56)
-                        .background(Color.surfaceCard)
+                        .background(Color.surfacePrimary)
                 }
                 
                 Button(action: onOrder) {
                     Text(String(localized: "btn_order"))
                         .font(AppFont.monoHeadline)
-                        .foregroundStyle(Color.backgroundPaper)
+                        .foregroundStyle(Color.bgPrimary)
                         .frame(maxWidth: .infinity)
                         .frame(height: 56)
-                        .background(Color.primaryEspresso)
+                        .background(Color.accentPrimary)
                 }
             }
         }
-        .clipShape(RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle))
+        .clipShape(RoundedRectangle(cornerRadius: AppRadius.medium, style: .continuous))
         .overlay(
-            RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle)
-                .stroke(Color.border, lineWidth: 1)
+            RoundedRectangle(cornerRadius: AppRadius.medium, style: .continuous)
+                .strokeBorder(Color.border, lineWidth: 1)
         )
     }
 }
@@ -325,7 +317,7 @@ struct OffersSection: View {
             Text(String(localized: "offers_section_title"))
                 .textCase(.uppercase)
                 .font(AppFont.sectionHeader)
-                .foregroundStyle(Color.textInk)
+                .foregroundStyle(Color.textPrimary)
                 .padding(.horizontal, AppLayout.spacing)
                 .frame(maxWidth: .infinity, alignment: .leading)
             TabView {
@@ -349,7 +341,7 @@ struct OffersSection: View {
                                     )
                                     .overlay {
                                         ProgressView()
-                                            .tint(Color.primaryEspresso)
+                                            .tint(Color.accentPrimary)
                                     }
                             case .success(let image):
                                 image
@@ -357,15 +349,15 @@ struct OffersSection: View {
                                     .aspectRatio(contentMode: .fill)
                             case .failure:
                                 Rectangle()
-                                    .fill(Color.surfaceCard)
+                                    .fill(Color.surfacePrimary)
                                     .overlay {
                                         VStack(spacing: AppLayout.spacingSmall) {
                                             Image("ticket")
                                                 .font(.system(size: 32))
-                                                .foregroundStyle(Color.primaryEspresso.opacity(0.3))
+                                                .foregroundStyle(Color.accentPrimary.opacity(0.3))
                                             Text(voucher.displayTitle)
                                                 .font(AppFont.uiCaption)
-                                                .foregroundStyle(Color.textMuted)
+                                                .foregroundStyle(Color.textSecondary)
                                         }
                                     }
                             @unknown default:
@@ -373,10 +365,10 @@ struct OffersSection: View {
                             }
                         }
                         .aspectRatio(2/1, contentMode: .fit)
-                        .clipShape(RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle))
+                        .clipShape(RoundedRectangle(cornerRadius: AppRadius.medium, style: .continuous))
                         .overlay(
-                            RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle)
-                                .stroke(Color.border, lineWidth: 1)
+                            RoundedRectangle(cornerRadius: AppRadius.medium, style: .continuous)
+                                .strokeBorder(Color.border, lineWidth: 1)
                         )
                     }
                     .padding(.horizontal, AppLayout.spacing)
@@ -402,7 +394,7 @@ struct PopularSection: View {
             Text(String(localized: "popular_section_title"))
                 .textCase(.uppercase)
                 .font(AppFont.sectionHeader)
-                .foregroundStyle(Color.textInk)
+                .foregroundStyle(Color.textPrimary)
                 .padding(.horizontal, AppLayout.spacing)
                 .frame(maxWidth: .infinity, alignment: .leading)
             
@@ -435,10 +427,10 @@ struct PopularProductCard: View {
                     switch phase { // CHANGED
                     case .empty: // CHANGED
                         Rectangle() // CHANGED
-                            .fill(Color.surfaceCard) // CHANGED
+                            .fill(Color.surfacePrimary) // CHANGED
                             .overlay { // CHANGED
                                 ProgressView() // CHANGED
-                                    .tint(Color.primaryEspresso) // CHANGED
+                                    .tint(Color.accentPrimary) // CHANGED
                             } // CHANGED
                     case .success(let image): // CHANGED
                         image // CHANGED
@@ -446,18 +438,18 @@ struct PopularProductCard: View {
                             .aspectRatio(contentMode: .fill) // CHANGED
                     case .failure: // CHANGED
                         Rectangle() // CHANGED
-                            .fill(Color.textInk.opacity(0.1)) // CHANGED
+                            .fill(Color.textPrimary.opacity(0.1)) // CHANGED
                             .overlay { // CHANGED
                                 Image("photo") // CHANGED
                                     .font(AppFont.productTitle) // CHANGED
-                                    .foregroundStyle(Color.textInk.opacity(0.3)) // CHANGED
+                                    .foregroundStyle(Color.textPrimary.opacity(0.3)) // CHANGED
                             } // CHANGED
                     @unknown default: // CHANGED
                         EmptyView() // CHANGED
                     } // CHANGED
                 } // CHANGED
                 .frame(width: AppLayout.productImageSize, height: AppLayout.productImageSize)
-                .clipShape(RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle))
+                .clipShape(RoundedRectangle(cornerRadius: AppRadius.medium, style: .continuous))
                 
                 // Text Block (heavier, more grounded)
                 VStack(alignment: .leading, spacing: AppLayout.spacing) {
@@ -465,7 +457,7 @@ struct PopularProductCard: View {
                     Text(product.product.name)
                         .font(AppFont.productTitle)
                         .lineLimit(2)
-                        .foregroundColor(Color.textInk)
+                        .foregroundColor(Color.textPrimary)
                     
                     // Spacer(minLength: AppLayout.spacingCompact)
                     
@@ -473,7 +465,7 @@ struct PopularProductCard: View {
                     HStack(spacing: AppLayout.spacingSmall) {
                         Text(product.product.price(for: .medium).toVND())
                             .font(AppFont.monoBody)
-                            .foregroundColor(Color.textMuted.opacity(0.8))
+                            .foregroundColor(Color.textSecondary.opacity(0.8))
                     }
                 }
                 .padding(.vertical, AppLayout.spacingCompact)
@@ -488,9 +480,9 @@ struct PopularProductCard: View {
                     Text("\(Image(systemName: "plus"))")
                         .font(AppFont.body)
                         .padding(AppLayout.spacingMicro)
-                        .foregroundStyle(Color.backgroundPaper)
-                        .background(Color.primaryEspresso)
-                        .clipShape(RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle))
+                        .foregroundStyle(Color.bgPrimary)
+                        .background(Color.accentPrimary)
+                        .clipShape(Capsule())
                 }
             }
             if showDivider {
@@ -512,7 +504,7 @@ struct EventsSection: View {
             Text(String(localized: "events_section_title"))
                 .textCase(.uppercase)
                 .font(AppFont.sectionHeader)
-                .foregroundStyle(Color.textInk)
+                .foregroundStyle(Color.textPrimary)
                 .padding(.horizontal, AppLayout.spacing)
                 .frame(maxWidth: .infinity, alignment: .leading)
             
@@ -541,10 +533,10 @@ struct EventCard: View {
                     switch phase { // CHANGED
                     case .empty: // CHANGED
                         Rectangle() // CHANGED
-                            .fill(Color.surfaceCard) // CHANGED
+                            .fill(Color.surfacePrimary) // CHANGED
                             .overlay { // CHANGED
                                 ProgressView() // CHANGED
-                                    .tint(Color.primaryEspresso) // CHANGED
+                                    .tint(Color.accentPrimary) // CHANGED
                             } // CHANGED
                     case .success(let image): // CHANGED
                         image // CHANGED
@@ -552,22 +544,22 @@ struct EventCard: View {
                             .aspectRatio(contentMode: .fill) // CHANGED
                     case .failure: // CHANGED
                         Rectangle() // CHANGED
-                            .fill(Color.surfaceCard) // CHANGED
+                            .fill(Color.surfacePrimary) // CHANGED
                     @unknown default: // CHANGED
                         EmptyView() // CHANGED
                     } // CHANGED
                 } // CHANGED
                 .frame(width: 200, height: 200) // Fixed width, square aspect ratio
-                .clipShape(RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle))
+                .clipShape(RoundedRectangle(cornerRadius: AppRadius.medium, style: .continuous))
                 .overlay {
-                    RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle)
-                        .stroke(Color.border.opacity(0.3), lineWidth: 1)
+                    RoundedRectangle(cornerRadius: AppRadius.medium, style: .continuous)
+                        .strokeBorder(Color.border.opacity(0.3), lineWidth: 1)
                 }
             } else {
                 Rectangle()
-                    .fill(Color.surfaceCard)
+                    .fill(Color.surfacePrimary)
                     .frame(width: 200, height: 200)
-                    .clipShape(RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle))
+                    .clipShape(RoundedRectangle(cornerRadius: AppRadius.medium, style: .continuous))
             }
             
             // Text content - minimal, editorial
@@ -575,7 +567,7 @@ struct EventCard: View {
                 // Title (Product Title Font)
                 Text(event.title)
                     .font(AppFont.productTitle)
-                    .foregroundColor(Color.textInk)
+                    .foregroundColor(Color.textPrimary)
                     .lineLimit(1)
                 
                 // Meta Row: EVENT · Subtitle
@@ -583,14 +575,14 @@ struct EventCard: View {
                     Text(subtitle)
                         .font(AppFont.monoCaption)
                         .tracking(1.0)
-                        .foregroundColor(Color.textInk.opacity(0.6))
+                        .foregroundColor(Color.textPrimary.opacity(0.6))
                         .textCase(.uppercase)
                 }
             }
             .padding(.top, AppLayout.spacingMedium)
             .padding(.bottom, AppLayout.spacingCompact)
             .frame(width: 200, alignment: .leading)
-            // Removed background(Color.surfaceCard)
+            // Removed background(Color.surfacePrimary)
         }
         // Removed outer clipShape and overlay/border
     }

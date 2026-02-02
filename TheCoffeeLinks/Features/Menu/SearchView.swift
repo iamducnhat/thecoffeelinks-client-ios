@@ -22,22 +22,22 @@ struct SearchView: View {
     
     var body: some View {
         ZStack(alignment: .top) {
-            Color.backgroundPaper.ignoresSafeArea()
+            Color.bgPrimary.ignoresSafeArea()
             
             // Fixed Navigation Header
             HStack(alignment: .center, spacing: AppLayout.spacing) {
                 Button { dismiss() } label: {
                     Image(systemName: "xmark")
                         .font(AppFont.navIcon)
-                        .foregroundStyle(Color.textInk)
+                        .foregroundStyle(Color.textPrimary)
                         .frame(minWidth: AppLayout.touchTarget, minHeight: AppLayout.touchTarget)
                         .background {
-                            RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle)
-                                .fill(Color.backgroundPaper)
+                            Capsule()
+                                .fill(Color.bgPrimary)
                         }
                         .overlay {
-                            RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle)
-                                .stroke(Color.textInk, lineWidth: min(66.6, max(scrollOffset, 0.0)) / 66.6)
+                            Capsule()
+                                .stroke(Color.textPrimary, lineWidth: min(66.6, max(scrollOffset, 0.0)) / 66.6)
                                 .opacity(min(88.8, max(scrollOffset, 0.0)) / 99.9)
                         }
                 }
@@ -45,7 +45,7 @@ struct SearchView: View {
                 Text(String(localized: "common_search"))
                     .font(AppFont.displayTitle)
                     .lineLimit(1)
-                    .foregroundStyle(Color.textInk)
+                    .foregroundStyle(Color.textPrimary)
                     .padding(.vertical, 24)
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .hidden()
@@ -60,14 +60,14 @@ struct SearchView: View {
                     HStack(alignment: .center, spacing: AppLayout.spacing) {
                         Image(systemName: "xmark")
                             .font(AppFont.navIcon)
-                            .foregroundStyle(Color.textInk)
+                            .foregroundStyle(Color.textPrimary)
                             .frame(minWidth: AppLayout.touchTarget, minHeight: AppLayout.touchTarget)
                             .hidden()
                         
                         Text(String(localized: "common_search"))
                             .font(AppFont.displayTitle)
                             .lineLimit(1)
-                            .foregroundStyle(Color.textInk)
+                            .foregroundStyle(Color.textPrimary)
                             .padding(.vertical, 24)
                             .frame(maxWidth: .infinity, alignment: .leading)
                     }
@@ -85,12 +85,12 @@ struct SearchView: View {
                     HStack(spacing: AppLayout.spacingMedium) {
                         Image("magnifyingglass")
                             .font(AppFont.body)
-                            .foregroundStyle(Color.textMuted)
+                            .foregroundStyle(Color.textSecondary)
                         
                         TextField("Search products...", text: $viewModel.searchQuery)
                             .textFieldStyle(PlainTextFieldStyle())
                             .font(AppFont.body)
-                            .foregroundStyle(Color.textInk)
+                            .foregroundStyle(Color.textPrimary)
                         
                         if !viewModel.searchQuery.isEmpty {
                             Button {
@@ -98,15 +98,15 @@ struct SearchView: View {
                             } label: {
                                 Image("circle_x")
                                     .font(AppFont.body)
-                                    .foregroundStyle(Color.textMuted)
+                                    .foregroundStyle(Color.textSecondary)
                             }
                         }
                     }
                     .padding(.horizontal, 8)
                     .padding(.vertical, 6)
                     .overlay {
-                        RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle)
-                            .stroke(Color.borderTertiary, style: StrokeStyle(lineWidth: 1, dash: AppLayout.dashedPattern))
+                        Capsule()
+                            .stroke(Color.borderSecondary, style: StrokeStyle(lineWidth: 1, dash: AppLayout.dashedPattern))
                     }
                     .padding(.horizontal, AppLayout.spacing)
                     
@@ -121,7 +121,7 @@ struct SearchView: View {
                                 Text(String(localized: "common_recent"))
                                     .textCase(.uppercase)
                                     .font(AppFont.sectionHeader)
-                                    .foregroundStyle(Color.textInk)
+                                    .foregroundStyle(Color.textPrimary)
                                 
                                 VStack(spacing: 0) {
                                     ForEach(Array(viewModel.recentSearches.enumerated()), id: \.element) { index, query in
@@ -132,13 +132,13 @@ struct SearchView: View {
                                                 HStack {
                                                     Text(query)
                                                         .font(AppFont.body)
-                                                        .foregroundStyle(Color.textInk)
+                                                        .foregroundStyle(Color.textPrimary)
                                                     
                                                     Spacer()
                                                     
                                                     Image(systemName: "arrow.up.left")
                                                         .font(.system(size: 12))
-                                                        .foregroundStyle(Color.textMuted)
+                                                        .foregroundStyle(Color.textSecondary)
                                                 }
                                                 .padding(AppLayout.spacing)
                                                 
@@ -149,9 +149,9 @@ struct SearchView: View {
                                         }
                                     }
                                 }
-                                .background(Color.backgroundPaper)
+                                .background(Color.bgPrimary)
                                 .overlay(
-                                    RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle)
+                                    Capsule()
                                         .stroke(Color.border, lineWidth: 1)
                                 )
                             }
@@ -167,16 +167,16 @@ struct SearchView: View {
                             VStack(spacing: AppLayout.spacing) {
                                 Text(String(localized: "search_empty_title"))
                                     .font(AppFont.sectionHeader)
-                                    .foregroundStyle(Color.textInk)
+                                    .foregroundStyle(Color.textPrimary)
                                 
                                 Text(String(localized: "search_empty_desc"))
                                     .font(AppFont.body)
-                                    .foregroundStyle(Color.textMuted)
+                                    .foregroundStyle(Color.textSecondary)
                             }
                             .frame(maxWidth: .infinity)
                             .padding(60)
                             .overlay(
-                                RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle)
+                                Capsule()
                                     .stroke(Color.border, style: StrokeStyle(lineWidth: 1, dash: AppLayout.dashedPattern))
                             )
                             .padding(AppLayout.spacing)
@@ -224,11 +224,11 @@ struct SearchResultRow: View {
                     AsyncImage(url: URL(string: product.displayImageUrl ?? "")) { phase in
                         switch phase {
                         case .empty, .failure:
-                            Color.surfaceCard
+                            Color.surfacePrimary
                                 .overlay(
                                     Text(String(product.name.prefix(1)))
                                         .font(AppFont.sectionHeader)
-                                        .foregroundStyle(Color.textMuted)
+                                        .foregroundStyle(Color.textSecondary)
                                 )
                         case .success(let image):
                             image
@@ -239,35 +239,35 @@ struct SearchResultRow: View {
                         }
                     }
                     .frame(width: 64, height: 64)
-                    .clipShape(RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle))
-                    .overlay(
-                        RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle)
+                    .clipShape(RoundedRectangle(cornerRadius: AppRadius.medium, style: .continuous))
+        .overlay(
+                        Capsule()
                             .stroke(Color.border, lineWidth: 1)
                     )
                     
                     VStack(alignment: .leading, spacing: 4) {
                         Text(product.name)
                             .font(AppFont.body)
-                            .foregroundStyle(Color.textInk)
+                            .foregroundStyle(Color.textPrimary)
                             .lineLimit(2)
                         
                         if let description = product.description {
                             Text(description)
                                 .font(AppFont.uiCaption)
-                                .foregroundStyle(Color.textMuted)
+                                .foregroundStyle(Color.textSecondary)
                                 .lineLimit(2)
                         }
                         
                         Text(product.priceRange)
                             .font(AppFont.monoBody)
-                            .foregroundStyle(Color.primaryEspresso)
+                            .foregroundStyle(Color.accentPrimary)
                     }
                     
                     Spacer()
                     
                     Image("chevron.right")
                         .font(.system(size: 12))
-                        .foregroundStyle(Color.textMuted)
+                        .foregroundStyle(Color.textSecondary)
                 }
                 .padding(.vertical, AppLayout.spacing)
                 

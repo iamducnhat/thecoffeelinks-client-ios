@@ -14,7 +14,7 @@ struct DeliveryAddressSheet: View {
     
     var body: some View {
         ZStack(alignment: .top) {
-            Color.backgroundPaper.ignoresSafeArea()
+            Color.bgPrimary.ignoresSafeArea()
             
             VStack(spacing: 0) {
                 // Header
@@ -22,14 +22,14 @@ struct DeliveryAddressSheet: View {
                     Button { dismiss() } label: {
                         Text(String(localized: "common_close"))
                             .font(AppFont.body)
-                            .foregroundStyle(Color.textMuted)
+                            .foregroundStyle(Color.textSecondary)
                     }
                     
                     Spacer()
                     
                     Text("Delivery Address")
                         .font(AppFont.displayTitle)
-                        .foregroundStyle(Color.textInk)
+                        .foregroundStyle(Color.textPrimary)
                     
                     Spacer()
                     
@@ -38,7 +38,7 @@ struct DeliveryAddressSheet: View {
                     } label: {
                         Image("plus")
                             .font(AppFont.navIcon)
-                            .foregroundStyle(Color.primaryEspresso)
+                            .foregroundStyle(Color.accentPrimary)
                     }
                 }
                 .padding(AppLayout.spacing)
@@ -103,29 +103,29 @@ struct AddressCard: View {
                     HStack {
                         Text(address.label)
                             .font(AppFont.headline)
-                            .foregroundStyle(Color.textInk)
+                            .foregroundStyle(Color.textPrimary)
                         
                         if address.isDefault {
                             Text("Default")
                                 .font(AppFont.uiMicro)
                                 .padding(.horizontal, 6)
                                 .padding(.vertical, 2)
-                                .background(Color.primaryEspresso.opacity(0.1))
-                                .foregroundStyle(Color.primaryEspresso)
+                                .background(Color.accentPrimary.opacity(0.1))
+                                .foregroundStyle(Color.accentPrimary)
                                 .clipShape(Capsule())
                         }
                     }
                     
                     Text(address.fullAddress)
                         .font(AppFont.body)
-                        .foregroundStyle(Color.textMuted)
+                        .foregroundStyle(Color.textSecondary)
                         .lineLimit(2)
                         .multilineTextAlignment(.leading)
                     
                     if let notes = address.buildingInfo, !notes.isEmpty {
                          Text(notes)
                             .font(AppFont.uiCaption)
-                            .foregroundStyle(Color.textMuted)
+                            .foregroundStyle(Color.textSecondary)
                             .lineLimit(1)
                     }
                 }
@@ -135,16 +135,16 @@ struct AddressCard: View {
                 if isSelected {
                     Image("circle_check")
                         .font(.system(size: 20))
-                        .foregroundStyle(Color.primaryEspresso)
+                        .foregroundStyle(Color.accentPrimary)
                 }
             }
             .padding(AppLayout.spacing)
-            .background(isSelected ? Color.surfaceCard : Color.backgroundPaper)
+            .background(isSelected ? Color.surfacePrimary : Color.bgPrimary)
             .overlay(
-                RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle)
-                    .stroke(isSelected ? Color.primaryEspresso : Color.border, lineWidth: 1)
+                Capsule()
+                    .stroke(isSelected ? Color.accentPrimary : Color.border, lineWidth: 1)
             )
-            .clipShape(RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle))
+            .clipShape(Capsule())
         }
         .buttonStyle(.plain)
         .contextMenu {
@@ -170,15 +170,15 @@ struct EmptyAddressState: View {
             
             Image("map")
                 .font(.system(size: 48))
-                .foregroundStyle(Color.textMuted)
+                .foregroundStyle(Color.textSecondary)
             
             Text("No saved addresses")
                 .font(AppFont.sectionHeader)
-                .foregroundStyle(Color.textInk)
+                .foregroundStyle(Color.textPrimary)
             
             Text("Add a delivery address to place orders.")
                 .font(AppFont.body)
-                .foregroundStyle(Color.textMuted)
+                .foregroundStyle(Color.textSecondary)
                 .multilineTextAlignment(.center)
             
             Button {
@@ -186,11 +186,11 @@ struct EmptyAddressState: View {
             } label: {
                 Text("Add New Address")
                     .font(AppFont.monoCTA)
-                    .foregroundStyle(Color.backgroundPaper)
+                    .foregroundStyle(Color.bgPrimary)
                     .padding(.vertical, 12)
                     .padding(.horizontal, 24)
-                    .background(Color.primaryEspresso)
-                    .clipShape(RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle))
+                    .background(Color.accentPrimary)
+                    .clipShape(Capsule())
             }
         }
         .padding(AppLayout.spacing)

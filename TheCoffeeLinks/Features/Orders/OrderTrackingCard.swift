@@ -60,12 +60,12 @@ struct OrderTrackingCard: View {
                     VStack(alignment: .leading, spacing: 4) {
                         Text(statusTitle)
                             .font(AppFont.sectionHeader)
-                            .foregroundStyle(Color.primaryEspresso)
+                            .foregroundStyle(Color.accentPrimary)
                             .textCase(.uppercase)
                         
                         Text(statusSubtitle)
                             .font(AppFont.body)
-                            .foregroundStyle(Color.textMuted)
+                            .foregroundStyle(Color.textSecondary)
                             .lineLimit(2)
                             .fixedSize(horizontal: false, vertical: true)
                     }
@@ -77,11 +77,10 @@ struct OrderTrackingCard: View {
                         .font(AppFont.monoCaption)
                         .padding(.horizontal, 8)
                         .padding(.vertical, 4)
-                        .background(Color.backgroundPaper)
-                        .clipShape(RoundedRectangle(cornerRadius: AppLayout.cornerRadius / 2))
-                        .overlay(
-                            RoundedRectangle(cornerRadius: AppLayout.cornerRadius / 2)
-                                .stroke(Color.border, lineWidth: 0.5)
+                        .background(Color.bgPrimary)
+                        .clipShape(RoundedRectangle(cornerRadius: AppRadius.medium, style: .continuous))
+        .overlay(
+                            RoundedRectangle(cornerRadius: AppRadius.medium, style: .continuous).strokeBorder(Color.border, lineWidth: 0.5)
                         )
                 }
                 
@@ -92,12 +91,12 @@ struct OrderTrackingCard: View {
                         Text("ETA: \(timeString(from: eta))")
                             .font(AppFont.monoHeadline)
                     }
-                    .foregroundStyle(Color.textInk)
+                    .foregroundStyle(Color.textPrimary)
                     .padding(.top, 4)
                 }
             }
             .padding(AppLayout.spacing)
-            .background(Color.surfaceCard)
+            .background(Color.surfacePrimary)
             
             // MARK: 2. Status Progress (The "Editorial Timeline")
             ZStack {
@@ -117,7 +116,7 @@ struct OrderTrackingCard: View {
                 .padding(.horizontal, AppLayout.spacing * 2)
             }
             .padding(.bottom, AppLayout.spacingMedium)
-            .background(Color.surfaceCard)
+            .background(Color.surfacePrimary)
             
             // MARK: 3. Item Manifest
             VStack(alignment: .leading, spacing: AppLayout.spacingSmall) {
@@ -125,19 +124,19 @@ struct OrderTrackingCard: View {
                     HStack(alignment: .top, spacing: AppLayout.spacingMedium) {
                         Text("\(item.quantity)×")
                             .font(AppFont.monoHeadline)
-                            .foregroundStyle(Color.primaryEspresso)
+                            .foregroundStyle(Color.accentPrimary)
                             .frame(width: 32, alignment: .leading)
                         
                         VStack(alignment: .leading, spacing: 2) {
                             Text(item.productName)
                                 .font(AppFont.headline)
-                                .foregroundStyle(Color.textInk)
+                                .foregroundStyle(Color.textPrimary)
                                 .lineLimit(1)
                             
                             if !item.customization.displayText.isEmpty {
                                 Text(item.customization.displayText)
                                     .font(AppFont.uiMicro)
-                                    .foregroundStyle(Color.textMuted)
+                                    .foregroundStyle(Color.textSecondary)
                                     .lineLimit(1)
                             }
                         }
@@ -146,7 +145,7 @@ struct OrderTrackingCard: View {
                         
                         Text(item.totalPrice.formattedVND)
                             .font(AppFont.monoCaption)
-                            .foregroundStyle(Color.textMuted)
+                            .foregroundStyle(Color.textSecondary)
                     }
                 }
                 
@@ -158,7 +157,7 @@ struct OrderTrackingCard: View {
                 }
             }
             .padding(AppLayout.spacing)
-            .background(Color.backgroundPaper)
+            .background(Color.bgPrimary)
             
             // MARK: 4. Actions & Identification
             VStack(spacing: 0) {
@@ -181,11 +180,11 @@ struct OrderTrackingCard: View {
                                 Image("credit_card")
                             }
                             .font(AppFont.monoCaption)
-                            .foregroundStyle(Color.backgroundPaper)
+                            .foregroundStyle(Color.bgPrimary)
                             .padding(.horizontal, 12)
                             .padding(.vertical, 6)
-                            .background(Color.primaryEspresso)
-                            .clipShape(RoundedRectangle(cornerRadius: AppLayout.cornerRadius / 2))
+                            .background(Color.accentPrimary)
+                            .clipShape(Capsule())
                         }
                     } else if order.status.isActive {
                         Label {
@@ -194,17 +193,17 @@ struct OrderTrackingCard: View {
                             Image(isDelivery ? "map" : "map_pin")
                         }
                             .font(AppFont.monoCaption)
-                            .foregroundStyle(Color.primaryEspresso)
+                            .foregroundStyle(Color.accentPrimary)
                     }
                 }
                 .padding(.horizontal, AppLayout.spacing)
                 .padding(.vertical, AppLayout.spacingMedium)
             }
-            .background(Color.backgroundPaper)
+            .background(Color.bgPrimary)
         }
-        .clipShape(RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle))
+        .clipShape(RoundedRectangle(cornerRadius: AppRadius.medium, style: .continuous))
         .overlay(
-            RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle)
+            Capsule()
                 .stroke(Color.border, lineWidth: AppLayout.borderWidth)
         )
         .shadow(color: Color.black.opacity(0.04), radius: 12, x: 0, y: 6)
@@ -223,11 +222,11 @@ private struct ProgressPoint: View {
     
     var body: some View {
         Circle()
-            .fill(active ? Color.primaryEspresso : Color.border)
+            .fill(active ? Color.accentPrimary : Color.border)
             .frame(width: 8, height: 8)
             .background(
                 Circle()
-                    .stroke(Color.surfaceCard, lineWidth: 4)
+                    .stroke(Color.surfacePrimary, lineWidth: 4)
             )
     }
 }

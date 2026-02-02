@@ -23,28 +23,28 @@ struct DeliveryModeBanner: View {
                 HStack(spacing: AppLayout.spacing) {
                     Image(currentMode.iconName)
                         .font(.system(size: 20))
-                        .foregroundStyle(Color.primaryEspresso)
+                        .foregroundStyle(Color.accentPrimary)
                         .frame(width: 24)
                     
                     VStack(alignment: .leading, spacing: 2) {
                         Text(currentMode.displayName)
                             .font(AppFont.headline)
-                            .foregroundStyle(Color.textInk)
+                            .foregroundStyle(Color.textPrimary)
                         
                         if currentMode == .delivery {
                             if let address = currentAddress {
                                 Text(address.shortAddress)
                                     .font(AppFont.uiCaption)
-                                    .foregroundStyle(Color.textMuted)
+                                    .foregroundStyle(Color.textSecondary)
                             } else {
                                 Text(String(localized: "delivery_select_address"))
                                     .font(AppFont.uiCaption)
-                                    .foregroundStyle(Color.semanticError)
+                                    .foregroundStyle(Color.stateError)
                             }
                         } else {
                             Text(String(localized: "delivery_pickup_option"))
                                 .font(AppFont.uiCaption)
-                                .foregroundStyle(Color.textMuted)
+                                .foregroundStyle(Color.textSecondary)
                         }
                     }
                     
@@ -52,15 +52,15 @@ struct DeliveryModeBanner: View {
                     
                     Image("chevron.down")
                         .font(.system(size: 12))
-                        .foregroundStyle(Color.textMuted)
+                        .foregroundStyle(Color.textSecondary)
                 }
                 .padding(AppLayout.spacing)
-                .background(Color.surfaceCard)
+                .background(Color.surfacePrimary)
                 .overlay(
-                    RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle)
-                        .stroke(Color.border, lineWidth: 1)
+                    Capsule()
+                        .strokeBorder(Color.border, lineWidth: 1)
                 )
-                .clipShape(RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle))
+                .clipShape(Capsule())
             }
             .buttonStyle(.plain)
             
@@ -73,16 +73,16 @@ struct DeliveryModeBanner: View {
                     HStack(spacing: 8) {
                         ProgressView()
                             .controlSize(.small)
-                            .tint(Color.primaryEspresso)
+                            .tint(Color.accentPrimary)
                         Text(String(localized: "delivery_checking_status"))
                             .font(AppFont.uiMicro)
-                            .foregroundStyle(Color.textMuted)
+                            .foregroundStyle(Color.textSecondary)
                     }
                     .padding(8)
                     .frame(maxWidth: .infinity, alignment: .leading)
-                    .background(Color.backgroundPaper)
+                    .background(Color.bgPrimary)
                     .overlay(
-                        RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle)
+                        Capsule()
                             .stroke(Color.border, style: StrokeStyle(lineWidth: 1, dash: AppLayout.dashedPattern))
                     )
                 } else if let availability = deliveryAvailability, availability.available {
@@ -101,19 +101,19 @@ struct DeliveryUnavailableWarning: View {
     var body: some View {
         HStack(spacing: AppLayout.spacing) {
             Image("triangle_alert")
-                .foregroundStyle(Color.semanticError)
+                .foregroundStyle(Color.stateError)
             Text(reason?.message ?? "Delivery unavailable")
                 .font(AppFont.uiCaption)
-                .foregroundStyle(Color.textInk)
+                .foregroundStyle(Color.textPrimary)
             Spacer()
         }
         .padding(AppLayout.spacing)
-        .background(Color.semanticError.opacity(0.1))
+        .background(Color.stateError.opacity(0.1))
         .overlay(
-            RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle)
-                .stroke(Color.semanticError.opacity(0.3), lineWidth: 1)
+            Capsule()
+                .stroke(Color.stateError.opacity(0.3), lineWidth: 1)
         )
-        .clipShape(RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle))
+        .clipShape(Capsule())
     }
 }
 
@@ -127,16 +127,16 @@ struct DeliveryInfoCard: View {
             HStack {
                 HStack(spacing: 4) {
                     Image("bicycle")
-                        .foregroundStyle(Color.semanticSuccess)
+                        .foregroundStyle(Color.stateSuccess)
                     Text(String(localized: "delivery_available_label"))
                         .font(AppFont.uiCaption)
-                        .foregroundStyle(Color.semanticSuccess)
+                        .foregroundStyle(Color.stateSuccess)
                 }
                 Spacer()
                 if let eta = availability.eta {
                     Text(eta.displayRange)
                         .font(AppFont.monoBody)
-                        .foregroundStyle(Color.textInk)
+                        .foregroundStyle(Color.textPrimary)
                 }
             }
             
@@ -144,11 +144,11 @@ struct DeliveryInfoCard: View {
                 HStack {
                     Text(String(localized: "delivery_fee_label"))
                         .font(AppFont.uiMicro)
-                        .foregroundStyle(Color.textMuted)
+                        .foregroundStyle(Color.textSecondary)
                     Spacer()
                     Text(fee.displayAmount)
                         .font(AppFont.uiMicro)
-                        .foregroundStyle(Color.textInk)
+                        .foregroundStyle(Color.textPrimary)
                 }
             }
             
@@ -156,21 +156,21 @@ struct DeliveryInfoCard: View {
                 HStack {
                     Text(String(localized: "delivery_min_order_label"))
                         .font(AppFont.uiMicro)
-                        .foregroundStyle(Color.textMuted)
+                        .foregroundStyle(Color.textSecondary)
                     Spacer()
                     Text(minOrder.formattedVND)
                         .font(AppFont.uiMicro)
-                        .foregroundStyle(Color.textInk)
+                        .foregroundStyle(Color.textPrimary)
                 }
             }
         }
         .padding(AppLayout.spacing)
-        .background(Color.backgroundPaper)
+        .background(Color.bgPrimary)
         .overlay(
-            RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle)
-                .stroke(Color.semanticSuccess, lineWidth: 1)
+            Capsule()
+                .stroke(Color.stateSuccess, lineWidth: 1)
         )
-        .clipShape(RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle))
+        .clipShape(Capsule())
     }
 }
 
@@ -183,7 +183,7 @@ struct OrderingModeSheet: View {
     
     var body: some View {
         ZStack(alignment: .top) {
-            Color.backgroundPaper.ignoresSafeArea()
+            Color.bgPrimary.ignoresSafeArea()
             
             VStack(spacing: 0) {
                 // Header
@@ -191,14 +191,14 @@ struct OrderingModeSheet: View {
                     Button { dismiss() } label: {
                         Text(String(localized: "common_cancel"))
                             .font(AppFont.body)
-                            .foregroundStyle(Color.textMuted)
+                            .foregroundStyle(Color.textSecondary)
                     }
                     
                     Spacer()
                     
                     Text(String(localized: "delivery_order_type_label"))
                         .font(AppFont.displayTitle)
-                        .foregroundStyle(Color.textInk)
+                        .foregroundStyle(Color.textPrimary)
                     
                     Spacer()
                     
@@ -212,7 +212,7 @@ struct OrderingModeSheet: View {
                     VStack(spacing: AppLayout.spacing) {
                         Text(String(localized: "delivery_mode_prompt"))
                             .font(AppFont.sectionHeader)
-                            .foregroundStyle(Color.textInk)
+                            .foregroundStyle(Color.textPrimary)
                             .padding(.top, AppLayout.spacing)
                         
                         VStack(spacing: AppLayout.spacing) {
@@ -247,16 +247,16 @@ struct ModeOptionCard: View {
             HStack(spacing: AppLayout.spacing) {
                 Image(mode.iconName)
                     .font(.system(size: 24))
-                    .foregroundStyle(isSelected ? Color.primaryEspresso : Color.textMuted)
+                    .foregroundStyle(isSelected ? Color.accentPrimary : Color.textSecondary)
                     .frame(width: 40)
                 
                 VStack(alignment: .leading, spacing: 4) {
                     Text(mode.displayName)
                         .font(AppFont.headline)
-                        .foregroundStyle(Color.textInk)
+                        .foregroundStyle(Color.textPrimary)
                     Text(modeDescription)
                         .font(AppFont.uiCaption)
-                        .foregroundStyle(Color.textMuted)
+                        .foregroundStyle(Color.textSecondary)
                 }
                 
                 Spacer()
@@ -264,7 +264,7 @@ struct ModeOptionCard: View {
                 if isSelected {
                     Image("circle_check")
                         .font(.system(size: 20))
-                        .foregroundStyle(Color.primaryEspresso)
+                        .foregroundStyle(Color.accentPrimary)
                 } else {
                     Image("circle")
                         .font(.system(size: 20))
@@ -272,12 +272,12 @@ struct ModeOptionCard: View {
                 }
             }
             .padding(AppLayout.spacing)
-            .background(isSelected ? Color.surfaceCard : Color.backgroundPaper)
+            .background(isSelected ? Color.surfacePrimary : Color.bgPrimary)
             .overlay(
-                RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle)
-                    .stroke(isSelected ? Color.primaryEspresso : Color.border, lineWidth: 1)
+                Capsule()
+                    .stroke(isSelected ? Color.accentPrimary : Color.border, lineWidth: 1)
             )
-            .clipShape(RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle))
+            .clipShape(Capsule())
         }
         .buttonStyle(.plain)
     }

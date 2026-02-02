@@ -59,9 +59,8 @@ struct ProfileView: View {
                             }
                         }
                         .clipShape(RoundedRectangle(cornerRadius: AppRadius.medium, style: .continuous))
-                        .overlay(
-                            RoundedRectangle(cornerRadius: AppRadius.medium, style: .continuous)
-                                .stroke(Color.borderSecondary, lineWidth: 0.5)
+        .overlay(
+                            RoundedRectangle(cornerRadius: AppRadius.medium, style: .continuous).strokeBorder(Color.borderSecondary, lineWidth: 0.5)
                         )
                     }
                     .padding(.horizontal, AppSpacing.screenPadding)
@@ -93,9 +92,8 @@ struct ProfileView: View {
                             ListRow(title: "Notifications", icon: "bell.badge", destination: NotificationsView())
                         }
                         .clipShape(RoundedRectangle(cornerRadius: AppRadius.medium, style: .continuous))
-                        .overlay(
-                            RoundedRectangle(cornerRadius: AppRadius.medium, style: .continuous)
-                                .stroke(Color.borderSecondary, lineWidth: 0.5)
+        .overlay(
+                            RoundedRectangle(cornerRadius: AppRadius.medium, style: .continuous).strokeBorder(Color.borderSecondary, lineWidth: 0.5)
                         )
                     }
                     .padding(.horizontal, AppSpacing.screenPadding)
@@ -187,8 +185,7 @@ struct ProfileView: View {
         .background(Color.surfacePrimary)
         .clipShape(RoundedRectangle(cornerRadius: AppRadius.medium, style: .continuous))
         .overlay(
-            RoundedRectangle(cornerRadius: AppRadius.medium, style: .continuous)
-                .stroke(Color.borderSecondary, lineWidth: 0.5)
+            RoundedRectangle(cornerRadius: AppRadius.medium, style: .continuous).strokeBorder(Color.borderSecondary, lineWidth: 0.5)
         )
         .padding(.horizontal, AppSpacing.screenPadding)
     }
@@ -215,8 +212,7 @@ struct ProfileView: View {
         .background(Color.surfacePrimary)
         .clipShape(RoundedRectangle(cornerRadius: AppRadius.medium, style: .continuous))
         .overlay(
-            RoundedRectangle(cornerRadius: AppRadius.medium, style: .continuous)
-                .stroke(Color.borderSecondary, lineWidth: 0.5)
+            RoundedRectangle(cornerRadius: AppRadius.medium, style: .continuous).strokeBorder(Color.borderSecondary, lineWidth: 0.5)
         )
         .padding(.horizontal, AppSpacing.screenPadding)
     }
@@ -265,8 +261,7 @@ struct StatCard: View {
         .background(Color.surfacePrimary)
         .clipShape(RoundedRectangle(cornerRadius: AppRadius.medium, style: .continuous))
         .overlay(
-            RoundedRectangle(cornerRadius: AppRadius.medium, style: .continuous)
-                .stroke(Color.borderSecondary, lineWidth: 0.5)
+            RoundedRectangle(cornerRadius: AppRadius.medium, style: .continuous).strokeBorder(Color.borderSecondary, lineWidth: 0.5)
         )
     }
 }

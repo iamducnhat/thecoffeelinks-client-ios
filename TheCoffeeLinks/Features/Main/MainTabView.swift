@@ -30,14 +30,14 @@ struct MainTabView: View {
         // Receipt-style tab bar customization
         let appearance = UITabBarAppearance()
         appearance.configureWithOpaqueBackground()
-        appearance.backgroundColor = UIColor(Color.backgroundPaper)
+        appearance.backgroundColor = UIColor(Color.bgPrimary)
         
         // Normal state (icon only)
-        appearance.stackedLayoutAppearance.normal.iconColor = UIColor(Color.textMuted)
+        appearance.stackedLayoutAppearance.normal.iconColor = UIColor(Color.textSecondary)
         appearance.stackedLayoutAppearance.normal.titleTextAttributes = [:]
         
         // Selected state (icon only)
-        appearance.stackedLayoutAppearance.selected.iconColor = UIColor(Color.primaryEspresso)
+        appearance.stackedLayoutAppearance.selected.iconColor = UIColor(Color.accentPrimary)
         appearance.stackedLayoutAppearance.selected.titleTextAttributes = [:]
         
         UITabBar.appearance().standardAppearance = appearance
@@ -147,7 +147,7 @@ struct MainTabView: View {
             }
             .tag(4)
         }
-        .tint(Color.primaryEspresso)
+        .tint(Color.accentPrimary)
         .fullScreenCover(isPresented: $appState.showCheckout) {
             CheckoutView()
                 .environmentObject(menuViewModel)

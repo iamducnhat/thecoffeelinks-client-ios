@@ -29,7 +29,7 @@ struct UndoCountdownView: View {
                 
                 Circle()
                     .trim(from: 0, to: CGFloat(timeRemaining / duration))
-                    .stroke(Color.primaryEspresso, style: StrokeStyle(lineWidth: 2, lineCap: .square))
+                    .stroke(Color.accentPrimary, style: StrokeStyle(lineWidth: 2, lineCap: .square))
                     .frame(width: 80, height: 80)
                     .rotationEffect(.degrees(-90))
                     .animation(.linear(duration: 1), value: timeRemaining)
@@ -53,9 +53,10 @@ struct UndoCountdownView: View {
             .padding(.top, 8)
         }
         .padding(32)
-        .background(Color.surfaceCard)
+        .background(Color.surfacePrimary)
         .cornerRadius(0) // Sharp
-        .overlay(RoundedRectangle(cornerRadius: 4).stroke(Color.border, lineWidth: 1))
+        .overlay(
+                RoundedRectangle(cornerRadius: AppRadius.medium, style: .continuous).strokeBorder(Color.border, lineWidth: 1))
         .shadow(color: Color.black.opacity(0.1), radius: 20, x: 0, y: 10)
         .onAppear {
             startTimer()

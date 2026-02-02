@@ -17,7 +17,7 @@ struct NotificationsView: View {
     
     var body: some View {
         ZStack(alignment: .top) {
-            Color.backgroundPaper.ignoresSafeArea()
+            Color.bgPrimary.ignoresSafeArea()
             
             VStack(spacing: 0) {
                 // Header
@@ -25,14 +25,14 @@ struct NotificationsView: View {
                     Button(action: { dismiss() }) {
                         Image(systemName: "chevron.left")
                             .font(AppFont.body)
-                            .foregroundStyle(Color.textInk)
+                            .foregroundStyle(Color.textPrimary)
                     }
                     
                     Spacer()
                     
                     Text(String(localized: "action_notifications"))
                         .font(AppFont.sectionHeader)
-                        .foregroundStyle(Color.textInk)
+                        .foregroundStyle(Color.textPrimary)
                     
                     Spacer()
                     
@@ -50,7 +50,7 @@ struct NotificationsView: View {
                         VStack(alignment: .leading, spacing: AppLayout.spacing) {
                             Text("Channels")
                                 .font(AppFont.sectionHeader)
-                                .foregroundStyle(Color.textInk)
+                                .foregroundStyle(Color.textPrimary)
                             
                             ToggleRow(title: "Push Notifications", icon: "bell", isOn: $pushEnabled)
                             ToggleRow(title: "Email", icon: "envelope", isOn: $emailEnabled)
@@ -61,7 +61,7 @@ struct NotificationsView: View {
                         VStack(alignment: .leading, spacing: AppLayout.spacing) {
                             Text("Preferences")
                                 .font(AppFont.sectionHeader)
-                                .foregroundStyle(Color.textInk)
+                                .foregroundStyle(Color.textPrimary)
                             
                             ToggleRow(title: "Promotions & Offers", icon: "tag", isOn: $promoEnabled)
                         }

@@ -20,7 +20,7 @@ struct StoreSelectionSheet: View {
     
     var body: some View {
         ZStack(alignment: .top) {
-            Color.backgroundPaper.ignoresSafeArea()
+            Color.bgPrimary.ignoresSafeArea()
             
             VStack(spacing: 0) {
                 // Header
@@ -28,14 +28,14 @@ struct StoreSelectionSheet: View {
                     Button { dismiss() } label: {
                         Text(String(localized: "common_cancel"))
                             .font(AppFont.body)
-                            .foregroundStyle(Color.textMuted)
+                            .foregroundStyle(Color.textSecondary)
                     }
                     
                     Spacer()
                     
                     Text(String(localized: "store_selection_title"))
                         .font(AppFont.displayTitle)
-                        .foregroundStyle(Color.textInk)
+                        .foregroundStyle(Color.textPrimary)
                     
                     Spacer()
                     
@@ -50,18 +50,18 @@ struct StoreSelectionSheet: View {
                     HStack(spacing: AppLayout.spacingMedium) {
                         Image("magnifyingglass")
                             .font(AppFont.body)
-                            .foregroundStyle(Color.textMuted)
+                            .foregroundStyle(Color.textSecondary)
                         
                         TextField("Search stores...", text: $viewModel.searchQuery)
                             .textFieldStyle(PlainTextFieldStyle())
                             .font(AppFont.body)
-                            .foregroundStyle(Color.textInk)
+                            .foregroundStyle(Color.textPrimary)
                     }
                     .padding(.horizontal, 8)
                     .padding(.vertical, 6)
                     .overlay {
-                        RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle)
-                            .stroke(Color.borderTertiary, style: StrokeStyle(lineWidth: 1, dash: AppLayout.dashedPattern))
+                        Capsule()
+                            .stroke(Color.borderSecondary, style: StrokeStyle(lineWidth: 1, dash: AppLayout.dashedPattern))
                     }
                 }
                 .padding(AppLayout.spacing)
@@ -73,10 +73,10 @@ struct StoreSelectionSheet: View {
                     VStack(spacing: AppLayout.spacing) {
                         Image("mappin.slash")
                             .font(.system(size: 32))
-                            .foregroundStyle(Color.textMuted)
+                            .foregroundStyle(Color.textSecondary)
                         Text(String(localized: "stores_empty_search"))
                             .font(AppFont.body)
-                            .foregroundStyle(Color.textMuted)
+                            .foregroundStyle(Color.textSecondary)
                     }
                     .padding(40)
                 } else {

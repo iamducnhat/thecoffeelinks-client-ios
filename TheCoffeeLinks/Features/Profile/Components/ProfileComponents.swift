@@ -16,16 +16,16 @@ struct MetricBox: View {
         VStack(alignment: .leading, spacing: 8) {
             Text(value)
                 .font(AppFont.monoTitle)
-                .foregroundStyle(Color.textInk)
+                .foregroundStyle(Color.textPrimary)
             Text(label)
                 .font(AppFont.uiMicro)
-                .foregroundStyle(Color.textMuted)
+                .foregroundStyle(Color.textSecondary)
         }
         .padding(AppLayout.spacing)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(Color.surfaceCard)
+        .background(Color.surfacePrimary)
         .overlay(
-            RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle)
+            Capsule()
                 .stroke(Color.border, lineWidth: 1)
         )
     }
@@ -39,7 +39,7 @@ struct ProfileSectionHeader: View {
         Text(title)
             .textCase(.uppercase)
             .font(AppFont.sectionHeader)
-            .foregroundStyle(Color.textInk)
+            .foregroundStyle(Color.textPrimary)
     }
 }
 
@@ -83,21 +83,21 @@ struct ProfileRow<Destination: View>: View {
         HStack(spacing: AppLayout.spacing) {
             Image(icon)
                 .font(.system(size: 20))
-                .foregroundStyle(Color.textMuted)
+                .foregroundStyle(Color.textSecondary)
                 .frame(width: 24)
             
             Text(title)
                 .font(AppFont.body)
-                .foregroundStyle(Color.textInk)
+                .foregroundStyle(Color.textPrimary)
             
             Spacer()
             
             Image("chevron_right")
                 .font(.system(size: 14))
-                .foregroundStyle(Color.textMuted)
+                .foregroundStyle(Color.textSecondary)
         }
         .padding(AppLayout.spacing)
-        .background(Color.backgroundPaper)
+        .background(Color.bgPrimary)
         // Note: No border here to allow stacking in a group if needed, 
         // but design usually has them as list items.
         // If we want grouped style with separators, we might need a container.
@@ -116,23 +116,23 @@ struct ToggleRow: View {
         HStack(spacing: AppLayout.spacing) {
             Image(icon)
                 .font(.system(size: 20))
-                .foregroundStyle(Color.textMuted)
+                .foregroundStyle(Color.textSecondary)
                 .frame(width: 24)
             
             Text(title)
                 .font(AppFont.body)
-                .foregroundStyle(Color.textInk)
+                .foregroundStyle(Color.textPrimary)
             
             Spacer()
             
             Toggle("", isOn: $isOn)
                 .labelsHidden()
-                .tint(Color.primaryEspresso)
+                .tint(Color.accentPrimary)
         }
         .padding(AppLayout.spacing)
-        .background(Color.backgroundPaper)
+        .background(Color.bgPrimary)
         .overlay(
-            RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle)
+            Capsule()
                 .stroke(Color.border, lineWidth: 1)
         )
     }

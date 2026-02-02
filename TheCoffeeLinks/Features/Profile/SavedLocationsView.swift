@@ -18,7 +18,7 @@ struct SavedLocationsView: View {
     
     var body: some View {
         ZStack(alignment: .top) {
-            Color.backgroundPaper.ignoresSafeArea()
+            Color.bgPrimary.ignoresSafeArea()
             
             VStack(spacing: 0) {
                 // Header
@@ -26,14 +26,14 @@ struct SavedLocationsView: View {
                     Button(action: { dismiss() }) {
                         Image(systemName: "chevron.left")
                             .font(AppFont.body)
-                            .foregroundStyle(Color.textInk)
+                            .foregroundStyle(Color.textPrimary)
                     }
                     
                     Spacer()
                     
                     Text(String(localized: "action_saved_locations"))
                         .font(AppFont.sectionHeader)
-                        .foregroundStyle(Color.textInk)
+                        .foregroundStyle(Color.textPrimary)
                     
                     Spacer()
                     
@@ -73,25 +73,25 @@ struct LocationRow: View {
         HStack(spacing: AppLayout.spacing) {
             ZStack {
                 Circle()
-                    .fill(Color.surfaceCard)
+                    .fill(Color.surfacePrimary)
                     .frame(width: 40, height: 40)
                     .overlay(
-                        Circle().stroke(Color.border, lineWidth: 1)
+                        Circle().strokeBorder(Color.border, lineWidth: 1)
                     )
                 
                 Image(location.icon)
                     .font(.system(size: 16))
-                    .foregroundStyle(Color.textMuted)
+                    .foregroundStyle(Color.textSecondary)
             }
             
             VStack(alignment: .leading, spacing: 4) {
                 Text(location.name)
                     .font(AppFont.body)
-                    .foregroundStyle(Color.textInk)
+                    .foregroundStyle(Color.textPrimary)
                 
                 Text(location.address)
                     .font(AppFont.uiCaption)
-                    .foregroundStyle(Color.textMuted)
+                    .foregroundStyle(Color.textSecondary)
                     .lineLimit(1)
             }
             
@@ -99,13 +99,14 @@ struct LocationRow: View {
             
             Image("pencil")
                 .font(.system(size: 16))
-                .foregroundStyle(Color.textMuted)
+                .foregroundStyle(Color.textSecondary)
         }
         .padding(AppLayout.spacing)
-        .background(Color.backgroundPaper)
+        .background(Color.bgPrimary)
+        .clipShape(RoundedRectangle(cornerRadius: AppRadius.medium, style: .continuous))
         .overlay(
-            RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle)
-                .stroke(Color.border, lineWidth: 1)
+            RoundedRectangle(cornerRadius: AppRadius.medium, style: .continuous)
+                .strokeBorder(Color.border, lineWidth: 1)
         )
     }
 }

@@ -30,7 +30,7 @@ struct VoucherRedemptionSheet: View {
     
     var body: some View {
         ZStack(alignment: .top) {
-            Color.backgroundPaper.ignoresSafeArea()
+            Color.bgPrimary.ignoresSafeArea()
             
             VStack(spacing: 0) {
                 // 1. Top Bar
@@ -39,7 +39,7 @@ struct VoucherRedemptionSheet: View {
                     
                     Text(String(localized: "voucher_redeem_title"))
                         .font(AppFont.sectionHeader)
-                        .foregroundStyle(Color.textInk)
+                        .foregroundStyle(Color.textPrimary)
                     
                     Spacer()
                     
@@ -48,9 +48,9 @@ struct VoucherRedemptionSheet: View {
                     } label: {
                         Image(systemName: "xmark")
                             .font(AppFont.body)
-                            .foregroundStyle(Color.textInk)
+                            .foregroundStyle(Color.textPrimary)
                             .frame(width: 44, height: 44)
-                            .background(Color.backgroundPaper)
+                            .background(Color.bgPrimary)
                             .clipShape(Circle())
                     }
                 }
@@ -66,12 +66,12 @@ struct VoucherRedemptionSheet: View {
                         VStack(spacing: 4) {
                             Text(voucher.displayValue) // e.g. "50% OFF"
                                 .font(AppFont.displayH1)
-                                .foregroundStyle(Color.primaryEspresso)
+                                .foregroundStyle(Color.accentPrimary)
                             
                             // Subtitle logic (using description or generic fallback)
                             Text(voucher.description ?? "Scan to redeem")
                                 .font(AppFont.body)
-                                .foregroundStyle(Color.textMuted)
+                                .foregroundStyle(Color.textSecondary)
                                 .multilineTextAlignment(.center)
                                 .padding(.horizontal)
                         }
@@ -109,10 +109,10 @@ struct VoucherRedemptionSheet: View {
                             }
                         }
                         .background(Color.white)
-                        .clipShape(RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle))
+                        .clipShape(Capsule())
                         .shadow(color: Color.black.opacity(0.1), radius: 12, x: 0, y: 6)
                         .overlay(
-                            RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle)
+                            Capsule()
                                 .stroke(Color.border.opacity(0.5), lineWidth: 1)
                         )
                         
@@ -121,13 +121,13 @@ struct VoucherRedemptionSheet: View {
                             Text(String(localized: "voucher_code_label"))
                                 .font(AppFont.uiMicro)
                                 .textCase(.uppercase)
-                                .foregroundStyle(Color.textMuted)
+                                .foregroundStyle(Color.textSecondary)
                             
                             HStack(spacing: 12) {
                                 Text(voucher.code)
                                     .font(.system(.title2, design: .monospaced))
                                     .fontWeight(.bold)
-                                    .foregroundStyle(Color.primaryEspresso)
+                                    .foregroundStyle(Color.accentPrimary)
                                 
                                 Button {
                                     UIPasteboard.general.string = voucher.code
@@ -151,10 +151,10 @@ struct VoucherRedemptionSheet: View {
                                         }
                                     }
                                     .font(.system(size: 14, weight: .semibold))
-                                    .foregroundStyle(hasCopied ? .green : Color.primaryEspresso)
+                                    .foregroundStyle(hasCopied ? .green : Color.accentPrimary)
                                     .padding(.horizontal, 12)
                                     .padding(.vertical, 6)
-                                    .background(hasCopied ? Color.green.opacity(0.1) : Color.primaryEspresso.opacity(0.1))
+                                    .background(hasCopied ? Color.green.opacity(0.1) : Color.accentPrimary.opacity(0.1))
                                     .clipShape(Capsule())
                                 }
                             }
@@ -203,12 +203,12 @@ struct VoucherRedemptionSheet: View {
         VStack(spacing: 4) {
             Text(label)
                 .font(AppFont.uiMicro)
-                .foregroundStyle(Color.textMuted)
+                .foregroundStyle(Color.textSecondary)
                 .tracking(0.5)
             
             Text(value)
                 .font(AppFont.uiCaption)
-                .foregroundStyle(Color.textInk)
+                .foregroundStyle(Color.textPrimary)
         }
     }
     

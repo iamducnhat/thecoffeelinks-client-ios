@@ -15,7 +15,7 @@ struct SecurityView: View {
     
     var body: some View {
         ZStack(alignment: .top) {
-            Color.backgroundPaper.ignoresSafeArea()
+            Color.bgPrimary.ignoresSafeArea()
             
             VStack(spacing: 0) {
                 // Header
@@ -23,14 +23,14 @@ struct SecurityView: View {
                     Button(action: { dismiss() }) {
                         Image(systemName: "chevron.left")
                             .font(AppFont.body)
-                            .foregroundStyle(Color.textInk)
+                            .foregroundStyle(Color.textPrimary)
                     }
                     
                     Spacer()
                     
                     Text(String(localized: "action_security"))
                         .font(AppFont.sectionHeader)
-                        .foregroundStyle(Color.textInk)
+                        .foregroundStyle(Color.textPrimary)
                     
                     Spacer()
                     

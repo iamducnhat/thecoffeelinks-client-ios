@@ -114,18 +114,19 @@ struct CategoryChip: View {
     let title: String
     let isSelected: Bool
     let action: () -> Void
+    @Environment(\.colorScheme) private var colorScheme
     
     var body: some View {
         Button(action: action) {
             Text(title)
                 .font(AppTypography.labelMedium)
-                .foregroundStyle(isSelected ? Color.white : Color.textSecondary)
+                .foregroundStyle(isSelected ? (colorScheme == .dark ? Color.black : Color.white) : Color.textSecondary)
                 .padding(.horizontal, AppSpacing.lg)
                 .padding(.vertical, AppSpacing.sm)
-                .background(isSelected ? Color.white.opacity(0.2) : Color.surfacePrimary)
+                .background(isSelected ? Color.accentPrimary : Color.surfacePrimary)
                 .clipShape(Capsule())
                 .overlay(
-                    Capsule().stroke(isSelected ? Color.white.opacity(0.3) : Color.borderPrimary, lineWidth: 0.5)
+                    Capsule().strokeBorder(isSelected ? Color.accentPrimary : Color.borderPrimary, lineWidth: isSelected ? 0 : 0.5)
                 )
         }
         .buttonStyle(.plain)

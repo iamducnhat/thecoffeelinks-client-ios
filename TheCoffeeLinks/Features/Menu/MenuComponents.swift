@@ -56,7 +56,7 @@ struct ProductDetailSheet: View {
     
     var body: some View {
         ZStack(alignment: .top) {
-            Color.backgroundPaper.ignoresSafeArea()
+            Color.bgPrimary.ignoresSafeArea()
             
             // Fixed Navigation Header (Overlay)
             HStack(alignment: .center, spacing: AppLayout.spacing) {
@@ -64,7 +64,7 @@ struct ProductDetailSheet: View {
                 Text(product.name)
                     .font(AppFont.displayTitle)
                     .lineLimit(1)
-                    .foregroundStyle(Color.textInk)
+                    .foregroundStyle(Color.textPrimary)
                     .padding(.vertical, 24)
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .opacity(min(1.0, max(scrollOffset - 40, 0.0) / 20.0)) // Fade in title
@@ -73,15 +73,15 @@ struct ProductDetailSheet: View {
                 Button { dismiss() } label: {
                     Image(systemName: "xmark")
                         .font(AppFont.navIcon)
-                        .foregroundStyle(Color.textInk)
+                        .foregroundStyle(Color.textPrimary)
                         .frame(minWidth: AppLayout.touchTarget, minHeight: AppLayout.touchTarget)
                         .background {
-                            RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle)
-                                .fill(Color.backgroundPaper)
+                            Capsule()
+                                .fill(Color.bgPrimary)
                         }
                         .overlay {
-                            RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle)
-                                .stroke(Color.textInk, lineWidth: min(66.6, max(scrollOffset, 0.0)) / 66.6)
+                            Capsule()
+                                .strokeBorder(Color.textPrimary, lineWidth: min(66.6, max(scrollOffset, 0.0)) / 66.6)
                                 .opacity(min(88.8, max(scrollOffset, 0.0)) / 99.9)
                         }
                 }
@@ -98,7 +98,7 @@ struct ProductDetailSheet: View {
                         HStack(alignment: .center, spacing: AppLayout.spacing) {
                             Text(product.name)
                                 .font(AppFont.displayTitle)
-                                .foregroundStyle(Color.textInk)
+                                .foregroundStyle(Color.textPrimary)
                                 .lineLimit(1)
                                 .padding(.vertical, 24)
                                 .frame(maxWidth: .infinity, alignment: .leading)
@@ -107,7 +107,7 @@ struct ProductDetailSheet: View {
                             Button { dismiss() } label: {
                                 Image(systemName: "xmark")
                                     .font(AppFont.navIcon)
-                                    .foregroundStyle(Color.textInk)
+                                    .foregroundStyle(Color.textPrimary)
                                     .frame(minWidth: AppLayout.touchTarget, minHeight: AppLayout.touchTarget)
                             }
                             .hidden()
@@ -133,10 +133,10 @@ struct ProductDetailSheet: View {
                                 switch phase { // CHANGED
                                 case .empty: // CHANGED
                                     Rectangle() // CHANGED
-                                        .fill(Color.surfaceCard) // CHANGED
+                                        .fill(Color.surfacePrimary) // CHANGED
                                         .overlay { // CHANGED
                                             ProgressView() // CHANGED
-                                                .tint(Color.primaryEspresso) // CHANGED
+                                                .tint(Color.accentPrimary) // CHANGED
                                         } // CHANGED
                                 case .success(let image): // CHANGED
                                     image // CHANGED
@@ -144,14 +144,14 @@ struct ProductDetailSheet: View {
                                         .aspectRatio(contentMode: .fit) // CHANGED
                                 case .failure: // CHANGED
                                     Rectangle() // CHANGED
-                                        .fill(Color.surfaceCard) // CHANGED
+                                        .fill(Color.surfacePrimary) // CHANGED
                                 @unknown default: // CHANGED
                                     EmptyView() // CHANGED
                                 } // CHANGED
                             } // CHANGED
                             .frame(height: 240)
                             .frame(maxWidth: .infinity)
-                            .background(Color.surfaceCard)
+                            .background(Color.surfacePrimary)
                         }
                         
                         // Metadata Section
@@ -159,17 +159,17 @@ struct ProductDetailSheet: View {
                             HStack {
                                 Text("\(product.name)")
                                     .font(AppFont.uiCaption)
-                                    .foregroundStyle(Color.textMuted)
+                                    .foregroundStyle(Color.textSecondary)
                                 Spacer()
                                 Text(calculateTotal().formattedVND)
                                     .font(AppFont.monoBody.bold())
-                                    .foregroundStyle(Color.primaryEspresso)
+                                    .foregroundStyle(Color.accentPrimary)
                             }
                             
                             if let description = product.description {
                                 Text(description)
                                     .font(AppFont.body)
-                                    .foregroundColor(Color.textInk)
+                                    .foregroundColor(Color.textPrimary)
                             }
                         }
                         .padding(.horizontal, AppLayout.spacing)
@@ -182,7 +182,7 @@ struct ProductDetailSheet: View {
                                 Text(String(localized: "product_size_label"))
                                     .textCase(.uppercase)
                                     .font(AppFont.sectionHeader)
-                                    .foregroundStyle(Color.textInk)
+                                    .foregroundStyle(Color.textPrimary)
                                 
                                 HStack(spacing: AppLayout.spacingMedium) {
                                     ForEach(product.sizeOptions, id: \.size) { option in
@@ -197,13 +197,13 @@ struct ProductDetailSheet: View {
                                             }
                                             .padding(.vertical, 12)
                                             .frame(maxWidth: .infinity)
-                                            .background(selectedSize == option.size ? Color.primaryEspresso : Color.backgroundPaper)
-                                            .foregroundColor(selectedSize == option.size ? Color.backgroundPaper : Color.textInk)
+                                            .background(selectedSize == option.size ? Color.accentPrimary : Color.bgPrimary)
+                                            .foregroundColor(selectedSize == option.size ? Color.bgPrimary : Color.textPrimary)
                                             .overlay(
-                                                RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle)
-                                                    .stroke(selectedSize == option.size ? Color.primaryEspresso : Color.border, lineWidth: 1)
+                                                Capsule()
+                                                    .stroke(selectedSize == option.size ? Color.accentPrimary : Color.border, lineWidth: 1)
                                             )
-                                            .clipShape(RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle))
+                                            .clipShape(Capsule())
                                         }
                                     }
                                 }
@@ -218,7 +218,7 @@ struct ProductDetailSheet: View {
                             Text(String(localized: "product_sugar_label"))
                                 .textCase(.uppercase)
                                 .font(AppFont.sectionHeader)
-                                .foregroundStyle(Color.textInk)
+                                .foregroundStyle(Color.textPrimary)
                             
                             HStack(spacing: AppLayout.spacingMedium) {
                                 ForEach(SugarLevel.allCases, id: \.self) { level in
@@ -229,13 +229,13 @@ struct ProductDetailSheet: View {
                                             .font(AppFont.monoBody)
                                             .padding(.vertical, 12)
                                             .frame(maxWidth: .infinity)
-                                            .background(sugarLevel == level ? Color.primaryEspresso : Color.backgroundPaper)
-                                            .foregroundColor(sugarLevel == level ? Color.backgroundPaper : Color.textInk)
+                                            .background(sugarLevel == level ? Color.accentPrimary : Color.bgPrimary)
+                                            .foregroundColor(sugarLevel == level ? Color.bgPrimary : Color.textPrimary)
                                             .overlay(
-                                                RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle)
-                                                    .stroke(sugarLevel == level ? Color.primaryEspresso : Color.border, lineWidth: 1)
+                                                Capsule()
+                                                    .stroke(sugarLevel == level ? Color.accentPrimary : Color.border, lineWidth: 1)
                                             )
-                                            .clipShape(RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle))
+                                            .clipShape(Capsule())
                                     }
                                 }
                             }
@@ -249,7 +249,7 @@ struct ProductDetailSheet: View {
                             Text(String(localized: "product_ice_label"))
                                 .textCase(.uppercase)
                                 .font(AppFont.sectionHeader)
-                                .foregroundStyle(Color.textInk)
+                                .foregroundStyle(Color.textPrimary)
                             
                             HStack(spacing: AppLayout.spacingMedium) {
                                 ForEach(IceLevel.allCases, id: \.self) { level in
@@ -260,13 +260,13 @@ struct ProductDetailSheet: View {
                                             .font(AppFont.monoBody)
                                             .padding(.vertical, 12)
                                             .frame(maxWidth: .infinity)
-                                            .background(iceLevel == level ? Color.primaryEspresso : Color.backgroundPaper)
-                                            .foregroundColor(iceLevel == level ? Color.backgroundPaper : Color.textInk)
+                                            .background(iceLevel == level ? Color.accentPrimary : Color.bgPrimary)
+                                            .foregroundColor(iceLevel == level ? Color.bgPrimary : Color.textPrimary)
                                             .overlay(
-                                                RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle)
-                                                    .stroke(iceLevel == level ? Color.primaryEspresso : Color.border, lineWidth: 1)
+                                                Capsule()
+                                                    .stroke(iceLevel == level ? Color.accentPrimary : Color.border, lineWidth: 1)
                                             )
-                                            .clipShape(RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle))
+                                            .clipShape(Capsule())
                                     }
                                 }
                             }
@@ -281,7 +281,7 @@ struct ProductDetailSheet: View {
                                 Text(String(localized: "product_addons_label"))
                                     .textCase(.uppercase)
                                     .font(AppFont.sectionHeader)
-                                    .foregroundStyle(Color.textInk)
+                                    .foregroundStyle(Color.textPrimary)
                                 
                                 ForEach(product.availableToppings, id: \.self) { toppingId in
                                     if let topping = menuViewModel.toppings.first(where: { $0.id == toppingId }) {
@@ -294,25 +294,25 @@ struct ProductDetailSheet: View {
                                         } label: {
                                             HStack {
                                                 Image(systemName: selectedToppings.contains(toppingId) ? "checkmark.square.fill" : "square")
-                                                    .foregroundStyle(selectedToppings.contains(toppingId) ? Color.primaryEspresso : Color.textMuted)
+                                                    .foregroundStyle(selectedToppings.contains(toppingId) ? Color.accentPrimary : Color.textSecondary)
                                                 
                                                 Text(topping.name)
                                                     .font(AppFont.body)
-                                                    .foregroundColor(Color.textInk)
+                                                    .foregroundColor(Color.textPrimary)
                                                 
                                                 Spacer()
                                                 
                                                 Text("+\(topping.price.formattedVND)")
                                                     .font(AppFont.monoBody)
-                                                    .foregroundStyle(Color.primaryEspresso)
+                                                    .foregroundStyle(Color.accentPrimary)
                                             }
                                             .padding(AppLayout.spacing)
-                                            .background(Color.surfaceCard)
+                                            .background(Color.surfacePrimary)
                                             .overlay(
-                                                RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle)
+                                                Capsule()
                                                     .stroke(Color.border, lineWidth: 1)
                                             )
-                                            .clipShape(RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle))
+                                            .clipShape(Capsule())
                                         }
                                     }
                                 }
@@ -327,15 +327,15 @@ struct ProductDetailSheet: View {
                             Text(String(localized: "product_special_instructions"))
                                 .textCase(.uppercase)
                                 .font(AppFont.sectionHeader)
-                                .foregroundStyle(Color.textInk)
+                                .foregroundStyle(Color.textPrimary)
                             
                             TextField("Anything else we should know?", text: $notes, axis: .vertical)
                                 .textFieldStyle(PlainTextFieldStyle())
                                 .font(AppFont.body)
                                 .padding(AppLayout.spacing)
                                 .overlay {
-                                    RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle)
-                                        .stroke(Color.borderTertiary, style: StrokeStyle(lineWidth: 1, dash: AppLayout.dashedPattern))
+                                    Capsule()
+                                        .stroke(Color.borderSecondary, style: StrokeStyle(lineWidth: 1, dash: AppLayout.dashedPattern))
                                 }
                                 .lineLimit(2...4)
                         }
@@ -347,7 +347,7 @@ struct ProductDetailSheet: View {
                         HStack {
 //                            Text(String(localized: "product_quantity_label"))
 //                                .font(AppFont.body)
-//                                .foregroundStyle(Color.textInk)
+//                                .foregroundStyle(Color.textPrimary)
 //                            
                             Spacer()
 //

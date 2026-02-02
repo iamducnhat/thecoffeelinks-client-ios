@@ -53,7 +53,8 @@ struct TerminalFilterButton: View {
                 .padding(.horizontal, 12)
                 .padding(.vertical, 8)
                 .background(isSelected ? Editorial.Colors.primaryEspresso : Color.black)
-                .overlay(RoundedRectangle(cornerRadius: 4).stroke(Editorial.Colors.textInk, lineWidth: 1))
+                .overlay(
+                RoundedRectangle(cornerRadius: AppRadius.medium, style: .continuous).strokeBorder(Editorial.Colors.textInk, lineWidth: 1))
         }
     }
 }
@@ -107,7 +108,8 @@ struct TerminalPostCard: View {
                             .font(.system(size: 10, weight: .bold, design: .monospaced))
                             .foregroundStyle(Editorial.Colors.primaryEspresso)
                     )
-                    .overlay(RoundedRectangle(cornerRadius: 4).stroke(Editorial.Colors.separator, lineWidth: 1))
+                    .overlay(
+                RoundedRectangle(cornerRadius: AppRadius.medium, style: .continuous).strokeBorder(Editorial.Colors.separator, lineWidth: 1))
                 
                 Text(post.author.uppercased())
                     .font(.system(size: 10, weight: .medium, design: .monospaced))
@@ -122,7 +124,8 @@ struct TerminalPostCard: View {
         }
         .padding(20)
         .background(Color.black)
-        .overlay(RoundedRectangle(cornerRadius: 4).stroke(Editorial.Colors.separator, lineWidth: 1))
+        .overlay(
+                RoundedRectangle(cornerRadius: AppRadius.medium, style: .continuous).strokeBorder(Editorial.Colors.separator, lineWidth: 1))
     }
 }
 

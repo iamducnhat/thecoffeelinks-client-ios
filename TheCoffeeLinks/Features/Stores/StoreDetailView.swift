@@ -29,22 +29,22 @@ struct StoreDetailView: View {
     
     var body: some View {
         ZStack(alignment: .top) {
-            Color.backgroundPaper.ignoresSafeArea()
+            Color.bgPrimary.ignoresSafeArea()
             
             // Fixed Navigation Header
             HStack(alignment: .center, spacing: AppLayout.spacing) {
                 Button { dismiss() } label: {
                     Image(systemName: "xmark")
                         .font(AppFont.navIcon)
-                        .foregroundStyle(Color.textInk)
+                        .foregroundStyle(Color.textPrimary)
                         .frame(minWidth: AppLayout.touchTarget, minHeight: AppLayout.touchTarget)
                         .background {
-                            RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle)
-                                .fill(Color.backgroundPaper)
+                            Capsule()
+                                .fill(Color.bgPrimary)
                         }
                         .overlay {
-                            RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle)
-                                .stroke(Color.textInk, lineWidth: min(66.6, max(scrollOffset, 0.0)) / 66.6)
+                            Capsule()
+                                .stroke(Color.textPrimary, lineWidth: min(66.6, max(scrollOffset, 0.0)) / 66.6)
                                 .opacity(min(88.8, max(scrollOffset, 0.0)) / 99.9)
                         }
                 }
@@ -52,7 +52,7 @@ struct StoreDetailView: View {
                 Text(store.name)
                     .font(AppFont.displayTitle)
                     .lineLimit(1)
-                    .foregroundStyle(Color.textInk)
+                    .foregroundStyle(Color.textPrimary)
                     .padding(.vertical, 24)
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .hidden()
@@ -67,14 +67,14 @@ struct StoreDetailView: View {
                     HStack(alignment: .center, spacing: AppLayout.spacing) {
                         Image(systemName: "xmark")
                             .font(AppFont.navIcon)
-                            .foregroundStyle(Color.textInk)
+                            .foregroundStyle(Color.textPrimary)
                             .frame(minWidth: AppLayout.touchTarget, minHeight: AppLayout.touchTarget)
                             .hidden()
                         
                         Text(store.name)
                             .font(AppFont.displayTitle)
                             .lineLimit(1)
-                            .foregroundStyle(Color.textInk)
+                            .foregroundStyle(Color.textPrimary)
                             .padding(.vertical, 24)
                             .frame(maxWidth: .infinity, alignment: .leading)
                     }
@@ -99,10 +99,10 @@ struct StoreDetailView: View {
                                 switch phase { // CHANGED
                                 case .empty: // CHANGED
                                     Rectangle() // CHANGED
-                                        .fill(Color.surfaceCard) // CHANGED
+                                        .fill(Color.surfacePrimary) // CHANGED
                                         .overlay { // CHANGED
                                             ProgressView() // CHANGED
-                                                .tint(Color.primaryEspresso) // CHANGED
+                                                .tint(Color.accentPrimary) // CHANGED
                                         } // CHANGED
                                 case .success(let image): // CHANGED
                                     image // CHANGED
@@ -110,11 +110,11 @@ struct StoreDetailView: View {
                                         .aspectRatio(contentMode: .fill) // CHANGED
                                 case .failure: // CHANGED
                                     Rectangle() // CHANGED
-                                        .fill(Color.surfaceCard) // CHANGED
+                                        .fill(Color.surfacePrimary) // CHANGED
                                         .overlay { // CHANGED
                                             Text(String(store.name.prefix(1))) // CHANGED
                                                 .font(AppFont.displayTitle) // CHANGED
-                                                .foregroundStyle(Color.textMuted) // CHANGED
+                                                .foregroundStyle(Color.textSecondary) // CHANGED
                                         } // CHANGED
                                 @unknown default: // CHANGED
                                     EmptyView() // CHANGED
@@ -125,35 +125,35 @@ struct StoreDetailView: View {
                             
                             Text(store.address)
                                 .font(AppFont.body)
-                                .foregroundStyle(Color.textMuted)
+                                .foregroundStyle(Color.textSecondary)
                                 .multilineTextAlignment(.center)
                         }
                         .overlay(
-                            RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle)
+                            Capsule()
                                 .stroke(Color.border, lineWidth: 1)
                         )
-                        .clipShape(RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle))
+                        .clipShape(Capsule())
                         .padding(.horizontal, AppLayout.spacing)
                         
                         // Map
                         Map(coordinateRegion: .constant(region), annotationItems: [store]) { store in
                             MapAnnotation(coordinate: CLLocationCoordinate2D(latitude: store.latitude, longitude: store.longitude)) {
                                 Rectangle()
-                                    .fill(Color.primaryEspresso)
+                                    .fill(Color.accentPrimary)
                                     .frame(width: 24, height: 24)
                                     .overlay(
                                         Image("coffee")
                                             .font(.system(size: 12))
-                                            .foregroundStyle(Color.backgroundPaper)
+                                            .foregroundStyle(Color.bgPrimary)
                                     )
                             }
                         }
                         .frame(height: 200)
                         .overlay(
-                            RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle)
+                            Capsule()
                                 .stroke(Color.border, lineWidth: 1)
                         )
-                        .clipShape(RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle))
+                        .clipShape(Capsule())
                         .padding(.horizontal, AppLayout.spacing)
                         
                         // Store Info
@@ -162,10 +162,10 @@ struct StoreDetailView: View {
                             if let phone = store.phone {
                                 HStack {
                                     Image("phone")
-                                        .foregroundStyle(Color.primaryEspresso)
+                                        .foregroundStyle(Color.accentPrimary)
                                     Text(phone)
                                         .font(AppFont.body)
-                                        .foregroundStyle(Color.textInk)
+                                        .foregroundStyle(Color.textPrimary)
                                     Spacer()
                                     Button {
                                         if let url = URL(string: "tel://\(phone.filter("0123456789".contains))") {
@@ -174,7 +174,7 @@ struct StoreDetailView: View {
                                     } label: {
                                         Text("store_call")
                                             .font(AppFont.monoBody)
-                                            .foregroundStyle(Color.primaryEspresso)
+                                            .foregroundStyle(Color.accentPrimary)
                                     }
                                 }
                                 .padding(AppLayout.spacing)
@@ -185,25 +185,25 @@ struct StoreDetailView: View {
                             // Hours
                             HStack {
                                 Image("clock")
-                                    .foregroundStyle(Color.primaryEspresso)
+                                    .foregroundStyle(Color.accentPrimary)
                                 VStack(alignment: .leading, spacing: 2) {
                                     Text(store.isCurrentlyOpen ? String(localized: "store_open_now") : String(localized: "store_closed"))
                                         .font(AppFont.body)
-                                        .foregroundStyle(store.isCurrentlyOpen ? Color.semanticSuccess : Color.semanticError)
+                                        .foregroundStyle(store.isCurrentlyOpen ? Color.stateSuccess : Color.stateError)
                                     
                                     if let hours = store.openingHours?.first(where: { $0.dayOfWeek == Calendar.current.component(.weekday, from: Date()) }) {
                                         Text("\(hours.openTime) - \(hours.closeTime)")
                                             .font(AppFont.uiCaption)
-                                            .foregroundStyle(Color.textMuted)
+                                            .foregroundStyle(Color.textSecondary)
                                     }
                                 }
                                 Spacer()
                             }
                             .padding(AppLayout.spacing)
                         }
-                        .background(Color.backgroundPaper)
+                        .background(Color.bgPrimary)
                         .overlay(
-                            RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle)
+                            Capsule()
                                 .stroke(Color.border, lineWidth: 1)
                         )
                         .padding(.horizontal, AppLayout.spacing)
@@ -214,21 +214,21 @@ struct StoreDetailView: View {
                                 Text("store_amenities_section")
                                     .textCase(.uppercase)
                                     .font(AppFont.sectionHeader)
-                                    .foregroundStyle(Color.textInk)
+                                    .foregroundStyle(Color.textPrimary)
                                 
                                 LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: AppLayout.spacingMedium) {
                                     ForEach(amenities, id: \.self) { amenity in
                                         HStack(spacing: 4) {
                                             Image(systemName: amenity.iconName)
-                                                .foregroundStyle(Color.primaryEspresso)
+                                                .foregroundStyle(Color.accentPrimary)
                                                 .font(.system(size: 14))
                                             Text(amenity.displayName)
                                                 .font(AppFont.uiCaption)
-                                                .foregroundStyle(Color.textInk)
+                                                .foregroundStyle(Color.textPrimary)
                                             Spacer()
                                         }
                                         .padding(AppLayout.spacingMedium)
-                                        .background(Color.surfaceCard)
+                                        .background(Color.surfacePrimary)
                                     }
                                 }
                             }
@@ -240,7 +240,7 @@ struct StoreDetailView: View {
                             Text("store_order_options_section")
                                 .textCase(.uppercase)
                                 .font(AppFont.sectionHeader)
-                                .foregroundStyle(Color.textInk)
+                                .foregroundStyle(Color.textPrimary)
                                 .frame(maxWidth: .infinity, alignment: .leading)
                             
                             HStack(spacing: AppLayout.spacing) {
@@ -256,11 +256,11 @@ struct StoreDetailView: View {
                                             Text("store_dine_in")
                                                 .font(AppFont.uiCaption)
                                         }
-                                        .foregroundStyle(Color.backgroundPaper)
+                                        .foregroundStyle(Color.bgPrimary)
                                         .frame(maxWidth: .infinity)
                                         .frame(height: 72)
-                                        .background(Color.accentColor)
-                                        .clipShape(RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle))
+                                        .background(Color.accentPrimary)
+                                        .clipShape(Capsule())
                                     }
                                 }
                                 
@@ -276,11 +276,11 @@ struct StoreDetailView: View {
                                             Text("store_take_away")
                                                 .font(AppFont.uiCaption)
                                         }
-                                        .foregroundStyle(Color.backgroundPaper)
+                                        .foregroundStyle(Color.bgPrimary)
                                         .frame(maxWidth: .infinity)
                                         .frame(height: 72)
-                                        .background(Color.accentColor)
-                                        .clipShape(RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle))
+                                        .background(Color.accentPrimary)
+                                        .clipShape(Capsule())
                                     }
                                 }
                             }
@@ -292,11 +292,11 @@ struct StoreDetailView: View {
                             } label: {
                                 Text("store_check_in")
                                     .font(AppFont.monoCTA)
-                                    .foregroundStyle(Color.backgroundPaper)
+                                    .foregroundStyle(Color.bgPrimary)
                                     .padding(.vertical, 12)
                                     .frame(maxWidth: .infinity)
-                                    .background(Color.accentColor)
-                                    .clipShape(RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle))
+                                    .background(Color.accentPrimary)
+                                    .clipShape(Capsule())
                             }
                             
                             // Get Directions
@@ -310,12 +310,12 @@ struct StoreDetailView: View {
                                     Text("store_get_directions")
                                         .font(AppFont.monoBody)
                                 }
-                                .foregroundStyle(Color.primaryEspresso)
+                                .foregroundStyle(Color.accentPrimary)
                                 .padding(.vertical, 12)
                                 .frame(maxWidth: .infinity)
                                 .overlay(
-                                    RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle)
-                                        .stroke(Color.primaryEspresso, lineWidth: 1)
+                                    Capsule()
+                                        .stroke(Color.accentPrimary, lineWidth: 1)
                                 )
                             }
                         }

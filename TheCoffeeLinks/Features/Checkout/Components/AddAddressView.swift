@@ -18,7 +18,7 @@ struct AddAddressView: View {
     
     var body: some View {
         ZStack(alignment: .top) {
-            Color.backgroundPaper.ignoresSafeArea()
+            Color.bgPrimary.ignoresSafeArea()
             
             VStack(spacing: 0) {
                 // Header
@@ -26,14 +26,14 @@ struct AddAddressView: View {
                     Button { dismiss() } label: {
                         Text(String(localized: "common_cancel"))
                             .font(AppFont.body)
-                            .foregroundStyle(Color.textMuted)
+                            .foregroundStyle(Color.textSecondary)
                     }
                     
                     Spacer()
                     
                     Text("Add Address")
                         .font(AppFont.displayTitle)
-                        .foregroundStyle(Color.textInk)
+                        .foregroundStyle(Color.textPrimary)
                     
                     Spacer()
                     
@@ -45,11 +45,11 @@ struct AddAddressView: View {
                         }
                     } label: {
                         if deliveryViewModel.isLoading {
-                            ProgressView().tint(Color.primaryEspresso)
+                            ProgressView().tint(Color.accentPrimary)
                         } else {
                             Text(String(localized: "common_save"))
                                 .font(AppFont.headline)
-                                .foregroundStyle(deliveryViewModel.canSaveAddress ? Color.primaryEspresso : Color.textMuted)
+                                .foregroundStyle(deliveryViewModel.canSaveAddress ? Color.accentPrimary : Color.textSecondary)
                         }
                     }
                     .disabled(!deliveryViewModel.canSaveAddress || deliveryViewModel.isLoading)
@@ -65,12 +65,12 @@ struct AddAddressView: View {
                         VStack(alignment: .leading, spacing: AppLayout.spacing) {
                             Text(String(localized: "common_location"))
                                 .font(AppFont.sectionHeader)
-                                .foregroundStyle(Color.textInk)
+                                .foregroundStyle(Color.textPrimary)
                             
                             // Map Preview (Placeholder or Actual Map)
                             ZStack {
-                                RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle)
-                                    .fill(Color.surfaceCard)
+                                Capsule()
+                                    .fill(Color.surfacePrimary)
                                     .frame(height: 200)
                                 
                                 if let location = deliveryViewModel.selectedLocation {
@@ -79,11 +79,11 @@ struct AddAddressView: View {
                                         span: MKCoordinateSpan(latitudeDelta: 0.005, longitudeDelta: 0.005)
                                     )))
                                     .disabled(true)
-                                    .clipShape(RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle))
+                                    .clipShape(Capsule())
                                     
                                     Image("map_pin")
                                         .font(.system(size: 32))
-                                        .foregroundStyle(Color.primaryEspresso)
+                                        .foregroundStyle(Color.accentPrimary)
                                         .shadow(radius: 2)
                                 } else {
                                     Button {
@@ -95,7 +95,7 @@ struct AddAddressView: View {
                                             Text("Use Current Location")
                                                 .font(AppFont.headline)
                                         }
-                                        .foregroundStyle(Color.primaryEspresso)
+                                        .foregroundStyle(Color.accentPrimary)
                                     }
                                 }
                             }
@@ -103,19 +103,19 @@ struct AddAddressView: View {
                              // Search Field
                              HStack {
                                  Image("magnifyingglass")
-                                     .foregroundStyle(Color.textMuted)
+                                     .foregroundStyle(Color.textSecondary)
                                  TextField("Search for address...", text: $deliveryViewModel.streetAddress)
                                      .textFieldStyle(PlainTextFieldStyle())
                                      .font(AppFont.body)
-                                     .foregroundStyle(Color.textInk)
+                                     .foregroundStyle(Color.textPrimary)
                                      .onSubmit {
                                          Task { await deliveryViewModel.searchAddress(deliveryViewModel.streetAddress) }
                                      }
                              }
                              .padding(12)
-                             .background(Color.backgroundPaper)
+                             .background(Color.bgPrimary)
                              .overlay(
-                                 RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle)
+                                 Capsule()
                                      .stroke(Color.border, lineWidth: 1)
                              )
                         }
@@ -124,7 +124,7 @@ struct AddAddressView: View {
                         VStack(alignment: .leading, spacing: AppLayout.spacing) {
                             Text(String(localized: "order_detail_details"))
                                 .font(AppFont.sectionHeader)
-                                .foregroundStyle(Color.textInk)
+                                .foregroundStyle(Color.textPrimary)
                             
                             VStack(spacing: AppLayout.spacing) {
                                 CustomTextField(title: "Label (e.g., Home, Office)", text: $deliveryViewModel.addressLabel)
@@ -136,10 +136,10 @@ struct AddAddressView: View {
                         if let error = deliveryViewModel.error {
                             Text(error.localizedDescription)
                                 .font(AppFont.uiCaption)
-                                .foregroundStyle(Color.semanticError)
+                                .foregroundStyle(Color.stateError)
                                 .padding()
                                 .frame(maxWidth: .infinity, alignment: .leading)
-                                .background(Color.semanticError.opacity(0.1))
+                                .background(Color.stateError.opacity(0.1))
                                 .cornerRadius(AppLayout.cornerRadius)
                         }
                     }
@@ -164,15 +164,15 @@ struct CustomTextField: View {
         VStack(alignment: .leading, spacing: 6) {
             Text(title)
                 .font(AppFont.uiCaption)
-                .foregroundStyle(Color.textMuted)
+                .foregroundStyle(Color.textSecondary)
             
             TextField("", text: $text)
                 .font(AppFont.body)
-                .foregroundStyle(Color.textInk)
+                .foregroundStyle(Color.textPrimary)
                 .padding(12)
-                .background(Color.backgroundPaper)
+                .background(Color.bgPrimary)
                 .overlay(
-                    RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle)
+                    Capsule()
                         .stroke(Color.border, lineWidth: 1)
                 )
         }

@@ -18,7 +18,7 @@ struct CartView: View {
     
     var body: some View {
         ZStack(alignment: .top) {
-            Color.backgroundPaper.ignoresSafeArea()
+            Color.bgPrimary.ignoresSafeArea()
             
             if cartViewModel.isEmpty {
                 EmptyCartView(onBrowse: { dismiss() })
@@ -28,15 +28,15 @@ struct CartView: View {
                     Button { dismiss() } label: {
                         Image(systemName: "xmark")
                             .font(AppFont.navIcon)
-                            .foregroundStyle(Color.textInk)
+                            .foregroundStyle(Color.textPrimary)
                             .frame(minWidth: AppLayout.touchTarget, minHeight: AppLayout.touchTarget)
                             .background {
-                                RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle)
-                                    .fill(Color.backgroundPaper)
+                                Capsule()
+                                    .fill(Color.bgPrimary)
                             }
                             .overlay {
-                                RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle)
-                                    .stroke(Color.textInk, lineWidth: min(66.6, max(scrollOffset, 0.0)) / 66.6)
+                                Capsule()
+                                    .stroke(Color.textPrimary, lineWidth: min(66.6, max(scrollOffset, 0.0)) / 66.6)
                                     .opacity(min(88.8, max(scrollOffset, 0.0)) / 99.9)
                             }
                     }
@@ -44,7 +44,7 @@ struct CartView: View {
                     Text("cart_header_count \(cartViewModel.itemCount)")
                         .font(AppFont.displayTitle)
                         .lineLimit(1)
-                        .foregroundStyle(Color.textInk)
+                        .foregroundStyle(Color.textPrimary)
                         .padding(.vertical, 24)
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .hidden()
@@ -59,14 +59,14 @@ struct CartView: View {
                         HStack(alignment: .center, spacing: AppLayout.spacing) {
                             Image(systemName: "xmark")
                                 .font(AppFont.navIcon)
-                                .foregroundStyle(Color.textInk)
+                                .foregroundStyle(Color.textPrimary)
                                 .frame(minWidth: AppLayout.touchTarget, minHeight: AppLayout.touchTarget)
                                 .hidden()
                             
                             Text("cart_header_count \(cartViewModel.itemCount)")
                                 .font(AppFont.displayTitle)
                                 .lineLimit(1)
-                                .foregroundStyle(Color.textInk)
+                                .foregroundStyle(Color.textPrimary)
                                 .padding(.vertical, 24)
                                 .frame(maxWidth: .infinity, alignment: .leading)
                         }
@@ -118,28 +118,28 @@ struct CartView: View {
                                 Text("summary_section_title")
                                     .textCase(.uppercase)
                                     .font(AppFont.sectionHeader)
-                                    .foregroundStyle(Color.textInk)
+                                    .foregroundStyle(Color.textPrimary)
                                 
                                 VStack(spacing: 8) {
                                     HStack {
                                         Text("subtotal_label")
                                             .font(AppFont.body)
-                                            .foregroundStyle(Color.textMuted)
+                                            .foregroundStyle(Color.textSecondary)
                                         Spacer()
                                         Text(cartViewModel.subtotal.formattedVND)
                                             .font(AppFont.monoBody)
-                                            .foregroundStyle(Color.textInk)
+                                            .foregroundStyle(Color.textPrimary)
                                     }
                                     
                                     if cartViewModel.deliveryFee > 0 {
                                         HStack {
                                             Text("delivery_fee_label")
                                                 .font(AppFont.body)
-                                                .foregroundStyle(Color.textMuted)
+                                                .foregroundStyle(Color.textSecondary)
                                             Spacer()
                                             Text(cartViewModel.deliveryFee.formattedVND)
                                                 .font(AppFont.monoBody)
-                                                .foregroundStyle(Color.textInk)
+                                                .foregroundStyle(Color.textPrimary)
                                         }
                                     }
                                     
@@ -147,18 +147,18 @@ struct CartView: View {
                                         HStack {
                                             Text("discount_label")
                                                 .font(AppFont.body)
-                                                .foregroundStyle(Color.semanticSuccess)
+                                                .foregroundStyle(Color.stateSuccess)
                                             Spacer()
                                             Text("-\(cartViewModel.summary.discount.formattedVND)")
                                                 .font(AppFont.monoBody)
-                                                .foregroundStyle(Color.semanticSuccess)
+                                                .foregroundStyle(Color.stateSuccess)
                                         }
                                     }
                                 }
                                 .padding(AppLayout.spacing)
-                                .background(Color.surfaceCard)
+                                .background(Color.surfacePrimary)
                                 .overlay(
-                                    RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle)
+                                    Capsule()
                                         .stroke(Color.border, lineWidth: 1)
                                 )
                             }
@@ -177,13 +177,13 @@ struct CartView: View {
                             Text("total_label")
                                 .font(AppFont.totalLabel)
                                 .lineLimit(1)
-                                .foregroundStyle(Color.textInk)
+                                .foregroundStyle(Color.textPrimary)
                             
                             Spacer(minLength: AppLayout.spacing)
                             
                             Text(cartViewModel.total.formattedVND)
                                 .font(AppFont.monoTitle)
-                                .foregroundStyle(Color.textInk)
+                                .foregroundStyle(Color.textPrimary)
                         }
                         
                         Button {
@@ -191,11 +191,11 @@ struct CartView: View {
                         } label: {
                             Text("checkout_button")
                                 .font(AppFont.monoCTA)
-                                .foregroundStyle(Color.backgroundPaper)
+                                .foregroundStyle(Color.bgPrimary)
                                 .padding(.vertical, 12)
                                 .frame(maxWidth: .infinity, alignment: .center)
-                                .background(Color.accentColor)
-                                .clipShape(RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle))
+                                .background(Color.accentPrimary)
+                                .clipShape(Capsule())
                         }
                         .disabled(!cartViewModel.summary.meetsMinimum)
                         .opacity(cartViewModel.summary.meetsMinimum ? 1.0 : 0.666)
@@ -207,7 +207,7 @@ struct CartView: View {
                     .background(ignoresSafeAreaEdges: .all)
                     .background {
                         WaveRect(stepWidth: AppLayout.waveStepWidth, waveEdge: .top)
-                            .fill(Color.backgroundPaper)
+                            .fill(Color.bgPrimary)
                             .offset(x: 0, y: -9)
                     }
                     .overlay(alignment: .top) {
@@ -252,10 +252,10 @@ struct CartItemRow: View {
                 switch phase { // CHANGED
                 case .empty: // CHANGED
                     Rectangle() // CHANGED
-                        .fill(Color.surfaceCard) // CHANGED
+                        .fill(Color.surfacePrimary) // CHANGED
                         .overlay { // CHANGED
                             ProgressView() // CHANGED
-                                .tint(Color.primaryEspresso) // CHANGED
+                                .tint(Color.accentPrimary) // CHANGED
                         } // CHANGED
                 case .success(let image): // CHANGED
                     image // CHANGED
@@ -263,11 +263,11 @@ struct CartItemRow: View {
                         .aspectRatio(contentMode: .fill) // CHANGED
                 case .failure: // CHANGED
                     Rectangle() // CHANGED
-                        .fill(Color.textInk.opacity(0.1)) // CHANGED
+                        .fill(Color.textPrimary.opacity(0.1)) // CHANGED
                         .overlay { // CHANGED
                             Image("photo") // CHANGED
                                 .font(AppFont.productTitle) // CHANGED
-                                .foregroundStyle(Color.textInk) // CHANGED
+                                .foregroundStyle(Color.textPrimary) // CHANGED
                         } // CHANGED
                 @unknown default: // CHANGED
                     EmptyView() // CHANGED
@@ -280,12 +280,12 @@ struct CartItemRow: View {
                 Text(item.product.name)
                     .font(AppFont.headline)
                     .lineLimit(3)
-                    .foregroundStyle(Color.textInk)
+                    .foregroundStyle(Color.textPrimary)
                 
                 if !item.displayCustomization.isEmpty {
                     Text(item.displayCustomization)
                         .font(AppFont.uiCaption)
-                        .foregroundStyle(Color.textMuted)
+                        .foregroundStyle(Color.textSecondary)
                         .lineLimit(2)
                 }
                 
@@ -293,13 +293,13 @@ struct CartItemRow: View {
                     Text("note_prefix \(notes)")
                         .font(AppFont.uiMicro)
                         .italic()
-                        .foregroundStyle(Color.textMuted)
+                        .foregroundStyle(Color.textSecondary)
                 }
                 
                 Button { onEdit() } label: {
                     Text("edit_button")
                         .font(AppFont.uiMicro)
-                        .foregroundStyle(Color.primaryEspresso)
+                        .foregroundStyle(Color.accentPrimary)
                 }
                 .padding(.top, 4)
                 
@@ -310,7 +310,7 @@ struct CartItemRow: View {
                         .font(AppFont.monoBody)
                         .lineLimit(1)
                         .minimumScaleFactor(0.5)
-                        .foregroundStyle(Color.textMuted)
+                        .foregroundStyle(Color.textSecondary)
                     
                     Spacer(minLength: 0)
                     
@@ -326,9 +326,9 @@ struct CartItemRow: View {
                             Image("minus")
                                 .font(AppFont.body)
                                 .padding(AppLayout.spacingMicro)
-                                .foregroundStyle(Color.backgroundPaper)
-                                .background(Color.textInk)
-                                .clipShape(RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle))
+                                .foregroundStyle(Color.bgPrimary)
+                                .background(Color.textPrimary)
+                                .clipShape(Capsule())
                         }
                         .disabled(item.quantity <= 1)
                         .opacity(item.quantity <= 1 ? 0.666 : 1.0)
@@ -343,9 +343,9 @@ struct CartItemRow: View {
                             Image("plus")
                                 .font(AppFont.body)
                                 .padding(AppLayout.spacingMicro)
-                                .foregroundStyle(Color.backgroundPaper)
-                                .background(Color.textInk)
-                                .clipShape(RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle))
+                                .foregroundStyle(Color.bgPrimary)
+                                .background(Color.textPrimary)
+                                .clipShape(Capsule())
                         }
                     }
                     .fixedSize()
@@ -369,20 +369,20 @@ struct EmptyCartView: View {
             
             Text("cart_empty_title")
                 .font(AppFont.displayTitle)
-                .foregroundColor(Color.textInk)
+                .foregroundColor(Color.textPrimary)
             
             Text("cart_empty_message")
                 .font(AppFont.body)
-                .foregroundColor(Color.textMuted)
+                .foregroundColor(Color.textSecondary)
             
             Button { onBrowse() } label: {
                 Text("browse_menu_button")
                     .font(AppFont.monoCTA)
-                    .foregroundStyle(Color.backgroundPaper)
+                    .foregroundStyle(Color.bgPrimary)
                     .padding(.horizontal, 32)
                     .padding(.vertical, 12)
-                    .background(Color.accentColor)
-                    .clipShape(RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle))
+                    .background(Color.accentPrimary)
+                    .clipShape(Capsule())
             }
             
             Spacer()
@@ -402,7 +402,7 @@ struct VoucherSection: View {
             Text("voucher_section_title")
                 .textCase(.uppercase)
                 .font(AppFont.sectionHeader)
-                .foregroundStyle(Color.textInk)
+                .foregroundStyle(Color.textPrimary)
             
             HStack(spacing: AppLayout.spacingMedium) {
                 TextField("promotion_code_placeholder", text: $code)
@@ -411,8 +411,8 @@ struct VoucherSection: View {
                     .padding(.horizontal, 8)
                     .padding(.vertical, 6)
                     .overlay {
-                        RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle)
-                            .stroke(Color.borderTertiary, style: StrokeStyle(lineWidth: 1, dash: AppLayout.dashedPattern))
+                        Capsule()
+                            .stroke(Color.borderSecondary, style: StrokeStyle(lineWidth: 1, dash: AppLayout.dashedPattern))
                     }
                 
                 Button {
@@ -423,11 +423,11 @@ struct VoucherSection: View {
                 } label: {
                     Text("apply_button")
                         .font(AppFont.monoBody)
-                        .foregroundStyle(Color.backgroundPaper)
+                        .foregroundStyle(Color.bgPrimary)
                         .padding(.horizontal, 16)
                         .padding(.vertical, 6)
-                        .background(Color.textInk)
-                        .clipShape(RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle))
+                        .background(Color.textPrimary)
+                        .clipShape(Capsule())
                 }
             }
         }
@@ -454,7 +454,7 @@ struct EditCartItemSheet: View {
     
     var body: some View {
         ZStack(alignment: .top) {
-            Color.backgroundPaper.ignoresSafeArea()
+            Color.bgPrimary.ignoresSafeArea()
             
             VStack(spacing: 0) {
                 // Header
@@ -462,14 +462,14 @@ struct EditCartItemSheet: View {
                     Button { dismiss() } label: {
                         Text("cancel_button")
                             .font(AppFont.body)
-                            .foregroundStyle(Color.textMuted)
+                            .foregroundStyle(Color.textSecondary)
                     }
                     
                     Spacer()
                     
                     Text("item_update_title")
                         .font(AppFont.sectionHeader)
-                        .foregroundStyle(Color.textInk)
+                        .foregroundStyle(Color.textPrimary)
                     
                     Spacer()
                     
@@ -482,7 +482,7 @@ struct EditCartItemSheet: View {
                     } label: {
                         Text("save_button")
                             .font(AppFont.body)
-                            .foregroundStyle(Color.primaryEspresso)
+                            .foregroundStyle(Color.accentPrimary)
                     }
                 }
                 .padding(AppLayout.spacing)
@@ -498,10 +498,10 @@ struct EditCartItemSheet: View {
                             switch phase { // CHANGED
                             case .empty: // CHANGED
                                 Rectangle() // CHANGED
-                                    .fill(Color.surfaceCard) // CHANGED
+                                    .fill(Color.surfacePrimary) // CHANGED
                                     .overlay { // CHANGED
                                         ProgressView() // CHANGED
-                                            .tint(Color.primaryEspresso) // CHANGED
+                                            .tint(Color.accentPrimary) // CHANGED
                                     } // CHANGED
                             case .success(let image): // CHANGED
                                 image // CHANGED
@@ -509,7 +509,7 @@ struct EditCartItemSheet: View {
                                     .aspectRatio(contentMode: .fill) // CHANGED
                             case .failure: // CHANGED
                                 Rectangle() // CHANGED
-                                    .fill(Color.surfaceCard) // CHANGED
+                                    .fill(Color.surfacePrimary) // CHANGED
                             @unknown default: // CHANGED
                                 EmptyView() // CHANGED
                             } // CHANGED
@@ -519,7 +519,7 @@ struct EditCartItemSheet: View {
                             
                             Text(item.product.name)
                                 .font(AppFont.sectionHeader)
-                                .foregroundColor(Color.textInk)
+                                .foregroundColor(Color.textPrimary)
                             
                             Spacer()
                         }
@@ -529,7 +529,7 @@ struct EditCartItemSheet: View {
                             Text("size_section_title")
                                 .textCase(.uppercase)
                                 .font(AppFont.sectionHeader)
-                                .foregroundStyle(Color.textInk)
+                                .foregroundStyle(Color.textPrimary)
                             
                             HStack(spacing: 0) {
                                 ForEach(item.product.sizeOptions.filter { $0.isEnabled }, id: \.size) { option in
@@ -540,14 +540,15 @@ struct EditCartItemSheet: View {
                                             .font(AppFont.monoBody)
                                             .frame(maxWidth: .infinity)
                                             .padding(.vertical, 12)
-                                            .background(selectedSize == option.size ? Color.primaryEspresso.opacity(0.2) : Color.backgroundPaper)
-                                            .foregroundColor(Color.textInk)
+                                            .background(selectedSize == option.size ? Color.accentPrimary : Color.bgPrimary)
+                                            .foregroundColor(selectedSize == option.size ? .white : Color.textPrimary)
                                     }
                                 }
                             }
+                            .clipShape(Capsule())
                             .overlay(
-                                RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle)
-                                    .stroke(Color.border, lineWidth: 1)
+                                Capsule()
+                                    .strokeBorder(Color.borderPrimary, lineWidth: 1)
                             )
                         }
                         
@@ -556,7 +557,7 @@ struct EditCartItemSheet: View {
                             Text("notes_section_title")
                                 .textCase(.uppercase)
                                 .font(AppFont.sectionHeader)
-                                .foregroundStyle(Color.textInk)
+                                .foregroundStyle(Color.textPrimary)
                             
                             TextField("notes_placeholder", text: $notes)
                                 .textFieldStyle(PlainTextFieldStyle())
@@ -564,8 +565,8 @@ struct EditCartItemSheet: View {
                                 .padding(.horizontal, 8)
                                 .padding(.vertical, 6)
                                 .overlay {
-                                    RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle)
-                                        .stroke(Color.borderTertiary, style: StrokeStyle(lineWidth: 1, dash: AppLayout.dashedPattern))
+                                    Capsule()
+                                        .stroke(Color.borderSecondary, style: StrokeStyle(lineWidth: 1, dash: AppLayout.dashedPattern))
                                 }
                         }
                     }

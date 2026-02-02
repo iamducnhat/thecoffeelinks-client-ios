@@ -16,17 +16,17 @@ struct DigitalCredentialContent: View {
                 VStack(alignment: .leading, spacing: 4) {
                     Text(userName)
                         .font(AppFont.sectionHeader)
-                        .foregroundColor(Color.textInk)
+                        .foregroundColor(Color.textPrimary)
                     Text(tier)
                         .font(AppFont.uiCaption)
-                        .foregroundColor(Color.textMuted)
+                        .foregroundColor(Color.textSecondary)
                 }
                 Spacer()
                 // Refresh Button
                 Button(action: onRefresh) {
                     Image(systemName: "arrow.clockwise")
                         .font(.system(size: 16, weight: .medium))
-                        .foregroundColor(Color.textMuted)
+                        .foregroundColor(Color.textSecondary)
                 }
             }
             
@@ -44,7 +44,7 @@ struct DigitalCredentialContent: View {
                 Text(memberId)
                     .font(AppFont.monoHeadline)
                     .tracking(2)
-                    .foregroundColor(Color.textInk)
+                    .foregroundColor(Color.textPrimary)
             }
             .padding(.vertical, AppLayout.spacing)
             
@@ -60,17 +60,17 @@ struct DigitalCredentialContent: View {
             }
         }
         .padding(AppLayout.spacing)
-        .background(Color.backgroundPaper)
+        .background(Color.bgPrimary)
     }
     
     private func statItem(value: String, label: String) -> some View {
         VStack(spacing: 4) {
             Text(value)
                 .font(AppFont.monoHeadline)
-                .foregroundColor(Color.textInk)
+                .foregroundColor(Color.textPrimary)
             Text(label)
                 .font(AppFont.uiCaption)
-                .foregroundColor(Color.textMuted)
+                .foregroundColor(Color.textSecondary)
         }
     }
 }
