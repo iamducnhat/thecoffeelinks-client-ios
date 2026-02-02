@@ -33,6 +33,7 @@
 		25544E6E2F1424F2009A6830 /* TheCoffeeLinks.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = TheCoffeeLinks.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		25544E7B2F1424F4009A6830 /* TheCoffeeLinksTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = TheCoffeeLinksTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		25544E852F1424F4009A6830 /* TheCoffeeLinksUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = TheCoffeeLinksUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		25DC21642F30C2EB002529FF /* TheCoffeeLinksUITests.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = file; path = TheCoffeeLinksUITests.xctestplan; sourceTree = "<group>"; };
 		448159AD55D041B982B3545F /* Geologica-Regular.ttf */ = {isa = PBXFileReference; lastKnownFileType = text; name = "Geologica-Regular.ttf"; path = "thecoffeelinks-client-ios/Fonts/Geologica-Regular.ttf"; sourceTree = "<group>"; };
 		6EA3220E26C74963B4C5E363 /* Geologica-SemiBold.ttf */ = {isa = PBXFileReference; lastKnownFileType = text; name = "Geologica-SemiBold.ttf"; path = "thecoffeelinks-client-ios/Fonts/Geologica-SemiBold.ttf"; sourceTree = "<group>"; };
 		7973847583F14F2591C6C6C7 /* Geologica-Medium.ttf */ = {isa = PBXFileReference; lastKnownFileType = text; name = "Geologica-Medium.ttf"; path = "thecoffeelinks-client-ios/Fonts/Geologica-Medium.ttf"; sourceTree = "<group>"; };
@@ -104,6 +105,7 @@
 		25544E652F1424F2009A6830 = {
 			isa = PBXGroup;
 			children = (
+				25DC21642F30C2EB002529FF /* TheCoffeeLinksUITests.xctestplan */,
 				25544E702F1424F2009A6830 /* TheCoffeeLinks */,
 				25544E7E2F1424F4009A6830 /* TheCoffeeLinksTests */,
 				25544E882F1424F4009A6830 /* TheCoffeeLinksUITests */,
@@ -599,6 +601,7 @@
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = vn.thecoffeelinks.thecoffeelinksUITests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE = "";
 				STRING_CATALOG_GENERATE_SYMBOLS = NO;
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
@@ -606,7 +609,7 @@
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
-				TEST_TARGET_NAME = "thecoffeelinks-client-ios";
+				TEST_TARGET_NAME = TheCoffeeLinks;
 			};
 			name = Debug;
 		};
@@ -621,6 +624,7 @@
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = vn.thecoffeelinks.thecoffeelinksUITests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE = "";
 				STRING_CATALOG_GENERATE_SYMBOLS = NO;
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
@@ -628,7 +632,7 @@
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
-				TEST_TARGET_NAME = "thecoffeelinks-client-ios";
+				TEST_TARGET_NAME = TheCoffeeLinks;
 			};
 			name = Release;
 		};

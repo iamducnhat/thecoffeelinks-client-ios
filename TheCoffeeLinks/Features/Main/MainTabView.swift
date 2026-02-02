@@ -27,21 +27,8 @@ struct MainTabView: View {
         _storesViewModel = StateObject(wrappedValue: container.makeStoresViewModel())
         _trackingViewModel = StateObject(wrappedValue: container.makeOrderTrackingViewModel())
         
-        // Receipt-style tab bar customization
-        let appearance = UITabBarAppearance()
-        appearance.configureWithOpaqueBackground()
-        appearance.backgroundColor = UIColor(Color.bgPrimary)
-        
-        // Normal state (icon only)
-        appearance.stackedLayoutAppearance.normal.iconColor = UIColor(Color.textSecondary)
-        appearance.stackedLayoutAppearance.normal.titleTextAttributes = [:]
-        
-        // Selected state (icon only)
-        appearance.stackedLayoutAppearance.selected.iconColor = UIColor(Color.accentPrimary)
-        appearance.stackedLayoutAppearance.selected.titleTextAttributes = [:]
-        
-        UITabBar.appearance().standardAppearance = appearance
-        UITabBar.appearance().scrollEdgeAppearance = appearance
+        // Tab bar appearance moved to `configureTabBarAppearance()` to ensure
+        // UIKit color conversions run on the main actor (avoid SwiftUI render threads).
     }
     
     var body: some View {
@@ -95,7 +82,20 @@ struct MainTabView: View {
             }
         }
     }
-    
+
+    @MainActor
+    static func configureTabBarAppearance() {
+        let appearance = UITabBarAppearance()
+        appearance.configureWithOpaqueBackground()
+        appearance.backgroundColor = UIColor(Color.bgPrimary)
+        appearance.stackedLayoutAppearance.normal.iconColor = UIColor(Color.textSecondary)
+        appearance.stackedLayoutAppearance.normal.titleTextAttributes = [:]
+        appearance.stackedLayoutAppearance.selected.iconColor = UIColor(Color.accentPrimary)
+        appearance.stackedLayoutAppearance.selected.titleTextAttributes = [:]
+        UITabBar.appearance().standardAppearance = appearance
+        UITabBar.appearance().scrollEdgeAppearance = appearance
+    }
+
     @ViewBuilder
     var tabContent: some View {
         TabView(selection: $appState.selectedTab) {
@@ -151,6 +151,11 @@ struct MainTabView: View {
         .fullScreenCover(isPresented: $appState.showCheckout) {
             CheckoutView()
                 .environmentObject(menuViewModel)
+        }
+        .onAppear {
+            Task { @MainActor in
+                Self.configureTabBarAppearance()
+            }
         }
     }
 }

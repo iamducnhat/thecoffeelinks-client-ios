@@ -5132,6 +5132,17 @@
         }
       }
     },
+    "Selected location (%@, %@)" : {
+      "comment" : "Fallback coordinate string for selected location",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Selected location (%1$@, %2$@)"
+          }
+        }
+      }
+    },
     "Send" : {
       "localizations" : {
         "en" : {

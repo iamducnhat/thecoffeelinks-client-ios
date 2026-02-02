@@ -1,0 +1,25 @@
+{
+  "configurations" : [
+    {
+      "id" : "CBFCDB25-93E4-42F9-9431-6637D30057AE",
+      "name" : "Test Scheme Action",
+      "options" : {
+
+      }
+    }
+  ],
+  "defaultOptions" : {
+    "performanceAntipatternCheckerEnabled" : true
+  },
+  "testTargets" : [
+    {
+      "parallelizable" : true,
+      "target" : {
+        "containerPath" : "container:TheCoffeeLinks.xcodeproj",
+        "identifier" : "25544E842F1424F4009A6830",
+        "name" : "TheCoffeeLinksUITests"
+      }
+    }
+  ],
+  "version" : 1
+}

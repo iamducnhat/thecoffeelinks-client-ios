@@ -66,17 +66,32 @@ extension Color {
     static let stateWarning = Color(light: Color("Colors/SemanticWarning"), dark: .orange)
     
     // MARK: - Light/Dark Initializer
-    
+
+#if canImport(UIKit)
+// Helper: build a dynamic UIColor provider from plain UIColors in non-actor
+// context so the provider closure is not implicitly MainActor-isolated.
+fileprivate static func dynamicUIColor(light: UIColor, dark: UIColor) -> UIColor {
+    return UIColor(dynamicProvider: { traits in
+        switch traits.userInterfaceStyle {
+        case .dark:
+            return dark
+        default:
+            return light
+        }
+    })
+}
+#endif
+
+    @MainActor
     init(light: Color, dark: Color) {
         #if canImport(UIKit)
-        self.init(uiColor: UIColor(dynamicProvider: { traits in
-            switch traits.userInterfaceStyle {
-            case .dark:
-                return UIColor(dark)
-            default:
-                return UIColor(light)
-            }
-        }))
+        // Ensure conversion from `SwiftUI.Color` to `UIColor` runs on the main
+        // actor so that any main-thread-only work is performed safely. The
+        // dynamic provider is created by `dynamicUIColor` in non-actor
+        // context so it won't be MainActor-isolated.
+        let uiLight = UIColor(light)
+        let uiDark = UIColor(dark)
+        self.init(uiColor: Self.dynamicUIColor(light: uiLight, dark: uiDark))
         #else
         self = light
         #endif
