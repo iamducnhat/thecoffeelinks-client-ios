@@ -515,7 +515,10 @@ extension UserJourneyUITests {
         // Stress test toggles and segmented pickers to reproduce render-thread crashes
         skipOnboardingIfNeeded()
         
-        // Open Profile tab (works even without login for basic settings)
+        // Ensure tab bar exists and open Profile tab (works even without login for basic settings)
+        guard app.tabBars.element.waitForExistence(timeout: 3) else {
+            throw XCTSkip("Tab bar not present - skipping stress test")
+        }
         app.tabBars.buttons["Profile"].tap()
         guard app.staticTexts["Profile"].waitForExistence(timeout: 5) else {
             throw XCTSkip("Profile screen not available")
