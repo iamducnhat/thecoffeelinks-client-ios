@@ -128,6 +128,8 @@ struct ToggleRow: View {
             Toggle("", isOn: $isOn)
                 .labelsHidden()
                 .tint(Color.accentPrimary)
+                .accessibilityIdentifier(title)
+                .accessibilityLabel(title)
         }
         .padding(AppLayout.spacing)
         .background(Color.bgPrimary)

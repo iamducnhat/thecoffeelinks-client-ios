@@ -85,7 +85,7 @@ final class UserJourneyUITests: XCTestCase {
         let phoneField = app.textFields["Phone Number"]
         XCTAssertTrue(phoneField.waitForExistence(timeout: 5))
         phoneField.tap()
-        phoneField.typeText("0123456789")
+        phoneField.typeText("987654321")
         
         let passwordField = app.secureTextFields["Password"]
         passwordField.tap()
@@ -509,6 +509,37 @@ extension UserJourneyUITests {
         let profileTab = app.tabBars.buttons["Profile"]
         profileTab.tap()
         XCTAssertTrue(profileTab.isSelected)
+    }
+    
+    func testToggleAndPickerStressTest() throws {
+        // Stress test toggles and segmented pickers to reproduce render-thread crashes
+        skipOnboardingIfNeeded()
+        authenticateUser()
+        
+        // Navigate to Profile where many toggles live
+        app.tabBars.buttons["Profile"].tap()
+        XCTAssertTrue(app.staticTexts["Profile"].waitForExistence(timeout: 3))
+        
+        let toggles = app.switches.allElementsBoundByIndex
+        let segments = app.segmentedControls.allElementsBoundByIndex
+        
+        for _ in 0..<25 {
+            for toggle in toggles {
+                if toggle.exists {
+                    toggle.tap()
+                }
+            }
+            for segment in segments {
+                let buttons = segment.buttons
+                if buttons.count > 1 {
+                    buttons.element(boundBy: 0).tap()
+                    buttons.element(boundBy: min(1, buttons.count - 1)).tap()
+                }
+            }
+        }
+        
+        // App should remain responsive
+        XCTAssertTrue(app.tabBars.element.exists)
     }
 }
 
