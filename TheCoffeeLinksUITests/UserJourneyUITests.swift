@@ -85,7 +85,7 @@ final class UserJourneyUITests: XCTestCase {
         let phoneField = app.textFields["Phone Number"]
         XCTAssertTrue(phoneField.waitForExistence(timeout: 5))
         phoneField.tap()
-        phoneField.typeText("0123456789")
+        phoneField.typeText("987654321")
         
         let passwordField = app.secureTextFields["Password"]
         passwordField.tap()
@@ -509,6 +509,46 @@ extension UserJourneyUITests {
         let profileTab = app.tabBars.buttons["Profile"]
         profileTab.tap()
         XCTAssertTrue(profileTab.isSelected)
+    }
+    
+    func testToggleAndPickerStressTest() throws {
+        // Stress test toggles and segmented pickers to reproduce render-thread crashes
+        skipOnboardingIfNeeded()
+        
+        // Ensure tab bar exists and open Profile tab (works even without login for basic settings)
+        guard app.tabBars.element.waitForExistence(timeout: 3) else {
+            throw XCTSkip("Tab bar not present - skipping stress test")
+        }
+        app.tabBars.buttons["Profile"].tap()
+        guard app.staticTexts["Profile"].waitForExistence(timeout: 5) else {
+            throw XCTSkip("Profile screen not available")
+        }
+        
+        let toggles = app.switches.allElementsBoundByIndex
+        let segments = app.segmentedControls.allElementsBoundByIndex
+        guard toggles.count + segments.count > 0 else {
+            throw XCTSkip("No toggles or segmented controls found on Profile")
+        }
+        
+        for _ in 0..<25 {
+            for toggle in toggles {
+                if toggle.exists {
+                    toggle.tap()
+                    // Small wait to exercise render paths
+                    _ = toggle.waitForExistence(timeout: 0.05)
+                }
+            }
+            for segment in segments {
+                let buttons = segment.buttons
+                if buttons.count > 1 {
+                    if buttons.element(boundBy: 0).exists { buttons.element(boundBy: 0).tap() }
+                    if buttons.element(boundBy: min(1, buttons.count - 1)).exists { buttons.element(boundBy: min(1, buttons.count - 1)).tap() }
+                }
+            }
+        }
+        
+        // App should remain responsive
+        XCTAssertTrue(app.tabBars.element.exists)
     }
 }
 
