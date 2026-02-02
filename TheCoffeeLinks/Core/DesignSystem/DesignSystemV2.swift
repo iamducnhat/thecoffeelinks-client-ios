@@ -70,63 +70,17 @@ extension Color {
     
     // MARK: - Light/Dark Initializer
 
-#if canImport(UIKit)
-// Helper: build a dynamic UIColor provider from plain UIColors in non-actor
-// context so the provider closure is not implicitly MainActor-isolated.
-// This version extracts RGBA components on the caller (main actor) and
-// uses numeric components inside the dynamic provider to avoid capturing
-// MainActor-isolated UIColor instances.
-fileprivate static func dynamicUIColor(light: UIColor, dark: UIColor) -> UIColor {
-    // Extract RGBA components safely on the caller thread
-    func rgba(from color: UIColor) -> (CGFloat, CGFloat, CGFloat, CGFloat) {
-        var r: CGFloat = 0
-        var g: CGFloat = 0
-        var b: CGFloat = 0
-        var a: CGFloat = 0
-        if color.getRed(&r, green: &g, blue: &b, alpha: &a) {
-            return (r, g, b, a)
-        } else {
-            let ci = CIColor(color: color)
-            return (ci.red, ci.green, ci.blue, ci.alpha)
-        }
-    }
+    // NOTE: Programmatic dynamic `UIColor` providers were removed to avoid
+    // MainActor isolation and AsyncRenderer crashes that occur when SwiftUI
+    // resolves color providers on background render threads. Use asset-
+    // backed color sets defined in `Color+DesignSystem.swift` (e.g.
+    // `Color.backgroundPaper`, `Color.textInk`, `Color.primaryEspresso`) or
+    // use static `Color(white: ...)` values where appropriate.
+    //
+    // If you must add a new adaptive color, prefer adding it to the Asset
+    // Catalog and referencing it via `Color("Colors/YourName")` to ensure
+    // safe system-managed dynamic resolution.
 
-    let (lr, lg, lb, la) = rgba(from: light)
-    let (dr, dg, db, da) = rgba(from: dark)
-
-    return UIColor(dynamicProvider: { traits in
-        switch traits.userInterfaceStyle {
-        case .dark:
-            return UIColor(red: dr, green: dg, blue: db, alpha: da)
-        default:
-            return UIColor(red: lr, green: lg, blue: lb, alpha: la)
-        }
-    })
-}
-#endif
-
-    init(light: Color, dark: Color) {
-        #if canImport(UIKit)
-        // Convert `SwiftUI.Color` to `UIColor` in a thread-safe way. Some
-        // platforms may attempt to initialize static Colors off the main
-        // thread, so we ensure conversion happens on the main thread.
-        func uiColorFrom(_ color: Color) -> UIColor {
-            if Thread.isMainThread {
-                return UIColor(color)
-            } else {
-                var result: UIColor?
-                DispatchQueue.main.sync { result = UIColor(color) }
-                return result!
-            }
-        }
-
-        let uiLight = uiColorFrom(light)
-        let uiDark = uiColorFrom(dark)
-        self.init(uiColor: Self.dynamicUIColor(light: uiLight, dark: uiDark))
-        #else
-        self = light
-        #endif
-    }
 }
 
 // MARK: - Spacing
