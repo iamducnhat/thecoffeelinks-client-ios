@@ -135,7 +135,13 @@ struct Product: Codable, Identifiable, Hashable, Sendable {
     }
     
     func price(for size: ProductSize) -> Double {
-        sizeOptions.first { $0.size == size }?.price ?? basePrice
+        for option in sizeOptions {
+            if option.size == size { return option.price }
+        }
+        #if DEBUG
+        print("⚠️ [Product.price] product=\(id) no matching size=\(size). sizeOptions=\(sizeOptions.map { $0.size.rawValue })")
+        #endif
+        return basePrice
     }
     
     var displayImageUrl: String? {
