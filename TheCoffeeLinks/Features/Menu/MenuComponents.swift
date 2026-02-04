@@ -59,65 +59,82 @@ struct ProductDetailSheet: View {
             Color.bgPrimary.ignoresSafeArea()
             
             // Fixed Navigation Header (Overlay)
-            HStack(alignment: .center, spacing: AppLayout.spacing) {
+            HStack(alignment: .top, spacing: AppLayout.spacing) {
                 // Hidden title placeholder for alignment
                 Text(product.name)
-                    .font(AppFont.displayTitle)
-                    .lineLimit(1)
+                    .font(AppTypography.displayMedium)
                     .foregroundStyle(Color.textPrimary)
-                    .padding(.vertical, 24)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .opacity(min(1.0, max(scrollOffset - 40, 0.0) / 20.0)) // Fade in title
+                    .lineLimit(1)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
                     .hidden()
+                
+//                SectionHeader(title: product.name)
+//                    .hidden()
                 
                 Button { dismiss() } label: {
                     Image(systemName: "xmark")
-                        .font(AppFont.navIcon)
+                        .font(.system(size: 17, weight: .medium))
                         .foregroundStyle(Color.textPrimary)
-                        .frame(minWidth: AppLayout.touchTarget, minHeight: AppLayout.touchTarget)
+                        .padding(12)
                         .background {
-                            Capsule()
+                            Circle()
                                 .fill(Color.bgPrimary)
                         }
                         .overlay {
-                            Capsule()
+                            Circle()
                                 .strokeBorder(Color.textPrimary, lineWidth: min(66.6, max(scrollOffset, 0.0)) / 66.6)
                                 .opacity(min(88.8, max(scrollOffset, 0.0)) / 99.9)
                         }
+                        //.padding(.top, -AppLayout.spacing)
                 }
             }
             .frame(minHeight: AppLayout.touchTarget)
-            .frame(maxWidth: .infinity, alignment: .center)
             .padding(.horizontal, AppLayout.spacing)
+            .padding(.top, AppLayout.spacing)
             .zIndex(1)
+            .fixedSize(horizontal: false, vertical: true)
             
             VStack(spacing: 0) {
                 ScrollView {
                     LazyVStack(alignment: .leading, spacing: AppLayout.spacing) {
                         // Navigation Header (Scrollable Title)
-                        HStack(alignment: .center, spacing: AppLayout.spacing) {
-                            Text(product.name)
-                                .font(AppFont.displayTitle)
-                                .foregroundStyle(Color.textPrimary)
-                                .lineLimit(1)
-                                .padding(.vertical, 24)
-                                .frame(maxWidth: .infinity, alignment: .leading)
-                            
-                            // Hidden button placeholder for alignment
-                            Button { dismiss() } label: {
-                                Image(systemName: "xmark")
-                                    .font(AppFont.navIcon)
-                                    .foregroundStyle(Color.textPrimary)
-                                    .frame(minWidth: AppLayout.touchTarget, minHeight: AppLayout.touchTarget)
+                        VStack(spacing: AppLayout.marginCompact) {
+                            HStack(alignment: .top, spacing: AppLayout.spacing) {
+                                Text(product.name)
+                                    .font(AppTypography.displayMedium)
+                                    .lineLimit(1)
+                                    .foregroundColor(Color.textPrimary)
+                                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
+                                                                
+                                // Hidden button placeholder for alignment
+                                Button { dismiss() } label: {
+                                    Image(systemName: "xmark")
+                                        .font(.system(size: 17, weight: .medium))
+                                        .foregroundStyle(Color.textPrimary)
+                                        .padding(12)
+                                        .background {
+                                            Circle()
+                                                .fill(Color.bgPrimary)
+                                        }
+                                        .overlay {
+                                            Circle()
+                                                .strokeBorder(Color.textPrimary, lineWidth: min(66.6, max(scrollOffset, 0.0)) / 66.6)
+                                                .opacity(min(88.8, max(scrollOffset, 0.0)) / 99.9)
+                                        }
+                                        //.padding(.top, AppLayout.spacing)
+                                }
+                                .hidden()
                             }
-                            .hidden()
+                            .frame(minHeight: AppLayout.touchTarget)
+                            .fixedSize(horizontal: false, vertical: true)
+                            
+                            Divider()
+                                .background(Color.borderSecondary)
+                                .padding(.horizontal, -AppLayout.spacing)
                         }
-                        .frame(minHeight: AppLayout.touchTarget)
-                        .frame(maxWidth: .infinity, alignment: .center)
                         .padding(.horizontal, AppLayout.spacing)
-                        .overlay(alignment: .bottom) {
-                            Color.secondary.frame(height: 1, alignment: .top)
-                        }
+                        .padding(.top, AppLayout.spacing)
+                        .background(Color.bgPrimary)
                         .background(GeometryReader {
                             Color.clear.preference(key: ProductOffsetKey.self, value: -$0.frame(in: .named("scroll")).origin.y)
                         })

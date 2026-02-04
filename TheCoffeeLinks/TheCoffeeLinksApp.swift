@@ -24,6 +24,10 @@ struct TheCoffeeLinksApp: App {
         _storeViewModel = StateObject(wrappedValue: container.makeStoreViewModel())
         _deliveryViewModel = StateObject(wrappedValue: container.makeDeliveryViewModel())
         
+        // CRITICAL: Initialize dependencies synchronously BEFORE UI renders
+        // This prevents race conditions between auth check and UI routing
+        container.initializeSync()
+        
         checkFreshInstall()
     }
     
@@ -38,9 +42,10 @@ struct TheCoffeeLinksApp: App {
                 .environmentObject(deliveryViewModel)
                 .environmentObject(dependencyContainer.userPreferences) // Inject preferences
                 .environmentObject(dependencyContainer.networkService) // Inject NetworkService
+                .environmentObject(dependencyContainer.appFlowController) // Inject AppFlowController
                 .task {
-                    // Initialize core services (load tokens, pre-warm cache)
-                    await dependencyContainer.initialize()
+                    // Async initialization for background tasks (data sync, etc.)
+                    await dependencyContainer.initializeAsync()
                 }
         }
     }
@@ -54,14 +59,30 @@ struct TheCoffeeLinksApp: App {
             
             // 1. Clear Keychain (Auth Token)
             dependencyContainer.keychainManager.deleteAccessToken()
+            dependencyContainer.keychainManager.deleteRefreshToken()
             
             // 2. Clear Disk Cache (CacheService)
             Task {
                 await dependencyContainer.cacheService.clear()
             }
             
-            // 3. Set Flag
+            // 3. Clear Cart Storage
+            dependencyContainer.cartStorage.clearCart()
+            
+            // 4. Clear Profile Storage
+            dependencyContainer.profileStorage.clearUser()
+            
+            // 5. Clear UserDefaults (onboarding, verification cache, etc.)
+            userDefaults.removeObject(forKey: "isOnboardingCompleted")
+            userDefaults.removeObject(forKey: "isInitialSetupCompleted")
+            userDefaults.removeObject(forKey: "isPhoneVerified_cached")
+            userDefaults.removeObject(forKey: "isPhoneVerified_timestamp")
+            userDefaults.removeObject(forKey: "selectedStoreId")
+            
+            // 6. Set Flag
             userDefaults.set(true, forKey: hasRunBeforeKey)
+            
+            print("✅ Fresh install cleanup complete")
         }
     }
 }

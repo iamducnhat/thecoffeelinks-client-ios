@@ -89,56 +89,72 @@ struct CheckoutView: View {
                 // Fixed Navigation Header
                 HStack(alignment: .center, spacing: AppLayout.spacing) {
                     Button { dismiss() } label: {
-                        Image(systemName: "chevron.left")
-                            .font(AppFont.navIcon)
+                        Image(systemName: "arrow.left")
+                            .font(.system(size: 17, weight: .medium))
                             .foregroundStyle(Color.textPrimary)
-                            .frame(minWidth: AppLayout.touchTarget, minHeight: AppLayout.touchTarget)
+                            .padding(12)
                             .background {
-                                Capsule()
-                                    .fill(Color.surfacePrimary)
+                                Circle()
+                                    .fill(Color.bgPrimary)
                             }
                             .overlay {
-                                Capsule()
+                                Circle()
                                     .strokeBorder(Color.textPrimary, lineWidth: min(66.6, max(scrollOffset, 0.0)) / 66.6)
                                     .opacity(min(88.8, max(scrollOffset, 0.0)) / 99.9)
                             }
                     }
                     
-                    Text("checkout_title")
-                        .font(AppFont.displayTitle)
+                    Text("Checkout")
+                        .font(AppTypography.displayMedium)
                         .lineLimit(1)
                         .foregroundColor(Color.textPrimary)
-                        .padding(.vertical, 24)
-                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
                         .hidden()
                 }
                 .frame(minHeight: AppLayout.touchTarget)
-                .frame(maxWidth: .infinity, alignment: .center)
                 .padding(.horizontal, AppLayout.spacing)
+                .padding(.top, AppLayout.spacingCompact)
+                .zIndex(1)
+                .fixedSize(horizontal: false, vertical: true)
                 
                 VStack(spacing: 0) {
                     ScrollView(.vertical) {
                         // Navigation Header (Scrollable)
-                        HStack(alignment: .center, spacing: AppLayout.spacing) {
-                            Image(systemName: "chevron.left")
-                                .font(AppFont.navIcon)
-                                .foregroundStyle(Color.textPrimary)
-                                .frame(minWidth: AppLayout.touchTarget, minHeight: AppLayout.touchTarget)
+                        VStack(spacing: AppLayout.marginCompact) {
+                            HStack(alignment: .center, spacing: AppLayout.spacing) {
+                                Button { dismiss() } label: {
+                                    Image(systemName: "arrow.left")
+                                        .font(.system(size: 17, weight: .medium))
+                                        .foregroundStyle(Color.textPrimary)
+                                        .padding(12)
+                                        .background {
+                                            Circle()
+                                                .fill(Color.bgPrimary)
+                                        }
+                                        .overlay {
+                                            Circle()
+                                                .strokeBorder(Color.textPrimary, lineWidth: min(66.6, max(scrollOffset, 0.0)) / 66.6)
+                                                .opacity(min(88.8, max(scrollOffset, 0.0)) / 99.9)
+                                        }
+                                }
                                 .hidden()
+                                
+                                Text("Checkout")
+                                    .font(AppTypography.displayMedium)
+                                    .lineLimit(1)
+                                    .foregroundColor(Color.textPrimary)
+                                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
+                            }
+                            .frame(minHeight: AppLayout.touchTarget)
+                            .fixedSize(horizontal: false, vertical: true)
                             
-                            Text("Checkout")
-                                .font(AppFont.displayTitle)
-                                .lineLimit(1)
-                                .foregroundColor(Color.textPrimary)
-                                .padding(.vertical, 24)
-                                .frame(maxWidth: .infinity, alignment: .leading)
+                            Divider()
+                                .background(Color.borderSecondary)
+                                .padding(.horizontal, -AppLayout.spacing)
                         }
-                        .frame(minHeight: AppLayout.touchTarget)
-                        .frame(maxWidth: .infinity, alignment: .center)
                         .padding(.horizontal, AppLayout.spacing)
-                        .overlay(alignment: .bottom) {
-                            Color.secondary.frame(height: 1, alignment: .top)
-                        }
+                        .padding(.top, AppLayout.spacingCompact)
+                        .background(Color.bgPrimary)
                         .background(GeometryReader {
                             Color.clear.preference(key: ViewOffsetKey.self, value: -$0.frame(in: .named("scroll")).origin.y)
                         })
@@ -176,7 +192,8 @@ struct CheckoutView: View {
                                             Image(systemName: "arrow.left.arrow.right")
                                                 .font(AppFont.monoCaption)
                                         }
-                                        .padding(AppLayout.spacingMicro)
+                                        .padding(.vertical, AppLayout.spacingMicro)
+                                        .padding(.horizontal, AppLayout.spacing)
                                         .foregroundStyle(Color.bgPrimary)
                                         .background(Color.accentPrimary)
                                         .clipShape(Capsule())
@@ -193,9 +210,24 @@ struct CheckoutView: View {
                                 } label: {
                                     HStack {
                                         VStack(alignment: .leading, spacing: 2) {
-                                            Text(cartViewModel.cart.mode == .delivery ? "delivery_address_header" : "store_location_header")
-                                                .font(AppFont.uiMicro)
-                                                .foregroundStyle(Color.textSecondary)
+                                            HStack(spacing: 4) {
+                                                Text(cartViewModel.cart.mode == .delivery ? "delivery_address_header" : "store_location_header")
+                                                    .font(AppFont.uiMicro)
+                                                    .foregroundStyle(Color.textSecondary)
+                                                
+                                                // Show recommended badge if store matches recommendation
+                                                if let recommended = cartViewModel.recommendedStore,
+                                                   cartViewModel.cart.storeId == recommended.store.id,
+                                                   cartViewModel.cart.mode == .delivery {
+                                                    Text("⭐ RECOMMENDED")
+                                                        .font(.system(size: 8, weight: .semibold))
+                                                        .foregroundStyle(.white)
+                                                        .padding(.horizontal, 4)
+                                                        .padding(.vertical, 2)
+                                                        .background(Color.green)
+                                                        .cornerRadius(3)
+                                                }
+                                            }
                                             
                                             Text(locationDisplayString)
                                                 .font(AppFont.body)
@@ -211,7 +243,7 @@ struct CheckoutView: View {
                                     }
                                     .padding(12)
                                     .overlay {
-                                        Capsule()
+                                        RoundedRectangle(cornerRadius: AppRadius.medium, style: .continuous)
                                             .strokeBorder(isLocationSelected ? Color.border : Color.borderSecondary, style: StrokeStyle(lineWidth: 1, dash: isLocationSelected ? [] : AppLayout.dashedPattern))
                                     }
                                 }
@@ -339,7 +371,7 @@ struct CheckoutView: View {
                                     CapsuleTextField(
                                         placeholder: String(localized: "promotion_code_placeholder"),
                                         text: $voucherCode,
-                                        icon: "ticket"
+                                        icon: nil
                                     )
                                     .focused($focusedField, equals: .voucher)
                                     .submitLabel(.done)
@@ -350,14 +382,15 @@ struct CheckoutView: View {
                                             await checkoutViewModel.applyVoucher(code: voucherCode, cartViewModel: cartViewModel)
                                         }
                                     } label: {
-                                        Text("Apply")
-                                            .font(AppFont.monoBody)
+                                        Text("\(Image(systemName: "checkmark"))")
+                                            .font(AppFont.uiButton)
                                             .foregroundColor(voucherCode.trimmingCharacters(in: .whitespacesAndNewlines).uppercased() == checkoutViewModel.appliedVoucher ? Color.textSecondary : Color.bgPrimary)
                                             .padding(.horizontal, 16)
-                                            .padding(.vertical, 6)
+                                            .frame(height: 48)
                                             .background(voucherCode.trimmingCharacters(in: .whitespacesAndNewlines).uppercased() == checkoutViewModel.appliedVoucher ? Color.surfacePrimary : Color.accentPrimary)
                                             .clipShape(Capsule())
                                     }
+//                                    .opacity(voucherCode.trimmingCharacters(in: .whitespacesAndNewlines).uppercased() == checkoutViewModel.appliedVoucher ? 0.3 : 1)
                                     .disabled(voucherCode.trimmingCharacters(in: .whitespacesAndNewlines).uppercased() == checkoutViewModel.appliedVoucher)
                                 }
                             }
@@ -387,7 +420,7 @@ struct CheckoutView: View {
                                     CapsuleTextField(
                                         placeholder: String(localized: "redeem_points_placeholder"),
                                         text: $redeemPoints,
-                                        icon: "star",
+                                        icon: nil,
                                         keyboardType: .numberPad
                                     )
                                     .focused($focusedField, equals: .points)
@@ -400,14 +433,15 @@ struct CheckoutView: View {
                                         let pointsInput = Int(redeemPoints.trimmingCharacters(in: .whitespacesAndNewlines))
                                         let isUnchanged = pointsInput == checkoutViewModel.appliedPoints
                                         
-                                        Text("Apply")
-                                            .font(AppFont.monoBody)
+                                        Text("\(Image(systemName: "checkmark"))")
+                                            .font(AppFont.uiButton)
                                             .foregroundColor(isUnchanged ? Color.textSecondary : Color.bgPrimary)
                                             .padding(.horizontal, 16)
-                                            .padding(.vertical, 6)
+                                            .frame(height: 48)
                                             .background(isUnchanged ? Color.surfacePrimary : Color.accentPrimary)
                                             .clipShape(Capsule())
                                     }
+//                                    .opacity(Int(redeemPoints.trimmingCharacters(in: .whitespacesAndNewlines)) == checkoutViewModel.appliedPoints ? 0.3 : 1)
                                     .disabled(Int(redeemPoints.trimmingCharacters(in: .whitespacesAndNewlines)) == checkoutViewModel.appliedPoints)
                                 }
                                 
@@ -422,7 +456,7 @@ struct CheckoutView: View {
                                 // Applied Confirmation
                                 if checkoutViewModel.appliedPoints > 0 {
                                     Text("Points applied: -\(cartViewModel.pointsDiscount.formattedVND)")
-                                        .font(AppFont.monoCaption)
+                                        .font(AppFont.monoBody)
                                         .foregroundColor(Color.accentPrimary)
                                 }
                             }
@@ -455,10 +489,10 @@ struct CheckoutView: View {
                                                 .background(checkoutViewModel.paymentMethod == method ? Color.accentPrimary : Color.clear)
                                                 .foregroundColor(checkoutViewModel.paymentMethod == method ? Color.bgPrimary : Color.textPrimary)
                                                 .overlay(
-                                                    Capsule()
+                                                    RoundedRectangle(cornerRadius: AppRadius.medium, style: .continuous)
                                                         .strokeBorder(Color.border, lineWidth: 1)
                                                 )
-                                                .clipShape(Capsule())
+                                                .clipShape(RoundedRectangle(cornerRadius: AppRadius.medium, style: .continuous))
                                             }
                                         }
                                     }
@@ -471,40 +505,40 @@ struct CheckoutView: View {
                             Divider().hidden()
                             
                             // Error Display
-                            if let error = orderError {
-                                HStack {
-                                    Image("triangle_alert")
-                                        .foregroundColor(Color.stateError)
-                                    Text(error)
-                                        .font(AppFont.uiMicro)
-                                        .foregroundColor(Color.stateError)
-                                }
-                                .padding(12)
-                                .frame(maxWidth: .infinity, alignment: .leading)
-                                .background(Color.stateError.opacity(0.1))
-                                .overlay(
-                                    Capsule()
-                                        .strokeBorder(Color.stateError, lineWidth: 1)
-                                )
-                            }
+//                            if let error = orderError {
+//                                HStack {
+//                                    Image("triangle_alert")
+//                                        .foregroundColor(Color.stateError)
+//                                    Text(error)
+//                                        .font(AppFont.uiMicro)
+//                                        .foregroundColor(Color.stateError)
+//                                }
+//                                .padding(12)
+//                                .frame(maxWidth: .infinity, alignment: .leading)
+//                                .background(Color.stateError.opacity(0.1))
+//                                .overlay(
+//                                    Capsule()
+//                                        .strokeBorder(Color.stateError, lineWidth: 1)
+//                                )
+//                            }
                             
                             // Order Log
-                            if checkoutViewModel.isPlacingOrder || !orderLog.isEmpty {
-                                VStack(alignment: .leading, spacing: 4) {
-                                    ForEach(orderLog, id: \.self) { log in
-                                        Text("> \(log)")
-                                            .font(AppFont.uiMicro)
-                                            .foregroundColor(Color.accentPrimary)
-                                    }
-                                }
-                                .padding(16)
-                                .frame(maxWidth: .infinity, alignment: .leading)
-                                .background(Color.bgPrimary)
-                                .overlay(
-                                    Capsule()
-                                        .strokeBorder(Color.accentPrimary, lineWidth: 1)
-                                )
-                            }
+//                            if checkoutViewModel.isPlacingOrder || !orderLog.isEmpty {
+//                                VStack(alignment: .leading, spacing: 4) {
+//                                    ForEach(orderLog, id: \.self) { log in
+//                                        Text("> \(log)")
+//                                            .font(AppFont.uiMicro)
+//                                            .foregroundColor(Color.accentPrimary)
+//                                    }
+//                                }
+//                                .padding(16)
+//                                .frame(maxWidth: .infinity, alignment: .leading)
+//                                .background(Color.bgPrimary)
+//                                .overlay(
+//                                    Capsule()
+//                                        .strokeBorder(Color.accentPrimary, lineWidth: 1)
+//                                )
+//                            }
                         }
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .padding(AppLayout.spacing)
@@ -514,49 +548,72 @@ struct CheckoutView: View {
                     .scrollIndicators(.hidden)
                     
                     // MARK: Total & Confirmation
-                    VStack(alignment: .leading, spacing: AppLayout.spacing) {
-                        HStack(spacing: 0) {
-                            Text("total_label")
-                                .font(AppFont.totalLabel)
-                                .lineLimit(1)
-                                .foregroundColor(Color.textPrimary)
-                            
-                            Spacer(minLength: AppLayout.spacing)
-                            
-                            Text(cartViewModel.total.formattedVND)
-                                .font(AppFont.monoTitle)
-                                .foregroundColor(Color.textPrimary)
-                        }
-                        
-                        Button {
-                            placeOrder()
-                        } label: {
-                            Text(checkoutViewModel.isPlacingOrder ? "placing_order_state" : "place_order_button")
-                                .font(AppFont.monoCTA)
-                                .foregroundColor(Color.bgPrimary)
-                                .padding(.vertical, 12)
-                                .frame(maxWidth: .infinity, alignment: .center)
-                                .background(Color.accentPrimary)
-                                .clipShape(Capsule())
-                        }
-                        .disabled(!cartViewModel.canCheckout || checkoutViewModel.isPlacingOrder)
-                    }
-                    .padding(.vertical, 24)
-                    .frame(minHeight: AppLayout.touchTarget)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .padding(.horizontal, AppLayout.spacing)
-                    .background(Color.bgPrimary, ignoresSafeAreaEdges: .all)
-                    .background {
-                        WaveRect(stepWidth: AppLayout.waveStepWidth, waveEdge: .top)
-                            .fill(Color.bgPrimary)
-                            .offset(x: 0, y: -9)
-                    }
-                    .overlay(alignment: .top) {
-                        WaveSeparator(stepWidth: AppLayout.waveStepWidth)
-    .stroke(Color.secondary, lineWidth: 1)
-                            .frame(height: 1)
-                            .offset(x: 0, y: -9)
-                    }
+                    ReceiptTotalBar(
+                        totalLabel: "TOTAL",
+                        totalValue: cartViewModel.total.formattedVND,
+                        ctaTitle: checkoutViewModel.isPlacingOrder ? "placing_order_state" : "place_order_button",
+                        action: placeOrder
+                    )
+//                    VStack(alignment: .leading, spacing: AppLayout.spacing) {
+//                        HStack(spacing: 0) {
+//                            Text("total_label")
+//                                .font(AppFont.totalLabel)
+//                                .lineLimit(1)
+//                                .foregroundColor(Color.textPrimary)
+//                            
+//                            Spacer(minLength: AppLayout.spacing)
+//                            
+//                            Text(cartViewModel.total.formattedVND)
+//                                .font(AppFont.monoTitle)
+//                                .foregroundColor(Color.textPrimary)
+//                        }
+//                        if #available(iOS 26.0, *) {
+//                            Button {
+//                                placeOrder()
+//                            } label: {
+//                                
+//                                Text(checkoutViewModel.isPlacingOrder ? "placing_order_state" : "place_order_button")
+//                                    .font(AppFont.monoCTA)
+//                                    .foregroundColor(Color.bgPrimary)
+//                                    .padding(.vertical, 12)
+//                                    .frame(maxWidth: .infinity, alignment: .center)
+//                                    //.background(Color.accentPrimary)
+//                                    .clipShape(Capsule())
+//                            }
+//                            .buttonStyle(.glassProminent)
+//                            .disabled(!cartViewModel.canCheckout || checkoutViewModel.isPlacingOrder)
+//                            .tint(Color.accentPrimary)
+//                        } else {
+//                            Button {
+//                                placeOrder()
+//                            } label: {
+//                                Text(checkoutViewModel.isPlacingOrder ? "placing_order_state" : "place_order_button")
+//                                    .font(AppFont.monoCTA)
+//                                    .foregroundColor(Color.bgPrimary)
+//                                    .padding(.vertical, 12)
+//                                    .frame(maxWidth: .infinity, alignment: .center)
+//                                    .background(Color.accentPrimary)
+//                                    .clipShape(Capsule())
+//                            }
+//                            .disabled(!cartViewModel.canCheckout || checkoutViewModel.isPlacingOrder)
+//                        }
+//                    }
+//                    .padding(.vertical, 24)
+//                    .frame(minHeight: AppLayout.touchTarget)
+//                    .frame(maxWidth: .infinity, alignment: .leading)
+//                    .padding(.horizontal, AppLayout.spacing)
+//                    .background(Color.bgPrimary, ignoresSafeAreaEdges: .all)
+//                    .background {
+//                        WaveRect(stepWidth: AppLayout.waveStepWidth, waveEdge: .top)
+//                            .fill(Color.bgPrimary)
+//                            .offset(x: 0, y: -9)
+//                    }
+//                    .overlay(alignment: .top) {
+//                        WaveSeparator(stepWidth: AppLayout.waveStepWidth)
+//                            .stroke(Color.secondary, lineWidth: 1)
+//                            .frame(height: 1)
+//                            .offset(x: 0, y: -9)
+//                    }
                 }
                 .zIndex(-Double.infinity+1)
             }
@@ -573,12 +630,34 @@ struct CheckoutView: View {
             }
         }
         .sheet(isPresented: $showDeliverySheet) {
-            DeliveryAddressSheet()
-                .environmentObject(deliveryViewModel)
+            if cartViewModel.cart.mode == .delivery {
+                DeliveryStorePickerSheet(
+                    storeViewModel: storeViewModel,
+                    deliveryViewModel: deliveryViewModel,
+                    cartViewModel: cartViewModel
+                )
+            } else {
+                DeliveryAddressSheet()
+                    .environmentObject(deliveryViewModel)
+            }
         }
         .sheet(isPresented: $showStoreSheet) {
             StorePickerSheet()
                 .environmentObject(storeViewModel)
+        }
+        .alert("Switch Store?", isPresented: $cartViewModel.showStoreConflictAlert) {
+            Button("Cancel", role: .cancel) {
+                cartViewModel.cancelStoreSwitch()
+            }
+            Button("Switch & Clear Cart", role: .destructive) {
+                if let store = cartViewModel.conflictingStore {
+                    cartViewModel.switchStore(to: store)
+                }
+            }
+        } message: {
+            if let storeName = cartViewModel.conflictingStore?.name {
+                Text("Switching to \(storeName) will clear your current cart. Continue?")
+            }
         }
         .sheet(isPresented: $checkoutViewModel.showingPaymentWebView) {
             if let url = checkoutViewModel.paymentUrl {
@@ -589,12 +668,57 @@ struct CheckoutView: View {
                 }
             }
         }
+        .overlay(alignment: .top) {
+            // Store Recommendation Toast
+            if cartViewModel.showStoreRecommendationToast,
+               let recommended = cartViewModel.recommendedStore {
+                VStack(spacing: 8) {
+                    HStack(spacing: 8) {
+                        Image(systemName: "lightbulb.fill")
+                            .foregroundColor(.yellow)
+                        
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text("Better Store Available")
+                                .font(.subheadline)
+                                .fontWeight(.semibold)
+                            Text("\(recommended.store.name) has better delivery terms")
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                        }
+                        
+                        Spacer()
+                        
+                        Button("Switch") {
+                            cartViewModel.switchStore(to: recommended.store)
+                            cartViewModel.showStoreRecommendationToast = false
+                        }
+                        .buttonStyle(.bordered)
+                        .controlSize(.small)
+                    }
+                    .padding()
+                    .background(
+                        RoundedRectangle(cornerRadius: 12)
+                            .fill(Color(.systemBackground))
+                            .shadow(color: .black.opacity(0.1), radius: 10, y: 5)
+                    )
+                }
+                .padding()
+                .transition(.move(edge: .top).combined(with: .opacity))
+                .animation(.spring(), value: cartViewModel.showStoreRecommendationToast)
+            }
+        }
         .onAppear {
             syncCartWithSelection()
             // Restore saved textfield and store values
             voucherCode = UserDefaults.standard.string(forKey: "checkoutVoucherCode") ?? ""
             redeemPoints = UserDefaults.standard.string(forKey: "checkoutRedeemPoints") ?? ""
             savedStoreId = UserDefaults.standard.string(forKey: "checkoutSelectedStoreId") ?? ""
+            
+            // Load stores if not already loaded
+            if storeViewModel.stores.isEmpty {
+                storeViewModel.loadStores()
+            }
+            
             // Restore store selection if saved
             if !savedStoreId.isEmpty {
                 // Find and select the store if it exists

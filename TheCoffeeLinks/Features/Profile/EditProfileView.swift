@@ -23,32 +23,34 @@ struct EditProfileView: View {
             
             VStack(spacing: 0) {
                 // Header
-                HStack {
-                    Button(String(localized: "common_cancel")) {
-                        dismiss()
+                VStack(spacing: AppSpacing.lg) {
+                    HStack {
+                        Button(String(localized: "common_cancel")) {
+                            dismiss()
+                        }
+                        .font(AppTypography.bodyMedium)
+                        .foregroundStyle(Color.textSecondary)
+                        
+                        Text(String(localized: "profile_edit_title"))
+                            .font(AppTypography.displayMedium)
+                            .foregroundStyle(Color.textPrimary)
+                            .fixedSize()
+                            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
+                        
+                        Button(String(localized: "common_save")) {
+                            saveProfile()
+                        }
+                        .font(AppTypography.bodyMedium)
+                        .foregroundStyle(Color.accentPrimary)
+                        .disabled(name.isEmpty || authViewModel.isLoading)
                     }
-                    .font(AppFont.body)
-                    .foregroundStyle(Color.textSecondary)
+                    .padding(.horizontal, AppSpacing.screenPadding)
                     
-                    Spacer()
-                    
-                    Text(String(localized: "profile_edit_title"))
-                        .font(AppFont.sectionHeader)
-                        .foregroundStyle(Color.textPrimary)
-                    
-                    Spacer()
-                    
-                    Button(String(localized: "common_save")) {
-                        saveProfile()
-                    }
-                    .font(AppFont.body)
-                    .foregroundStyle(Color.accentPrimary)
-                    .disabled(name.isEmpty || authViewModel.isLoading)
+                    Divider()
+                        .background(Color.borderSecondary)
+                        .padding(.horizontal, -AppSpacing.screenPadding)
                 }
-                .padding(AppLayout.spacing)
-                
-                Color.secondary.frame(height: 1)
-                    .opacity(0.2)
+                .background(Color.bgPrimary)
                 
                 ScrollView {
                     VStack(spacing: AppLayout.spacingXL) {

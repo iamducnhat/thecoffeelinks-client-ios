@@ -11,6 +11,7 @@ import SwiftUI
 struct MainTabView: View {
     @EnvironmentObject var appState: AppState
     @EnvironmentObject var cartViewModel: CartViewModel // Injected from parent
+    @EnvironmentObject var authViewModel: AuthViewModel // Injected from parent
     
     // Use factory methods for consistent DI
     @StateObject private var menuViewModel: MenuViewModel
@@ -32,6 +33,12 @@ struct MainTabView: View {
     }
     
     var body: some View {
+        // Wire up ProfileViewModel with AuthViewModel on first render
+        let _ = {
+            if profileViewModel.authViewModel == nil {
+                profileViewModel.authViewModel = authViewModel
+            }
+        }()
         // Conditional Support for iOS 26 Bottom Accessory
         if #available(iOS 26.1, *) {
             tabContent

@@ -125,6 +125,16 @@ struct Product: Codable, Identifiable, Hashable, Sendable {
     var canBeDelivered: Bool { isDeliverable && isActive }
     var price: Double { basePrice } // UI Compatibility
     
+    /// Check if product is available at a specific store
+    /// TODO: When backend implements store_product_availability endpoint,
+    /// this should fetch real-time availability from server
+    /// For now, falls back to global isDeliverable and isActive flags
+    func isAvailableAt(storeId: String?) -> Bool {
+        // Placeholder: Uses global availability
+        // In future, check against store-specific availability map
+        return isActive && isDeliverable
+    }
+    
     var priceRange: String {
         guard let minPrice = sizeOptions.min(by: { $0.price < $1.price })?.price,
               let maxPrice = sizeOptions.max(by: { $0.price < $1.price })?.price else {

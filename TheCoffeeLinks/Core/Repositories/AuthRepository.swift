@@ -157,12 +157,17 @@ class AuthRepository {
     }
     
     func verifyOTP(otp: String, phoneNumber: String) async throws -> User {
-        // Generate App Attest challenge before sending request
+        // Register App Attest BEFORE OTP verification (server requires it)
         let attestService = AppAttestService.shared
-        
-        // Ensure App Attest is registered first
-        if attestService.isAvailable && !attestService.isRegistered {
-            _ = try? await attestService.generateKey()
+        if attestService.isAvailable {
+            do {
+                try await attestService.ensureRegistered() // ensure local key exists
+                try await attestService.registerKeyWithServer() // register with server BEFORE verification
+                print("✅ [AuthRepository] App Attest registered before OTP verification")
+            } catch {
+                print("⚠️ [AuthRepository] AppAttest registration failed, proceeding anyway: \(error.localizedDescription)")
+                // Don't throw - allow OTP verification to proceed even if attestation fails
+            }
         }
         
         struct OTPVerifyRequest: Encodable {
@@ -193,6 +198,7 @@ class AuthRepository {
         )
         
         await networkService.setAuthSession(accessToken: response.session.accessToken, refreshToken: response.session.refreshToken)
+
         return mapToDomain(response.user)
     }
     

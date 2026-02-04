@@ -30,7 +30,7 @@ struct DigitalCredentialContent: View {
                 }
             }
             
-            Divider()
+            Divider().padding(.horizontal, -AppLayout.spacing)
             
             // QR Code Section
             // Payload format: u:<shortUserId>
@@ -38,8 +38,9 @@ struct DigitalCredentialContent: View {
             VStack(spacing: 8) {
                 QRRenderView(payload: "u:\(memberId)")
                     .frame(width: 180, height: 180, alignment: .center)
+                    .padding(AppLayout.spacing)
                     .background(Color.white)
-                    .cornerRadius(8)
+                    .cornerRadius(AppRadius.small)
                 
                 Text(memberId)
                     .font(AppFont.monoHeadline)
@@ -48,7 +49,7 @@ struct DigitalCredentialContent: View {
             }
             .padding(.vertical, AppLayout.spacing)
             
-            Divider()
+            Divider().padding(.horizontal, -AppLayout.spacing)
             
             // Stats Row
             HStack(spacing: 0) {

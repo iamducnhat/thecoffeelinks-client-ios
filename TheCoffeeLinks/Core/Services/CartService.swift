@@ -22,6 +22,7 @@ final class CartService: CartServiceProtocol {
     private let networkService: NetworkServiceProtocol
     private nonisolated(unsafe) let cartStorage: CartStorageProtocol
     private let productRepository: ProductRepositoryProtocol
+    private let keychainManager: KeychainManager
     
     // Operation queue for reliable sync
     private let syncQueue = DispatchQueue(label: "com.thecoffeelinks.cart.sync", qos: .userInitiated)
@@ -34,10 +35,11 @@ final class CartService: CartServiceProtocol {
     static let syncFailedNotification = Notification.Name("CartSyncFailed")
     static let syncSuccessNotification = Notification.Name("CartSyncSuccess")
     
-    init(networkService: NetworkServiceProtocol, cartStorage: CartStorageProtocol, productRepository: ProductRepositoryProtocol) {
+    init(networkService: NetworkServiceProtocol, cartStorage: CartStorageProtocol, productRepository: ProductRepositoryProtocol, keychainManager: KeychainManager) {
         self.networkService = networkService
         self.cartStorage = cartStorage
         self.productRepository = productRepository
+        self.keychainManager = keychainManager
     }
     
     // MARK: - Public API
@@ -47,6 +49,12 @@ final class CartService: CartServiceProtocol {
     }
     
     func fetchRemoteCart() async throws -> Cart {
+        // 0. Auth guard - return empty cart if not authenticated
+        guard keychainManager.getAccessToken() != nil else {
+            print("⏭️ [CartService] No access token, returning empty cart")
+            return .empty
+        }
+        
         // 1. Check for pending local changes
         if syncQueue.sync(execute: { !pendingOperations.isEmpty }) {
             print("⚠️ [CartService] Pending operations exist, syncing first...")

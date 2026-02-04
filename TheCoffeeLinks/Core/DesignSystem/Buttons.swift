@@ -32,24 +32,55 @@ struct ReceiptPrimaryButton: View {
     let action: () -> Void
     
     var body: some View {
-        Button(action: action) {
-            HStack {
-                if isLoading {
-                    ProgressView()
-                        .tint(.white)
-                } else {
-                    Text(title)
-                        .font(AppFont.monoCTA)
+        if #available(iOS 26.0, *) {
+            Button(action: action) {
+                HStack {
+                    if isLoading {
+                        ZStack {
+                            Text(title)
+                                .font(AppFont.monoCTA)
+                                .hidden()
+                            ProgressView()
+                                .tint(.white)
+                        }
+                    } else {
+                        Text(title)
+                            .font(AppFont.monoCTA)
+                    }
                 }
+                .foregroundStyle(Color.bgPrimary)
+                .padding(.vertical, 12)
+                .frame(maxWidth: .infinity, alignment: .center)
+                .clipShape(Capsule())
             }
-            .foregroundStyle(Color.backgroundPaper)
-            .padding(.vertical, 12)
-            .frame(maxWidth: .infinity, alignment: .center)
-            .background(Color.primaryEspresso)
-            .clipShape(RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle))
+            .buttonStyle(.glassProminent)
+            .disabled(isDisabled || isLoading)
+            .tint(Color.accentPrimary)
+        } else {
+            Button(action: action) {
+                HStack {
+                    if isLoading {
+                        ZStack {
+                            Text(title)
+                                .font(AppFont.monoCTA)
+                                .hidden()
+                            ProgressView()
+                                .tint(.white)
+                        }
+                    } else {
+                        Text(title)
+                            .font(AppFont.monoCTA)
+                    }
+                }
+                .foregroundStyle(Color.backgroundPaper)
+                .padding(.vertical, 12)
+                .frame(maxWidth: .infinity, alignment: .center)
+                .background(Color.primaryEspresso)
+                .clipShape(Capsule())
+            }
+            .disabled(isDisabled || isLoading)
+            .opacity(isDisabled ? 0.666 : 1.0)
         }
-        .disabled(isDisabled || isLoading)
-        .opacity(isDisabled ? 0.666 : 1.0)
     }
 }
 

@@ -141,6 +141,17 @@ class NetworkService: ObservableObject {
             self.refreshToken = refresh
             self.keychainManager.saveRefreshToken(refresh)
         }
+
+        // App Attest registration is handled in AuthRepository after successful OTP verification
+    }
+    
+    /// Synchronous version of setAuthSession for initialization before UI renders
+    func setAuthSessionSync(accessToken: String, refreshToken: String?) {
+        // Note: This must be called from MainActor context
+        Task { @MainActor in
+            self.authToken = accessToken
+            self.refreshToken = refreshToken
+        }
     }
     
     @MainActor
@@ -299,7 +310,7 @@ class NetworkService: ObservableObject {
         }
         
         if let responseString = String(data: data, encoding: .utf8) {
-            print("📡 Response Body: \(responseString.prefix(40))")
+            print("📡 Response Body: \(responseString)")
         }
         
         switch httpResponse.statusCode {
@@ -386,7 +397,7 @@ class NetworkService: ObservableObject {
         }
         print("📡 Response Status: \(httpResponse.statusCode)")
         if let responseString = String(data: data, encoding: .utf8) {
-            print("📡 Response Body: \(responseString.prefix(40))")
+            print("📡 Response Body: \(responseString)")
         }
         
         if !(200...299).contains(httpResponse.statusCode) {
@@ -431,7 +442,7 @@ class NetworkService: ObservableObject {
         }
         print("📡 Response Status: \(httpResponse.statusCode)")
         if let responseString = String(data: data, encoding: .utf8) {
-            print("📡 Response Body: \(responseString.prefix(40))")
+            print("📡 Response Body: \(responseString)")
         }
         switch httpResponse.statusCode {
         case 200...299:

@@ -173,19 +173,25 @@ struct ProductCard: View {
             }
             .aspectRatio(1, contentMode: .fit)
             
-            // Name
-            Text(product.name)
-                .font(AppTypography.labelLarge)
-                .foregroundStyle(Color.textPrimary)
-                .lineLimit(2)
-                .multilineTextAlignment(.leading)
             
-            // Price
-            if let mediumPrice = product.sizeOptions.first(where: { $0.size == .medium })?.price {
-                Text(mediumPrice.formattedVND)
-                    .font(AppTypography.monoMedium)
-                    .foregroundStyle(Color.textSecondary)
+            VStack(alignment: .leading, spacing: 0) {
+                
+                // Name
+                Text(product.name)
+                    .font(AppFont.productTitle)
+                    .foregroundStyle(Color.textPrimary)
+                    .lineLimit(1)
+                    .multilineTextAlignment(.leading)
+                
+                // Price
+                if let mediumPrice = product.sizeOptions.first(where: { $0.size == .medium })?.price {
+                    Text(mediumPrice.formattedVND)
+                        .font(AppTypography.monoMedium)
+                        .foregroundStyle(Color.textSecondary)
+                }
             }
+            
+            
         }
     }
 }

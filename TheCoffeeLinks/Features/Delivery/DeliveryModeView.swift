@@ -187,26 +187,29 @@ struct OrderingModeSheet: View {
             
             VStack(spacing: 0) {
                 // Header
-                HStack {
-                    Button { dismiss() } label: {
-                        Text(String(localized: "common_cancel"))
-                            .font(AppFont.body)
-                            .foregroundStyle(Color.textSecondary)
+                VStack(spacing: AppSpacing.lg) {
+                    HStack {
+                        Button { dismiss() } label: {
+                            Text(String(localized: "common_cancel"))
+                                .font(AppTypography.bodyMedium)
+                                .foregroundStyle(Color.textSecondary)
+                        }
+                        
+                        Text(String(localized: "delivery_order_type_label"))
+                            .font(AppTypography.displayMedium)
+                            .foregroundStyle(Color.textPrimary)
+                            .fixedSize()
+                            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
+                        
+                        Color.clear.frame(width: 50)
                     }
+                    .padding(.horizontal, AppSpacing.screenPadding)
                     
-                    Spacer()
-                    
-                    Text(String(localized: "delivery_order_type_label"))
-                        .font(AppFont.displayTitle)
-                        .foregroundStyle(Color.textPrimary)
-                    
-                    Spacer()
-                    
-                    Color.clear.frame(width: 50)
+                    Divider()
+                        .background(Color.borderSecondary)
+                        .padding(.horizontal, -AppSpacing.screenPadding)
                 }
-                .padding(AppLayout.spacing)
-                
-                Color.secondary.frame(height: 1)
+                .background(Color.bgPrimary)
                 
                 ScrollView {
                     VStack(spacing: AppLayout.spacing) {

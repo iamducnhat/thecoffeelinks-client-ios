@@ -88,22 +88,22 @@ struct ValuePropositionCarousel: View {
                 
                 // Navigation
                 HStack {
+                    Button(String(localized: "common_skip")) {
+                        onFinished()
+                    }
+                    .font(AppFont.monoBody)
+                    .foregroundColor(Color.textSecondary)
+                    
+                    Spacer()
+                    
                     if currentPage < slides.count - 1 {
-                        Button(String(localized: "common_skip")) {
-                            onFinished()
-                        }
-                        .font(AppFont.monoBody)
-                        .foregroundColor(Color.textSecondary)
-                        
-                        Spacer()
-                        
                         Button {
                             withAnimation {
                                 currentPage += 1
                             }
                         } label: {
                             Text(String(localized: "common_next"))
-                                .font(AppFont.monoBody)
+                                .font(AppFont.monoCTA)
                                 .foregroundColor(Color.accentPrimary)
                         }
                     } else {
@@ -115,7 +115,6 @@ struct ValuePropositionCarousel: View {
                                 .foregroundColor(Color.bgPrimary)
                                 .padding(.horizontal, 32)
                                 .padding(.vertical, 14)
-                                .frame(maxWidth: .infinity)
                                 .background(Color.accentPrimary)
                                 .clipShape(Capsule())
                         }

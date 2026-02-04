@@ -45,6 +45,15 @@ class DependencyContainer: ObservableObject {
     private(set) lazy var syncManager = SyncManager(syncRepository: syncRepository)
     private(set) lazy var logger = Logger()
     
+    // MARK: - App Flow Controller
+    private(set) lazy var appFlowController: AppFlowController = {
+        AppFlowController(
+            keychainManager: keychainManager,
+            profileStorage: profileStorage,
+            authRepository: authRepository
+        )
+    }()
+    
     // MARK: - Repositories
     private(set) lazy var authRepository = AuthRepository(networkService: networkService, keychainManager: keychainManager)
     private(set) lazy var productRepository = ProductRepository(networkService: networkService, cacheService: cacheService, syncManager: syncManager)
@@ -64,7 +73,7 @@ class DependencyContainer: ObservableObject {
     private(set) lazy var cartStorage = CartStorage()
     private(set) lazy var storeStorage = StoreStorage()
     private(set) lazy var profileStorage = ProfileStorage()
-    private(set) lazy var cartService = CartService(networkService: networkService, cartStorage: cartStorage, productRepository: productRepository)
+    private(set) lazy var cartService = CartService(networkService: networkService, cartStorage: cartStorage, productRepository: productRepository, keychainManager: keychainManager)
     
     private var cancellables = Set<AnyCancellable>()
     
@@ -108,14 +117,17 @@ class DependencyContainer: ObservableObject {
     
     @MainActor
     func makeProfileViewModel() -> ProfileViewModel {
-        ProfileViewModel(
+        let viewModel = ProfileViewModel(
             userRepository: userRepository,
             voucherRepository: voucherRepository,
             socialRepository: socialRepository,
             authRepository: authRepository,
             orderRepository: orderRepository,
-            profileStorage: profileStorage
+            profileStorage: profileStorage,
+            keychainManager: keychainManager
         )
+        // Note: authViewModel should be set by the caller who has access to it
+        return viewModel
     }
     
     @MainActor
@@ -155,7 +167,10 @@ class DependencyContainer: ObservableObject {
     
     @MainActor
     func makeAuthViewModel() -> AuthViewModel {
-        AuthViewModel(authRepository: authRepository, profileStorage: profileStorage)
+        let viewModel = AuthViewModel(authRepository: authRepository, profileStorage: profileStorage)
+        // Wire up AppFlowController
+        viewModel.appFlowController = appFlowController
+        return viewModel
     }
     
     @MainActor
@@ -174,42 +189,71 @@ class DependencyContainer: ObservableObject {
         )
     }
     
-    func initialize() async {
+    /// Synchronous initialization - called before UI renders to prevent race conditions
+    func initializeSync() {
+        print("🚀 [DependencyContainer] Starting synchronous initialization")
+        
         // Pre-warm services
         _ = keychainManager
         _ = networkService
         _ = realtimeService
         
-        // Check auth state
+        // Check auth state synchronously
         if let token = keychainManager.getAccessToken() {
             let refreshToken = keychainManager.getRefreshToken()
-            await networkService.setAuthSession(accessToken: token, refreshToken: refreshToken)
+            // Set auth session synchronously (NetworkService handles this internally)
+            networkService.setAuthSessionSync(accessToken: token, refreshToken: refreshToken)
             
-            // Set token for Realtime (must happen on main thread or be thread safe)
+            // Set token for Realtime
             realtimeService.setAuthToken(token)
-            // Note: Realtime connection happens in ViewModel or on demand
         }
         
-        // Subscribe to auth token changes to keep RealtimeService in sync
-        await MainActor.run {
-            networkService.$authToken
-                .receive(on: RunLoop.main)
-                .sink { [weak self] token in
-                    guard let self = self else { return }
-                    if let token = token {
-                        self.realtimeService.setAuthToken(token)
-                    } else {
-                        self.realtimeService.disconnect()
+        // Initialize AppFlowController synchronously
+        Task { @MainActor in
+            appFlowController.initializeSync()
+        }
+        
+        print("✅ [DependencyContainer] Synchronous initialization complete")
+    }
+    
+    /// Asynchronous initialization - called after UI renders for background tasks
+    func initializeAsync() async {
+        print("🔄 [DependencyContainer] Starting asynchronous initialization")
+        
+        // Check if authenticated before subscribing to auth changes
+        let isAuthenticated = keychainManager.getAccessToken() != nil
+        
+        if isAuthenticated {
+            // Subscribe to auth token changes to keep RealtimeService in sync
+            await MainActor.run {
+                networkService.$authToken
+                    .receive(on: RunLoop.main)
+                    .sink { [weak self] token in
+                        guard let self = self else { return }
+                        if let token = token {
+                            self.realtimeService.setAuthToken(token)
+                        } else {
+                            self.realtimeService.disconnect()
+                        }
                     }
-                }
-                .store(in: &cancellables)
+                    .store(in: &cancellables)
+            }
+            
+            // Initial sync of data versions (only when authenticated)
+            do {
+                try await syncManager.refreshVersions()
+            } catch {
+                print("⚠️ SyncManager initial refresh failed: \(error)")
+            }
+        } else {
+            print("⏭️ [DependencyContainer] Skipping auth-dependent initialization (guest mode)")
         }
         
-        // Initial sync of data versions
-        do {
-            try await syncManager.refreshVersions()
-        } catch {
-            print("⚠️ SyncManager initial refresh failed: \(error)")
-        }
+        print("✅ [DependencyContainer] Asynchronous initialization complete")
+    }
+    
+    // DEPRECATED: Use initializeSync() + initializeAsync() instead
+    func initialize() async {
+        await initializeAsync()
     }
 }

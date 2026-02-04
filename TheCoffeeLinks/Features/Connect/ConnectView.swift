@@ -31,19 +31,17 @@ struct ConnectView: View {
             VStack(spacing: 0) {
                 ScrollView(.vertical) {
                     // Header
-                    VStack(alignment: .leading, spacing: AppLayout.spacing) {
-                        Text(String(localized: "network_connect_action"))
-                            .font(AppFont.displayTitle)
-                            .foregroundColor(Color.textPrimary)
-                            .padding(.top, AppLayout.spacing)
+                    VStack(spacing: AppSpacing.lg) {
+                        SectionHeader(
+                            title: String(localized: "network_connect_action"),
+                            subtitle: "Find friends at your local coffee shop"
+                        )
+                        .padding(.horizontal, AppSpacing.screenPadding)
                         
-                        Text("Find friends at your local coffee shop")
-                            .font(AppFont.body)
-                            .foregroundStyle(Color.textSecondary)
-                        
-                        Color.secondary.frame(height: 1)
+                        Divider().background(Color.borderSecondary)
                     }
-                    .padding(.horizontal, AppLayout.spacing)
+                    .padding(.top, AppSpacing.sm)
+                    .background(Color.bgPrimary)
                     .background(GeometryReader {
                         Color.clear.preference(key: ViewOffsetKey.self, value: -$0.frame(in: .named("scroll")).origin.y)
                     })

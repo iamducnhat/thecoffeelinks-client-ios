@@ -28,52 +28,59 @@ struct SearchView: View {
             HStack(alignment: .center, spacing: AppLayout.spacing) {
                 Button { dismiss() } label: {
                     Image(systemName: "xmark")
-                        .font(AppFont.navIcon)
+                        .font(.system(size: 17, weight: .medium))
                         .foregroundStyle(Color.textPrimary)
-                        .frame(minWidth: AppLayout.touchTarget, minHeight: AppLayout.touchTarget)
+                        .padding(12)
                         .background {
-                            Capsule()
+                            Circle()
                                 .fill(Color.bgPrimary)
                         }
                         .overlay {
-                            Capsule()
+                            Circle()
                                 .strokeBorder(Color.textPrimary, lineWidth: min(66.6, max(scrollOffset, 0.0)) / 66.6)
                                 .opacity(min(88.8, max(scrollOffset, 0.0)) / 99.9)
                         }
                 }
                 
                 Text(String(localized: "common_search"))
-                    .font(AppFont.displayTitle)
+                    .font(AppTypography.displayMedium)
                     .lineLimit(1)
                     .foregroundStyle(Color.textPrimary)
-                    .padding(.vertical, 24)
-                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .fixedSize()
+                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
                     .hidden()
             }
             .frame(minHeight: AppLayout.touchTarget)
-            .frame(maxWidth: .infinity, alignment: .center)
             .padding(.horizontal, AppLayout.spacing)
+            .padding(.top, 8)
+            .zIndex(1)
+            .fixedSize(horizontal: false, vertical: true)
             
             VStack(spacing: 0) {
                 ScrollView(.vertical) {
                     // Navigation Header (Scrollable)
-                    HStack(alignment: .center, spacing: AppLayout.spacing) {
-                        Image(systemName: "xmark")
-                            .font(AppFont.navIcon)
-                            .foregroundStyle(Color.textPrimary)
-                            .frame(minWidth: AppLayout.touchTarget, minHeight: AppLayout.touchTarget)
-                            .hidden()
+                    VStack(spacing: AppLayout.marginCompact) {
+                        HStack(alignment: .center, spacing: AppLayout.spacing) {
+                            Image(systemName: "xmark")
+                                .font(.system(size: 17, weight: .medium))
+                                .foregroundStyle(Color.textPrimary)
+                                .padding(12)
+                                .hidden()
+                            
+                            Text(String(localized: "common_search"))
+                                .font(AppTypography.displayMedium)
+                                .lineLimit(1)
+                                .foregroundColor(Color.textPrimary)
+                                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
+                        }
                         
-                        Text(String(localized: "common_search"))
-                            .font(AppFont.displayTitle)
-                            .lineLimit(1)
-                            .foregroundStyle(Color.textPrimary)
-                            .padding(.vertical, 24)
-                            .frame(maxWidth: .infinity, alignment: .leading)
+                        Divider()
+                            .background(Color.borderSecondary)
+                            .padding(.horizontal, -AppLayout.spacing)
                     }
-                    .frame(minHeight: AppLayout.touchTarget)
-                    .frame(maxWidth: .infinity, alignment: .center)
                     .padding(.horizontal, AppLayout.spacing)
+                    .padding(.top, AppLayout.spacingCompact)
+                    .background(Color.bgPrimary)
                     .background(GeometryReader {
                         Color.clear.preference(key: ViewOffsetKey.self, value: -$0.frame(in: .named("scroll")).origin.y)
                     })

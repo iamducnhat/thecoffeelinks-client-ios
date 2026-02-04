@@ -4,13 +4,13 @@ import Combine
 class AuthViewModel: BaseViewModel {
     private let authRepository: AuthRepository
     private let profileStorage: ProfileStorageProtocol
+    
+    // Reference to AppFlowController for state synchronization
+    // Note: Set via dependency injection after initialization to avoid circular dependency
+    weak var appFlowController: AppFlowController?
 
     @Published var currentUser: User? {
         didSet {
-            let verified = currentUser?.phoneVerificationStatus == .verified
-            self.isPhoneVerified = verified
-            UserDefaults.standard.set(verified, forKey: "isPhoneVerified_cached")
-            
             // CRITICAL: Save to ProfileStorage for single source of truth
             if let user = currentUser {
                 profileStorage.saveUser(user)
@@ -41,46 +41,15 @@ class AuthViewModel: BaseViewModel {
         self.authRepository = authRepository
         self.profileStorage = profileStorage
         super.init()
-        // DO NOT restore from cache - always fetch server truth
-        checkSession()
+        // Auth state is now managed by AppFlowController
+        // checkSession() is called by AppFlowController during initialization
     }
 
+    /// Check session - DEPRECATED, use AppFlowController instead
+    /// Kept for backward compatibility with existing views
     func checkSession() {
-        if let token = DependencyContainer.shared.keychainManager.getAccessToken() {
-            isAuthenticated = true
-            // Sync Realtime Token
-            DependencyContainer.shared.realtimeService.setAuthToken(token)
-
-            // CRITICAL: Load from local cache first for immediate display
-            if let cachedUser = profileStorage.loadUser() {
-                self.currentUser = cachedUser
-                self.isPhoneVerified = cachedUser.phoneVerificationStatus == .verified
-            }
-
-            // CRITICAL: Always fetch server truth for verification status in background
-            Task {
-                do {
-                    let user = try await fetchCurrentUser()
-                    // didSet on currentUser will update isPhoneVerified from server data
-                    await MainActor.run {
-                        // Update cache after server fetch succeeds (done automatically in didSet)
-                        UserDefaults.standard.set(self.isPhoneVerified, forKey: "isPhoneVerified_cached")
-                    }
-                } catch {
-                    // Fallback to cache only on network failure
-                    await MainActor.run {
-                        let cachedVerification = UserDefaults.standard.bool(forKey: "isPhoneVerified_cached")
-                        self.isPhoneVerified = cachedVerification
-                        print("⚠️ Using cached verification status (\(cachedVerification)) - network unavailable")
-                    }
-                }
-            }
-        } else {
-            // No token - user is not authenticated
-            isAuthenticated = false
-            isPhoneVerified = false
-            UserDefaults.standard.removeObject(forKey: "isPhoneVerified_cached")
-        }
+        // No-op: Auth state is now managed by AppFlowController
+        print("⚠️ [AuthViewModel] checkSession() called - this is deprecated, use AppFlowController")
     }
     
     // MARK: - Phone + Password Auth
@@ -115,6 +84,12 @@ class AuthViewModel: BaseViewModel {
                 }
             } catch {
                 print("❌ [AuthViewModel] Register Error: \(error)")
+                
+                // Clear any stale auth tokens to prevent automatic token refresh
+                DependencyContainer.shared.keychainManager.deleteAccessToken()
+                DependencyContainer.shared.keychainManager.deleteRefreshToken()
+                await DependencyContainer.shared.networkService.clearAuthToken()
+                
                 await MainActor.run {
                     self.error = error.localizedDescription
                     self.authState = .error
@@ -136,16 +111,27 @@ class AuthViewModel: BaseViewModel {
                 }
                 
                 // CRITICAL: Fetch full user profile from /api/user/profile to get actual name
-                try await self.fetchCurrentUser()
+                let fullUser = try await self.fetchCurrentUser()
                 
                 await MainActor.run {
                     self.isAuthenticated = true
+                    self.isPhoneVerified = fullUser.phoneVerificationStatus == .verified
                     self.authState = .idle
                     self.error = nil
+                    
+                    // Notify AppFlowController of login
+                    self.appFlowController?.transitionToLoggedIn(user: fullUser)
                 }
             } catch {
                 print("❌ [AuthViewModel] Login Password Error: \(error)")
+                
+                // Clear any stale auth tokens to prevent automatic token refresh
+                DependencyContainer.shared.keychainManager.deleteAccessToken()
+                DependencyContainer.shared.keychainManager.deleteRefreshToken()
+                await DependencyContainer.shared.networkService.clearAuthToken()
+                
                 await MainActor.run {
+                    self.isAuthenticated = false
                     self.error = error.localizedDescription
                     self.authState = .error
                 }
@@ -168,8 +154,19 @@ class AuthViewModel: BaseViewModel {
                     self.error = nil
                 }
             } catch {
-                print("❌ [AuthViewModel] sendOTP Error: \(error)")
+                print("❌ [AuthViewModel] sendOTP Error: \(error)")                
+                // Clear any stale auth tokens to prevent automatic token refresh
+                DependencyContainer.shared.keychainManager.deleteAccessToken()
+                DependencyContainer.shared.keychainManager.deleteRefreshToken()
+                await DependencyContainer.shared.networkService.clearAuthToken()
+                                
+                // Clear any stale auth tokens to prevent automatic token refresh
+                DependencyContainer.shared.keychainManager.deleteAccessToken()
+                DependencyContainer.shared.keychainManager.deleteRefreshToken()
+                await DependencyContainer.shared.networkService.clearAuthToken()
+                
                 await MainActor.run {
+                    self.isAuthenticated = false
                     self.error = error.localizedDescription
                     self.authState = .error
                 }
@@ -196,21 +193,31 @@ class AuthViewModel: BaseViewModel {
                 }
                 
                 // CRITICAL: Fetch full user profile from /api/user/profile to get actual name
-                try await self.fetchCurrentUser()
+                let fullUser = try await self.fetchCurrentUser()
                 
                 await MainActor.run {
                     self.isAuthenticated = true
+                    self.isPhoneVerified = fullUser.phoneVerificationStatus == .verified
                     self.authState = .idle
                     self.error = nil
                     
-                    // If verified, isPhoneVerified will be set via didSet
-                    if self.currentUser?.phoneVerificationStatus == .verified {
-                         print("✅ Phone verified.")
+                    // Notify AppFlowController
+                    if self.isPhoneVerified {
+                        self.appFlowController?.markPhoneVerified()
+                    } else {
+                        self.appFlowController?.transitionToLoggedIn(user: fullUser)
                     }
                 }
             } catch {
                 print("❌ [AuthViewModel] verifyOTP Error: \(error)")
+                
+                // Clear any stale auth tokens to prevent automatic token refresh
+                DependencyContainer.shared.keychainManager.deleteAccessToken()
+                DependencyContainer.shared.keychainManager.deleteRefreshToken()
+                await DependencyContainer.shared.networkService.clearAuthToken()
+                
                 await MainActor.run {
+                    self.isAuthenticated = false
                     self.error = error.localizedDescription
                     self.authState = .error
                 }
@@ -282,12 +289,18 @@ class AuthViewModel: BaseViewModel {
             // CRITICAL: Clear ProfileStorage
             profileStorage.clearUser()
             
+            // CRITICAL: Clear Cart on logout
+            DependencyContainer.shared.cartStorage.clearCart()
+            
             URLCache.shared.removeAllCachedResponses()
             
             await MainActor.run {
                 self.currentUser = nil
                 self.isAuthenticated = false
                 self.isPhoneVerified = false // Reset
+                
+                // Notify AppFlowController
+                self.appFlowController?.transitionToLoggedOut()
                 self.phoneNumber = ""
                 self.otpCode = ""
                 self.authState = .idle

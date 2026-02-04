@@ -45,11 +45,9 @@ final class AppAttestNetworkInterceptor {
             return nil
         }
 
-        // Ensure App Attest is registered
-        try? await attestService.ensureRegistered()
-
+        // Check if App Attest is registered (registration happens in AuthRepository after OTP verification)
         guard attestService.isRegistered else {
-            print("[AppAttestInterceptor] Not registered, skipping")
+            print("[AppAttestInterceptor] App Attest not registered, skipping protected request")
             return nil
         }
 

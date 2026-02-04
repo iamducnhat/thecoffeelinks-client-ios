@@ -42,22 +42,26 @@ struct VouchersView: View {
             
             VStack(spacing: 0) {
                 // Header
-                VStack(alignment: .leading, spacing: AppLayout.spacing) {
+                VStack(spacing: AppSpacing.lg) {
                     HStack {
                         Text(String(localized: "vouchers_title"))
-                            .font(AppFont.displayTitle)
+                            .font(AppTypography.displayMedium)
                             .foregroundStyle(Color.textPrimary)
-                        
-                        Spacer()
+                            .fixedSize()
+                            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
                         
                         Button { dismiss() } label: {
                             Image(systemName: "xmark")
-                                .font(AppFont.navIcon)
+                                .font(.system(size: 17, weight: .medium))
                                 .foregroundStyle(Color.textPrimary)
+                                .padding(12)
                         }
                     }
+                    .padding(.horizontal, AppSpacing.screenPadding)
                     
-                    Color.secondary.frame(height: 1)
+                    Divider()
+                        .background(Color.borderSecondary)
+                        .padding(.horizontal, -AppSpacing.screenPadding)
                     
                     // Tab Picker
                     HStack(spacing: 0) {

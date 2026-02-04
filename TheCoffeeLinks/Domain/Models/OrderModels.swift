@@ -216,6 +216,7 @@ struct OrderCustomization: Codable, Hashable, Sendable {
     
     var displayText: String {
         var parts: [String] = [size.displayName]
+        //if let size = size { parts.append(size.displayName) }
         if let sugar = sugar { parts.append(sugar.displayName) }
         if let ice = ice { parts.append(ice.displayName) }
         if !toppings.isEmpty { parts.append(String(localized: "customization_toppings_count \(toppings.count)")) }

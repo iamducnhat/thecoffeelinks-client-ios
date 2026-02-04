@@ -12,6 +12,7 @@ import CoreLocation
 struct InitialSetupView: View {
     @EnvironmentObject private var appState: AppState
     @EnvironmentObject private var storeViewModel: StoreViewModel
+    @EnvironmentObject private var appFlowController: AppFlowController
     @State private var currentStep = 0
     @State private var selectedTaste: String?
     
@@ -112,18 +113,34 @@ struct InitialSetupView: View {
             
             Spacer()
             
-            Button {
-                withAnimation {
-                    currentStep = 1
+            HStack(spacing: AppLayout.spacing) {
+                Button {
+                    withAnimation {
+                        currentStep = 1
+                    }
+                } label: {
+                    Text("Skip")
+                        .font(AppFont.monoCTA)
+                        .foregroundStyle(Color.textSecondary)
+                        .padding(.vertical, 12)
+                        .frame(maxWidth: .infinity)
+                        .background(Color.surfaceCard)
+                        .clipShape(RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle))
                 }
-            } label: {
-                Text("Continue")
-                    .font(AppFont.monoCTA)
-                    .foregroundStyle(Color.backgroundPaper)
-                    .padding(.vertical, 12)
-                    .frame(maxWidth: .infinity)
-                    .background(Color.accentColor)
-                    .clipShape(RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle))
+                
+                Button {
+                    withAnimation {
+                        currentStep = 1
+                    }
+                } label: {
+                    Text("Continue")
+                        .font(AppFont.monoCTA)
+                        .foregroundStyle(Color.backgroundPaper)
+                        .padding(.vertical, 12)
+                        .frame(maxWidth: .infinity)
+                        .background(Color.accentColor)
+                        .clipShape(RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle))
+                }
             }
             .padding(24)
             .padding(.bottom, 24)
@@ -191,18 +208,31 @@ struct InitialSetupView: View {
             
             Spacer()
             
-            Button {
-                completeSetup()
-            } label: {
-                Text("Complete Setup")
-                    .font(AppFont.monoCTA)
-                    .foregroundStyle(Color.backgroundPaper)
-                    .padding(.vertical, 12)
-                    .frame(maxWidth: .infinity)
-                    .background(selectedTaste == nil ? Color.textMuted : Color.accentColor)
-                    .clipShape(RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle))
+            HStack(spacing: AppLayout.spacing) {
+                Button {
+                    completeSetup()
+                } label: {
+                    Text("Skip")
+                        .font(AppFont.monoCTA)
+                        .foregroundStyle(Color.textSecondary)
+                        .padding(.vertical, 12)
+                        .frame(maxWidth: .infinity)
+                        .background(Color.surfaceCard)
+                        .clipShape(RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle))
+                }
+                
+                Button {
+                    completeSetup()
+                } label: {
+                    Text("Start Browsing")
+                        .font(AppFont.monoCTA)
+                        .foregroundStyle(Color.backgroundPaper)
+                        .padding(.vertical, 12)
+                        .frame(maxWidth: .infinity)
+                        .background(Color.accentColor)
+                        .clipShape(RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle))
+                }
             }
-            .disabled(selectedTaste == nil)
             .padding(24)
             .padding(.bottom, 24)
         }
@@ -213,6 +243,9 @@ struct InitialSetupView: View {
             // Both must be true for ContentView to proceed to MainTabView
             appState.isOnboardingCompleted = true
             appState.isInitialSetupCompleted = true
+            
+            // Notify AppFlowController
+            appFlowController.markOnboardingCompleted()
         }
     }
 }

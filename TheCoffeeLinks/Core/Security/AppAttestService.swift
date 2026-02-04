@@ -11,6 +11,7 @@ import DeviceCheck
 import CryptoKit
 import Combine
 import os.log
+import UIKit
 
 // MARK: - App Attest Errors
 
@@ -72,8 +73,21 @@ final class AppAttestService: ObservableObject {
     private var attestService: DCAppAttestService?
     private var currentKey: AppAttestKey?
     
+    // Registration retry state for exponential backoff
+    private var registrationRetryCount: Int = 0
+    private var lastRegistrationAttempt: Date?
+    
     @Published private(set) var isAvailable: Bool = false
-    @Published private(set) var isRegistered: Bool = false
+    @Published private(set) var isRegistered: Bool = false {
+        didSet {
+            UserDefaults.standard.set(isRegistered, forKey: "appAttestKeyRegistered")
+            if isRegistered {
+                // Reset retry count on successful registration
+                registrationRetryCount = 0
+                lastRegistrationAttempt = nil
+            }
+        }
+    }
     
     nonisolated init() {
         // Empty initializer for ObservableObject
@@ -86,10 +100,11 @@ final class AppAttestService: ObservableObject {
             attestService = DCAppAttestService.shared
             isAvailable = true
             
-            // Check for existing key
+            // Check for existing local key and restore registration state
             if let key = loadKeyFromKeychain() {
                 currentKey = key
-                isRegistered = true
+                isRegistered = UserDefaults.standard.bool(forKey: "appAttestKeyRegistered")
+                print("[AppAttestService] Found local App Attest key (\(key.keyId)); isRegistered=\(isRegistered)")
             }
         } else {
             isAvailable = false
@@ -102,14 +117,36 @@ final class AppAttestService: ObservableObject {
         guard let service = attestService else {
             throw AppAttestError.unavailable
         }
-        
-        // Generate a challenge hash
-        let challenge = generateChallenge()
-        
+
+        // Try to fetch a server-provided challenge for key attestation. Fallback to local if unavailable.
+        var challenge = generateChallenge()
+        do {
+            let network = DependencyContainer.shared.networkService
+            struct ChallengeResponse: Decodable {
+                let success: Bool
+                let challenge: String
+                let timestamp: Int64
+            }
+            let resp: ChallengeResponse = try await network.request(
+                "/api/auth/app-attest/challenge",
+                method: "GET"
+            )
+            if resp.success {
+                challenge = resp.challenge
+            }
+        } catch {
+            print("[AppAttestService] Failed to fetch server challenge: \(error.localizedDescription). Using local challenge.")
+        }
+
         // 1. Get Key ID
         let keyId: String = try await withCheckedThrowingContinuation { continuation in
             service.generateKey { keyId, error in
                 if let error = error {
+                    let nsErr = error as NSError
+                    print("[AppAttestService] generateKey error: domain=\(nsErr.domain) code=\(nsErr.code) userInfo=\(nsErr.userInfo)")
+                    if nsErr.domain == "com.apple.devicecheck.error" && nsErr.code == 1 {
+                        print("[AppAttestService] App Attest generation failed (code 1). Common causes: running on Simulator, missing App Attest entitlement in the provisioning profile, incorrect bundle ID, or Apple services unreachable.")
+                    }
                     continuation.resume(throwing: AppAttestError.attestationFailed(error))
                     return
                 }
@@ -120,22 +157,25 @@ final class AppAttestService: ObservableObject {
                 continuation.resume(returning: keyId)
             }
         }
-        
-        // 2. Attest Key
+
+        // 2. Attest Key using the challenge
         let attestation = try await attestKey(keyId: keyId, challenge: challenge)
-        
+
         let key = AppAttestKey(
             keyId: keyId,
             challenge: challenge,
             attestation: attestation,
             createdAt: Date()
         )
-        
+
         // 3. Save to keychain (MainActor isolated)
         self.saveKeyToKeychain(key)
         self.currentKey = key
-        self.isRegistered = true
-        
+        // NOTE: We do NOT mark the key as server-registered here. Registration requires an authenticated request.
+        self.isRegistered = false
+
+        print("[AppAttestService] Generated local key (\(keyId)). Server registration is pending.")
+
         return key
     }
     
@@ -155,6 +195,11 @@ final class AppAttestService: ObservableObject {
         return try await withCheckedThrowingContinuation { continuation in
             service.attestKey(keyId, clientDataHash: clientDataHash) { attestation, error in
                 if let error = error {
+                    let nsErr = error as NSError
+                    print("[AppAttestService] attestKey error: domain=\(nsErr.domain) code=\(nsErr.code) userInfo=\(nsErr.userInfo)")
+                    if nsErr.domain == "com.apple.devicecheck.error" && nsErr.code == 1 {
+                        print("[AppAttestService] App Attest attestation failed (code 1). Verify entitlements/provisioning and that this is running on a physical device.")
+                    }
                     continuation.resume(throwing: AppAttestError.attestationFailed(error))
                     return
                 }
@@ -186,6 +231,8 @@ final class AppAttestService: ObservableObject {
                 clientDataHash: Data(CryptoKit.SHA256.hash(data: challengeData))
             ) { assertion, error in
                 if let error = error {
+                    let nsErr = error as NSError
+                    print("[AppAttestService] generateAssertion error: domain=\(nsErr.domain) code=\(nsErr.code) userInfo=\(nsErr.userInfo)")
                     continuation.resume(throwing: AppAttestError.assertionFailed(error))
                     return
                 }
@@ -245,13 +292,103 @@ final class AppAttestService: ObservableObject {
     
     // MARK: - Registration State
     
+    // Public helper to check for a local key
+    var hasLocalKey: Bool {
+        return currentKey != nil
+    }
+
     func ensureRegistered() async throws {
         if !isAvailable {
-            return
+            print("[AppAttestService] App Attest not available on this device")
+            throw AppAttestError.unavailable
+        }
+
+        // Create a local key if missing (does NOT register with server)
+        if currentKey == nil {
+            do {
+                _ = try await generateKey()
+            } catch {
+                print("[AppAttestService] generateKey failed: \(error.localizedDescription)")
+                throw error
+            }
+        }
+    }
+
+    // Register the current local key with the server. Requires an authenticated session.
+    func registerKeyWithServer() async throws -> Bool {
+        // Idempotency: Skip if already registered
+        guard !isRegistered else {
+            print("[AppAttestService] Already registered with server, skipping")
+            return true
         }
         
-        if !isRegistered || currentKey == nil {
-            _ = try await generateKey()
+        // Exponential backoff: Check if we should wait before retrying
+        if let lastAttempt = lastRegistrationAttempt {
+            let backoffSeconds = min(pow(2.0, Double(registrationRetryCount)), 300.0) // Max 5 minutes
+            let nextAttemptTime = lastAttempt.addingTimeInterval(backoffSeconds)
+            if Date() < nextAttemptTime {
+                let waitTime = nextAttemptTime.timeIntervalSince(Date())
+                print("[AppAttestService] Backoff active, retry in \(Int(waitTime))s (attempt #\(registrationRetryCount))")
+                throw AppAttestError.invalidResponse
+            }
+        }
+        
+        lastRegistrationAttempt = Date()
+        
+        // Ensure we have a local key (try to create one if missing)
+        if currentKey == nil {
+            do {
+                _ = try await generateKey()
+                print("[AppAttestService] Created local key during register: \(currentKey?.keyId ?? "<nil>")")
+            } catch {
+                print("[AppAttestService] Failed to create local key during register: \(error.localizedDescription)")
+                registrationRetryCount += 1
+                throw AppAttestError.keyNotFound
+            }
+        }
+
+        guard let key = currentKey else {
+            registrationRetryCount += 1
+            throw AppAttestError.keyNotFound
+        }
+
+        // Build request
+        struct RegisterRequest: Encodable {
+            let keyId: String
+            let attestKey: String
+            let challenge: String
+            let deviceId: String
+        }
+
+        struct RegisterResponse: Decodable {
+            let success: Bool
+            let keyId: String?
+        }
+
+        let deviceId = (UIDevice.current.identifierForVendor?.uuidString) ?? "unknown"
+
+        let network = DependencyContainer.shared.networkService
+
+        do {
+            let resp: RegisterResponse = try await network.request(
+                "/api/auth/app-attest/register",
+                method: "POST",
+                body: RegisterRequest(keyId: key.keyId, attestKey: key.attestation, challenge: key.challenge, deviceId: deviceId)
+            )
+
+            if resp.success {
+                self.isRegistered = true
+                print("[AppAttestService] Key (\(key.keyId)) registered with server")
+                return true
+            }
+
+            print("[AppAttestService] Server registration returned success=false")
+            registrationRetryCount += 1
+            return false
+        } catch {
+            print("[AppAttestService] registerKeyWithServer failed: \(error.localizedDescription)")
+            registrationRetryCount += 1
+            throw error
         }
     }
 }

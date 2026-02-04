@@ -24,7 +24,7 @@ struct HomeView: View {
     @State private var scrollOffset = CGFloat.zero
     
     var body: some View {
-        ZStack(alignment: .center) {
+        ZStack(alignment: .top) {
             Color.bgPrimary.ignoresSafeArea()
             
             VStack(spacing: 0) {
@@ -121,13 +121,10 @@ struct HomeView: View {
             }
         }
         .onAppear {
-            Task {
-                if let user = authViewModel.currentUser {
-                    trackingViewModel.setUserId(user.id)
-                }
-                async let homeLoad: () = homeViewModel.load()
-                async let menuLoad: () = menuViewModel.load()
-                _ = await (homeLoad, menuLoad)
+            // REMOVED: Duplicate data loading - MainTabView handles initial load
+            // Just set up tracking if user is available
+            if let user = authViewModel.currentUser {
+                trackingViewModel.setUserId(user.id)
             }
         }
         // Ensure we catch the user if they load slightly after appear
@@ -156,13 +153,13 @@ struct ActiveOrdersSection: View {
     
     var body: some View {
         VStack(alignment: .leading, spacing: AppLayout.spacing) {
-            Text(String(localized: "active_orders_section \(orders.count)"))
-                .textCase(.uppercase)
-                .font(AppFont.sectionHeader)
-                .foregroundStyle(Color.textPrimary)
-                .padding(.horizontal, AppLayout.spacing)
-                .frame(maxWidth: .infinity, alignment: .leading)
-            
+//            Text(String(localized: "active_orders_section \(orders.count)"))
+//                .textCase(.uppercase)
+//                .font(AppFont.sectionHeader)
+//                .foregroundStyle(Color.textPrimary)
+//                .padding(.horizontal, AppLayout.spacing)
+//                .frame(maxWidth: .infinity, alignment: .leading)
+//            
             VStack(spacing: AppLayout.spacing) {
                 ForEach(orders) { order in
                     OrderTrackingCard(order: order) {

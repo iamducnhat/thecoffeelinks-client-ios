@@ -8,8 +8,12 @@ class ProfileViewModel: BaseViewModel {
     private let authRepository: AuthRepository
     private let orderRepository: OrderRepositoryProtocol
     private let profileStorage: ProfileStorageProtocol
+    private let keychainManager: KeychainManager
     
-    @Published var userProfile: User?
+    // REMOVED: Duplicate userProfile - use AuthViewModel.currentUser as single source of truth
+    // Reference to AuthViewModel for reading user data
+    weak var authViewModel: AuthViewModel?
+    
     @Published var vouchers: [Voucher] = []
     @Published var connections: [User] = []
     @Published var orderCount: Int = 0
@@ -28,12 +32,18 @@ class ProfileViewModel: BaseViewModel {
     private let storage: GenericStorageProtocol
     private var cancellables = Set<AnyCancellable>()
     
+    // Computed property for user profile (reads from AuthViewModel)
+    var userProfile: User? {
+        authViewModel?.currentUser
+    }
+    
     init(userRepository: UserRepository, 
          voucherRepository: VoucherRepository, 
          socialRepository: SocialRepository, 
          authRepository: AuthRepository, 
          orderRepository: OrderRepositoryProtocol,
          profileStorage: ProfileStorageProtocol,
+         keychainManager: KeychainManager,
          storage: GenericStorageProtocol = GenericStorage()) {
         self.userRepository = userRepository
         self.voucherRepository = voucherRepository
@@ -41,6 +51,7 @@ class ProfileViewModel: BaseViewModel {
         self.authRepository = authRepository
         self.orderRepository = orderRepository
         self.profileStorage = profileStorage
+        self.keychainManager = keychainManager
         self.storage = storage
         super.init()
         
@@ -57,11 +68,11 @@ class ProfileViewModel: BaseViewModel {
     }
     
     private func loadCachedProfile() async {
-        // Load cached user
-        if let cachedUser = await userRepository.getCachedUser() {
-            await MainActor.run { 
-                self.userProfile = cachedUser
-                self.editName = cachedUser.fullName
+        // User profile is loaded from AuthViewModel.currentUser (single source of truth)
+        // Just update editName if user exists
+        if let user = authViewModel?.currentUser {
+            await MainActor.run {
+                self.editName = user.fullName
                 self.lastProfileSync = profileStorage.getLastSyncTimestamp(key: "user_profile")
                 self.isProfileStale = profileStorage.isDataStale(key: "user_profile", maxAge: 300)
             }
@@ -83,6 +94,13 @@ class ProfileViewModel: BaseViewModel {
     }
     
     private func performProfileRefresh() async {
+        // Auth guard - skip refresh if not authenticated
+        guard keychainManager.getAccessToken() != nil else {
+            print("⏭️ [ProfileViewModel] No access token, skipping profile refresh")
+            isRefreshingProfile = false
+            return
+        }
+        
         isRefreshingProfile = true
         do {
             async let userTask = userRepository.refreshUser()
@@ -93,16 +111,15 @@ class ProfileViewModel: BaseViewModel {
             let (updatedUser, updatedVouchers, updatedConnections, updatedOrders) = try await (userTask, vouchersTask, connectionsTask, ordersTask)
             
             await MainActor.run {
-                // Fix for ID 000000:
-                // If the refreshed user has no shortId (or it's effectively empty),
-                // but we already have a valid one in memory (from cache or login), preserve it.
-                var finalUser = updatedUser
-                if (finalUser.shortId == nil || finalUser.shortId == "000000"),
-                   let existingUser = self.userProfile,
+                // Update AuthViewModel's user (single source of truth)
+                // Fix for ID 000000: Preserve valid shortId if server returns empty
+                if let existingUser = self.authViewModel?.currentUser,
                    let validShortId = existingUser.shortId,
-                   validShortId != "000000" {
+                   validShortId != "000000",
+                   (updatedUser.shortId == nil || updatedUser.shortId == "000000") {
                     
                     print("DEBUG: Preserving valid shortId: \(validShortId) over nil/empty one from refresh.")
+                    var finalUser = updatedUser
                     finalUser = User(
                         id: finalUser.id,
                         shortId: validShortId,
@@ -116,9 +133,13 @@ class ProfileViewModel: BaseViewModel {
                         createdAt: finalUser.createdAt,
                         preferences: finalUser.preferences
                     )
+                    self.authViewModel?.currentUser = finalUser
+                    self.editName = finalUser.fullName
+                } else {
+                    self.authViewModel?.currentUser = updatedUser
+                    self.editName = updatedUser.fullName
                 }
                 
-                self.userProfile = finalUser
                 self.vouchers = updatedVouchers
                 self.connections = updatedConnections.map { conn in
                      User(id: conn.friendId,
@@ -132,7 +153,6 @@ class ProfileViewModel: BaseViewModel {
                           preferences: .default)
                 }
                 self.orderCount = updatedOrders.totalCount
-                self.editName = finalUser.fullName
                 
                 // CRITICAL: Cache order count and timestamps for offline-first experience
                 self.profileStorage.saveOrderCount(updatedOrders.totalCount)
@@ -183,7 +203,8 @@ class ProfileViewModel: BaseViewModel {
             )
             
             await MainActor.run {
-                self.userProfile = updatedUser
+                // Update AuthViewModel (single source of truth)
+                self.authViewModel?.currentUser = updatedUser
                 self.editMode = false
                 self.storage.remove(key: "profile_name_draft")
                 // Update sync timestamp after successful save

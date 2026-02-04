@@ -7,6 +7,7 @@
 
 import Foundation
 import Combine
+import CoreLocation
 
 @MainActor
 final class CartViewModel: ObservableObject {
@@ -20,16 +21,29 @@ final class CartViewModel: ObservableObject {
     @Published var error: Error?
     @Published var selectedAddress: DeliveryAddress?
     
+    // MARK: - Multi-Store Selection
+    @Published var showStoreConflictAlert = false
+    @Published var conflictingProduct: Product?
+    @Published var conflictingStore: Store?
+    @Published var recommendedStore: StoreScore?
+    @Published var showStoreRecommendationToast = false
+    
+    private var cancellables = Set<AnyCancellable>()
+    
     private let deliveryRepository: DeliveryRepositoryProtocol
     private let voucherRepository: VoucherRepositoryProtocol
     private let hapticService: HapticServiceProtocol
     private let cartService: CartServiceProtocol
+    private weak var storeViewModel: StoreViewModel?
+    private weak var deliveryViewModel: DeliveryViewModel?
     
-    init(deliveryRepository: DeliveryRepositoryProtocol, voucherRepository: VoucherRepositoryProtocol, hapticService: HapticServiceProtocol, cartService: CartServiceProtocol) {
+    init(deliveryRepository: DeliveryRepositoryProtocol, voucherRepository: VoucherRepositoryProtocol, hapticService: HapticServiceProtocol, cartService: CartServiceProtocol, storeViewModel: StoreViewModel? = nil, deliveryViewModel: DeliveryViewModel? = nil) {
         self.deliveryRepository = deliveryRepository
         self.voucherRepository = voucherRepository
         self.hapticService = hapticService
         self.cartService = cartService
+        self.storeViewModel = storeViewModel
+        self.deliveryViewModel = deliveryViewModel
         
         // 1. Load Local Immediately
         if let localCart = cartService.loadLocalCart() {
@@ -38,6 +52,9 @@ final class CartViewModel: ObservableObject {
         
         // 2. Background Fetch & Reconcile
         Task(priority: .userInitiated) { await bootstrapCart() }
+        
+        // 3. Sync with StoreViewModel
+        setupStoreSync()
     }
     
     // ... Computed variable omitted (isEmpty, itemCount, subtotal, total, summary, canCheckout) - unchanged
@@ -101,6 +118,26 @@ final class CartViewModel: ObservableObject {
     }
     
     func addItem(product: Product, quantity: Int, customization: OrderCustomization) {
+        // MARK: - Store Validation
+        // Check if product belongs to a different store than current cart
+        if let currentStoreId = cart.storeId,
+           !cart.items.isEmpty,
+           let productStoreId = storeViewModel?.selectedStore?.id,
+           currentStoreId != productStoreId {
+            
+            // Show conflict alert
+            conflictingProduct = product
+            conflictingStore = storeViewModel?.selectedStore
+            showStoreConflictAlert = true
+            Task { await hapticService.notification(.warning) }
+            return
+        }
+        
+        // If cart is empty and no store selected, auto-set to current selected store
+        if cart.storeId == nil, let selectedStoreId = storeViewModel?.selectedStore?.id {
+            cart.storeId = selectedStoreId
+        }
+        
         Task {
             do {
                 // Optimistic Update: Service updates local storage and returns immediately
@@ -193,6 +230,172 @@ final class CartViewModel: ObservableObject {
     
     func removePointsDiscount() {
         pointsDiscount = 0
+    }
+    
+    // MARK: - Multi-Store Management
+    
+    /// Setup Combine subscriptions to sync cart with StoreViewModel
+    private func setupStoreSync() {
+        // Sync cart.storeId with StoreViewModel.selectedStore
+        storeViewModel?.$selectedStore
+            .dropFirst() // Ignore initial value
+            .sink { [weak self] selectedStore in
+                guard let self = self else { return }
+                
+                // If cart is empty, auto-sync
+                if self.cart.items.isEmpty {
+                    self.cart.storeId = selectedStore?.id
+                } else if let storeId = selectedStore?.id, self.cart.storeId != storeId {
+                    // Cart has items but user switched stores - this is handled by UI alert
+                    print("⚠️ Store changed but cart has items. Waiting for user decision.")
+                }
+            }
+            .store(in: &cancellables)
+        
+        // Monitor cart changes for store recommendations
+        $cart
+            .map { $0.items }
+            .removeDuplicates()
+            .debounce(for: .seconds(0.5), scheduler: RunLoop.main)
+            .sink { [weak self] items in
+                guard let self = self else { return }
+                
+                // Only recompute if in delivery mode and cart has items
+                guard !items.isEmpty,
+                      self.cart.mode == .delivery,
+                      let address = self.selectedAddress else {
+                    return
+                }
+                
+                Task {
+                    await self.recomputeRecommendedStore(for: address)
+                }
+            }
+            .store(in: &cancellables)
+    }
+    
+    /// Switch to a different store and clear the cart
+    func switchStore(to store: Store) {
+        // Clear cart first
+        clearCart()
+        
+        // Update cart and view model
+        cart.storeId = store.id
+        storeViewModel?.selectStore(store)
+        
+        // Reset conflict state
+        showStoreConflictAlert = false
+        conflictingProduct = nil
+        conflictingStore = nil
+        
+        Task { await hapticService.impact(.medium) }
+    }
+    
+    /// Confirm adding item after store switch
+    func confirmStoreSwitch(product: Product, quantity: Int, customization: OrderCustomization) {
+        guard let store = conflictingStore else { return }
+        
+        // Clear cart and switch
+        switchStore(to: store)
+        
+        // Add the new item
+        addItem(product: product, quantity: quantity, customization: customization)
+    }
+    
+    /// Cancel store conflict - keep current cart
+    func cancelStoreSwitch() {
+        showStoreConflictAlert = false
+        conflictingProduct = nil
+        conflictingStore = nil
+        Task { await hapticService.selection() }
+    }
+    
+    /// Recompute recommended store based on current cart and delivery address
+    private func recomputeRecommendedStore(for address: DeliveryAddress) async {
+        guard let storeVM = storeViewModel,
+              let deliveryVM = deliveryViewModel else {
+            return
+        }
+        
+        // Get delivery-capable stores
+        let deliveryStores = storeVM.stores.filter { $0.deliveryAvailable == true }
+        guard !deliveryStores.isEmpty else { return }
+        
+        // Fetch availability for stores near the address (limit to 5 closest)
+        var availabilities: [String: DeliveryAvailability] = [:]
+        
+        let userLocation = address.coordinates.map { coord in
+            CLLocationCoordinate2D(latitude: coord.latitude, longitude: coord.longitude)
+        }
+        
+        // Sort by distance and take top 5
+        let nearestStores: [Store]
+        if let userLoc = userLocation {
+            nearestStores = Array(deliveryStores.sorted { store1, store2 in
+                let loc1 = CLLocation(latitude: store1.latitude, longitude: store1.longitude)
+                let loc2 = CLLocation(latitude: store2.latitude, longitude: store2.longitude)
+                let userCLLocation = CLLocation(latitude: userLoc.latitude, longitude: userLoc.longitude)
+                return userCLLocation.distance(from: loc1) < userCLLocation.distance(from: loc2)
+            }.prefix(5))
+        } else {
+            nearestStores = Array(deliveryStores.prefix(5))
+        }
+        
+        // Check availability in parallel
+        await withTaskGroup(of: (String, DeliveryAvailability?).self) { group in
+            for store in nearestStores {
+                group.addTask {
+                    do {
+                        let availability = try await deliveryVM.checkDeliveryAvailability(
+                            for: store.id,
+                            addressId: address.id
+                        )
+                        return (store.id, availability)
+                    } catch {
+                        return (store.id, nil)
+                    }
+                }
+            }
+            
+            for await (storeId, availability) in group {
+                if let availability = availability, availability.available {
+                    availabilities[storeId] = availability
+                }
+            }
+        }
+        
+        // Calculate scores
+        let availableStores = nearestStores.filter { availabilities[$0.id]?.available == true }
+        guard !availableStores.isEmpty else { return }
+        
+        let calculator = StoreScoreCalculator()
+        let scores = calculator.calculateScores(
+            stores: availableStores,
+            availabilities: availabilities,
+            cartItems: cart.items,
+            userLocation: userLocation
+        )
+        
+        guard let bestStore = scores.first else { return }
+        
+        await MainActor.run {
+            self.recommendedStore = bestStore
+            
+            // If recommended store differs from current and cart has items, show toast
+            if let currentStoreId = self.cart.storeId,
+               currentStoreId != bestStore.store.id,
+               !self.cart.items.isEmpty {
+                self.showStoreRecommendationToast = true
+                
+                // Auto-hide toast after 5 seconds
+                Task {
+                    try? await Task.sleep(nanoseconds: 5_000_000_000)
+                    await MainActor.run {
+                        self.showStoreRecommendationToast = false
+                    }
+                }
+            }
+        }
     }
 }
 

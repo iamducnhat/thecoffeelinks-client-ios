@@ -80,6 +80,17 @@ final class DeliveryViewModel: ObservableObject {
         isLoading = false
     }
     
+    /// Check delivery availability for a specific store without updating published properties
+    /// Used by DeliveryStorePickerSheet to fetch availability for multiple stores
+    func checkDeliveryAvailability(for storeId: String, addressId: String) async throws -> DeliveryAvailability {
+        return try await deliveryRepository.checkAvailability(
+            addressId: addressId,
+            latitude: nil,
+            longitude: nil,
+            storeId: storeId
+        )
+    }
+    
     func isLocationInZone(latitude: Double, longitude: Double) -> Bool {
         for zone in zones where zone.isActive { if zone.contains(latitude: latitude, longitude: longitude) { return true } }
         return false

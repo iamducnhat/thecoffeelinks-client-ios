@@ -33,11 +33,11 @@ struct FavoritesView: View {
                         .foregroundStyle(Color.textPrimary)
                         .frame(minWidth: AppLayout.touchTarget, minHeight: AppLayout.touchTarget)
                         .background {
-                            Capsule()
+                            Circle()
                                 .fill(Color.bgPrimary)
                         }
                         .overlay {
-                            Capsule()
+                            Circle()
                                 .strokeBorder(Color.textPrimary, lineWidth: min(66.6, max(scrollOffset, 0.0)) / 66.6)
                                 .opacity(min(88.8, max(scrollOffset, 0.0)) / 99.9)
                         }

@@ -147,6 +147,15 @@ final class CheckoutViewModel: ObservableObject {
             return nil
         }
         
+        // MARK: - Pre-Checkout Validation
+        // Verify all items are available at the selected store
+        let unavailableItems = cart.items.filter { !$0.product.isAvailableAt(storeId: storeId) }
+        if !unavailableItems.isEmpty {
+            let itemNames = unavailableItems.map { $0.product.name }.joined(separator: ", ")
+            error = CheckoutError.unavailableItems(itemNames)
+            return nil
+        }
+        
         isPlacingOrder = true; error = nil
         
         do {
@@ -269,7 +278,7 @@ final class CheckoutViewModel: ObservableObject {
 }
 
 enum CheckoutError: LocalizedError {
-    case noStoreSelected, deliveryAddressRequired, minimumNotMet(Double), paymentFailed, paymentFailedWithMessage(String)
+    case noStoreSelected, deliveryAddressRequired, minimumNotMet(Double), paymentFailed, paymentFailedWithMessage(String), unavailableItems(String)
     var errorDescription: String? {
         switch self {
         case .noStoreSelected: return "Please select a store"
@@ -277,6 +286,7 @@ enum CheckoutError: LocalizedError {
         case .minimumNotMet(let amount): return "Minimum order amount is \(amount.formattedVND)"
         case .paymentFailed: return "Payment failed. Please try again."
         case .paymentFailedWithMessage(let msg): return msg
+        case .unavailableItems(let items): return "These items are not available at the selected store: \(items)"
         }
     }
 }

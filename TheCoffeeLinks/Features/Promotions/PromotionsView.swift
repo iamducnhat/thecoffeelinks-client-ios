@@ -21,18 +21,19 @@ struct PromotionsView: View {
             Color.bgPrimary.ignoresSafeArea()
             
             VStack(spacing: 0) {
-                ScrollView(.vertical) {
+                ScrollView(.vertical) { LazyVStack(spacing: 0) {
                     // Header
-                    VStack(alignment: .leading, spacing: AppLayout.spacing) {
-                        Text(String(localized: "promotions_title"))
-                            .font(AppFont.displayTitle)
-                            .foregroundColor(Color.textPrimary)
-                            .padding(.top, AppLayout.spacing)
+                    VStack(spacing: AppSpacing.lg) {
+                        SectionHeader(
+                            title: String(localized: "promotions_title"),
+                            subtitle: String(localized: "promotions_subtitle")
+                        )
+                        .padding(.horizontal, AppSpacing.screenPadding)
                         
-                        Color.secondary.frame(height: 1)
-                            .padding(.horizontal, -AppLayout.spacing)
+                        Divider().background(Color.borderSecondary)
                     }
-                    .padding(.horizontal, AppLayout.spacing)
+                    .padding(.top, AppSpacing.sm)
+                    .background(Color.bgPrimary)
                     .background(GeometryReader {
                         Color.clear.preference(key: ViewOffsetKey.self, value: -$0.frame(in: .named("scroll")).origin.y)
                     })
@@ -40,7 +41,7 @@ struct PromotionsView: View {
                         self.scrollOffset = $0
                     }
                     
-                    VStack(spacing: AppLayout.spacingXL) {
+                    VStack(spacing: AppLayout.spacing) {
                         if authViewModel.isAuthenticated {
                             memberCard
                         } else {
@@ -49,7 +50,7 @@ struct PromotionsView: View {
                     }
                     .padding(AppLayout.spacing)
                     .padding(.bottom, 100)
-                }
+                }}
                 .coordinateSpace(name: "scroll")
                 .scrollIndicators(.hidden)
                 .refreshable {
