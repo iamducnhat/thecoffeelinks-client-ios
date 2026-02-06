@@ -26,9 +26,9 @@ final class CartService: CartServiceProtocol {
     
     // Operation queue for reliable sync
     private let syncQueue = DispatchQueue(label: "com.thecoffeelinks.cart.sync", qos: .userInitiated)
-    private var pendingOperations: [CartOperation] = []
-    private var isSyncing = false
-    private var syncTask: Task<Void, Never>?
+    private nonisolated(unsafe) var pendingOperations: [CartOperation] = []
+    private nonisolated(unsafe) var isSyncing = false
+    private nonisolated(unsafe) var syncTask: Task<Void, Never>?
     private let syncDebounceInterval: TimeInterval = 0.5
     
     // Notification for sync failures
@@ -170,7 +170,7 @@ final class CartService: CartServiceProtocol {
     
     // MARK: - Sync Logic
     
-    private func scheduleSyncIfNeeded() {
+    private nonisolated func scheduleSyncIfNeeded() {
         // Cancel existing task
         syncTask?.cancel()
         

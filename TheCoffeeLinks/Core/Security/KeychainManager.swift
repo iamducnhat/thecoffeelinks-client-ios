@@ -31,6 +31,19 @@ final class KeychainManager: SecureStorage, @unchecked Sendable {
         remove("refreshToken")
     }
     
+    // MARK: - Phone Number
+    func savePhoneNumber(_ phoneNumber: String) {
+        set("phoneNumber", value: phoneNumber)
+    }
+    
+    func getPhoneNumber() -> String? {
+        get("phoneNumber")
+    }
+    
+    func deletePhoneNumber() {
+        remove("phoneNumber")
+    }
+    
     // MARK: - SecureStorage Protocol
     
     func set(_ key: String, value: String) {

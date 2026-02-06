@@ -60,6 +60,14 @@ class AuthRepository {
     }
     
     func logout() async {
+        // Clear App Attest key for this user (before clearing phone number)
+        if let phoneNumber = keychainManager.getPhoneNumber() {
+            AppAttestService.shared.clearKeyForUser(phoneNumber)
+        }
+        
+        // Clear phone number from keychain
+        keychainManager.deletePhoneNumber()
+        
         await networkService.clearAuthToken()
     }
     
@@ -67,6 +75,56 @@ class AuthRepository {
          // Correct Endpoint: /api/user/profile
          // Server returns: { success: true, user: { ... pointsHistory: [] } }
          let response: UserResponse = try await networkService.request("/api/user/profile")
+         
+         // Save phone number to keychain if we have it (in case user logged in before this was implemented)
+         if let phone = response.user.phone, !phone.isEmpty {
+             let existingPhone = keychainManager.getPhoneNumber()
+             if existingPhone == nil || existingPhone != phone {
+                 keychainManager.savePhoneNumber(phone)
+                 print("[AuthRepository] Saved phone number to keychain: \(phone)")
+             }
+         }
+         
+         // Load App Attest key for this user (if not already loaded)
+         let attestService = AppAttestService.shared
+         if attestService.isAvailable {
+             // Use phone number as user ID for App Attest keys
+             if let phoneNumber = keychainManager.getPhoneNumber() {
+                 attestService.loadKeyForUser(phoneNumber)
+                 print("[AuthRepository] Loaded App Attest key for user: \(phoneNumber)")
+                 
+                 // Try to register with server if not already registered
+                 if !attestService.isRegistered {
+                     Task {
+                         do {
+                             try await attestService.ensureRegistered()
+                             _ = try await attestService.registerKeyWithServer()
+                             print("[AuthRepository] App Attest key registered with server")
+                         } catch {
+                             print("[AuthRepository] Failed to register App Attest key: \(error.localizedDescription)")
+                         }
+                     }
+                 }
+             } else if let phone = response.user.phone, !phone.isEmpty {
+                 // Fallback: use phone from user profile if not in keychain
+                 attestService.loadKeyForUser(phone)
+                 print("[AuthRepository] Loaded App Attest key using phone from profile: \(phone)")
+                 
+                 // Try to register with server if not already registered
+                 if !attestService.isRegistered {
+                     Task {
+                         do {
+                             try await attestService.ensureRegistered()
+                             _ = try await attestService.registerKeyWithServer()
+                             print("[AuthRepository] App Attest key registered with server")
+                         } catch {
+                             print("[AuthRepository] Failed to register App Attest key: \(error.localizedDescription)")
+                         }
+                     }
+                 }
+             }
+         }
+         
          return response.user
     }
     
@@ -157,19 +215,6 @@ class AuthRepository {
     }
     
     func verifyOTP(otp: String, phoneNumber: String) async throws -> User {
-        // Register App Attest BEFORE OTP verification (server requires it)
-        let attestService = AppAttestService.shared
-        if attestService.isAvailable {
-            do {
-                try await attestService.ensureRegistered() // ensure local key exists
-                try await attestService.registerKeyWithServer() // register with server BEFORE verification
-                print("✅ [AuthRepository] App Attest registered before OTP verification")
-            } catch {
-                print("⚠️ [AuthRepository] AppAttest registration failed, proceeding anyway: \(error.localizedDescription)")
-                // Don't throw - allow OTP verification to proceed even if attestation fails
-            }
-        }
-        
         struct OTPVerifyRequest: Encodable {
             let phone: String
             let otp: String
@@ -191,13 +236,34 @@ class AuthRepository {
             }
         }
         
+        // 1. Verify OTP first to get auth token
         let response: OTPResponse = try await networkService.request(
             "/api/auth/otp/verify",
             method: "POST",
             body: OTPVerifyRequest(phone: phoneNumber, otp: otp)
         )
         
+        // 2. Set auth session with the new token
         await networkService.setAuthSession(accessToken: response.session.accessToken, refreshToken: response.session.refreshToken)
+        
+        // 2.5. Save phone number for App Attest key association
+        keychainManager.savePhoneNumber(phoneNumber)
+        
+        // 3. NOW register App Attest with authenticated session
+        let attestService = AppAttestService.shared
+        if attestService.isAvailable {
+            do {
+                // Load key for this phone number (per-user App Attest keys)
+                attestService.loadKeyForUser(phoneNumber)
+                
+                try await attestService.ensureRegistered() // ensure local key exists
+                try await attestService.registerKeyWithServer() // register with server using auth token
+                print("✅ [AuthRepository] App Attest registered after authentication")
+            } catch {
+                print("⚠️ [AuthRepository] AppAttest registration failed: \(error.localizedDescription)")
+                // Don't throw - user is already authenticated at this point
+            }
+        }
 
         return mapToDomain(response.user)
     }

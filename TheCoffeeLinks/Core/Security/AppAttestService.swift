@@ -72,6 +72,7 @@ final class AppAttestService: ObservableObject {
     
     private var attestService: DCAppAttestService?
     private var currentKey: AppAttestKey?
+    private var currentUserId: String? // Track which user this key belongs to
     
     // Registration retry state for exponential backoff
     private var registrationRetryCount: Int = 0
@@ -80,7 +81,9 @@ final class AppAttestService: ObservableObject {
     @Published private(set) var isAvailable: Bool = false
     @Published private(set) var isRegistered: Bool = false {
         didSet {
-            UserDefaults.standard.set(isRegistered, forKey: "appAttestKeyRegistered")
+            if let userId = currentUserId {
+                UserDefaults.standard.set(isRegistered, forKey: "appAttestKeyRegistered_\(userId)")
+            }
             if isRegistered {
                 // Reset retry count on successful registration
                 registrationRetryCount = 0
@@ -100,12 +103,8 @@ final class AppAttestService: ObservableObject {
             attestService = DCAppAttestService.shared
             isAvailable = true
             
-            // Check for existing local key and restore registration state
-            if let key = loadKeyFromKeychain() {
-                currentKey = key
-                isRegistered = UserDefaults.standard.bool(forKey: "appAttestKeyRegistered")
-                print("[AppAttestService] Found local App Attest key (\(key.keyId)); isRegistered=\(isRegistered)")
-            }
+            // Note: Key will be loaded when user authenticates (loadKeyForUser)
+            print("[AppAttestService] Service available, waiting for user authentication to load key")
         } else {
             isAvailable = false
         }
@@ -169,8 +168,15 @@ final class AppAttestService: ObservableObject {
         )
 
         // 3. Save to keychain (MainActor isolated)
-        self.saveKeyToKeychain(key)
         self.currentKey = key
+        
+        // Save to keychain with user ID
+        if let userId = self.currentUserId {
+            self.saveKeyToKeychain(key, forUser: userId)
+        } else {
+            print("[AppAttestService] ⚠️ No currentUserId set, key not persisted to keychain")
+        }
+        
         // NOTE: We do NOT mark the key as server-registered here. Registration requires an authenticated request.
         self.isRegistered = false
 
@@ -266,14 +272,41 @@ final class AppAttestService: ObservableObject {
     
     // MARK: - Key Persistence
     
-    private func saveKeyToKeychain(_ key: AppAttestKey) {
+    private func saveKeyToKeychain(_ key: AppAttestKey, forUser userId: String) {
         let keychain = DependencyContainer.shared.keychainManager
         if let encoded = try? JSONEncoder().encode(key) {
-            keychain.set("appAttestKey", value: encoded.base64EncodedString())
+            // Store with user-specific key: appAttestKey_{userId}
+            keychain.set("appAttestKey_\(userId)", value: encoded.base64EncodedString())
+            print("[AppAttestService] Saved key to keychain for user: \(userId)")
+        }
+    }
+    
+    private func loadKeyFromKeychain(forUser userId: String) -> AppAttestKey? {
+        let keychain = DependencyContainer.shared.keychainManager
+        guard let encodedString = keychain.get("appAttestKey_\(userId)"),
+              let data = Data(base64Encoded: encodedString),
+              let key = try? JSONDecoder().decode(AppAttestKey.self, from: data) else {
+            return nil
+        }
+        return key
+    }
+    
+    /// Load the App Attest key for a specific user. Call this after authentication.
+    func loadKeyForUser(_ userId: String) {
+        currentUserId = userId
+        if let key = loadKeyFromKeychain(forUser: userId) {
+            currentKey = key
+            isRegistered = UserDefaults.standard.bool(forKey: "appAttestKeyRegistered_\(userId)")
+            print("[AppAttestService] Loaded key for user \(userId): \(key.keyId), isRegistered=\(isRegistered)")
+        } else {
+            currentKey = nil
+            isRegistered = false
+            print("[AppAttestService] No key found for user \(userId), will generate new key")
         }
     }
     
     private func loadKeyFromKeychain() -> AppAttestKey? {
+        // Legacy method - should not be used anymore
         let keychain = DependencyContainer.shared.keychainManager
         guard let encodedString = keychain.get("appAttestKey"),
               let data = Data(base64Encoded: encodedString),
@@ -284,10 +317,28 @@ final class AppAttestService: ObservableObject {
     }
     
     func clearKey() {
+        guard let userId = currentUserId else {
+            print("[AppAttestService] clearKey called but no current user")
+            return
+        }
         let keychain = DependencyContainer.shared.keychainManager
-        keychain.remove("appAttestKey")
+        keychain.remove("appAttestKey_\(userId)")
+        UserDefaults.standard.removeObject(forKey: "appAttestKeyRegistered_\(userId)")
         currentKey = nil
         isRegistered = false
+        print("[AppAttestService] Cleared key for user: \(userId)")
+    }
+    
+    /// Clear key for a specific user (e.g., on logout)
+    func clearKeyForUser(_ userId: String) {
+        let keychain = DependencyContainer.shared.keychainManager
+        keychain.remove("appAttestKey_\(userId)")
+        UserDefaults.standard.removeObject(forKey: "appAttestKeyRegistered_\(userId)")
+        if currentUserId == userId {
+            currentKey = nil
+            isRegistered = false
+        }
+        print("[AppAttestService] Cleared key for user: \(userId)")
     }
     
     // MARK: - Registration State
@@ -385,6 +436,10 @@ final class AppAttestService: ObservableObject {
             print("[AppAttestService] Server registration returned success=false")
             registrationRetryCount += 1
             return false
+        } catch let error as NetworkError {
+            print("[AppAttestService] registerKeyWithServer failed: \(error.localizedDescription)")
+            registrationRetryCount += 1
+            throw error
         } catch {
             print("[AppAttestService] registerKeyWithServer failed: \(error.localizedDescription)")
             registrationRetryCount += 1

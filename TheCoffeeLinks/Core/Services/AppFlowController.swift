@@ -115,6 +115,27 @@ class AppFlowController: ObservableObject {
         
         print("✅ [AppFlowController] Cached user loaded: \(cachedUser.fullName)")
         
+        // Step 3.5: Load App Attest key for this user
+        let attestService = AppAttestService.shared
+        if attestService.isAvailable {
+            // Try to get phone number from keychain first
+            var phoneNumber = keychainManager.getPhoneNumber()
+            
+            // Fallback: use phone from cached user profile
+            if phoneNumber == nil, let phone = cachedUser.phone, !phone.isEmpty {
+                phoneNumber = phone
+                keychainManager.savePhoneNumber(phone)
+                print("✅ [AppFlowController] Saved phone from cached user to keychain")
+            }
+            
+            if let phoneNumber = phoneNumber {
+                attestService.loadKeyForUser(phoneNumber)
+                print("✅ [AppFlowController] Loaded App Attest key for cached user: \(phoneNumber)")
+            } else {
+                print("⚠️ [AppFlowController] No phone number available for App Attest key loading")
+            }
+        }
+        
         // Step 4: Determine state based on cached data
         if !isCachedVerified {
             print("➡️ [AppFlowController] Phone not verified")
@@ -278,8 +299,14 @@ class AppFlowController: ObservableObject {
     }
     
     private func clearAuthState() {
+        // Clear App Attest key before clearing phone number
+        if let phoneNumber = keychainManager.getPhoneNumber() {
+            AppAttestService.shared.clearKeyForUser(phoneNumber)
+        }
+        
         keychainManager.deleteAccessToken()
         keychainManager.deleteRefreshToken()
+        keychainManager.deletePhoneNumber()
         profileStorage.clearUser()
         UserDefaults.standard.removeObject(forKey: verificationCacheKey)
         UserDefaults.standard.removeObject(forKey: verificationTimestampKey)

@@ -45,7 +45,7 @@ struct CartItem: Codable, Identifiable, Hashable, Sendable {
         case storeId = "store_id"
     }
 
-    init(key: String, product: Product, quantity: Int, customization: OrderCustomization, addedAt: Date, priceSnapshot: Double, storeId: String) {
+    nonisolated init(key: String, product: Product, quantity: Int, customization: OrderCustomization, addedAt: Date, priceSnapshot: Double, storeId: String) {
         self.key = key
         self.product = product
         self.quantity = quantity
@@ -55,7 +55,7 @@ struct CartItem: Codable, Identifiable, Hashable, Sendable {
         self.storeId = storeId
     }
 
-    init(from decoder: Decoder) throws {
+    nonisolated init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         
         product = try container.decode(Product.self, forKey: .product)
@@ -98,7 +98,7 @@ struct CartItem: Codable, Identifiable, Hashable, Sendable {
     func hash(into hasher: inout Hasher) { hasher.combine(key) }
     
     /// Generates a deterministic key for the item
-    static func generateKey(product: Product, modifiers: OrderCustomization, priceSnapshot: Double, storeId: String) -> String {
+    nonisolated static func generateKey(product: Product, modifiers: OrderCustomization, priceSnapshot: Double, storeId: String) -> String {
         // Normalizing modifiers
         // 1. Toppings sorted by ID to ensure order independence
         let sortedToppings = modifiers.toppings.sorted { $0.id < $1.id }
@@ -143,13 +143,51 @@ struct Cart: Codable, Sendable {
         case isDirty = "is_dirty"
     }
     
+    nonisolated init(items: [CartItem], mode: OrderingMode, storeId: String? = nil, deliveryAddressId: String? = nil, tableId: String? = nil, voucherCode: String? = nil, staffNotes: String? = nil, lastUpdated: Date? = nil, isDirty: Bool? = nil) {
+        self.items = items
+        self.mode = mode
+        self.storeId = storeId
+        self.deliveryAddressId = deliveryAddressId
+        self.tableId = tableId
+        self.voucherCode = voucherCode
+        self.staffNotes = staffNotes
+        self.lastUpdated = lastUpdated
+        self.isDirty = isDirty
+    }
+    
+    nonisolated init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        items = try container.decode([CartItem].self, forKey: .items)
+        mode = try container.decode(OrderingMode.self, forKey: .mode)
+        storeId = try container.decodeIfPresent(String.self, forKey: .storeId)
+        deliveryAddressId = try container.decodeIfPresent(String.self, forKey: .deliveryAddressId)
+        tableId = try container.decodeIfPresent(String.self, forKey: .tableId)
+        voucherCode = try container.decodeIfPresent(String.self, forKey: .voucherCode)
+        staffNotes = try container.decodeIfPresent(String.self, forKey: .staffNotes)
+        lastUpdated = nil // Not persisted
+        isDirty = try container.decodeIfPresent(Bool.self, forKey: .isDirty)
+    }
+    
+    nonisolated func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(items, forKey: .items)
+        try container.encode(mode, forKey: .mode)
+        try container.encodeIfPresent(storeId, forKey: .storeId)
+        try container.encodeIfPresent(deliveryAddressId, forKey: .deliveryAddressId)
+        try container.encodeIfPresent(tableId, forKey: .tableId)
+        try container.encodeIfPresent(voucherCode, forKey: .voucherCode)
+        try container.encodeIfPresent(staffNotes, forKey: .staffNotes)
+        try container.encodeIfPresent(isDirty, forKey: .isDirty)
+    }
+    
     var isEmpty: Bool { items.isEmpty }
     var itemCount: Int { items.reduce(0) { $0 + $1.quantity } }
     var uniqueItemCount: Int { items.count }
     var subtotal: Double { items.reduce(0) { $0 + $1.totalPrice } }
     
-    mutating func addItem(_ item: CartItem) {
+    nonisolated mutating func addItem(_ item: CartItem) {
         // Check local state for existing key
+        print(items)
         if let existingIndex = items.firstIndex(where: { $0.key == item.key }) {
             // Increment quantity
             items[existingIndex].quantity += item.quantity
@@ -160,7 +198,7 @@ struct Cart: Codable, Sendable {
         }
     }
     
-    mutating func updateQuantity(for itemKey: String, delta: Int) {
+    nonisolated mutating func updateQuantity(for itemKey: String, delta: Int) {
         guard let index = items.firstIndex(where: { $0.key == itemKey }) else { return }
         let newQuantity = items[index].quantity + delta
         if newQuantity <= 0 { 
@@ -170,17 +208,17 @@ struct Cart: Codable, Sendable {
         }
     }
     
-    mutating func removeItem(_ itemKey: String) {
+    nonisolated mutating func removeItem(_ itemKey: String) {
         items.removeAll { $0.key == itemKey }
     }
     
-    mutating func clear() {
+    nonisolated mutating func clear() {
         items.removeAll()
         voucherCode = nil
         staffNotes = nil
     }
     
-    static var empty: Cart {
+    nonisolated static var empty: Cart {
         Cart(items: [], mode: .pickup, storeId: nil, deliveryAddressId: nil,
              tableId: nil, voucherCode: nil, staffNotes: nil)
     }

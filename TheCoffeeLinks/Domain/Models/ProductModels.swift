@@ -57,7 +57,7 @@ struct Product: Codable, Identifiable, Hashable, Sendable {
         case allergens
     }
     
-    init(id: String, name: String, description: String?, categoryId: String, categoryName: String?, imageUrl: String?, basePrice: Double, sizeOptions: [SizeOption], availableToppings: [String], isPopular: Bool, isNew: Bool, isActive: Bool, isHotSupported: Bool, isDeliverable: Bool, deliveryPrepMinutes: Int?, tags: [String], nutritionInfo: NutritionInfo?, allergens: [String]) {
+    nonisolated init(id: String, name: String, description: String?, categoryId: String, categoryName: String?, imageUrl: String?, basePrice: Double, sizeOptions: [SizeOption], availableToppings: [String], isPopular: Bool, isNew: Bool, isActive: Bool, isHotSupported: Bool, isDeliverable: Bool, deliveryPrepMinutes: Int?, tags: [String], nutritionInfo: NutritionInfo?, allergens: [String]) {
         self.id = id
         self.name = name
         self.description = description
@@ -144,7 +144,7 @@ struct Product: Codable, Identifiable, Hashable, Sendable {
         return "\(minPrice.formattedVND) - \(maxPrice.formattedVND)"
     }
     
-    func price(for size: ProductSize) -> Double {
+    nonisolated func price(for size: ProductSize) -> Double {
         for option in sizeOptions {
             if option.size == size { return option.price }
         }
@@ -174,6 +174,12 @@ struct SizeOption: Codable, Hashable, Sendable {
     let size: ProductSize
     let price: Double
     let isEnabled: Bool
+    
+    nonisolated init(size: ProductSize, price: Double, isEnabled: Bool) {
+        self.size = size
+        self.price = price
+        self.isEnabled = isEnabled
+    }
 }
 
 // MARK: - Category

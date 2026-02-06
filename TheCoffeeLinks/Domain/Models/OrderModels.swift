@@ -210,8 +210,17 @@ struct OrderCustomization: Codable, Hashable, Sendable {
     var toppings: [ToppingSelection]
     var notes: String?
     
-    var toppingsTotal: Double {
-        toppings.reduce(0) { $0 + $1.price }
+    nonisolated init(size: ProductSize, sugar: SugarLevel? = nil, ice: IceLevel? = nil, toppings: [ToppingSelection] = [], notes: String? = nil) {
+        self.size = size
+        self.sugar = sugar
+        self.ice = ice
+        self.toppings = toppings
+        self.notes = notes
+    }
+    
+    nonisolated var toppingsTotal: Double {
+        print(toppings)
+        return toppings.reduce(0) { $0 + $1.price }
     }
     
     var displayText: String {
@@ -224,7 +233,7 @@ struct OrderCustomization: Codable, Hashable, Sendable {
     }
     
     static var `default`: OrderCustomization {
-        OrderCustomization(size: .medium, sugar: .half, ice: .normal, toppings: [], notes: nil)
+        OrderCustomization(size: .medium, sugar: .full, ice: .normal, toppings: [], notes: nil)
     }
 }
 
@@ -289,6 +298,13 @@ struct ToppingSelection: Codable, Hashable, Sendable {
     let name: String
     let price: Double
     let quantity: Int
+    
+    nonisolated init(id: String, name: String, price: Double, quantity: Int) {
+        self.id = id
+        self.name = name
+        self.price = price
+        self.quantity = quantity
+    }
 }
 
 // MARK: - API Requests/Responses

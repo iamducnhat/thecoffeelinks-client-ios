@@ -7,7 +7,7 @@ enum NetworkError: Error, LocalizedError {
     case decodingError
     case serverError(String)
     case unauthorized
-    case forbidden
+    case forbidden(details: String?)
     case notFound
     case unknown
     case networkFailure(Error)
@@ -24,8 +24,8 @@ enum NetworkError: Error, LocalizedError {
             return message
         case .unauthorized:
             return "Please sign in again."
-        case .forbidden:
-            return "You don't have permission to access this."
+        case .forbidden(let details):
+            return details ?? "You don't have permission to access this."
         case .notFound:
             return "The requested resource was not found."
         case .networkFailure(let error):
@@ -310,7 +310,7 @@ class NetworkService: ObservableObject {
         }
         
         if let responseString = String(data: data, encoding: .utf8) {
-            print("📡 Response Body: \(responseString)")
+            print("📡 Response Body: \(responseString.prefix(300))")
         }
         
         switch httpResponse.statusCode {
@@ -332,13 +332,20 @@ class NetworkService: ObservableObject {
              }
             throw NetworkError.unauthorized
         case 403:
-             throw NetworkError.forbidden
+            // Try to decode error details from server for 403
+            if let errorResponse = try? decoder.decode(ErrorResponse.self, from: data) {
+                let details = errorResponse.details ?? errorResponse.error ?? errorResponse.message
+                print("[NetworkService] 403 decoded - details: \(details ?? "nil"), error: \(errorResponse.error ?? "nil"), message: \(errorResponse.message ?? "nil")")
+                throw NetworkError.forbidden(details: details)
+            }
+            print("[NetworkService] 403 failed to decode - raw: \(String(data: data, encoding: .utf8) ?? "<invalid>")")
+            throw NetworkError.forbidden(details: nil)
         case 404:
              throw NetworkError.notFound
         default:
             // Try to decode error message from server
              if let errorResponse = try? decoder.decode(ErrorResponse.self, from: data) {
-                 throw NetworkError.serverError(errorResponse.message)
+                 throw NetworkError.serverError(errorResponse.message ?? errorResponse.error ?? "Server error")
             }
              throw NetworkError.serverError("Server returned code \(httpResponse.statusCode)")
         }
@@ -397,7 +404,7 @@ class NetworkService: ObservableObject {
         }
         print("📡 Response Status: \(httpResponse.statusCode)")
         if let responseString = String(data: data, encoding: .utf8) {
-            print("📡 Response Body: \(responseString)")
+            print("📡 Response Body: \(responseString.prefix(300))")
         }
         
         if !(200...299).contains(httpResponse.statusCode) {
@@ -442,7 +449,7 @@ class NetworkService: ObservableObject {
         }
         print("📡 Response Status: \(httpResponse.statusCode)")
         if let responseString = String(data: data, encoding: .utf8) {
-            print("📡 Response Body: \(responseString)")
+            print("📡 Response Body: \(responseString.prefix(300))")
         }
         switch httpResponse.statusCode {
         case 200...299:
@@ -451,12 +458,19 @@ class NetworkService: ObservableObject {
             await MainActor.run { self.clearAuthToken() }
             throw NetworkError.unauthorized
         case 403:
-            throw NetworkError.forbidden
+            // Try to decode error details from server for 403
+            if let errorResponse = try? decoder.decode(ErrorResponse.self, from: data) {
+                let details = errorResponse.details ?? errorResponse.error ?? errorResponse.message
+                print("[NetworkService] 403 decoded - details: \(details ?? "nil"), error: \(errorResponse.error ?? "nil"), message: \(errorResponse.message ?? "nil")")
+                throw NetworkError.forbidden(details: details)
+            }
+            print("[NetworkService] 403 failed to decode - raw: \(String(data: data, encoding: .utf8) ?? "<invalid>")")
+            throw NetworkError.forbidden(details: nil)
         case 404:
             throw NetworkError.notFound
         default:
             if let errorResponse = try? decoder.decode(ErrorResponse.self, from: data) {
-                throw NetworkError.serverError(errorResponse.message)
+                throw NetworkError.serverError(errorResponse.message ?? errorResponse.error ?? "Server error")
             }
             throw NetworkError.serverError("Server returned code \(httpResponse.statusCode)")
         }
@@ -464,7 +478,9 @@ class NetworkService: ObservableObject {
 }
 
 struct ErrorResponse: Decodable {
-    let message: String
+    let message: String?
+    let error: String?
+    let details: String?
 }
 
 // MARK: - NetworkServiceProtocol

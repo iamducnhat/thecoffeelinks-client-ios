@@ -8,22 +8,22 @@
 import Foundation
 
 protocol CartStorageProtocol {
-    func saveCart(_ cart: Cart) throws
-    func loadCart() -> Cart?
-    func clearCart()
+    nonisolated func saveCart(_ cart: Cart) throws
+    nonisolated func loadCart() -> Cart?
+    nonisolated func clearCart()
 }
 
 final class CartStorage: CartStorageProtocol {
-    private let fileManager = FileManager.default
-    private let queue = DispatchQueue(label: "com.thecoffeelinks.cartstorage", qos: .userInitiated)
+    private nonisolated(unsafe) let fileManager = FileManager.default
+    private nonisolated let queue = DispatchQueue(label: "com.thecoffeelinks.cartstorage", qos: .userInitiated)
     
     // File location: Documents/cart_v1.json
-    private var cartFileURL: URL? {
+    private nonisolated var cartFileURL: URL? {
         guard let documents = fileManager.urls(for: .documentDirectory, in: .userDomainMask).first else { return nil }
         return documents.appendingPathComponent("cart_v1.json")
     }
     
-    func saveCart(_ cart: Cart) throws {
+    nonisolated func saveCart(_ cart: Cart) throws {
         guard let url = cartFileURL else { return }
         // Run on background queue to avoid main thread blocking (though small JSON is fast)
         // But for safety against race conditions, we use sync or handle async.
@@ -35,7 +35,7 @@ final class CartStorage: CartStorageProtocol {
         try data.write(to: url, options: [.atomic])
     }
     
-    func loadCart() -> Cart? {
+    nonisolated func loadCart() -> Cart? {
         guard let url = cartFileURL, fileManager.fileExists(atPath: url.path) else { return nil }
         
         do {
@@ -49,7 +49,7 @@ final class CartStorage: CartStorageProtocol {
         }
     }
     
-    func clearCart() {
+    nonisolated func clearCart() {
         guard let url = cartFileURL else { return }
         try? fileManager.removeItem(at: url)
     }
