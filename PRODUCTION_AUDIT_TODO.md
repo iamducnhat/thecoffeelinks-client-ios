@@ -177,7 +177,7 @@
 | 13 | **P1** | Fix Preferences `PUT 405` → `PATCH` | ✅ Done | `UserRepository.swift` |
 | 14 | **P1** | Deduplicate API calls on launch | ✅ Done | `MainTabView.swift` |
 | 15 | **P2** | Input sanitization on `staffNotes`/`deliveryNotes` | ✅ Done | `CheckoutViewModel.swift` |
-| 16 | **P2** | Remove "Hacker Store" from production DB | ✅ Done | `database_migrations/029_remove_hacker_store.sql` |
+| 16 | **P2** | Remove "Hacker Store" from production DB | ✅ Done | `supabase/migrations/20260215000000_remove_hacker_store.sql` |
 | 17 | **P3** | Replace all `print()` with `debugLog()` | ✅ Done | `DebugLog.swift` + 159 files |
 | 18 | **P3** | Client-side voucher brute-force throttle | ✅ Done | `CartViewModel.swift` |
 
@@ -191,7 +191,10 @@
 
 ## Verification Checklist
 
-- [ ] Build the project: `xcodebuild build -scheme TheCoffeeLinks -destination 'platform=iOS Simulator,name=iPhone 16'`
+- [x] Build the project: `xcodebuild build -scheme TheCoffeeLinks -destination 'platform=iOS Simulator,name=iPhone 17 Pro'` — **0 errors, warnings are pre-existing**
+- [x] Migration pushed: `supabase db push` — **Hacker Store + related FK rows deleted from production DB**
+- [x] `print()` → `debugLog()`: **158 debugLog calls, 0 user-level print() remaining** (1 internal print inside DebugLog.swift itself)
+- [x] `debugLog()` is `nonisolated` — callable from any actor/isolation context
 - [ ] Verify App Attest: Launch → check logs for exactly **one** "Generated local key" and **one** "Key registered with server"
 - [ ] Test double-tap order: Rapidly tap "Place Order" → verify only one order created
 - [ ] Test kill-during-payment: Open VNPay → force-kill app → relaunch → verify order status recovered
@@ -231,5 +234,5 @@
 | `CartViewModel.swift` | `Features/Cart/` | +17 (rate limit) |
 | `AuthRepository.swift` | `Core/Repositories/` | +3 (`#if !DEBUG`) |
 | `AuthViewModel.swift` | `Core/ViewModels/` | +4 (`#if !DEBUG`) |
-| `029_remove_hacker_store.sql` | `database_migrations/` | +30 (new file) |
+| `029_remove_hacker_store.sql` | `supabase/migrations/` | +46 (new file) |
 | `orders/route.ts` | `thecoffeelinks-server/` | +70 (price validation) |
