@@ -540,6 +540,79 @@ struct CheckoutView: View {
 //                                )
 //                            }
                         }
+                        // MARK: - H1 FIX: Price Breakdown
+                        VStack(alignment: .leading, spacing: 8) {
+                            Text("order_summary")
+                                .font(AppFont.sectionHeader)
+                                .foregroundColor(Color.textPrimary)
+                            
+                            Divider()
+                            
+                            // Subtotal
+                            HStack {
+                                Text("subtotal_label")
+                                    .font(AppFont.body)
+                                    .foregroundColor(Color.textSecondary)
+                                Spacer()
+                                Text(cartViewModel.subtotal.formattedVND)
+                                    .font(AppFont.monoBody)
+                                    .foregroundColor(Color.textPrimary)
+                            }
+                            
+                            // Discount (if any)
+                            if cartViewModel.discount > 0 {
+                                HStack {
+                                    Text("discount_label")
+                                        .font(AppFont.body)
+                                        .foregroundColor(Color.accentPrimary)
+                                    Spacer()
+                                    Text("-\(cartViewModel.discount.formattedVND)")
+                                        .font(AppFont.monoBody)
+                                        .foregroundColor(Color.accentPrimary)
+                                }
+                            }
+                            
+                            // Points discount (if any)
+                            if cartViewModel.pointsDiscount > 0 {
+                                HStack {
+                                    Text("points_discount_label")
+                                        .font(AppFont.body)
+                                        .foregroundColor(Color.accentPrimary)
+                                    Spacer()
+                                    Text("-\(cartViewModel.pointsDiscount.formattedVND)")
+                                        .font(AppFont.monoBody)
+                                        .foregroundColor(Color.accentPrimary)
+                                }
+                            }
+                            
+                            // Tax (8%)
+                            let taxable = max(0, cartViewModel.subtotal - cartViewModel.discount - cartViewModel.pointsDiscount)
+                            let taxAmount = taxable * 0.08
+                            HStack {
+                                Text("tax_label")
+                                    .font(AppFont.body)
+                                    .foregroundColor(Color.textSecondary)
+                                Spacer()
+                                Text(taxAmount.formattedVND)
+                                    .font(AppFont.monoBody)
+                                    .foregroundColor(Color.textPrimary)
+                            }
+                            
+                            // Delivery fee (if delivery)
+                            if cartViewModel.cart.mode == .delivery {
+                                HStack {
+                                    Text("delivery_fee_label")
+                                        .font(AppFont.body)
+                                        .foregroundColor(Color.textSecondary)
+                                    Spacer()
+                                    Text(cartViewModel.deliveryFee.formattedVND)
+                                        .font(AppFont.monoBody)
+                                        .foregroundColor(Color.textPrimary)
+                                }
+                            }
+                            
+                            Divider()
+                        }
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .padding(AppLayout.spacing)
                         .padding(.bottom, 72)

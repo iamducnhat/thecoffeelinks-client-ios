@@ -169,15 +169,23 @@ final class CheckoutViewModel: ObservableObject {
             let finalVoucherCode = voucherCode?.isEmpty == false ? voucherCode : cart.voucherCode
             
             // Sanitize user-provided text to prevent XSS if rendered in staff dashboard
-            let sanitizedNotes = cart.staffNotes.map { Self.sanitizeNotes($0) }
+            let sanitizedStaffNotes = cart.staffNotes.map { Self.sanitizeNotes($0) }
+            // C2 FIX: deliveryNotes uses cart.deliveryNotes (separate from staffNotes)
+            let sanitizedDeliveryNotes = cart.deliveryNotes.map { Self.sanitizeNotes($0) }
+            
+            // C3 FIX: Generate idempotency key to prevent duplicate orders
+            let idempotencyKey = UUID().uuidString
             
             let request = CreateOrderRequest(
                 storeId: storeId, mode: cart.mode, paymentMethod: paymentMethod,
                 items: cart.items.map { CreateOrderItemRequest(productId: $0.product.id, productName: $0.product.name, quantity: $0.quantity, finalPrice: $0.unitPrice, customization: $0.customization) },
-                tableId: cart.tableId, deliveryAddressId: cart.deliveryAddressId, deliveryNotes: sanitizedNotes, staffNotes: sanitizedNotes, 
+                tableId: cart.tableId, deliveryAddressId: cart.deliveryAddressId, 
+                deliveryNotes: sanitizedDeliveryNotes, 
+                staffNotes: sanitizedStaffNotes, 
                 voucherCode: finalVoucherCode, 
                 pointsToRedeem: pointsToRedeem,
-                totalAmount: cart.subtotal
+                totalAmount: cart.subtotal,
+                idempotencyKey: idempotencyKey
             )
             
             let order = try await orderRepository.createOrder(request)

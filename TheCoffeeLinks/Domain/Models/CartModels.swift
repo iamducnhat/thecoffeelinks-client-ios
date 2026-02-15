@@ -130,6 +130,7 @@ struct Cart: Codable, Sendable {
     var tableId: String?
     var voucherCode: String?
     var staffNotes: String?
+    var deliveryNotes: String? // C2 FIX: Separate from staffNotes
     var lastUpdated: Date?
     var isDirty: Bool? // Track if local changes are unsynced
     
@@ -140,10 +141,11 @@ struct Cart: Codable, Sendable {
         case tableId = "table_id"
         case voucherCode = "voucher_code"
         case staffNotes = "staff_notes"
+        case deliveryNotes = "delivery_notes"
         case isDirty = "is_dirty"
     }
     
-    nonisolated init(items: [CartItem], mode: OrderingMode, storeId: String? = nil, deliveryAddressId: String? = nil, tableId: String? = nil, voucherCode: String? = nil, staffNotes: String? = nil, lastUpdated: Date? = nil, isDirty: Bool? = nil) {
+    nonisolated init(items: [CartItem], mode: OrderingMode, storeId: String? = nil, deliveryAddressId: String? = nil, tableId: String? = nil, voucherCode: String? = nil, staffNotes: String? = nil, deliveryNotes: String? = nil, lastUpdated: Date? = nil, isDirty: Bool? = nil) {
         self.items = items
         self.mode = mode
         self.storeId = storeId
@@ -151,6 +153,7 @@ struct Cart: Codable, Sendable {
         self.tableId = tableId
         self.voucherCode = voucherCode
         self.staffNotes = staffNotes
+        self.deliveryNotes = deliveryNotes
         self.lastUpdated = lastUpdated
         self.isDirty = isDirty
     }
@@ -164,6 +167,7 @@ struct Cart: Codable, Sendable {
         tableId = try container.decodeIfPresent(String.self, forKey: .tableId)
         voucherCode = try container.decodeIfPresent(String.self, forKey: .voucherCode)
         staffNotes = try container.decodeIfPresent(String.self, forKey: .staffNotes)
+        deliveryNotes = try container.decodeIfPresent(String.self, forKey: .deliveryNotes)
         lastUpdated = nil // Not persisted
         isDirty = try container.decodeIfPresent(Bool.self, forKey: .isDirty)
     }
@@ -177,6 +181,7 @@ struct Cart: Codable, Sendable {
         try container.encodeIfPresent(tableId, forKey: .tableId)
         try container.encodeIfPresent(voucherCode, forKey: .voucherCode)
         try container.encodeIfPresent(staffNotes, forKey: .staffNotes)
+        try container.encodeIfPresent(deliveryNotes, forKey: .deliveryNotes)
         try container.encodeIfPresent(isDirty, forKey: .isDirty)
     }
     
@@ -215,11 +220,12 @@ struct Cart: Codable, Sendable {
         items.removeAll()
         voucherCode = nil
         staffNotes = nil
+        deliveryNotes = nil
     }
     
     nonisolated static var empty: Cart {
         Cart(items: [], mode: .pickup, storeId: nil, deliveryAddressId: nil,
-             tableId: nil, voucherCode: nil, staffNotes: nil)
+             tableId: nil, voucherCode: nil, staffNotes: nil, deliveryNotes: nil)
     }
 }
 

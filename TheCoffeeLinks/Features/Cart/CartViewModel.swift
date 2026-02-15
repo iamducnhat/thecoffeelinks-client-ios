@@ -184,7 +184,16 @@ final class CartViewModel: ObservableObject {
             }
         }
     }
-    func setMode(_ mode: OrderingMode) { cart.mode = mode; if mode != .delivery { deliveryFee = 0; deliveryAvailability = nil; selectedAddress = nil } }
+    // H8 FIX: Clear tableId when switching away from dine-in, clear delivery fields when not delivery
+    func setMode(_ mode: OrderingMode) { 
+        cart.mode = mode
+        if mode != .delivery { 
+            deliveryFee = 0; deliveryAvailability = nil; selectedAddress = nil; cart.deliveryAddressId = nil 
+        }
+        if mode != .dineIn {
+            cart.tableId = nil
+        }
+    }
     func setStore(_ storeId: String) { cart.storeId = storeId }
     func setDeliveryAddress(_ addressId: String, address: DeliveryAddress?) { 
         cart.deliveryAddressId = addressId
@@ -192,6 +201,7 @@ final class CartViewModel: ObservableObject {
         if address != nil { Task { await checkDeliveryAvailability() } }
     }
     func setStaffNotes(_ notes: String) { cart.staffNotes = notes.isEmpty ? nil : notes }
+    func setDeliveryNotes(_ notes: String) { cart.deliveryNotes = notes.isEmpty ? nil : notes }
     
     func checkDeliveryAvailability() async {
         guard let storeId = cart.storeId else { return }

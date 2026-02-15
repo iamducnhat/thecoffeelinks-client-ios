@@ -311,8 +311,6 @@ struct ToppingSelection: Codable, Hashable, Sendable {
 struct CreateOrderRequest: Codable, Sendable {
     let storeId: String
     let mode: OrderingMode
-    // Server expects 'deliveryOption' or 'order_type'.
-    // Mapped explicitly here.
     let paymentMethod: PaymentMethod
     let items: [CreateOrderItemRequest]
     let tableId: String?
@@ -322,13 +320,11 @@ struct CreateOrderRequest: Codable, Sendable {
     let voucherCode: String?
     let pointsToRedeem: Int?
     let totalAmount: Double
+    let idempotencyKey: String? // C3: Prevent duplicate orders
     
     enum CodingKeys: String, CodingKey {
         case storeId = "store_id"
-        case mode = "delivery_option" // Changed from 'deliveryOption' to 'delivery_option' or 'order_type' if server is snake_case? 
-        // Note: Previous mapped "deliveryOption". If server uses snake_case, it might be "delivery_option".
-        // HOWEVER, server code snippet (ref: APIOrder) shows "delivery_option".
-        // Let's assume standard snake_case "delivery_option".
+        case mode = "delivery_option"
         case paymentMethod = "payment_method"
         case items
         case tableId = "table_id"
@@ -338,6 +334,7 @@ struct CreateOrderRequest: Codable, Sendable {
         case voucherCode = "voucher_code"
         case pointsToRedeem = "points_to_redeem"
         case totalAmount = "total_amount"
+        case idempotencyKey = "idempotency_key"
     }
 }
 
@@ -424,7 +421,14 @@ struct CreateOrderResponse: Codable, Sendable {
                 let ice: String?
                 let size: String?
                 let sugar: String?
-                let toppings: [String]?
+                let toppings: [APIToppingSelection]?
+                
+                struct APIToppingSelection: Codable {
+                    let id: String?
+                    let name: String?
+                    let price: Double?
+                    let quantity: Int?
+                }
             }
         }
     }
@@ -470,11 +474,22 @@ struct CreateOrderResponse: Codable, Sendable {
                 ice = .normal
             }
             
+            // M7 FIX: Parse toppings from snapshot instead of always []
+            let toppings: [ToppingSelection] = apiItem.options_snapshot_json.toppings?.compactMap { apiTopping in
+                guard let id = apiTopping.id else { return nil }
+                return ToppingSelection(
+                    id: id,
+                    name: apiTopping.name ?? "Topping",
+                    price: apiTopping.price ?? 0,
+                    quantity: apiTopping.quantity ?? 1
+                )
+            } ?? []
+            
             let customization = OrderCustomization(
                 size: size,
                 sugar: sugar,
                 ice: ice,
-                toppings: [],
+                toppings: toppings,
                 notes: apiItem.notes
             )
             
@@ -602,7 +617,14 @@ struct APIOrdersResponse: Codable {
                 let ice: String?
                 let size: String?
                 let sugar: String?
-                let toppings: [String]?
+                let toppings: [APIToppingRef]?
+                
+                struct APIToppingRef: Codable {
+                    let id: String?
+                    let name: String?
+                    let price: Double?
+                    let quantity: Int?
+                }
             }
         }
     }
@@ -652,11 +674,17 @@ struct APIOrdersResponse: Codable {
                         ice = .normal
                     }
                     
+                    // M7 FIX: Parse toppings from snapshot
+                    let toppings: [ToppingSelection] = apiItem.options_snapshot_json?.toppings?.compactMap { ref in
+                        guard let id = ref.id else { return nil }
+                        return ToppingSelection(id: id, name: ref.name ?? "Topping", price: ref.price ?? 0, quantity: ref.quantity ?? 1)
+                    } ?? []
+                    
                     let customization = OrderCustomization(
                         size: size,
                         sugar: sugar,
                         ice: ice,
-                        toppings: [],
+                        toppings: toppings,
                         notes: apiItem.notes
                     )
                     
@@ -683,10 +711,14 @@ struct APIOrdersResponse: Codable {
             // Safe unwrap values
             let deliveryFee = apiOrder.delivery_fee ?? 0.0
             let totalAmount = apiOrder.total_amount ?? 0.0
+            let discount = apiOrder.discount ?? 0.0
             
-            // Calculate subtotal if not provided logic:
-            // subtotal = total - fee.
-            let subtotal = totalAmount - deliveryFee
+            // FIX: Correct subtotal calculation accounting for tax, discount, and delivery
+            // Server formula: total = (subtotal - discount) * (1 + taxRate) + deliveryFee
+            // So: subtotal = items sum. We compute from items if available, else reverse-calculate.
+            let subtotal = items.isEmpty 
+                ? totalAmount - deliveryFee + discount
+                : items.reduce(0.0) { $0 + ($1.finalPrice * Double($1.quantity)) }
             
             return Order(
                 id: orderId,
