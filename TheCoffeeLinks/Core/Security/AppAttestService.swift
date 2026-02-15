@@ -74,6 +74,10 @@ final class AppAttestService: ObservableObject {
     private var currentKey: AppAttestKey?
     private var currentUserId: String? // Track which user this key belongs to
     
+    // Deduplicate concurrent generateKey() calls — prevents race where
+    // 3 callers each create a separate Apple key and only 1 gets registered.
+    private var keyGenerationTask: Task<AppAttestKey, Error>?
+    
     // Registration retry state for exponential backoff
     private var registrationRetryCount: Int = 0
     private var lastRegistrationAttempt: Date?
@@ -104,7 +108,7 @@ final class AppAttestService: ObservableObject {
             isAvailable = true
             
             // Note: Key will be loaded when user authenticates (loadKeyForUser)
-            print("[AppAttestService] Service available, waiting for user authentication to load key")
+            debugLog("[AppAttestService] Service available, waiting for user authentication to load key")
         } else {
             isAvailable = false
         }
@@ -113,6 +117,35 @@ final class AppAttestService: ObservableObject {
     // MARK: - Key Registration
     
     func generateKey() async throws -> AppAttestKey {
+        // Return existing key if already generated
+        if let existingKey = currentKey {
+            return existingKey
+        }
+        
+        // Deduplicate concurrent calls: if another task is already generating,
+        // await its result instead of creating a second Apple key.
+        if let existingTask = keyGenerationTask {
+            return try await existingTask.value
+        }
+        
+        let task = Task<AppAttestKey, Error> { [weak self] in
+            guard let self else { throw AppAttestError.unavailable }
+            return try await self._generateKeyImpl()
+        }
+        keyGenerationTask = task
+        
+        do {
+            let key = try await task.value
+            keyGenerationTask = nil
+            return key
+        } catch {
+            keyGenerationTask = nil
+            throw error
+        }
+    }
+    
+    /// Internal implementation — only called once even under concurrent pressure.
+    private func _generateKeyImpl() async throws -> AppAttestKey {
         guard let service = attestService else {
             throw AppAttestError.unavailable
         }
@@ -134,7 +167,7 @@ final class AppAttestService: ObservableObject {
                 challenge = resp.challenge
             }
         } catch {
-            print("[AppAttestService] Failed to fetch server challenge: \(error.localizedDescription). Using local challenge.")
+            debugLog("[AppAttestService] Failed to fetch server challenge: \(error.localizedDescription). Using local challenge.")
         }
 
         // 1. Get Key ID
@@ -142,9 +175,9 @@ final class AppAttestService: ObservableObject {
             service.generateKey { keyId, error in
                 if let error = error {
                     let nsErr = error as NSError
-                    print("[AppAttestService] generateKey error: domain=\(nsErr.domain) code=\(nsErr.code) userInfo=\(nsErr.userInfo)")
+                    debugLog("[AppAttestService] generateKey error: domain=\(nsErr.domain) code=\(nsErr.code) userInfo=\(nsErr.userInfo)")
                     if nsErr.domain == "com.apple.devicecheck.error" && nsErr.code == 1 {
-                        print("[AppAttestService] App Attest generation failed (code 1). Common causes: running on Simulator, missing App Attest entitlement in the provisioning profile, incorrect bundle ID, or Apple services unreachable.")
+                        debugLog("[AppAttestService] App Attest generation failed (code 1). Common causes: running on Simulator, missing App Attest entitlement in the provisioning profile, incorrect bundle ID, or Apple services unreachable.")
                     }
                     continuation.resume(throwing: AppAttestError.attestationFailed(error))
                     return
@@ -174,13 +207,13 @@ final class AppAttestService: ObservableObject {
         if let userId = self.currentUserId {
             self.saveKeyToKeychain(key, forUser: userId)
         } else {
-            print("[AppAttestService] ⚠️ No currentUserId set, key not persisted to keychain")
+            debugLog("[AppAttestService] ⚠️ No currentUserId set, key not persisted to keychain")
         }
         
         // NOTE: We do NOT mark the key as server-registered here. Registration requires an authenticated request.
         self.isRegistered = false
 
-        print("[AppAttestService] Generated local key (\(keyId)). Server registration is pending.")
+        debugLog("[AppAttestService] Generated local key (\(keyId)). Server registration is pending.")
 
         return key
     }
@@ -202,9 +235,9 @@ final class AppAttestService: ObservableObject {
             service.attestKey(keyId, clientDataHash: clientDataHash) { attestation, error in
                 if let error = error {
                     let nsErr = error as NSError
-                    print("[AppAttestService] attestKey error: domain=\(nsErr.domain) code=\(nsErr.code) userInfo=\(nsErr.userInfo)")
+                    debugLog("[AppAttestService] attestKey error: domain=\(nsErr.domain) code=\(nsErr.code) userInfo=\(nsErr.userInfo)")
                     if nsErr.domain == "com.apple.devicecheck.error" && nsErr.code == 1 {
-                        print("[AppAttestService] App Attest attestation failed (code 1). Verify entitlements/provisioning and that this is running on a physical device.")
+                        debugLog("[AppAttestService] App Attest attestation failed (code 1). Verify entitlements/provisioning and that this is running on a physical device.")
                     }
                     continuation.resume(throwing: AppAttestError.attestationFailed(error))
                     return
@@ -238,7 +271,7 @@ final class AppAttestService: ObservableObject {
             ) { assertion, error in
                 if let error = error {
                     let nsErr = error as NSError
-                    print("[AppAttestService] generateAssertion error: domain=\(nsErr.domain) code=\(nsErr.code) userInfo=\(nsErr.userInfo)")
+                    debugLog("[AppAttestService] generateAssertion error: domain=\(nsErr.domain) code=\(nsErr.code) userInfo=\(nsErr.userInfo)")
                     continuation.resume(throwing: AppAttestError.assertionFailed(error))
                     return
                 }
@@ -277,7 +310,7 @@ final class AppAttestService: ObservableObject {
         if let encoded = try? JSONEncoder().encode(key) {
             // Store with user-specific key: appAttestKey_{userId}
             keychain.set("appAttestKey_\(userId)", value: encoded.base64EncodedString())
-            print("[AppAttestService] Saved key to keychain for user: \(userId)")
+            debugLog("[AppAttestService] Saved key to keychain for user: \(userId)")
         }
     }
     
@@ -297,11 +330,11 @@ final class AppAttestService: ObservableObject {
         if let key = loadKeyFromKeychain(forUser: userId) {
             currentKey = key
             isRegistered = UserDefaults.standard.bool(forKey: "appAttestKeyRegistered_\(userId)")
-            print("[AppAttestService] Loaded key for user \(userId): \(key.keyId), isRegistered=\(isRegistered)")
+            debugLog("[AppAttestService] Loaded key for user \(userId): \(key.keyId), isRegistered=\(isRegistered)")
         } else {
             currentKey = nil
             isRegistered = false
-            print("[AppAttestService] No key found for user \(userId), will generate new key")
+            debugLog("[AppAttestService] No key found for user \(userId), will generate new key")
         }
     }
     
@@ -318,7 +351,7 @@ final class AppAttestService: ObservableObject {
     
     func clearKey() {
         guard let userId = currentUserId else {
-            print("[AppAttestService] clearKey called but no current user")
+            debugLog("[AppAttestService] clearKey called but no current user")
             return
         }
         let keychain = DependencyContainer.shared.keychainManager
@@ -326,7 +359,7 @@ final class AppAttestService: ObservableObject {
         UserDefaults.standard.removeObject(forKey: "appAttestKeyRegistered_\(userId)")
         currentKey = nil
         isRegistered = false
-        print("[AppAttestService] Cleared key for user: \(userId)")
+        debugLog("[AppAttestService] Cleared key for user: \(userId)")
     }
     
     /// Clear key for a specific user (e.g., on logout)
@@ -338,7 +371,7 @@ final class AppAttestService: ObservableObject {
             currentKey = nil
             isRegistered = false
         }
-        print("[AppAttestService] Cleared key for user: \(userId)")
+        debugLog("[AppAttestService] Cleared key for user: \(userId)")
     }
     
     // MARK: - Registration State
@@ -350,7 +383,7 @@ final class AppAttestService: ObservableObject {
 
     func ensureRegistered() async throws {
         if !isAvailable {
-            print("[AppAttestService] App Attest not available on this device")
+            debugLog("[AppAttestService] App Attest not available on this device")
             throw AppAttestError.unavailable
         }
 
@@ -359,7 +392,7 @@ final class AppAttestService: ObservableObject {
             do {
                 _ = try await generateKey()
             } catch {
-                print("[AppAttestService] generateKey failed: \(error.localizedDescription)")
+                debugLog("[AppAttestService] generateKey failed: \(error.localizedDescription)")
                 throw error
             }
         }
@@ -369,7 +402,7 @@ final class AppAttestService: ObservableObject {
     func registerKeyWithServer() async throws -> Bool {
         // Idempotency: Skip if already registered
         guard !isRegistered else {
-            print("[AppAttestService] Already registered with server, skipping")
+            debugLog("[AppAttestService] Already registered with server, skipping")
             return true
         }
         
@@ -379,7 +412,7 @@ final class AppAttestService: ObservableObject {
             let nextAttemptTime = lastAttempt.addingTimeInterval(backoffSeconds)
             if Date() < nextAttemptTime {
                 let waitTime = nextAttemptTime.timeIntervalSince(Date())
-                print("[AppAttestService] Backoff active, retry in \(Int(waitTime))s (attempt #\(registrationRetryCount))")
+                debugLog("[AppAttestService] Backoff active, retry in \(Int(waitTime))s (attempt #\(registrationRetryCount))")
                 throw AppAttestError.invalidResponse
             }
         }
@@ -390,9 +423,9 @@ final class AppAttestService: ObservableObject {
         if currentKey == nil {
             do {
                 _ = try await generateKey()
-                print("[AppAttestService] Created local key during register: \(currentKey?.keyId ?? "<nil>")")
+                debugLog("[AppAttestService] Created local key during register: \(currentKey?.keyId ?? "<nil>")")
             } catch {
-                print("[AppAttestService] Failed to create local key during register: \(error.localizedDescription)")
+                debugLog("[AppAttestService] Failed to create local key during register: \(error.localizedDescription)")
                 registrationRetryCount += 1
                 throw AppAttestError.keyNotFound
             }
@@ -429,19 +462,19 @@ final class AppAttestService: ObservableObject {
 
             if resp.success {
                 self.isRegistered = true
-                print("[AppAttestService] Key (\(key.keyId)) registered with server")
+                debugLog("[AppAttestService] Key (\(key.keyId)) registered with server")
                 return true
             }
 
-            print("[AppAttestService] Server registration returned success=false")
+            debugLog("[AppAttestService] Server registration returned success=false")
             registrationRetryCount += 1
             return false
         } catch let error as NetworkError {
-            print("[AppAttestService] registerKeyWithServer failed: \(error.localizedDescription)")
+            debugLog("[AppAttestService] registerKeyWithServer failed: \(error.localizedDescription)")
             registrationRetryCount += 1
             throw error
         } catch {
-            print("[AppAttestService] registerKeyWithServer failed: \(error.localizedDescription)")
+            debugLog("[AppAttestService] registerKeyWithServer failed: \(error.localizedDescription)")
             registrationRetryCount += 1
             throw error
         }

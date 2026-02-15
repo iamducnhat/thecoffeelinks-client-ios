@@ -96,7 +96,7 @@ class ProfileViewModel: BaseViewModel {
     private func performProfileRefresh() async {
         // Auth guard - skip refresh if not authenticated
         guard keychainManager.getAccessToken() != nil else {
-            print("⏭️ [ProfileViewModel] No access token, skipping profile refresh")
+            debugLog("⏭️ [ProfileViewModel] No access token, skipping profile refresh")
             isRefreshingProfile = false
             return
         }
@@ -118,7 +118,7 @@ class ProfileViewModel: BaseViewModel {
                    validShortId != "000000",
                    (updatedUser.shortId == nil || updatedUser.shortId == "000000") {
                     
-                    print("DEBUG: Preserving valid shortId: \(validShortId) over nil/empty one from refresh.")
+                    debugLog("DEBUG: Preserving valid shortId: \(validShortId) over nil/empty one from refresh.")
                     var finalUser = updatedUser
                     finalUser = User(
                         id: finalUser.id,
@@ -167,7 +167,7 @@ class ProfileViewModel: BaseViewModel {
                 self.isRefreshingProfile = false
             }
         } catch {
-            print("Profile refresh failed: \(error)")
+            debugLog("Profile refresh failed: \(error)")
             await MainActor.run {
                 self.isRefreshingProfile = false
                 // Keep stale flags as they were - data is still old

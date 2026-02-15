@@ -42,7 +42,7 @@ class DependencyContainer: ObservableObject {
     private(set) lazy var locationManager = LocationManager()
     private(set) lazy var imageCache = ImageCache()
     private(set) lazy var refreshCoordinator = ContentRefreshCoordinator()
-    private(set) lazy var syncManager = SyncManager(syncRepository: syncRepository)
+    private(set) lazy var syncManager = SyncManager(syncRepository: syncRepository, keychainManager: keychainManager)
     private(set) lazy var logger = Logger()
     
     // MARK: - App Flow Controller
@@ -190,8 +190,9 @@ class DependencyContainer: ObservableObject {
     }
     
     /// Synchronous initialization - called before UI renders to prevent race conditions
+    @MainActor
     func initializeSync() {
-        print("🚀 [DependencyContainer] Starting synchronous initialization")
+        debugLog("🚀 [DependencyContainer] Starting synchronous initialization")
         
         // Pre-warm services
         _ = keychainManager
@@ -201,24 +202,22 @@ class DependencyContainer: ObservableObject {
         // Check auth state synchronously
         if let token = keychainManager.getAccessToken() {
             let refreshToken = keychainManager.getRefreshToken()
-            // Set auth session synchronously (NetworkService handles this internally)
+            // Set auth session synchronously on MainActor (no Task wrapper needed)
             networkService.setAuthSessionSync(accessToken: token, refreshToken: refreshToken)
             
             // Set token for Realtime
             realtimeService.setAuthToken(token)
         }
         
-        // Initialize AppFlowController synchronously
-        Task { @MainActor in
-            appFlowController.initializeSync()
-        }
+        // Initialize AppFlowController synchronously (already on MainActor)
+        appFlowController.initializeSync()
         
-        print("✅ [DependencyContainer] Synchronous initialization complete")
+        debugLog("✅ [DependencyContainer] Synchronous initialization complete")
     }
     
     /// Asynchronous initialization - called after UI renders for background tasks
     func initializeAsync() async {
-        print("🔄 [DependencyContainer] Starting asynchronous initialization")
+        debugLog("🔄 [DependencyContainer] Starting asynchronous initialization")
         
         // Check if authenticated before subscribing to auth changes
         let isAuthenticated = keychainManager.getAccessToken() != nil
@@ -243,13 +242,13 @@ class DependencyContainer: ObservableObject {
             do {
                 try await syncManager.refreshVersions()
             } catch {
-                print("⚠️ SyncManager initial refresh failed: \(error)")
+                debugLog("⚠️ SyncManager initial refresh failed: \(error)")
             }
         } else {
-            print("⏭️ [DependencyContainer] Skipping auth-dependent initialization (guest mode)")
+            debugLog("⏭️ [DependencyContainer] Skipping auth-dependent initialization (guest mode)")
         }
         
-        print("✅ [DependencyContainer] Asynchronous initialization complete")
+        debugLog("✅ [DependencyContainer] Asynchronous initialization complete")
     }
     
     // DEPRECATED: Use initializeSync() + initializeAsync() instead

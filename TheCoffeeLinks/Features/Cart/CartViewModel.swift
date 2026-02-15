@@ -103,7 +103,7 @@ final class CartViewModel: ObservableObject {
                 self.cart = remoteCart
             }
         } catch {
-            print("Background fetch failed: \(error) - keeping local")
+            debugLog("Background fetch failed: \(error) - keeping local")
         }
     }
     
@@ -180,7 +180,7 @@ final class CartViewModel: ObservableObject {
             do {
                 try await cartService.clearCart()
             } catch {
-                print("⚠️ [CartViewModel] Failed to clear cart on server: \(error)")
+                debugLog("⚠️ [CartViewModel] Failed to clear cart on server: \(error)")
             }
         }
     }
@@ -205,8 +205,25 @@ final class CartViewModel: ObservableObject {
         isLoadingDelivery = false
     }
     
+    // Voucher rate limiting: max 3 attempts per 60 seconds
+    private var voucherAttemptTimestamps: [Date] = []
+    private let maxVoucherAttempts = 3
+    private let voucherRateLimitWindow: TimeInterval = 60
+    
     func applyVoucher(code: String) async {
         guard !code.isEmpty else { return }
+        
+        // Rate limit: reject if too many attempts in the time window
+        let now = Date()
+        voucherAttemptTimestamps = voucherAttemptTimestamps.filter { now.timeIntervalSince($0) < voucherRateLimitWindow }
+        guard voucherAttemptTimestamps.count < maxVoucherAttempts else {
+            let cooldown = Int(voucherRateLimitWindow - now.timeIntervalSince(voucherAttemptTimestamps.first!))
+            error = VoucherError.invalid("Too many attempts. Try again in \(cooldown)s")
+            await hapticService.notification(.error)
+            return
+        }
+        voucherAttemptTimestamps.append(now)
+        
         isValidatingVoucher = true; error = nil
         do {
             let validation = try await voucherRepository.validateVoucher(code: code, subtotal: subtotal, mode: cart.mode)
@@ -247,7 +264,7 @@ final class CartViewModel: ObservableObject {
                     self.cart.storeId = selectedStore?.id
                 } else if let storeId = selectedStore?.id, self.cart.storeId != storeId {
                     // Cart has items but user switched stores - this is handled by UI alert
-                    print("⚠️ Store changed but cart has items. Waiting for user decision.")
+                    debugLog("⚠️ Store changed but cart has items. Waiting for user decision.")
                 }
             }
             .store(in: &cancellables)

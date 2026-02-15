@@ -142,6 +142,12 @@ final class CheckoutViewModel: ObservableObject {
     }
     
     func placeOrder(cart: Cart, pointsToRedeem: Int? = nil, voucherCode: String? = nil) async -> Order? {
+        // Prevent double-tap creating duplicate orders
+        guard !isPlacingOrder else {
+            debugLog("⚠️ [CheckoutViewModel] placeOrder called while already placing — ignoring duplicate")
+            return nil
+        }
+        
         guard !cart.isEmpty, let storeId = cart.storeId else {
             error = CheckoutError.noStoreSelected
             return nil
@@ -162,10 +168,13 @@ final class CheckoutViewModel: ObservableObject {
             // Priority: Argument > Cart > nil
             let finalVoucherCode = voucherCode?.isEmpty == false ? voucherCode : cart.voucherCode
             
+            // Sanitize user-provided text to prevent XSS if rendered in staff dashboard
+            let sanitizedNotes = cart.staffNotes.map { Self.sanitizeNotes($0) }
+            
             let request = CreateOrderRequest(
                 storeId: storeId, mode: cart.mode, paymentMethod: paymentMethod,
                 items: cart.items.map { CreateOrderItemRequest(productId: $0.product.id, productName: $0.product.name, quantity: $0.quantity, finalPrice: $0.unitPrice, customization: $0.customization) },
-                tableId: cart.tableId, deliveryAddressId: cart.deliveryAddressId, deliveryNotes: cart.staffNotes, staffNotes: nil, 
+                tableId: cart.tableId, deliveryAddressId: cart.deliveryAddressId, deliveryNotes: sanitizedNotes, staffNotes: sanitizedNotes, 
                 voucherCode: finalVoucherCode, 
                 pointsToRedeem: pointsToRedeem,
                 totalAmount: cart.subtotal
@@ -174,7 +183,16 @@ final class CheckoutViewModel: ObservableObject {
             let order = try await orderRepository.createOrder(request)
             
             // Handle VNPay URL if present
-            if let urlString = order.paymentUrl, let url = URL(string: urlString) {
+            if let urlString = order.paymentUrl {
+                guard let url = URL(string: urlString) else {
+                    // Payment URL is malformed — order exists server-side but we can't open payment.
+                    // Surface error instead of silently dropping the order.
+                    self.error = CheckoutError.paymentFailedWithMessage("Invalid payment URL returned by server")
+                    isPlacingOrder = false
+                    return nil
+                }
+                // Persist the pending payment order ID so we can recover if the app is killed
+                UserDefaults.standard.set(order.id, forKey: "pendingPaymentOrderId")
                 self.paymentUrl = url
                 self.showingPaymentWebView = true
                 isPlacingOrder = false
@@ -225,14 +243,19 @@ final class CheckoutViewModel: ObservableObject {
     
     private func startUndoTimer() {
         stopUndoTimer()
+        let startTime = Date()
+        let duration = undoWindowDuration
         undoTimerTask = Task { [weak self] in
             let tickInterval: UInt64 = 100_000_000 // 0.1 seconds in nanoseconds
             while !Task.isCancelled {
                 try? await Task.sleep(nanoseconds: tickInterval)
                 guard let self = self, !Task.isCancelled else { break }
-                if self.undoTimeRemaining > 0 {
-                    self.undoTimeRemaining -= 0.1
+                let elapsed = Date().timeIntervalSince(startTime)
+                let remaining = duration - elapsed
+                if remaining > 0 {
+                    self.undoTimeRemaining = remaining
                 } else {
+                    self.undoTimeRemaining = 0
                     self.showingUndoBanner = false
                     self.orderCancelled = nil
                     break
@@ -257,6 +280,7 @@ final class CheckoutViewModel: ObservableObject {
             // Success! The order is already updated on the backend.
             isPlacingOrder = false
             orderStorage.clearDraft() // Clear draft on payment success
+            UserDefaults.standard.removeObject(forKey: "pendingPaymentOrderId") // Clear pending payment
             
             Task {
                 do {
@@ -265,7 +289,16 @@ final class CheckoutViewModel: ObservableObject {
                     await analyticsService.trackPurchase(orderId: orderId, amount: updatedOrder.totalAmount, items: updatedOrder.items)
                     await hapticService.notification(.success)
                 } catch {
-                    self.error = error
+                    // Retry once — network blip during VNPay callback is common
+                    try? await Task.sleep(nanoseconds: 2_000_000_000) // 2s
+                    do {
+                        let retryOrder = try await orderRepository.getOrder(id: orderId)
+                        orderPlaced = retryOrder
+                        await analyticsService.trackPurchase(orderId: orderId, amount: retryOrder.totalAmount, items: retryOrder.items)
+                        await hapticService.notification(.success)
+                    } catch {
+                        self.error = error
+                    }
                 }
             }
         case .failure(let message):
@@ -274,6 +307,44 @@ final class CheckoutViewModel: ObservableObject {
                 await hapticService.notification(.error)
             }
         }
+    }
+    // MARK: - Pending Payment Recovery
+    
+    /// Call on app launch to recover from app-killed-mid-payment scenario.
+    /// If a pending payment order ID exists, fetch it and show the result.
+    func recoverPendingPaymentIfNeeded() async {
+        guard let pendingOrderId = UserDefaults.standard.string(forKey: "pendingPaymentOrderId") else { return }
+        
+        do {
+            let order = try await orderRepository.getOrder(id: pendingOrderId)
+            UserDefaults.standard.removeObject(forKey: "pendingPaymentOrderId")
+            
+            // If payment was completed while app was killed, show success
+            // Valid "paid" statuses: .received (store acknowledged), .preparing, .ready, .completed
+            if order.status == .received || order.status == .preparing || order.status == .ready || order.status == .completed {
+                orderPlaced = order
+            }
+            // If still pending payment, the user can retry or it will expire server-side
+        } catch {
+            debugLog("⚠️ [CheckoutViewModel] Failed to recover pending payment order: \(error)")
+            // Don't remove the key — will retry on next launch
+        }
+    }
+    
+    // MARK: - Input Sanitization
+    
+    /// Strip HTML/script tags and limit length to prevent XSS if rendered in staff dashboard
+    private static func sanitizeNotes(_ input: String) -> String {
+        var sanitized = input
+        // Remove HTML tags
+        sanitized = sanitized.replacingOccurrences(of: "<[^>]+>", with: "", options: .regularExpression)
+        // Remove common script injection patterns
+        sanitized = sanitized.replacingOccurrences(of: "javascript:", with: "", options: .caseInsensitive)
+        sanitized = sanitized.replacingOccurrences(of: "on\\w+=", with: "", options: .regularExpression)
+        // Trim and limit length
+        sanitized = sanitized.trimmingCharacters(in: .whitespacesAndNewlines)
+        if sanitized.count > 500 { sanitized = String(sanitized.prefix(500)) }
+        return sanitized
     }
 }
 

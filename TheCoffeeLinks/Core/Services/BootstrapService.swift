@@ -104,7 +104,7 @@ final class BootstrapService: @unchecked Sendable {
     /// Returns profile, vouchers, versions, and recent points in single query
     /// Note: Response cached automatically via ETag at NetworkService layer
     func getBootstrapData() async throws -> BootstrapResponse {
-        print("🚀 Fetching bootstrap data...")
+        debugLog("🚀 Fetching bootstrap data...")
         let response: BootstrapResponse = try await networkService.get("/api/bootstrap", queryItems: nil)
         return response
     }

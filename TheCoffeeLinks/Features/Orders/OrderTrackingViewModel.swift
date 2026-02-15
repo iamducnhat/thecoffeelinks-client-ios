@@ -54,7 +54,7 @@ class OrderTrackingViewModel: ObservableObject {
                 case .disconnected(let error):
                     self?.isRealtimeConnected = false
                     if let error = error {
-                        print("[OrderTracking] Realtime disconnected: \(error.localizedDescription)")
+                        debugLog("[OrderTracking] Realtime disconnected: \(error.localizedDescription)")
                     }
                     
                 case .postgresChange(let change):
@@ -99,7 +99,7 @@ class OrderTrackingViewModel: ObservableObject {
                 self.isLoading = false
             }
         } catch {
-            print("Failed to fetch active orders:", error)
+            debugLog("Failed to fetch active orders:", error)
             await MainActor.run { 
                 self.isLoading = false
                 // Don't show error message to user for background fetches, just log it.
@@ -124,7 +124,7 @@ class OrderTrackingViewModel: ObservableObject {
     
     private func handleOrderUpdate(_ change: PostgresChange) {
         guard let changeType = change.eventType as String? else { return }
-        print("[OrderViewModel] Realtime Event: \(changeType)")
+        debugLog("[OrderViewModel] Realtime Event: \(changeType)")
         
         // Handle INSERT: New order placed (maybe on another device)
         if changeType == "INSERT" {
@@ -142,7 +142,7 @@ class OrderTrackingViewModel: ObservableObject {
                 guard let statusStr = newRecord["status"]?.value as? String,
                       let newStatus = OrderStatus(rawValue: statusStr) else { return }
                 
-                print("[OrderViewModel] Order \(recordId) -> \(newStatus.displayName)")
+                debugLog("[OrderViewModel] Order \(recordId) -> \(newStatus.displayName)")
                 
                 // Update local state smoothly
                 withAnimation {

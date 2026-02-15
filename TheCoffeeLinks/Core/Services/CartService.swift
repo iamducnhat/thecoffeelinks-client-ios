@@ -51,13 +51,13 @@ final class CartService: CartServiceProtocol {
     func fetchRemoteCart() async throws -> Cart {
         // 0. Auth guard - return empty cart if not authenticated
         guard keychainManager.getAccessToken() != nil else {
-            print("⏭️ [CartService] No access token, returning empty cart")
+            debugLog("⏭️ [CartService] No access token, returning empty cart")
             return .empty
         }
         
         // 1. Check for pending local changes
         if syncQueue.sync(execute: { !pendingOperations.isEmpty }) {
-            print("⚠️ [CartService] Pending operations exist, syncing first...")
+            debugLog("⚠️ [CartService] Pending operations exist, syncing first...")
             await performSync()
         }
         
@@ -171,29 +171,36 @@ final class CartService: CartServiceProtocol {
     // MARK: - Sync Logic
     
     private nonisolated func scheduleSyncIfNeeded() {
-        // Cancel existing task
-        syncTask?.cancel()
-        
-        // Schedule new debounced sync
-        syncTask = Task {
-            do {
-                try await Task.sleep(nanoseconds: UInt64(syncDebounceInterval * 1_000_000_000))
-                await performSync()
-            } catch {
-                // Task cancelled - normal
+        syncQueue.async { [weak self] in
+            guard let self else { return }
+            // Cancel existing task
+            self.syncTask?.cancel()
+            
+            // Schedule new debounced sync
+            self.syncTask = Task {
+                do {
+                    try await Task.sleep(nanoseconds: UInt64(self.syncDebounceInterval * 1_000_000_000))
+                    await self.performSync()
+                } catch {
+                    // Task cancelled - normal
+                }
             }
         }
     }
     
     private func performSync() async {
-        // Prevent concurrent syncs
-        guard !isSyncing else {
-            print("⚠️ [CartService] Sync already in progress")
+        // Prevent concurrent syncs — check inside syncQueue
+        let shouldSkip = syncQueue.sync { () -> Bool in
+            if isSyncing { return true }
+            isSyncing = true
+            return false
+        }
+        guard !shouldSkip else {
+            debugLog("⚠️ [CartService] Sync already in progress")
             return
         }
         
-        isSyncing = true
-        defer { isSyncing = false }
+        defer { syncQueue.sync { isSyncing = false } }
         
         // Get operations to sync
         let operations = syncQueue.sync {
@@ -204,7 +211,7 @@ final class CartService: CartServiceProtocol {
         
         guard !operations.isEmpty else { return }
         
-        print("🔄 [CartService] Syncing \(operations.count) operations...")
+        debugLog("🔄 [CartService] Syncing \(operations.count) operations...")
         
         do {
             // Batch sync operations
@@ -222,11 +229,11 @@ final class CartService: CartServiceProtocol {
             finalCart.isDirty = !newOperations.isEmpty
             try? cartStorage.saveCart(finalCart)
             
-            print("✅ [CartService] Sync completed successfully")
+            debugLog("✅ [CartService] Sync completed successfully")
             NotificationCenter.default.post(name: Self.syncSuccessNotification, object: nil)
             
         } catch {
-            print("❌ [CartService] Sync failed: \(error)")
+            debugLog("❌ [CartService] Sync failed: \(error)")
             
             // Re-queue failed operations
             syncQueue.async {

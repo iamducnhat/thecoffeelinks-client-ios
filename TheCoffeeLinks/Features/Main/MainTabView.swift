@@ -49,20 +49,16 @@ struct MainTabView: View {
                 .tabBarMinimizeBehavior(.onScrollDown)
                 .task {
                     // Startup Priority Queue
-                    // 1. Home (High) - Already triggered by HomeView.onAppear/task, but we ensure it here
+                    // 1. Home (High) - loads events, vouchers, products, predictions
                     await homeViewModel.load()
                     
                     // 2. Menu (Medium) - Must refresh even if not opened
-                     Task(priority: .medium) {
+                    Task(priority: .medium) {
                         await menuViewModel.load()
-                     }
-                     
-                     // 3. Pre-warm others if needed
-                     Task(priority: .background) {
-                        if let user = try? await DependencyContainer.shared.authRepository.getCurrentUser() {
-                            _ = try? await DependencyContainer.shared.voucherRepository.fetchAndDistributeVouchers(userId: user.id)
-                        }
-                     }
+                    }
+                    // NOTE: getCurrentUser() is already called by AppFlowController.validateAuthState()
+                    // Vouchers are already fetched by HomeViewModel.load() → loadVouchers()
+                    // No need to duplicate those calls here.
                 }
         } else {
             ZStack(alignment: .bottom) {
@@ -81,11 +77,8 @@ struct MainTabView: View {
             .task {
                 await homeViewModel.load()
                 Task(priority: .medium) { await menuViewModel.load() }
-                Task(priority: .background) {
-                    if let user = try? await DependencyContainer.shared.authRepository.getCurrentUser() {
-                        _ = try? await DependencyContainer.shared.voucherRepository.fetchAndDistributeVouchers(userId: user.id)
-                    }
-                }
+                // NOTE: getCurrentUser() is already called by AppFlowController.validateAuthState()
+                // Vouchers are already fetched by HomeViewModel.load() → loadVouchers()
             }
         }
     }

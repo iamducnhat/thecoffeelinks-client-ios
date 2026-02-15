@@ -23,7 +23,7 @@ class OrdersViewModel: ObservableObject {
                 self.historyOrders = allOrders.filter { !$0.status.isActive }
                 self.isLoading = false
             } catch {
-                print("Error fetching orders: \(error)")
+                debugLog("Error fetching orders: \(error)")
                 self.isLoading = false
             }
         }
@@ -31,6 +31,6 @@ class OrdersViewModel: ObservableObject {
     
     func reorder(_ order: Order) {
         // Validation logic -> Add items to cart
-        print("Reordering order \(order.id)")
+        debugLog("Reordering order \(order.id)")
     }
 }

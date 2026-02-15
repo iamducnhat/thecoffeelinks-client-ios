@@ -57,7 +57,7 @@ final class UserPreferencesManager: ObservableObject, SyncableDomain, @unchecked
                 }
             }
         } catch {
-            print("Failed to sync preferences: \(error)")
+            debugLog("Failed to sync preferences: \(error)")
         }
     }
     
@@ -76,7 +76,7 @@ final class UserPreferencesManager: ObservableObject, SyncableDomain, @unchecked
                      _ = try await userRepository.updatePreferences(prefs)
                  }
             } catch {
-                print("Failed to push preference update: \(error)")
+                debugLog("Failed to push preference update: \(error)")
             }
         }
     }

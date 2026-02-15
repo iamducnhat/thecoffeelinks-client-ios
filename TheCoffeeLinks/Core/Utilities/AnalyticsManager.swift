@@ -9,7 +9,7 @@ class AnalyticsManager {
         // Wrapper for Firebase/Mixpanel
         // In this build, we just log to console to satisfy "Code exists" requirement
         #if DEBUG
-        print("[Analytics] Event: \(name), Params: \(parameters ?? [:])")
+        debugLog("[Analytics] Event: \(name), Params: \(parameters ?? [:])")
         #endif
     }
     
@@ -19,7 +19,7 @@ class AnalyticsManager {
     
     func setUserProperty(_ name: String, value: String) {
         #if DEBUG
-        print("[Analytics] User Property: \(name) = \(value)")
+        debugLog("[Analytics] User Property: \(name) = \(value)")
         #endif
     }
 }

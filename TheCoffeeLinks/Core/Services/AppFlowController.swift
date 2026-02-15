@@ -75,11 +75,11 @@ class AppFlowController: ObservableObject {
     /// Synchronously initialize app state - MUST be called before UI renders
     /// This prevents race conditions by checking all state before ContentView loads
     func initializeSync() {
-        print("🚀 [AppFlowController] Starting synchronous initialization")
+        debugLog("🚀 [AppFlowController] Starting synchronous initialization")
         
         // Step 1: Check for valid access token
         guard let accessToken = keychainManager.getAccessToken(), !accessToken.isEmpty else {
-            print("❌ [AppFlowController] No access token found")
+            debugLog("❌ [AppFlowController] No access token found")
             
             // Check if onboarding completed to determine guest vs logged out state
             if !isOnboardingCompleted() {
@@ -92,13 +92,13 @@ class AppFlowController: ObservableObject {
             return
         }
         
-        print("✅ [AppFlowController] Access token found")
+        debugLog("✅ [AppFlowController] Access token found")
         
         // Step 2: Check if phone verification cache is valid
         let (isCachedVerified, isCacheValid) = checkCachedVerificationStatus()
         
         if !isCacheValid {
-            print("⚠️ [AppFlowController] Verification cache expired or invalid")
+            debugLog("⚠️ [AppFlowController] Verification cache expired or invalid")
             // Cache expired, need to check server
             currentState = .checkingAuth
             isInitialized = true
@@ -107,13 +107,13 @@ class AppFlowController: ObservableObject {
         
         // Step 3: Load cached user profile
         guard let cachedUser = profileStorage.loadUser() else {
-            print("⚠️ [AppFlowController] No cached user profile")
+            debugLog("⚠️ [AppFlowController] No cached user profile")
             currentState = .checkingAuth
             isInitialized = true
             return
         }
         
-        print("✅ [AppFlowController] Cached user loaded: \(cachedUser.fullName)")
+        debugLog("✅ [AppFlowController] Cached user loaded: \(cachedUser.fullName)")
         
         // Step 3.5: Load App Attest key for this user
         let attestService = AppAttestService.shared
@@ -125,39 +125,39 @@ class AppFlowController: ObservableObject {
             if phoneNumber == nil, let phone = cachedUser.phone, !phone.isEmpty {
                 phoneNumber = phone
                 keychainManager.savePhoneNumber(phone)
-                print("✅ [AppFlowController] Saved phone from cached user to keychain")
+                debugLog("✅ [AppFlowController] Saved phone from cached user to keychain")
             }
             
             if let phoneNumber = phoneNumber {
                 attestService.loadKeyForUser(phoneNumber)
-                print("✅ [AppFlowController] Loaded App Attest key for cached user: \(phoneNumber)")
+                debugLog("✅ [AppFlowController] Loaded App Attest key for cached user: \(phoneNumber)")
             } else {
-                print("⚠️ [AppFlowController] No phone number available for App Attest key loading")
+                debugLog("⚠️ [AppFlowController] No phone number available for App Attest key loading")
             }
         }
         
         // Step 4: Determine state based on cached data
         if !isCachedVerified {
-            print("➡️ [AppFlowController] Phone not verified")
+            debugLog("➡️ [AppFlowController] Phone not verified")
             currentState = .pendingPhoneVerification
         } else if !isOnboardingCompleted() {
-            print("➡️ [AppFlowController] Onboarding not completed")
+            debugLog("➡️ [AppFlowController] Onboarding not completed")
             currentState = .onboarding
         } else {
-            print("✅ [AppFlowController] User ready")
+            debugLog("✅ [AppFlowController] User ready")
             currentState = .ready
         }
         
         isInitialized = true
-        print("🎯 [AppFlowController] Initial state: \(currentState.description)")
+        debugLog("🎯 [AppFlowController] Initial state: \(currentState.description)")
     }
     
     /// Asynchronously validate auth state with server (called after UI renders)
     func validateAuthState() async {
-        print("🔄 [AppFlowController] Validating auth state with server")
+        debugLog("🔄 [AppFlowController] Validating auth state with server")
         
         guard currentState != .guestReady && currentState != .loggedOut else {
-            print("⏭️ [AppFlowController] In guest/logged out mode, skipping validation")
+            debugLog("⏭️ [AppFlowController] In guest/logged out mode, skipping validation")
             return
         }
         
@@ -167,7 +167,7 @@ class AppFlowController: ObservableObject {
         do {
             // Fetch current user from server
             let user = try await authRepository.getCurrentUser()
-            print("✅ [AppFlowController] Server validation success")
+            debugLog("✅ [AppFlowController] Server validation success")
             
             // Update cached data
             profileStorage.saveUser(user)
@@ -179,7 +179,7 @@ class AppFlowController: ObservableObject {
             await determineStateFromUser(user)
             
         } catch {
-            print("❌ [AppFlowController] Server validation failed: \(error)")
+            debugLog("❌ [AppFlowController] Server validation failed: \(error)")
             
             // Check if token is actually invalid or just network issue
             if isAuthError(error) {
@@ -188,7 +188,7 @@ class AppFlowController: ObservableObject {
                 clearAuthState()
             } else {
                 // Network error - fall back to cached state
-                print("⚠️ [AppFlowController] Using cached state due to network error")
+                debugLog("⚠️ [AppFlowController] Using cached state due to network error")
                 // Stay in current state (already set from cache in initializeSync)
             }
         }
@@ -196,17 +196,17 @@ class AppFlowController: ObservableObject {
     
     /// Called on app resume from background
     func handleAppResume() async {
-        print("🔄 [AppFlowController] Handling app resume")
+        debugLog("🔄 [AppFlowController] Handling app resume")
         
         // Check if verification cache is still valid
         let (_, isCacheValid) = checkCachedVerificationStatus()
         
         if !isCacheValid {
-            print("⚠️ [AppFlowController] Cache expired on resume, re-validating")
+            debugLog("⚠️ [AppFlowController] Cache expired on resume, re-validating")
             await validateAuthState()
         } else if currentState == .ready {
             // Just refresh data in background, don't change state
-            print("✅ [AppFlowController] Cache valid, refreshing data in background")
+            debugLog("✅ [AppFlowController] Cache valid, refreshing data in background")
             Task {
                 try? await authRepository.getCurrentUser()
             }
@@ -215,7 +215,7 @@ class AppFlowController: ObservableObject {
     
     /// Transition to logged in state (called after successful login)
     func transitionToLoggedIn(user: User) {
-        print("✅ [AppFlowController] Transitioning to logged in")
+        debugLog("✅ [AppFlowController] Transitioning to logged in")
         
         profileStorage.saveUser(user)
         
@@ -229,14 +229,14 @@ class AppFlowController: ObservableObject {
     
     /// Transition to logged out state
     func transitionToLoggedOut() {
-        print("🚪 [AppFlowController] Transitioning to logged out")
+        debugLog("🚪 [AppFlowController] Transitioning to logged out")
         currentState = .guestReady
         clearAuthState()
     }
     
     /// Mark phone as verified and update state
     func markPhoneVerified() {
-        print("✅ [AppFlowController] Phone verified")
+        debugLog("✅ [AppFlowController] Phone verified")
         saveVerificationStatus(true)
         
         if !isOnboardingCompleted() {
@@ -248,7 +248,7 @@ class AppFlowController: ObservableObject {
     
     /// Mark onboarding as completed
     func markOnboardingCompleted() {
-        print("✅ [AppFlowController] Onboarding completed")
+        debugLog("✅ [AppFlowController] Onboarding completed")
         UserDefaults.standard.set(true, forKey: "isOnboardingCompleted")
         UserDefaults.standard.set(true, forKey: "isInitialSetupCompleted")
         currentState = .ready
@@ -267,7 +267,7 @@ class AppFlowController: ObservableObject {
             currentState = .ready
         }
         
-        print("🎯 [AppFlowController] Final state: \(currentState.description)")
+        debugLog("🎯 [AppFlowController] Final state: \(currentState.description)")
     }
     
     private func isOnboardingCompleted() -> Bool {
@@ -287,7 +287,7 @@ class AppFlowController: ObservableObject {
         
         let isVerified = UserDefaults.standard.bool(forKey: verificationCacheKey)
         
-        print("📦 [AppFlowController] Cached verification: \(isVerified), age: \(Int(age))s, valid: \(isValid)")
+        debugLog("📦 [AppFlowController] Cached verification: \(isVerified), age: \(Int(age))s, valid: \(isValid)")
         
         return (isVerified, isValid)
     }
@@ -295,7 +295,7 @@ class AppFlowController: ObservableObject {
     private func saveVerificationStatus(_ isVerified: Bool) {
         UserDefaults.standard.set(isVerified, forKey: verificationCacheKey)
         UserDefaults.standard.set(Date(), forKey: verificationTimestampKey)
-        print("💾 [AppFlowController] Saved verification status: \(isVerified)")
+        debugLog("💾 [AppFlowController] Saved verification status: \(isVerified)")
     }
     
     private func clearAuthState() {
@@ -310,7 +310,7 @@ class AppFlowController: ObservableObject {
         profileStorage.clearUser()
         UserDefaults.standard.removeObject(forKey: verificationCacheKey)
         UserDefaults.standard.removeObject(forKey: verificationTimestampKey)
-        print("🗑️ [AppFlowController] Cleared auth state")
+        debugLog("🗑️ [AppFlowController] Cleared auth state")
     }
     
     private func isAuthError(_ error: Error) -> Bool {

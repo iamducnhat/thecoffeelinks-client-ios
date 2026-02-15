@@ -219,7 +219,6 @@ struct OrderCustomization: Codable, Hashable, Sendable {
     }
     
     nonisolated var toppingsTotal: Double {
-        print(toppings)
         return toppings.reduce(0) { $0 + $1.price }
     }
     

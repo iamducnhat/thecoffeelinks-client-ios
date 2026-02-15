@@ -25,7 +25,7 @@ class StoreViewModel: BaseViewModel {
             .removeDuplicates()
             .sink { [weak self] store in
                 if let store = store {
-                    print("💾 [StoreViewModel] Saving preference: \(store.name)")
+                    debugLog("💾 [StoreViewModel] Saving preference: \(store.name)")
                     DependencyContainer.shared.userPreferences.selectedStoreId = store.id
                 }
             }

@@ -49,7 +49,7 @@ class AuthViewModel: BaseViewModel {
     /// Kept for backward compatibility with existing views
     func checkSession() {
         // No-op: Auth state is now managed by AppFlowController
-        print("⚠️ [AuthViewModel] checkSession() called - this is deprecated, use AppFlowController")
+        debugLog("⚠️ [AuthViewModel] checkSession() called - this is deprecated, use AppFlowController")
     }
     
     // MARK: - Phone + Password Auth
@@ -75,7 +75,7 @@ class AuthViewModel: BaseViewModel {
                     name: self.fullName,
                     dob: formattedDob
                 )
-                print("✅ Registered. Waiting for OTP.")
+                debugLog("✅ Registered. Waiting for OTP.")
                 // NOTE: After OTP verification, fetchCurrentUser() will be called
                 // in verifyOTP() to get the full profile with the name we just registered
                 await MainActor.run {
@@ -83,7 +83,7 @@ class AuthViewModel: BaseViewModel {
                     self.error = nil // Clear error
                 }
             } catch {
-                print("❌ [AuthViewModel] Register Error: \(error)")
+                debugLog("❌ [AuthViewModel] Register Error: \(error)")
                 
                 // Clear any stale auth tokens to prevent automatic token refresh
                 DependencyContainer.shared.keychainManager.deleteAccessToken()
@@ -123,7 +123,7 @@ class AuthViewModel: BaseViewModel {
                     self.appFlowController?.transitionToLoggedIn(user: fullUser)
                 }
             } catch {
-                print("❌ [AuthViewModel] Login Password Error: \(error)")
+                debugLog("❌ [AuthViewModel] Login Password Error: \(error)")
                 
                 // Clear any stale auth tokens to prevent automatic token refresh
                 DependencyContainer.shared.keychainManager.deleteAccessToken()
@@ -148,18 +148,13 @@ class AuthViewModel: BaseViewModel {
         withLoading {
             do {
                 try await self.authRepository.sendOTP(phoneNumber: formattedNumber)
-                print("✅ OTP sent to \(formattedNumber)")
+                debugLog("✅ OTP sent to \(formattedNumber)")
                 await MainActor.run {
                     self.authState = .otpSent
                     self.error = nil
                 }
             } catch {
-                print("❌ [AuthViewModel] sendOTP Error: \(error)")                
-                // Clear any stale auth tokens to prevent automatic token refresh
-                DependencyContainer.shared.keychainManager.deleteAccessToken()
-                DependencyContainer.shared.keychainManager.deleteRefreshToken()
-                await DependencyContainer.shared.networkService.clearAuthToken()
-                                
+                debugLog("❌ [AuthViewModel] sendOTP Error: \(error)")                
                 // Clear any stale auth tokens to prevent automatic token refresh
                 DependencyContainer.shared.keychainManager.deleteAccessToken()
                 DependencyContainer.shared.keychainManager.deleteRefreshToken()
@@ -209,7 +204,7 @@ class AuthViewModel: BaseViewModel {
                     }
                 }
             } catch {
-                print("❌ [AuthViewModel] verifyOTP Error: \(error)")
+                debugLog("❌ [AuthViewModel] verifyOTP Error: \(error)")
                 
                 // Clear any stale auth tokens to prevent automatic token refresh
                 DependencyContainer.shared.keychainManager.deleteAccessToken()
@@ -226,6 +221,10 @@ class AuthViewModel: BaseViewModel {
     }
     
     func bypassOTP(phoneNumber: String) {
+        #if !DEBUG
+        self.error = "Dev bypass is not available"
+        return
+        #else
         let formattedNumber = formatPhoneNumber(phoneNumber)
         withLoading {
             do {
@@ -249,15 +248,16 @@ class AuthViewModel: BaseViewModel {
                 }
             }
         }
+        #endif
     }
     
     func loginWithLinkedIn() {
         withLoading {
-            print("🔗 Starting LinkedIn Login Flow...")
+            debugLog("🔗 Starting LinkedIn Login Flow...")
             let linkedInService = LinkedInService()
             do {
                 let token = try await linkedInService.login()
-                print("✅ LinkedIn Token Received. Logging in to backend for LinkedIn...")
+                debugLog("✅ LinkedIn Token Received. Logging in to backend for LinkedIn...")
                 
                 let user = try await self.authRepository.loginWithLinkedIn(code: token)
                 

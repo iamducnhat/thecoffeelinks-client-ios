@@ -59,6 +59,7 @@ class NetworkService: ObservableObject {
     private var etagCache: [String: CachedETag] = [:]
     private var responseCache: [String: Data] = [:]
     private let cacheQueue = DispatchQueue(label: "com.thecoffeelinks.etag-cache")
+    private let maxResponseCacheEntries = 100 // LRU-style bound to prevent unbounded growth
     
     @Published var authToken: String?
     private var refreshToken: String?
@@ -145,13 +146,14 @@ class NetworkService: ObservableObject {
         // App Attest registration is handled in AuthRepository after successful OTP verification
     }
     
-    /// Synchronous version of setAuthSession for initialization before UI renders
+    /// Synchronous version of setAuthSession for initialization before UI renders.
+    /// Called from DependencyContainer.initializeSync() which runs before any async work.
+    /// Must directly assign tokens — wrapping in Task { @MainActor } is NOT synchronous
+    /// and the token won't be available for subsequent requests in the same run-loop tick.
+    @MainActor
     func setAuthSessionSync(accessToken: String, refreshToken: String?) {
-        // Note: This must be called from MainActor context
-        Task { @MainActor in
-            self.authToken = accessToken
-            self.refreshToken = refreshToken
-        }
+        self.authToken = accessToken
+        self.refreshToken = refreshToken
     }
     
     @MainActor
@@ -194,7 +196,7 @@ class NetworkService: ObservableObject {
                 self.setAuthSession(accessToken: response.session.access_token, refreshToken: response.session.refresh_token)
                 return true
             } catch {
-                print("❌ Token Refresh Failed: \(error)")
+                debugLog("❌ Token Refresh Failed: \(error)")
                 self.clearAuthToken()
                 return false
             }
@@ -272,12 +274,12 @@ class NetworkService: ObservableObject {
                 request.httpBody = bodyData
                 
                 if let bodyString = String(data: bodyData, encoding: .utf8) {
-                    print("🌐 Request →", method, url.absoluteString)
-                    print("🌐 Request Body:", bodyString)
+                    debugLog("🌐 Request →", method, url.absoluteString)
+                    debugLog("🌐 Request Body:", bodyString)
                 }
             } catch {
-                print("🌐 Request →", method, url.absoluteString)
-                print("❌ Failed to encode request body:", error)
+                debugLog("🌐 Request →", method, url.absoluteString)
+                debugLog("❌ Failed to encode request body:", error)
                 throw NetworkError.networkFailure(error)
             }
         }
@@ -289,13 +291,13 @@ class NetworkService: ObservableObject {
              throw NetworkError.networkFailure(error)
         }
         
-        print("🌐 Request →", method, url.absoluteString)
+        debugLog("🌐 Request →", method, url.absoluteString)
         guard let httpResponse = response as? HTTPURLResponse else {
-            print("❌ Invalid Response (not HTTP)")
+            debugLog("❌ Invalid Response (not HTTP)")
              throw NetworkError.unknown
         }
-        print("📡 Response Status: \(httpResponse.statusCode)")
-        print("📊 Response Size: \(data.count) bytes")
+        debugLog("📡 Response Status: \(httpResponse.statusCode)")
+        debugLog("📊 Response Size: \(data.count) bytes")
         
         // Handle ETag caching with 24hr TTL
         if method == "GET", let newETag = httpResponse.value(forHTTPHeaderField: "ETag") {
@@ -305,12 +307,23 @@ class NetworkService: ObservableObject {
                 if httpResponse.statusCode != 304 {
                     responseCache[endpoint] = data
                 }
+                // Evict oldest entries if cache exceeds max size
+                if responseCache.count > maxResponseCacheEntries {
+                    let sortedKeys = etagCache
+                        .sorted { $0.value.timestamp < $1.value.timestamp }
+                        .prefix(responseCache.count - maxResponseCacheEntries)
+                        .map { $0.key }
+                    for key in sortedKeys {
+                        responseCache.removeValue(forKey: key)
+                        etagCache.removeValue(forKey: key)
+                    }
+                }
             }
             saveETagCache() // Persist to disk
         }
         
         if let responseString = String(data: data, encoding: .utf8) {
-            print("📡 Response Body: \(responseString.prefix(300))")
+            debugLog("📡 Response Body: \(responseString.prefix(300))")
         }
         
         switch httpResponse.statusCode {
@@ -318,7 +331,7 @@ class NetworkService: ObservableObject {
             return try decoder.decode(T.self, from: data)
         case 304:
             // Not Modified - return cached data
-            print("✅ 304 Not Modified - Using cached response")
+            debugLog("✅ 304 Not Modified - Using cached response")
             if let cachedData = cacheQueue.sync(execute: { responseCache[endpoint] }) {
                 return try decoder.decode(T.self, from: cachedData)
             } else {
@@ -335,10 +348,10 @@ class NetworkService: ObservableObject {
             // Try to decode error details from server for 403
             if let errorResponse = try? decoder.decode(ErrorResponse.self, from: data) {
                 let details = errorResponse.details ?? errorResponse.error ?? errorResponse.message
-                print("[NetworkService] 403 decoded - details: \(details ?? "nil"), error: \(errorResponse.error ?? "nil"), message: \(errorResponse.message ?? "nil")")
+                debugLog("[NetworkService] 403 decoded - details: \(details ?? "nil"), error: \(errorResponse.error ?? "nil"), message: \(errorResponse.message ?? "nil")")
                 throw NetworkError.forbidden(details: details)
             }
-            print("[NetworkService] 403 failed to decode - raw: \(String(data: data, encoding: .utf8) ?? "<invalid>")")
+            debugLog("[NetworkService] 403 failed to decode - raw: \(String(data: data, encoding: .utf8) ?? "<invalid>")")
             throw NetworkError.forbidden(details: nil)
         case 404:
              throw NetworkError.notFound
@@ -376,7 +389,7 @@ class NetworkService: ObservableObject {
         guard let url = urlComponents?.url else {
             throw NetworkError.invalidURL
         }
-        print("🌐 Request →", method, url.absoluteString)
+        debugLog("🌐 Request →", method, url.absoluteString)
         
         var request = URLRequest(url: url)
         request.httpMethod = method
@@ -397,14 +410,14 @@ class NetworkService: ObservableObject {
             throw NetworkError.networkFailure(error)
         }
         
-        print("🌐 Request →", method, url.absoluteString)
+        debugLog("🌐 Request →", method, url.absoluteString)
         guard let httpResponse = response as? HTTPURLResponse else {
-            print("❌ Invalid Response (not HTTP)")
+            debugLog("❌ Invalid Response (not HTTP)")
             throw NetworkError.unknown
         }
-        print("📡 Response Status: \(httpResponse.statusCode)")
+        debugLog("📡 Response Status: \(httpResponse.statusCode)")
         if let responseString = String(data: data, encoding: .utf8) {
-            print("📡 Response Body: \(responseString.prefix(300))")
+            debugLog("📡 Response Body: \(responseString.prefix(300))")
         }
         
         if !(200...299).contains(httpResponse.statusCode) {
@@ -442,14 +455,14 @@ class NetworkService: ObservableObject {
             throw NetworkError.networkFailure(error)
         }
         
-        print("🌐 Request →", method, url.absoluteString)
+        debugLog("🌐 Request →", method, url.absoluteString)
         guard let httpResponse = response as? HTTPURLResponse else {
-            print("❌ Invalid Response (not HTTP)")
+            debugLog("❌ Invalid Response (not HTTP)")
             throw NetworkError.unknown
         }
-        print("📡 Response Status: \(httpResponse.statusCode)")
+        debugLog("📡 Response Status: \(httpResponse.statusCode)")
         if let responseString = String(data: data, encoding: .utf8) {
-            print("📡 Response Body: \(responseString.prefix(300))")
+            debugLog("📡 Response Body: \(responseString.prefix(300))")
         }
         switch httpResponse.statusCode {
         case 200...299:
@@ -461,10 +474,10 @@ class NetworkService: ObservableObject {
             // Try to decode error details from server for 403
             if let errorResponse = try? decoder.decode(ErrorResponse.self, from: data) {
                 let details = errorResponse.details ?? errorResponse.error ?? errorResponse.message
-                print("[NetworkService] 403 decoded - details: \(details ?? "nil"), error: \(errorResponse.error ?? "nil"), message: \(errorResponse.message ?? "nil")")
+                debugLog("[NetworkService] 403 decoded - details: \(details ?? "nil"), error: \(errorResponse.error ?? "nil"), message: \(errorResponse.message ?? "nil")")
                 throw NetworkError.forbidden(details: details)
             }
-            print("[NetworkService] 403 failed to decode - raw: \(String(data: data, encoding: .utf8) ?? "<invalid>")")
+            debugLog("[NetworkService] 403 failed to decode - raw: \(String(data: data, encoding: .utf8) ?? "<invalid>")")
             throw NetworkError.forbidden(details: nil)
         case 404:
             throw NetworkError.notFound

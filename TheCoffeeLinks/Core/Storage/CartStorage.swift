@@ -44,7 +44,7 @@ final class CartStorage: CartStorageProtocol {
             decoder.dateDecodingStrategy = .iso8601
             return try decoder.decode(Cart.self, from: data)
         } catch {
-            print("❌ Failed to load local cart: \(error)")
+            debugLog("❌ Failed to load local cart: \(error)")
             return nil
         }
     }

@@ -71,19 +71,19 @@ struct ContentView: View {
     }
     
     private func handleScenePhaseChange(to newPhase: ScenePhase) {
-        print("🔄 [ContentView] Scene phase changed to: \(newPhase)")
+        debugLog("🔄 [ContentView] Scene phase changed to: \(newPhase)")
         
         switch newPhase {
         case .active:
             // App became active - check if coming from background
-            print("✅ [ContentView] App became active")
+            debugLog("✅ [ContentView] App became active")
             Task {
                 await appFlowController.handleAppResume()
             }
             
         case .background:
             // App went to background - save state
-            print("💾 [ContentView] App backgrounded, saving state")
+            debugLog("💾 [ContentView] App backgrounded, saving state")
             saveAppState()
             
         case .inactive:

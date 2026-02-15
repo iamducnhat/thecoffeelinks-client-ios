@@ -64,7 +64,7 @@ struct AnyCodable: Codable {
         
         do {
             if let x = try container.decode([String: AnyCodable].self) as [String: AnyCodable]? {
-                print(x)
+                debugLog(x)
                 value = x.mapValues { $0.value }
                 return
             }
@@ -199,7 +199,7 @@ final class RealtimeService: ObservableObject {
     }
     
     private func log(_ message: String) {
-        print("[Realtime] \(message)")
+        debugLog("[Realtime] \(message)")
     }
     
     func setAuthToken(_ token: String) {

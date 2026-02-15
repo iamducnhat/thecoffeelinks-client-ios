@@ -61,7 +61,7 @@ final class HomeViewModel: ObservableObject {
                 // Regenerate prediction after sync
                 await self.generatePrediction()
             } catch {
-                print("[HomeViewModel] Prediction sync failed: \(error)")
+                debugLog("[HomeViewModel] Prediction sync failed: \(error)")
             }
         }
 
@@ -110,7 +110,7 @@ final class HomeViewModel: ObservableObject {
             let response: EventsResponse = try await networkService.get("/api/events", queryItems: nil)
             events = response.events
         } catch {
-            print("⚠️ Events fetch error: \(error)")
+            debugLog("⚠️ Events fetch error: \(error)")
         }
     }
     
@@ -120,7 +120,7 @@ final class HomeViewModel: ObservableObject {
             // Only show active vouchers in the banner
             vouchers = allVouchers.filter { $0.isValid }
         } catch {
-            print("⚠️ Vouchers fetch error: \(error)")
+            debugLog("⚠️ Vouchers fetch error: \(error)")
         }
     }
     

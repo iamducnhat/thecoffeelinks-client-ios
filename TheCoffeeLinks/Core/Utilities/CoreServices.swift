@@ -195,18 +195,18 @@ final class NotificationService: NotificationServiceProtocol, @unchecked Sendabl
 final class AnalyticsService: AnalyticsServiceProtocol, @unchecked Sendable {
     func trackEvent(_ name: String, properties: [String: Any]?) async {
         #if DEBUG
-        print("[Analytics] \(name): \(properties ?? [:])")
+        debugLog("[Analytics] \(name): \(properties ?? [:])")
         #endif
     }
     func trackScreen(_ name: String) async {
         #if DEBUG
-        print("[Analytics] Screen: \(name)")
+        debugLog("[Analytics] Screen: \(name)")
         #endif
     }
     func setUserProperty(_ name: String, value: String?) async {}
     func trackPurchase(orderId: String, amount: Double, items: [OrderItem]) async {
         #if DEBUG
-        print("[Analytics] Purchase: \(orderId) - \(amount)")
+        debugLog("[Analytics] Purchase: \(orderId) - \(amount)")
         #endif
     }
 }

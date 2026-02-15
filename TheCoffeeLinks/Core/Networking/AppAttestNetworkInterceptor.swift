@@ -47,7 +47,7 @@ final class AppAttestNetworkInterceptor {
 
         // Check if App Attest is registered (registration happens in AuthRepository after OTP verification)
         guard attestService.isRegistered else {
-            print("[AppAttestInterceptor] App Attest not registered, skipping protected request")
+            debugLog("[AppAttestInterceptor] App Attest not registered, skipping protected request")
             return nil
         }
 
@@ -63,7 +63,7 @@ final class AppAttestNetworkInterceptor {
         // Generate assertion
         let assertion = try await attestService.generateAssertion(for: combinedChallenge)
 
-        print("[AppAttestInterceptor] Added assertion for \(endpoint)")
+        debugLog("[AppAttestInterceptor] Added assertion for \(endpoint)")
         return (assertion.keyId, assertion.assertion, combinedChallenge)
     }
 

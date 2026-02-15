@@ -75,9 +75,39 @@ extension Cart {
             if let existingIndex = items.firstIndex(where: { $0.key == key }) {
                 items[existingIndex].quantity += quantity
             } else {
-                // Can't fully construct item without product details
-                // This operation requires product lookup during sync
-                print("⚠️ Add operation requires product details for full cart item")
+                // Construct a placeholder item with available data so it's tracked in the cart
+                // rather than silently dropping it. The product details will be hydrated during sync.
+                let placeholderProduct = Product(
+                    id: productId,
+                    name: "",
+                    description: nil,
+                    categoryId: "",
+                    categoryName: nil,
+                    imageUrl: nil,
+                    basePrice: priceSnapshot,
+                    sizeOptions: [],
+                    availableToppings: [],
+                    isPopular: false,
+                    isNew: false,
+                    isActive: true,
+                    isHotSupported: false,
+                    isDeliverable: true,
+                    deliveryPrepMinutes: nil,
+                    tags: [],
+                    nutritionInfo: nil,
+                    allergens: []
+                )
+                let newItem = CartItem(
+                    key: key,
+                    product: placeholderProduct,
+                    quantity: quantity,
+                    customization: customization,
+                    addedAt: Date(),
+                    priceSnapshot: priceSnapshot,
+                    storeId: storeId
+                )
+                items.append(newItem)
+                debugLog("⚠️ [Cart] Added item with placeholder product — will hydrate during sync")
             }
             
         case .updateQuantity(let key, let delta):

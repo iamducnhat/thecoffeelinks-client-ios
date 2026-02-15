@@ -12,7 +12,7 @@ class Logger {
     func log(_ message: String, level: Level = .debug, file: String = #file, function: String = #function, line: Int = #line) {
         #if DEBUG
         let fileName = (file as NSString).lastPathComponent
-        print("\(level.rawValue) [\(fileName):\(line)] \(function) -> \(message)")
+        debugLog("\(level.rawValue) [\(fileName):\(line)] \(function) -> \(message)")
         #endif
     }
 }

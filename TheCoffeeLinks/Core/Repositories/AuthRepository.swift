@@ -81,47 +81,24 @@ class AuthRepository {
              let existingPhone = keychainManager.getPhoneNumber()
              if existingPhone == nil || existingPhone != phone {
                  keychainManager.savePhoneNumber(phone)
-                 print("[AuthRepository] Saved phone number to keychain: \(phone)")
+                 debugLog("[AuthRepository] Saved phone number to keychain: \(phone)")
              }
          }
          
          // Load App Attest key for this user (if not already loaded)
+         // NOTE: Only LOAD the key here — never generate or register.
+         // Registration happens exclusively in verifyOTP() to avoid race conditions
+         // where multiple fire-and-forget Tasks each call generateKey() concurrently.
          let attestService = AppAttestService.shared
          if attestService.isAvailable {
              // Use phone number as user ID for App Attest keys
              if let phoneNumber = keychainManager.getPhoneNumber() {
                  attestService.loadKeyForUser(phoneNumber)
-                 print("[AuthRepository] Loaded App Attest key for user: \(phoneNumber)")
-                 
-                 // Try to register with server if not already registered
-                 if !attestService.isRegistered {
-                     Task {
-                         do {
-                             try await attestService.ensureRegistered()
-                             _ = try await attestService.registerKeyWithServer()
-                             print("[AuthRepository] App Attest key registered with server")
-                         } catch {
-                             print("[AuthRepository] Failed to register App Attest key: \(error.localizedDescription)")
-                         }
-                     }
-                 }
+                 debugLog("[AuthRepository] Loaded App Attest key for user: \(phoneNumber)")
              } else if let phone = response.user.phone, !phone.isEmpty {
                  // Fallback: use phone from user profile if not in keychain
                  attestService.loadKeyForUser(phone)
-                 print("[AuthRepository] Loaded App Attest key using phone from profile: \(phone)")
-                 
-                 // Try to register with server if not already registered
-                 if !attestService.isRegistered {
-                     Task {
-                         do {
-                             try await attestService.ensureRegistered()
-                             _ = try await attestService.registerKeyWithServer()
-                             print("[AuthRepository] App Attest key registered with server")
-                         } catch {
-                             print("[AuthRepository] Failed to register App Attest key: \(error.localizedDescription)")
-                         }
-                     }
-                 }
+                 debugLog("[AuthRepository] Loaded App Attest key using phone from profile: \(phone)")
              }
          }
          
@@ -202,7 +179,7 @@ class AuthRepository {
     // MARK: - Phone OTP Authentication
     
     func sendOTP(phoneNumber: String) async throws {
-        print("🚀 [AuthRepo] sendOTP called with \(phoneNumber)")
+        debugLog("🚀 [AuthRepo] sendOTP called with \(phoneNumber)")
         struct OTPRequest: Encodable {
             let phone: String
         }
@@ -258,9 +235,9 @@ class AuthRepository {
                 
                 try await attestService.ensureRegistered() // ensure local key exists
                 try await attestService.registerKeyWithServer() // register with server using auth token
-                print("✅ [AuthRepository] App Attest registered after authentication")
+                debugLog("✅ [AuthRepository] App Attest registered after authentication")
             } catch {
-                print("⚠️ [AuthRepository] AppAttest registration failed: \(error.localizedDescription)")
+                debugLog("⚠️ [AuthRepository] AppAttest registration failed: \(error.localizedDescription)")
                 // Don't throw - user is already authenticated at this point
             }
         }
@@ -269,6 +246,9 @@ class AuthRepository {
     }
     
     func bypassOTP(phoneNumber: String) async throws -> User {
+        #if !DEBUG
+        throw NetworkError.forbidden(details: "Dev bypass is not available in production builds")
+        #else
         struct BypassRequest: Encodable {
             let phone: String
         }
@@ -331,6 +311,7 @@ class AuthRepository {
             createdAt: Date(),
             preferences: .default
         )
+        #endif
     }
 
     // MARK: - Shared Helpers

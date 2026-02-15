@@ -66,9 +66,12 @@ final class SyncManager: SyncManagerProtocol, @unchecked Sendable {
     private let monitorQueue = DispatchQueue(label: "com.thecoffeelinks.sync.network")
     private var cancellables = Set<AnyCancellable>()
     
-    init(syncRepository: SyncRepositoryProtocol, userDefaults: UserDefaults = .standard) {
+    private let keychainManager: KeychainManager?
+    
+    init(syncRepository: SyncRepositoryProtocol, userDefaults: UserDefaults = .standard, keychainManager: KeychainManager? = nil) {
         self.syncRepository = syncRepository
         self.userDefaults = userDefaults
+        self.keychainManager = keychainManager
         
         setupMonitoring()
     }
@@ -116,11 +119,17 @@ final class SyncManager: SyncManagerProtocol, @unchecked Sendable {
     }
     
     func triggerSync(reason: SyncReason) async {
+        // Skip sync in guest mode — no point hitting the server without a token
+        if let km = keychainManager, km.getAccessToken() == nil {
+            debugLog("⏭️ [SyncManager] Skipping \(reason.rawValue) sync — not authenticated")
+            return
+        }
+        
         // 1. Refresh Versions first (Global State)
         do {
             try await refreshVersions()
         } catch {
-            print("⚠️ [SyncManager] Version refresh failed: \\(error), skipping selective sync")
+            debugLog("⚠️ [SyncManager] Version refresh failed: \\(error), skipping selective sync")
             return
         }
         
@@ -133,11 +142,11 @@ final class SyncManager: SyncManagerProtocol, @unchecked Sendable {
                 if let serverVersion = serverVersion(for: domain.domainKey) {
                     if isStale(key: domain.domainKey, serverVersion: serverVersion) {
                         group.addTask {
-                            print("🔄 [SyncManager] Syncing stale domain: \\(domain.domainKey)")
+                            debugLog("🔄 [SyncManager] Syncing stale domain: \\(domain.domainKey)")
                             await domain.sync(reason: reason)
                         }
                     } else {
-                        print("✅ [SyncManager] Skipping fresh domain: \\(domain.domainKey)")
+                        debugLog("✅ [SyncManager] Skipping fresh domain: \\(domain.domainKey)")
                     }
                 } else {
                     // No version info, sync by default

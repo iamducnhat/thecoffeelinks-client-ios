@@ -177,7 +177,7 @@ struct DeliveryStorePickerSheet: View {
                         )
                         return (store.id, availability)
                     } catch {
-                        print("⚠️ Failed to check availability for store \(store.id): \(error)")
+                        debugLog("⚠️ Failed to check availability for store \(store.id): \(error)")
                         return (store.id, nil)
                     }
                 }

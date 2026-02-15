@@ -232,7 +232,7 @@ struct VoucherRedemptionSheet: View {
                 isLoadingQR = false
             }
         } catch {
-            print("QR Fetch Error: \(error.localizedDescription)")
+            debugLog("QR Fetch Error: \(error.localizedDescription)")
             withAnimation {
                 fetchError = "Secure connection failed"
                 isLoadingQR = false

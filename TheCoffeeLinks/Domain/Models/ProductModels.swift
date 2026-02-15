@@ -149,7 +149,7 @@ struct Product: Codable, Identifiable, Hashable, Sendable {
             if option.size == size { return option.price }
         }
         #if DEBUG
-        print("⚠️ [Product.price] product=\(id) no matching size=\(size). sizeOptions=\(sizeOptions.map { $0.size.rawValue })")
+        debugLog("⚠️ [Product.price] product=\(id) no matching size=\(size). sizeOptions=\(sizeOptions.map { $0.size.rawValue })")
         #endif
         return basePrice
     }

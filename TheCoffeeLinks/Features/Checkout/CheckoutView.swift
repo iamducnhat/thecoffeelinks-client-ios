@@ -82,7 +82,7 @@ struct CheckoutView: View {
             if cartViewModel.cart.items.isEmpty {
                 CheckoutEmptyState()
                     .onAppear {
-                        print("Cart empty")
+                        debugLog("Cart empty")
                     }
             } else {
                 orderPlacedObserver

@@ -27,12 +27,12 @@ final class PredictionSyncService: Sendable {
         if !force, let lastSync = lastSync {
             let daysSinceSync = Calendar.current.dateComponents([.day], from: lastSync, to: now).day ?? 0
             if daysSinceSync < 1 {
-                print("[PredictionSync] Skipping sync - last synced \(daysSinceSync) days ago")
+                debugLog("[PredictionSync] Skipping sync - last synced \(daysSinceSync) days ago")
                 return
             }
         }
 
-        print("[PredictionSync] Starting order history sync...")
+        debugLog("[PredictionSync] Starting order history sync...")
 
         // Fetch all orders from server
         // We fetch all because the API doesn't support date filtering properly
@@ -41,7 +41,7 @@ final class PredictionSyncService: Sendable {
         // Filter for completed orders only (we learn from successful orders)
         let completedOrders = response.orders.filter { $0.status == .completed }
 
-        print("[PredictionSync] Found \(completedOrders.count) completed orders")
+        debugLog("[PredictionSync] Found \(completedOrders.count) completed orders")
 
         // Convert each order to prediction history
         for order in completedOrders {
@@ -52,7 +52,7 @@ final class PredictionSyncService: Sendable {
         await predictionRepository.setLastSyncDate(now)
 
         let history = await predictionRepository.getHistory()
-        print("[PredictionSync] Sync complete - \(history.count) unique items in history")
+        debugLog("[PredictionSync] Sync complete - \(history.count) unique items in history")
     }
 
     /// Get current prediction statistics

@@ -14,7 +14,7 @@ class HapticManager: HapticServiceProtocol, @unchecked Sendable {
             engine = try CHHapticEngine()
             try engine?.start()
         } catch {
-            print("Haptics error: \(error.localizedDescription)")
+            debugLog("Haptics error: \(error.localizedDescription)")
         }
     }
     

@@ -187,7 +187,6 @@ struct Cart: Codable, Sendable {
     
     nonisolated mutating func addItem(_ item: CartItem) {
         // Check local state for existing key
-        print(items)
         if let existingIndex = items.firstIndex(where: { $0.key == item.key }) {
             // Increment quantity
             items[existingIndex].quantity += item.quantity

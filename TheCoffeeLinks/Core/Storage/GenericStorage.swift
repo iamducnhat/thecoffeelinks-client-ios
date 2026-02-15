@@ -47,7 +47,7 @@ final class GenericStorage: GenericStorageProtocol {
                 decoder.dateDecodingStrategy = .iso8601
                 return try decoder.decode(T.self, from: data)
             } catch {
-                print("❌ Failed to load local \(key): \(error)")
+                debugLog("❌ Failed to load local \(key): \(error)")
                 return nil
             }
         }

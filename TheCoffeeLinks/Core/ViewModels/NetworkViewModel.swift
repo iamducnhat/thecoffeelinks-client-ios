@@ -113,7 +113,7 @@ class NetworkViewModel: BaseViewModel {
                     }
                 }
             } catch {
-                print("Error fetching people: \(error)")
+                debugLog("Error fetching people: \(error)")
             }
         }
     }
