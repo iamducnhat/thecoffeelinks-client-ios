@@ -387,6 +387,7 @@ struct CreateOrderResponse: Codable, Sendable {
         let type: String
         let table_id: String?
         let total_amount: Double
+        let discount: Double?
         let payment_method: String
         let payment_status: String
         let payment_token: String?
@@ -508,7 +509,7 @@ struct CreateOrderResponse: Codable, Sendable {
             items: items,
             subtotal: subtotal,
             deliveryFee: apiOrder.delivery_fee,
-            discount: 0,  // API doesn't return discount in create response
+            discount: apiOrder.discount ?? 0,  // Read discount from API response
             totalAmount: apiOrder.total_amount,
             tableId: apiOrder.table_id,
             deliveryAddress: nil,
@@ -562,6 +563,7 @@ struct APIOrdersResponse: Codable {
         let type: String?
         let table_id: String?
         let total_amount: Double?
+        let discount: Double?
         let payment_method: String?
         let payment_status: String?
         let payment_token: String?
@@ -696,7 +698,7 @@ struct APIOrdersResponse: Codable {
                 items: items,
                 subtotal: subtotal,
                 deliveryFee: deliveryFee,
-                discount: 0,
+                discount: apiOrder.discount ?? 0,
                 totalAmount: totalAmount,
                 tableId: apiOrder.table_id,
                 deliveryAddress: nil,
