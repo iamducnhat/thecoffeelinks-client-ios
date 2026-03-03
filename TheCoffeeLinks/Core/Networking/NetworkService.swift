@@ -257,13 +257,18 @@ class NetworkService: ObservableObject {
                 bodyData = nil
             }
             
-            if let attestHeaders = try? await AppAttestNetworkInterceptor.shared.prepareRequest(
-                endpoint: endpoint,
-                body: bodyData
-            ) {
-                request.setValue(attestHeaders.keyId, forHTTPHeaderField: "X-App-Attest-Key-Id")
-                request.setValue(attestHeaders.assertion, forHTTPHeaderField: "X-App-Attest-Assertion")
-                request.setValue(attestHeaders.challenge, forHTTPHeaderField: "X-App-Attest-Challenge")
+            do {
+                if let attestHeaders = try await AppAttestNetworkInterceptor.shared.prepareRequest(
+                    endpoint: endpoint,
+                    body: bodyData
+                ) {
+                    request.setValue(attestHeaders.keyId, forHTTPHeaderField: "X-App-Attest-Key-Id")
+                    request.setValue(attestHeaders.assertion, forHTTPHeaderField: "X-App-Attest-Assertion")
+                    request.setValue(attestHeaders.challenge, forHTTPHeaderField: "X-App-Attest-Challenge")
+                }
+            } catch {
+                debugLog("⚠️ [NetworkService] App Attest assertion failed for \(endpoint): \(error.localizedDescription)")
+                // Continue without attestation headers — server will reject if attestation is required
             }
         }
         

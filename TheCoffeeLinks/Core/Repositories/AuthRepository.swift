@@ -60,12 +60,16 @@ class AuthRepository {
     }
     
     func logout() async {
-        // Clear App Attest key for this user (before clearing phone number)
-        if let phoneNumber = keychainManager.getPhoneNumber() {
+        // Clear App Attest key for this user (use userId, fallback to phone)
+        if let userId = keychainManager.getUserId() {
+            AppAttestService.shared.clearKeyForUser(userId)
+        } else if let phoneNumber = keychainManager.getPhoneNumber() {
+            // Legacy fallback for keys stored with phone number
             AppAttestService.shared.clearKeyForUser(phoneNumber)
         }
         
-        // Clear phone number from keychain
+        // Clear credentials from keychain
+        keychainManager.deleteUserId()
         keychainManager.deletePhoneNumber()
         
         await networkService.clearAuthToken()
@@ -85,21 +89,18 @@ class AuthRepository {
              }
          }
          
+         // Save user ID for App Attest key identity
+         keychainManager.saveUserId(response.user.id)
+         
          // Load App Attest key for this user (if not already loaded)
          // NOTE: Only LOAD the key here — never generate or register.
          // Registration happens exclusively in verifyOTP() to avoid race conditions
          // where multiple fire-and-forget Tasks each call generateKey() concurrently.
          let attestService = AppAttestService.shared
          if attestService.isAvailable {
-             // Use phone number as user ID for App Attest keys
-             if let phoneNumber = keychainManager.getPhoneNumber() {
-                 attestService.loadKeyForUser(phoneNumber)
-                 debugLog("[AuthRepository] Loaded App Attest key for user: \(phoneNumber)")
-             } else if let phone = response.user.phone, !phone.isEmpty {
-                 // Fallback: use phone from user profile if not in keychain
-                 attestService.loadKeyForUser(phone)
-                 debugLog("[AuthRepository] Loaded App Attest key using phone from profile: \(phone)")
-             }
+             // Use Supabase user UUID for App Attest key identity (matches server-side user_id)
+             attestService.loadKeyForUser(response.user.id)
+             debugLog("[AuthRepository] Loaded App Attest key for user: \(response.user.id)")
          }
          
          return response.user
@@ -173,6 +174,25 @@ class AuthRepository {
         )
         
         await networkService.setAuthSession(accessToken: response.session.accessToken, refreshToken: response.session.refreshToken)
+        
+        // Save phone number and user ID for App Attest key association
+        keychainManager.savePhoneNumber(phone)
+        let userId = response.user.id
+        keychainManager.saveUserId(userId)
+        
+        // Register App Attest with authenticated session
+        let attestService = AppAttestService.shared
+        if attestService.isAvailable {
+            do {
+                attestService.loadKeyForUser(userId)
+                try await attestService.ensureRegistered()
+                try await attestService.registerKeyWithServer()
+                debugLog("✅ [AuthRepository] App Attest registered for user: \(userId)")
+            } catch {
+                debugLog("⚠️ [AuthRepository] AppAttest registration failed: \(error.localizedDescription)")
+            }
+        }
+        
         return mapToDomain(response.user)
     }
 
@@ -223,19 +243,22 @@ class AuthRepository {
         // 2. Set auth session with the new token
         await networkService.setAuthSession(accessToken: response.session.accessToken, refreshToken: response.session.refreshToken)
         
-        // 2.5. Save phone number for App Attest key association
+        // 2.5. Save phone number and user ID for App Attest key association
         keychainManager.savePhoneNumber(phoneNumber)
+        let userId = response.user.id
+        keychainManager.saveUserId(userId)
         
         // 3. NOW register App Attest with authenticated session
+        //    Use Supabase user UUID (matches server-side storage)
         let attestService = AppAttestService.shared
         if attestService.isAvailable {
             do {
-                // Load key for this phone number (per-user App Attest keys)
-                attestService.loadKeyForUser(phoneNumber)
+                // Load key for this user UUID (consistent with server-side user_id)
+                attestService.loadKeyForUser(userId)
                 
                 try await attestService.ensureRegistered() // ensure local key exists
                 try await attestService.registerKeyWithServer() // register with server using auth token
-                debugLog("✅ [AuthRepository] App Attest registered after authentication")
+                debugLog("✅ [AuthRepository] App Attest registered for user: \(userId)")
             } catch {
                 debugLog("⚠️ [AuthRepository] AppAttest registration failed: \(error.localizedDescription)")
                 // Don't throw - user is already authenticated at this point

@@ -44,6 +44,19 @@ final class KeychainManager: SecureStorage, @unchecked Sendable {
         remove("phoneNumber")
     }
     
+    // MARK: - User ID (Supabase UUID — used for App Attest key identity)
+    func saveUserId(_ userId: String) {
+        set("userId", value: userId)
+    }
+    
+    func getUserId() -> String? {
+        get("userId")
+    }
+    
+    func deleteUserId() {
+        remove("userId")
+    }
+    
     // MARK: - SecureStorage Protocol
     
     func set(_ key: String, value: String) {

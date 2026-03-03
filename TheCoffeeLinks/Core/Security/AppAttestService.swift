@@ -122,6 +122,14 @@ final class AppAttestService: ObservableObject {
             return existingKey
         }
         
+        // Try loading from keychain before generating a brand new Apple key
+        // This prevents orphaned keys on retry
+        if let userId = currentUserId, let saved = loadKeyFromKeychain(forUser: userId) {
+            currentKey = saved
+            debugLog("[AppAttestService] Recovered key from keychain on retry: \(saved.keyId)")
+            return saved
+        }
+        
         // Deduplicate concurrent calls: if another task is already generating,
         // await its result instead of creating a second Apple key.
         if let existingTask = keyGenerationTask {
@@ -471,6 +479,15 @@ final class AppAttestService: ObservableObject {
             return false
         } catch let error as NetworkError {
             debugLog("[AppAttestService] registerKeyWithServer failed: \(error.localizedDescription)")
+            
+            // If the server explicitly rejected the attestation (e.g. 403 Invalid challenge),
+            // the local key is useless and MUST be deleted so a fresh one is generated next time.
+            let errorMessage = error.localizedDescription.lowercased()
+            if errorMessage.contains("invalid") || errorMessage.contains("expired") || errorMessage.contains("failed") {
+                debugLog("[AppAttestService] 🗑️ Server rejected the key. Wiping local App Attest key to force regeneration.")
+                self.clearKey()
+            }
+            
             registrationRetryCount += 1
             throw error
         } catch {

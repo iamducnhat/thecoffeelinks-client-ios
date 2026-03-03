@@ -77,7 +77,8 @@ final class UserRepository: UserRepositoryProtocol, SyncableDomain, @unchecked S
             profileStorage.saveUser(newUser)
         }
         
-        let response: PreferencesResponse = try await networkService.patch("/api/users/me/preferences", body: preferences)
+        // Changed to use /api/user/preferences to match backend convention
+        let response: PreferencesResponse = try await networkService.patch("/api/user/preferences", body: preferences)
         return response.preferences
     }
     

@@ -118,7 +118,7 @@ struct CheckoutView: View {
                 .fixedSize(horizontal: false, vertical: true)
                 
                 VStack(spacing: 0) {
-                    ScrollView(.vertical) {
+                    ScrollView(.vertical) { LazyVStack(spacing: AppLayout.spacing) {
                         // Navigation Header (Scrollable)
                         VStack(spacing: AppLayout.marginCompact) {
                             HStack(alignment: .center, spacing: AppLayout.spacing) {
@@ -150,7 +150,7 @@ struct CheckoutView: View {
                             
                             Divider()
                                 .background(Color.borderSecondary)
-                                .padding(.horizontal, -AppLayout.spacing)
+                                .padding(.horizontal, -AppLayout.spacing*2)
                         }
                         .padding(.horizontal, AppLayout.spacing)
                         .padding(.top, AppLayout.spacingCompact)
@@ -256,34 +256,34 @@ struct CheckoutView: View {
                             ForEach(cartViewModel.cart.items) { item in
                                 HStack(spacing: AppLayout.spacingMedium) {
                                     // Image Placeholder
-                                // CHANGED: Using CachedAsyncImage
-                                CachedAsyncImage(url: URL(string: item.product.displayImageUrl ?? "")) { phase in // CHANGED
-                                    switch phase { // CHANGED
-                                    case .empty: // CHANGED
-                                        Rectangle() // CHANGED
-                                            .fill(Color.surfacePrimary) // CHANGED
-                                            .overlay { // CHANGED
-                                                ProgressView() // CHANGED
-                                                    .tint(Color.accentPrimary) // CHANGED
-                                            } // CHANGED
-                                    case .success(let image): // CHANGED
-                                        image // CHANGED
-                                            .resizable() // CHANGED
-                                            .aspectRatio(contentMode: .fill) // CHANGED
-                                    case .failure: // CHANGED
-                                        Rectangle() // CHANGED
-                                            .fill(Color.textPrimary.opacity(0.1)) // CHANGED
-                                            .overlay { // CHANGED
-                                                Image("photo") // CHANGED
-                                                    .font(AppFont.productTitle) // CHANGED
-                                                    .foregroundStyle(Color.textPrimary) // CHANGED
-                                            } // CHANGED
-                                    @unknown default: // CHANGED
-                                        EmptyView() // CHANGED
+                                    // CHANGED: Using CachedAsyncImage
+                                    CachedAsyncImage(url: URL(string: item.product.displayImageUrl ?? "")) { phase in // CHANGED
+                                        switch phase { // CHANGED
+                                        case .empty: // CHANGED
+                                            Rectangle() // CHANGED
+                                                .fill(Color.surfacePrimary) // CHANGED
+                                                .overlay { // CHANGED
+                                                    ProgressView() // CHANGED
+                                                        .tint(Color.accentPrimary) // CHANGED
+                                                } // CHANGED
+                                        case .success(let image): // CHANGED
+                                            image // CHANGED
+                                                .resizable() // CHANGED
+                                                .aspectRatio(contentMode: .fill) // CHANGED
+                                        case .failure: // CHANGED
+                                            Rectangle() // CHANGED
+                                                .fill(Color.textPrimary.opacity(0.1)) // CHANGED
+                                                .overlay { // CHANGED
+                                                    Image("photo") // CHANGED
+                                                        .font(AppFont.productTitle) // CHANGED
+                                                        .foregroundStyle(Color.textPrimary) // CHANGED
+                                                } // CHANGED
+                                        @unknown default: // CHANGED
+                                            EmptyView() // CHANGED
+                                        } // CHANGED
                                     } // CHANGED
-                                } // CHANGED
-                                .frame(width: AppLayout.productImageSize, height: AppLayout.productImageSize)
-                                .cornerRadius(AppLayout.cornerRadius)
+                                    .frame(width: AppLayout.productImageSize, height: AppLayout.productImageSize)
+                                    .cornerRadius(AppLayout.cornerRadius)
                                     
                                     VStack(alignment: .leading, spacing: 0) {
                                         Text(item.product.name)
@@ -390,7 +390,7 @@ struct CheckoutView: View {
                                             .background(voucherCode.trimmingCharacters(in: .whitespacesAndNewlines).uppercased() == checkoutViewModel.appliedVoucher ? Color.surfacePrimary : Color.accentPrimary)
                                             .clipShape(Capsule())
                                     }
-//                                    .opacity(voucherCode.trimmingCharacters(in: .whitespacesAndNewlines).uppercased() == checkoutViewModel.appliedVoucher ? 0.3 : 1)
+                                    //                                    .opacity(voucherCode.trimmingCharacters(in: .whitespacesAndNewlines).uppercased() == checkoutViewModel.appliedVoucher ? 0.3 : 1)
                                     .disabled(voucherCode.trimmingCharacters(in: .whitespacesAndNewlines).uppercased() == checkoutViewModel.appliedVoucher)
                                 }
                             }
@@ -441,7 +441,7 @@ struct CheckoutView: View {
                                             .background(isUnchanged ? Color.surfacePrimary : Color.accentPrimary)
                                             .clipShape(Capsule())
                                     }
-//                                    .opacity(Int(redeemPoints.trimmingCharacters(in: .whitespacesAndNewlines)) == checkoutViewModel.appliedPoints ? 0.3 : 1)
+                                    //                                    .opacity(Int(redeemPoints.trimmingCharacters(in: .whitespacesAndNewlines)) == checkoutViewModel.appliedPoints ? 0.3 : 1)
                                     .disabled(Int(redeemPoints.trimmingCharacters(in: .whitespacesAndNewlines)) == checkoutViewModel.appliedPoints)
                                 }
                                 
@@ -505,43 +505,43 @@ struct CheckoutView: View {
                             Divider().hidden()
                             
                             // Error Display
-//                            if let error = orderError {
-//                                HStack {
-//                                    Image("triangle_alert")
-//                                        .foregroundColor(Color.stateError)
-//                                    Text(error)
-//                                        .font(AppFont.uiMicro)
-//                                        .foregroundColor(Color.stateError)
-//                                }
-//                                .padding(12)
-//                                .frame(maxWidth: .infinity, alignment: .leading)
-//                                .background(Color.stateError.opacity(0.1))
-//                                .overlay(
-//                                    Capsule()
-//                                        .strokeBorder(Color.stateError, lineWidth: 1)
-//                                )
-//                            }
+                            //                            if let error = orderError {
+                            //                                HStack {
+                            //                                    Image("triangle_alert")
+                            //                                        .foregroundColor(Color.stateError)
+                            //                                    Text(error)
+                            //                                        .font(AppFont.uiMicro)
+                            //                                        .foregroundColor(Color.stateError)
+                            //                                }
+                            //                                .padding(12)
+                            //                                .frame(maxWidth: .infinity, alignment: .leading)
+                            //                                .background(Color.stateError.opacity(0.1))
+                            //                                .overlay(
+                            //                                    Capsule()
+                            //                                        .strokeBorder(Color.stateError, lineWidth: 1)
+                            //                                )
+                            //                            }
                             
                             // Order Log
-//                            if checkoutViewModel.isPlacingOrder || !orderLog.isEmpty {
-//                                VStack(alignment: .leading, spacing: 4) {
-//                                    ForEach(orderLog, id: \.self) { log in
-//                                        Text("> \(log)")
-//                                            .font(AppFont.uiMicro)
-//                                            .foregroundColor(Color.accentPrimary)
-//                                    }
-//                                }
-//                                .padding(16)
-//                                .frame(maxWidth: .infinity, alignment: .leading)
-//                                .background(Color.bgPrimary)
-//                                .overlay(
-//                                    Capsule()
-//                                        .strokeBorder(Color.accentPrimary, lineWidth: 1)
-//                                )
-//                            }
+                            //                            if checkoutViewModel.isPlacingOrder || !orderLog.isEmpty {
+                            //                                VStack(alignment: .leading, spacing: 4) {
+                            //                                    ForEach(orderLog, id: \.self) { log in
+                            //                                        Text("> \(log)")
+                            //                                            .font(AppFont.uiMicro)
+                            //                                            .foregroundColor(Color.accentPrimary)
+                            //                                    }
+                            //                                }
+                            //                                .padding(16)
+                            //                                .frame(maxWidth: .infinity, alignment: .leading)
+                            //                                .background(Color.bgPrimary)
+                            //                                .overlay(
+                            //                                    Capsule()
+                            //                                        .strokeBorder(Color.accentPrimary, lineWidth: 1)
+                            //                                )
+                            //                            }
                         }
                         // MARK: - H1 FIX: Price Breakdown
-                        VStack(alignment: .leading, spacing: 8) {
+                        VStack(alignment: .leading, spacing: AppLayout.spacingSmall) {
                             Text("order_summary")
                                 .font(AppFont.sectionHeader)
                                 .foregroundColor(Color.textPrimary)
@@ -614,8 +614,9 @@ struct CheckoutView: View {
                             Divider()
                         }
                         .frame(maxWidth: .infinity, alignment: .leading)
-                        .padding(AppLayout.spacing)
-                        .padding(.bottom, 72)
+                    }
+                    .padding(.bottom, 72)
+                    .padding(.horizontal, AppLayout.spacing)
                     }
                     .coordinateSpace(name: "scroll")
                     .scrollIndicators(.hidden)

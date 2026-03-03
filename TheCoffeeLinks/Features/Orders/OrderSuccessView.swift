@@ -62,7 +62,7 @@ struct OrderSuccessView: View {
                             
                             // H2 FIX: Order details section
                             if let order = order {
-                                VStack(alignment: .leading, spacing: 12) {
+                                VStack(alignment: .leading, spacing: AppLayout.spacingMedium) {
                                     // Order ID
                                     HStack {
                                         Text(String(localized: "order_id_label"))
@@ -133,7 +133,7 @@ struct OrderSuccessView: View {
                                 }
                                 .padding()
                                 .background(Color.bgSecondary)
-                                .clipShape(RoundedRectangle(cornerRadius: 12))
+                                .clipShape(RoundedRectangle(cornerRadius: AppRadius.medium))
                             }
                             
                             // Track Order button

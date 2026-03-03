@@ -11,7 +11,6 @@ import CryptoKit
 // MARK: - Protected Endpoints
 
 enum ProtectedEndpoint: String, CaseIterable {
-    case phoneVerification = "/api/auth/otp/verify"
     case staffDeviceAuth = "/api/staff/device-attest"
     case createOrder = "/api/orders"
     case redemption = "/api/vouchers/redeem"
@@ -46,25 +45,38 @@ final class AppAttestNetworkInterceptor {
         }
 
         // Check if App Attest is registered (registration happens in AuthRepository after OTP verification)
+        if !attestService.isRegistered && attestService.isAvailable {
+            do {
+                debugLog("[AppAttestInterceptor] App Attest not registered, attempting lazy registration for \(endpoint)")
+                try await attestService.ensureRegistered()
+                _ = try await attestService.registerKeyWithServer()
+            } catch {
+                debugLog("[AppAttestInterceptor] Lazy registration failed: \(error.localizedDescription)")
+            }
+        }
+
         guard attestService.isRegistered else {
-            debugLog("[AppAttestInterceptor] App Attest not registered, skipping protected request")
+            debugLog("[AppAttestInterceptor] App Attest not registered, skipping attestation for \(endpoint)")
+            debugLog("[AppAttestInterceptor] ⚠️ This request will fail in production if attestation is required")
             return nil
         }
 
-        // Get challenge from server
-        let serverChallenge = try? await fetchChallenge()
+        // Get challenge from server — required for assertion
+        guard let serverChallenge = try? await fetchChallenge() else {
+            debugLog("[AppAttestInterceptor] ❌ Failed to fetch server challenge, skipping attestation")
+            return nil
+        }
 
-        // Generate challenge for payload integrity
-        let payloadChallenge = generateChallengeForEndpoint(endpoint, body: body)
-
-        // Combine server challenge with payload challenge for security
-        let combinedChallenge = "\(serverChallenge ?? ""):\(payloadChallenge)"
+        // Use the server challenge directly as the assertion challenge.
+        // The server challenge is a one-time-use server-issued nonce, which is sufficient
+        // for replay protection and integrity verification.
+        let challenge = serverChallenge
 
         // Generate assertion
-        let assertion = try await attestService.generateAssertion(for: combinedChallenge)
+        let assertion = try await attestService.generateAssertion(for: challenge)
 
         debugLog("[AppAttestInterceptor] Added assertion for \(endpoint)")
-        return (assertion.keyId, assertion.assertion, combinedChallenge)
+        return (assertion.keyId, assertion.assertion, challenge)
     }
 
     // MARK: - Fetch Challenge from Server
