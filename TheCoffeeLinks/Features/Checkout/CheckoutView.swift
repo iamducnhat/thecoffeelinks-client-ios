@@ -250,6 +250,46 @@ struct CheckoutView: View {
                             }
                             .frame(maxWidth: .infinity, alignment: .leading)
                             
+                            // H5 FIX: Table selector for dine-in
+                            if cartViewModel.cart.mode == .dineIn {
+                                VStack(alignment: .leading, spacing: 8) {
+                                    Text("table_number_header")
+                                        .font(AppFont.uiMicro)
+                                        .foregroundStyle(Color.textSecondary)
+                                    
+                                    LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 8), count: 5), spacing: 8) {
+                                        ForEach(1...20, id: \.self) { table in
+                                            let tableStr = String(table)
+                                            let isSelected = cartViewModel.cart.tableId == tableStr
+                                            
+                                            Button {
+                                                withAnimation(.easeInOut(duration: 0.15)) {
+                                                    cartViewModel.cart.tableId = isSelected ? nil : tableStr
+                                                }
+                                            } label: {
+                                                Text("\(table)")
+                                                    .font(AppFont.monoBody)
+                                                    .frame(maxWidth: .infinity)
+                                                    .padding(.vertical, 10)
+                                                    .foregroundStyle(isSelected ? Color.bgPrimary : Color.textPrimary)
+                                                    .background(isSelected ? Color.accentPrimary : Color.bgSecondary)
+                                                    .clipShape(RoundedRectangle(cornerRadius: AppRadius.small))
+                                                    .overlay {
+                                                        RoundedRectangle(cornerRadius: AppRadius.small)
+                                                            .strokeBorder(isSelected ? Color.accentPrimary : Color.border, lineWidth: 1)
+                                                    }
+                                            }
+                                        }
+                                    }
+                                }
+                                .padding(12)
+                                .overlay {
+                                    RoundedRectangle(cornerRadius: AppRadius.medium, style: .continuous)
+                                        .strokeBorder(cartViewModel.cart.tableId != nil ? Color.border : Color.borderSecondary,
+                                                      style: StrokeStyle(lineWidth: 1, dash: cartViewModel.cart.tableId != nil ? [] : AppLayout.dashedPattern))
+                                }
+                            }
+                            
                             Divider().hidden()
                             
                             // MARK: Cart Items
@@ -585,8 +625,32 @@ struct CheckoutView: View {
                                 }
                             }
                             
-                            // Tax (8%)
-                            let taxable = max(0, cartViewModel.subtotal - cartViewModel.discount - cartViewModel.pointsDiscount)
+                            // H7 FIX: Membership tier discount
+                            if let user = authViewModel.currentUser,
+                               user.membershipTier != .bronze {
+                                let tierPct = user.membershipTier.discountPercentage
+                                let tierAmount = cartViewModel.subtotal * (tierPct / 100.0)
+                                HStack {
+                                    HStack(spacing: 4) {
+                                        Image(systemName: "crown.fill")
+                                            .font(.system(size: 12))
+                                        Text("\(user.membershipTier.displayName) -\(Int(tierPct))%")
+                                            .font(AppFont.body)
+                                    }
+                                    .foregroundColor(Color.accentPrimary)
+                                    Spacer()
+                                    Text("-\(tierAmount.formattedVND)")
+                                        .font(AppFont.monoBody)
+                                        .foregroundColor(Color.accentPrimary)
+                                }
+                            }
+                            
+                            // Tax (8%) — H7 FIX: Include tier discount in taxable base
+                            let tierDiscountAmount: Double = {
+                                guard let user = authViewModel.currentUser, user.membershipTier != .bronze else { return 0 }
+                                return cartViewModel.subtotal * (user.membershipTier.discountPercentage / 100.0)
+                            }()
+                            let taxable = max(0, cartViewModel.subtotal - cartViewModel.discount - cartViewModel.pointsDiscount - tierDiscountAmount)
                             let taxAmount = taxable * 0.08
                             HStack {
                                 Text("tax_label")
@@ -848,6 +912,12 @@ struct CheckoutView: View {
     }
     
     private func placeOrder() {
+        // H5 FIX: Validate table selection for dine-in
+        if cartViewModel.cart.mode == .dineIn && cartViewModel.cart.tableId == nil {
+            orderError = String(localized: "error_select_table")
+            return
+        }
+        
         orderLog = [String(localized: "status_connecting")]
         orderError = nil
         

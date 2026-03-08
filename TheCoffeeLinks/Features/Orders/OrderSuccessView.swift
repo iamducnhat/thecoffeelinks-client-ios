@@ -60,7 +60,7 @@ struct OrderSuccessView: View {
                             }
                             .padding(.top, AppLayout.spacingXL)
                             
-                            // H2 FIX: Order details section
+                            // H2 FIX: Order details section with full price breakdown
                             if let order = order {
                                 VStack(alignment: .leading, spacing: AppLayout.spacingMedium) {
                                     // Order ID
@@ -72,6 +72,17 @@ struct OrderSuccessView: View {
                                         Text("#\(String(order.id.prefix(8)).uppercased())")
                                             .font(AppFont.monoBody)
                                             .foregroundStyle(Color.textPrimary)
+                                    }
+                                    
+                                    // Store name (H2 FIX)
+                                    if let storeName = order.storeSnapshot?.name {
+                                        HStack {
+                                            Image(systemName: "storefront")
+                                                .foregroundStyle(Color.textSecondary)
+                                            Text(storeName)
+                                                .font(AppFont.body)
+                                                .foregroundStyle(Color.textPrimary)
+                                        }
                                     }
                                     
                                     Divider()
@@ -87,6 +98,87 @@ struct OrderSuccessView: View {
                                             Text(item.totalPrice.formattedVND)
                                                 .font(AppFont.monoBody)
                                                 .foregroundStyle(Color.textSecondary)
+                                        }
+                                    }
+                                    
+                                    Divider()
+                                    
+                                    // H2 FIX: Price breakdown
+                                    VStack(alignment: .leading, spacing: 6) {
+                                        // Subtotal line
+                                        HStack {
+                                            Text(String(localized: "subtotal_label"))
+                                                .font(AppFont.body)
+                                                .foregroundStyle(Color.textSecondary)
+                                            Spacer()
+                                            Text(order.subtotal.formattedVND)
+                                                .font(AppFont.monoBody)
+                                                .foregroundStyle(Color.textSecondary)
+                                        }
+                                        
+                                        // Voucher discount
+                                        if let voucherDiscount = order.voucherSnapshot?.appliedDiscount, voucherDiscount > 0 {
+                                            HStack {
+                                                Text(String(localized: "voucher_discount_label"))
+                                                    .font(AppFont.body)
+                                                    .foregroundStyle(Color.accentPrimary)
+                                                if let code = order.voucherSnapshot?.code {
+                                                    Text("(\(code))")
+                                                        .font(AppFont.uiMicro)
+                                                        .foregroundStyle(Color.accentPrimary)
+                                                }
+                                                Spacer()
+                                                Text("-\(voucherDiscount.formattedVND)")
+                                                    .font(AppFont.monoBody)
+                                                    .foregroundStyle(Color.accentPrimary)
+                                            }
+                                        }
+                                        
+                                        // Points discount
+                                        if let pointsUsed = order.pointsUsed, pointsUsed > 0 {
+                                            let pointsDiscount = Double(pointsUsed) * 1000.0
+                                            HStack {
+                                                Text(String(localized: "points_discount_label"))
+                                                    .font(AppFont.body)
+                                                    .foregroundStyle(Color.accentPrimary)
+                                                Text("(\(pointsUsed) pts)")
+                                                    .font(AppFont.uiMicro)
+                                                    .foregroundStyle(Color.accentPrimary)
+                                                Spacer()
+                                                Text("-\(pointsDiscount.formattedVND)")
+                                                    .font(AppFont.monoBody)
+                                                    .foregroundStyle(Color.accentPrimary)
+                                            }
+                                        }
+                                        
+                                        // Tax
+                                        if let tax = order.tax, tax > 0 {
+                                            let rateText = order.taxRate.map { "\(Int($0 * 100))%" } ?? "8%"
+                                            HStack {
+                                                Text(String(localized: "tax_label"))
+                                                    .font(AppFont.body)
+                                                    .foregroundStyle(Color.textSecondary)
+                                                Text("(\(rateText))")
+                                                    .font(AppFont.uiMicro)
+                                                    .foregroundStyle(Color.textSecondary)
+                                                Spacer()
+                                                Text(tax.formattedVND)
+                                                    .font(AppFont.monoBody)
+                                                    .foregroundStyle(Color.textSecondary)
+                                            }
+                                        }
+                                        
+                                        // Delivery fee
+                                        if order.deliveryFee > 0 {
+                                            HStack {
+                                                Text(String(localized: "delivery_fee_label"))
+                                                    .font(AppFont.body)
+                                                    .foregroundStyle(Color.textSecondary)
+                                                Spacer()
+                                                Text(order.deliveryFee.formattedVND)
+                                                    .font(AppFont.monoBody)
+                                                    .foregroundStyle(Color.textSecondary)
+                                            }
                                         }
                                     }
                                     
@@ -118,7 +210,7 @@ struct OrderSuccessView: View {
                                         }
                                     }
                                     
-                                    // Order type
+                                    // Order type & payment
                                     HStack {
                                         Image(systemName: order.mode.iconName)
                                             .foregroundStyle(Color.textSecondary)
@@ -134,6 +226,22 @@ struct OrderSuccessView: View {
                                 .padding()
                                 .background(Color.bgSecondary)
                                 .clipShape(RoundedRectangle(cornerRadius: AppRadius.medium))
+                                
+                                // H2 FIX: Share/Receipt button
+                                Button {
+                                    shareOrderReceipt(order)
+                                } label: {
+                                    HStack {
+                                        Image(systemName: "square.and.arrow.up")
+                                        Text(String(localized: "share_receipt_button"))
+                                    }
+                                    .font(AppFont.body)
+                                    .foregroundStyle(Color.textSecondary)
+                                    .padding(.vertical, 8)
+                                    .frame(maxWidth: .infinity)
+                                    .background(Color.bgSecondary)
+                                    .clipShape(Capsule())
+                                }
                             }
                             
                             // Track Order button
@@ -196,6 +304,47 @@ struct OrderSuccessView: View {
                     }
                 }
             }
+        }
+    }
+    
+    // H2 FIX: Share receipt as text
+    private func shareOrderReceipt(_ order: Order) {
+        var receipt = "☕ TheCoffeeLinks - Receipt\n"
+        receipt += "Order #\(String(order.id.prefix(8)).uppercased())\n"
+        if let storeName = order.storeSnapshot?.name {
+            receipt += "Store: \(storeName)\n"
+        }
+        receipt += String(repeating: "─", count: 30) + "\n"
+        
+        for item in order.items {
+            receipt += "\(item.quantity)x \(item.productName) — \(item.totalPrice.formattedVND)\n"
+        }
+        
+        receipt += String(repeating: "─", count: 30) + "\n"
+        receipt += "Subtotal: \(order.subtotal.formattedVND)\n"
+        
+        if let discount = order.voucherSnapshot?.appliedDiscount, discount > 0 {
+            let code = order.voucherSnapshot?.code ?? ""
+            receipt += "Voucher (\(code)): -\(discount.formattedVND)\n"
+        }
+        if let pts = order.pointsUsed, pts > 0 {
+            receipt += "Points (\(pts)): -\((Double(pts) * 1000.0).formattedVND)\n"
+        }
+        if let tax = order.tax, tax > 0 {
+            receipt += "Tax: \(tax.formattedVND)\n"
+        }
+        if order.deliveryFee > 0 {
+            receipt += "Delivery: \(order.deliveryFee.formattedVND)\n"
+        }
+        
+        receipt += String(repeating: "─", count: 30) + "\n"
+        receipt += "Total: \(order.totalAmount.formattedVND)\n"
+        receipt += "\nThank you for your order! 🙏"
+        
+        let av = UIActivityViewController(activityItems: [receipt], applicationActivities: nil)
+        if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+           let rootVC = windowScene.windows.first?.rootViewController {
+            rootVC.present(av, animated: true)
         }
     }
 }

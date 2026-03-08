@@ -31,6 +31,9 @@ final class CheckoutViewModel: ObservableObject {
     @Published var appliedPoints: Int = 0
     @Published var appliedVoucher: String?
     
+    // C3 FIX: Idempotency key generated once per checkout session, reused on retries
+    private var checkoutIdempotencyKey: String = UUID().uuidString
+    
     // Constants
     private let pointsRedemptionRate: Double = 1000.0 // 1 Point = 1000 VND
 
@@ -173,8 +176,8 @@ final class CheckoutViewModel: ObservableObject {
             // C2 FIX: deliveryNotes uses cart.deliveryNotes (separate from staffNotes)
             let sanitizedDeliveryNotes = cart.deliveryNotes.map { Self.sanitizeNotes($0) }
             
-            // C3 FIX: Generate idempotency key to prevent duplicate orders
-            let idempotencyKey = UUID().uuidString
+            // C3 FIX: Reuse session idempotency key for retry protection
+            let idempotencyKey = checkoutIdempotencyKey
             
             let request = CreateOrderRequest(
                 storeId: storeId, mode: cart.mode, paymentMethod: paymentMethod,
@@ -185,7 +188,8 @@ final class CheckoutViewModel: ObservableObject {
                 voucherCode: finalVoucherCode, 
                 pointsToRedeem: pointsToRedeem,
                 totalAmount: cart.subtotal,
-                idempotencyKey: idempotencyKey
+                idempotencyKey: idempotencyKey,
+                memberTier: nil // H7: Server reads tier from authenticated user profile
             )
             
             let order = try await orderRepository.createOrder(request)
@@ -209,6 +213,7 @@ final class CheckoutViewModel: ObservableObject {
             
             orderPlaced = order
             orderStorage.clearDraft() // Clear draft on success
+            resetIdempotencyKey() // C3: Generate fresh key for next checkout session
             
             await predictionRepository.recordOrder(items: cart.items, context: .current)
             await analyticsService.trackPurchase(orderId: order.id, amount: order.totalAmount, items: order.items)
@@ -288,6 +293,7 @@ final class CheckoutViewModel: ObservableObject {
             // Success! The order is already updated on the backend.
             isPlacingOrder = false
             orderStorage.clearDraft() // Clear draft on payment success
+            resetIdempotencyKey() // C3: Fresh key for next checkout session
             UserDefaults.standard.removeObject(forKey: "pendingPaymentOrderId") // Clear pending payment
             
             Task {
@@ -337,6 +343,14 @@ final class CheckoutViewModel: ObservableObject {
             debugLog("⚠️ [CheckoutViewModel] Failed to recover pending payment order: \(error)")
             // Don't remove the key — will retry on next launch
         }
+    }
+    
+    // MARK: - Idempotency Key Management
+    
+    /// C3 FIX: Reset idempotency key after successful order or when starting a fresh checkout.
+    /// Must NOT be reset on failure/retry — the same key ensures deduplication.
+    func resetIdempotencyKey() {
+        checkoutIdempotencyKey = UUID().uuidString
     }
     
     // MARK: - Input Sanitization

@@ -134,6 +134,12 @@ struct Order: Codable, Identifiable, Hashable, Sendable {
     let cancelledAt: Date?
     let cancellationReason: String?
     let paymentUrl: String?
+    // H2 FIX: Additional fields for price breakdown & receipt
+    let tax: Double?
+    let taxRate: Double?
+    let pointsUsed: Int?
+    let voucherSnapshot: VoucherSnapshot?
+    let storeSnapshot: StoreSnapshot?
     
     var canUndo: Bool {
         guard status == .cancelled, let cancelledAt = cancelledAt else { return false }
@@ -168,9 +174,42 @@ struct Order: Codable, Identifiable, Hashable, Sendable {
         case cancelledAt = "cancelled_at"
         case cancellationReason = "cancellation_reason"
         case paymentUrl = "payment_url"
+        case tax
+        case taxRate = "tax_rate"
+        case pointsUsed = "points_used"
+        case voucherSnapshot = "voucher_snapshot"
+        case storeSnapshot = "store_snapshot"
     }
     
 
+}
+
+// MARK: - Voucher Snapshot (H2)
+
+struct VoucherSnapshot: Codable, Hashable, Sendable {
+    let id: String?
+    let code: String?
+    let discountType: String?
+    let discountAmount: Double?
+    let maxDiscount: Double?
+    let appliedDiscount: Double?
+    
+    enum CodingKeys: String, CodingKey {
+        case id, code
+        case discountType = "discount_type"
+        case discountAmount = "discount_amount"
+        case maxDiscount = "max_discount"
+        case appliedDiscount = "applied_discount"
+    }
+}
+
+// MARK: - Store Snapshot (H2)
+
+struct StoreSnapshot: Codable, Hashable, Sendable {
+    let id: String?
+    let name: String?
+    let address: String?
+    let phone: String?
 }
 
 // MARK: - Order Item
@@ -321,6 +360,7 @@ struct CreateOrderRequest: Codable, Sendable {
     let pointsToRedeem: Int?
     let totalAmount: Double
     let idempotencyKey: String? // C3: Prevent duplicate orders
+    let memberTier: String? // H7: Membership tier for server-side discount validation
     
     enum CodingKeys: String, CodingKey {
         case storeId = "store_id"
@@ -335,6 +375,7 @@ struct CreateOrderRequest: Codable, Sendable {
         case pointsToRedeem = "points_to_redeem"
         case totalAmount = "total_amount"
         case idempotencyKey = "idempotency_key"
+        case memberTier = "member_tier"
     }
 }
 
