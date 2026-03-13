@@ -16,14 +16,16 @@ struct OrderHistoryView: View {
               items: [], subtotal: 10.0, deliveryFee: 0, discount: 0, totalAmount: 10.0,
               tableId: nil, deliveryAddress: nil, deliveryNotes: nil, staffNotes: nil,
               createdAt: Date(), updatedAt: Date(),
-              estimatedReadyAt: nil, completedAt: Date(), cancelledAt: nil, cancellationReason: nil, paymentUrl: nil),
+              estimatedReadyAt: nil, completedAt: Date(), cancelledAt: nil, cancellationReason: nil, paymentUrl: nil,
+              tax: 0, taxRate: 0, pointsUsed: 0, voucherSnapshot: nil, storeSnapshot: nil),
 
         Order(id: "2", userId: "u1", storeId: "s1", status: .cancelled,
               mode: .delivery, paymentMethod: .card,
               items: [], subtotal: 15.0, deliveryFee: 2.0, discount: 0, totalAmount: 17.0,
               tableId: nil, deliveryAddress: nil, deliveryNotes: nil, staffNotes: nil,
               createdAt: Date().addingTimeInterval(-86400), updatedAt: Date(),
-              estimatedReadyAt: nil, completedAt: nil, cancelledAt: Date(), cancellationReason: "Changed mind", paymentUrl: nil)
+              estimatedReadyAt: nil, completedAt: nil, cancelledAt: Date(), cancellationReason: "Changed mind", paymentUrl: nil,
+              tax: 0, taxRate: 0, pointsUsed: 0, voucherSnapshot: nil, storeSnapshot: nil)
     ]
     
     @Environment(\.dismiss) private var dismiss
