@@ -577,7 +577,12 @@ struct CreateOrderResponse: Codable, Sendable {
             completedAt: orderStatus == .completed ? updatedDate : nil,
             cancelledAt: orderStatus == .cancelled ? updatedDate : nil,
             cancellationReason: nil,
-            paymentUrl: apiOrder.payment_url
+            paymentUrl: apiOrder.payment_url,
+            tax: nil,
+            taxRate: nil,
+            pointsUsed: nil,
+            voucherSnapshot: nil,
+            storeSnapshot: nil
         )
     }
 }
@@ -783,7 +788,12 @@ struct APIOrdersResponse: Codable {
                 completedAt: orderStatus == .completed ? updatedDate : nil,
                 cancelledAt: orderStatus == .cancelled ? updatedDate : nil,
                 cancellationReason: nil,
-                paymentUrl: apiOrder.payment_token // In APIOrdersResponse, payment_token might be used or we add payment_url
+                paymentUrl: apiOrder.payment_token, // In APIOrdersResponse, payment_token might be used or we add payment_url
+                tax: nil,
+                taxRate: nil,
+                pointsUsed: nil,
+                voucherSnapshot: nil,
+                storeSnapshot: nil
             )
         }
     }

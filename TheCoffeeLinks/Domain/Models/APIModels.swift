@@ -298,7 +298,12 @@ struct APIOrder: Codable {
             completedAt: completedDate,
             cancelledAt: cancelledDate,
             cancellationReason: cancellation_reason,
-            paymentUrl: payment_url
+            paymentUrl: payment_url,
+            tax: nil,
+            taxRate: nil,
+            pointsUsed: nil,
+            voucherSnapshot: nil,
+            storeSnapshot: nil
         )
     }
 }
