@@ -213,6 +213,11 @@ struct APIOrder: Codable {
     let payment_status: String?
     let total_amount: Double
     let discount: Double?
+    let tax: Double?
+    let tax_rate: Double?
+    let points_used: Int?
+    let voucher_snapshot: VoucherSnapshot?
+    let store_snapshot: StoreSnapshot?
     let delivery_fee: Double?
     let table_id: String?
     let delivery_address_id: String?
@@ -299,11 +304,11 @@ struct APIOrder: Codable {
             cancelledAt: cancelledDate,
             cancellationReason: cancellation_reason,
             paymentUrl: payment_url,
-            tax: nil,
-            taxRate: nil,
-            pointsUsed: nil,
-            voucherSnapshot: nil,
-            storeSnapshot: nil
+            tax: tax,
+            taxRate: tax_rate,
+            pointsUsed: points_used,
+            voucherSnapshot: voucher_snapshot,
+            storeSnapshot: store_snapshot
         )
     }
 }
