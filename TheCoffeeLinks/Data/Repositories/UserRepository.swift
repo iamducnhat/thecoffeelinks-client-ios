@@ -240,13 +240,22 @@ final class VoucherRepository: VoucherRepositoryProtocol, @unchecked Sendable {
     }
     
     func refreshVouchers() async throws -> [Voucher] {
-        let response: VouchersResponse = try await networkService.get("/api/vouchers", queryItems: nil)
-        profileStorage.saveVouchers(response.vouchers)
-        return response.vouchers
+        do {
+            let response: VouchersResponse = try await networkService.get("/api/vouchers", queryItems: nil)
+            profileStorage.saveVouchers(response.vouchers)
+            return response.vouchers
+        } catch NetworkError.unauthorized {
+            return profileStorage.loadVouchers() ?? []
+        } catch {
+            throw error
+        }
     }
     
     func getVouchers() async throws -> [Voucher] {
         if let cached = profileStorage.loadVouchers() {
+            if cached.isEmpty {
+                return try await refreshVouchers()
+            }
              Task { _ = try? await refreshVouchers() }
             return cached
         }

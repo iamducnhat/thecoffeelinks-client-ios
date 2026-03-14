@@ -7,6 +7,10 @@ struct LoginView: View {
     @Environment(\.dismiss) var dismiss
     
     @State private var selectedTab = 0
+    @State private var showPhoneConfirmation = false
+    @State private var pendingPhoneNumber = ""
+    @FocusState private var isPhoneFieldFocused: Bool
+    @FocusState private var isOtpFieldFocused: Bool
     var isPresentedModally: Bool = true
     
     var body: some View {
@@ -34,7 +38,20 @@ struct LoginView: View {
                 ScrollView {
                     VStack(spacing: AppSpacing.sectionGap) {
                         // Header
-                        if authViewModel.authState != .otpSent {
+                        if showPhoneConfirmation {
+                            VStack(spacing: AppSpacing.md) {
+                                Text("Confirm Phone")
+                                    .font(AppTypography.displayLarge)
+                                    .foregroundStyle(Color.textPrimary)
+
+                                Text("Please verify this number before we send your code.")
+                                    .font(AppTypography.bodyLarge)
+                                    .foregroundStyle(Color.textSecondary)
+                                    .multilineTextAlignment(.center)
+                            }
+                            .padding(.top, AppSpacing.xl)
+                            .padding(.horizontal, AppSpacing.xl)
+                        } else if authViewModel.authState != .otpSent {
                             VStack(spacing: AppSpacing.md) {
                                 Text(selectedTab == 0 ? "Sign In" : "Sign Up")
                                     .font(AppTypography.displayLarge)
@@ -75,6 +92,8 @@ struct LoginView: View {
                         VStack(spacing: AppSpacing.xl) {
                             if authViewModel.authState == .otpSent {
                                 otpForm
+                            } else if showPhoneConfirmation {
+                                phoneConfirmationForm
                             } else {
                                 if selectedTab == 0 {
                                     signInForm
@@ -102,6 +121,30 @@ struct LoginView: View {
                 }
             )
         }
+        .onAppear {
+            if selectedTab == 0 && authViewModel.authState != .otpSent && !showPhoneConfirmation {
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) {
+                    isPhoneFieldFocused = true
+                }
+            }
+        }
+        .onChange(of: authViewModel.authState) { newState in
+            if newState == .otpSent {
+                showPhoneConfirmation = false
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) {
+                    isOtpFieldFocused = true
+                }
+            }
+        }
+        .onChange(of: showPhoneConfirmation) { isShowing in
+            if isShowing {
+                isPhoneFieldFocused = false
+            } else if authViewModel.authState != .otpSent && selectedTab == 0 {
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+                    isPhoneFieldFocused = true
+                }
+            }
+        }
     }
     
     // MARK: - Sign In Form
@@ -113,6 +156,7 @@ struct LoginView: View {
                 text: $authViewModel.phoneNumber,
                 icon: "phone",
                 prefix: "+84",
+                isFocused: $isPhoneFieldFocused,
                 keyboardType: .numberPad
             )
             
@@ -129,7 +173,41 @@ struct LoginView: View {
             .padding(.top, AppSpacing.sm)
             
             CapsuleButton("Sign in with OTP", style: .ghost) {
-                authViewModel.sendOTP(phoneNumber: authViewModel.phoneNumber)
+                let normalized = authViewModel.phoneNumber.trimmingCharacters(in: .whitespacesAndNewlines)
+                guard !normalized.isEmpty else {
+                    authViewModel.error = "Please enter your phone number"
+                    authViewModel.authState = .error
+                    return
+                }
+
+                pendingPhoneNumber = normalized
+                authViewModel.phoneNumber = normalized
+                showPhoneConfirmation = true
+            }
+        }
+    }
+
+    private var phoneConfirmationForm: some View {
+        VStack(spacing: AppSpacing.lg) {
+            VStack(spacing: AppSpacing.sm) {
+                Text(displayPhone(pendingPhoneNumber))
+                    .font(AppTypography.displayMedium)
+                    .foregroundStyle(Color.textPrimary)
+                    .frame(maxWidth: .infinity, alignment: .center)
+
+                Text("Is this your correct phone number?")
+                    .font(AppTypography.bodyMedium)
+                    .foregroundStyle(Color.textSecondary)
+                    .multilineTextAlignment(.center)
+            }
+            .padding(.vertical, AppSpacing.lg)
+
+            CapsuleButton("Continue", style: .primary, isLoading: authViewModel.isLoading) {
+                authViewModel.sendOTP(phoneNumber: pendingPhoneNumber)
+            }
+
+            CapsuleButton("Edit Number", style: .ghost) {
+                showPhoneConfirmation = false
             }
         }
     }
@@ -174,6 +252,7 @@ struct LoginView: View {
                 placeholder: "6-digit code",
                 text: $authViewModel.otpCode,
                 icon: "number",
+                isFocused: $isOtpFieldFocused,
                 keyboardType: .numberPad
             )
             
@@ -185,7 +264,22 @@ struct LoginView: View {
             CapsuleButton("Resend Code", style: .ghost) {
                 authViewModel.sendOTP(phoneNumber: authViewModel.phoneNumber)
             }
+
+            CapsuleButton("Wrong number?", style: .ghost) {
+                authViewModel.otpCode = ""
+                authViewModel.error = nil
+                authViewModel.authState = .idle
+                showPhoneConfirmation = false
+            }
         }
+    }
+
+    private func displayPhone(_ raw: String) -> String {
+        let compact = raw.replacingOccurrences(of: " ", with: "")
+        if compact.hasPrefix("+") {
+            return compact
+        }
+        return "+84 \(compact)"
     }
 }
 

@@ -39,6 +39,7 @@ struct OrdersView: View {
                         }
                 }
                 
+                // Fade in the inline title as the list scrolls
                 Text(String(localized: "orders_title"))
                     .font(AppTypography.displayMedium)
                     .lineLimit(1)

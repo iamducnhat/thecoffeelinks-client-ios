@@ -64,6 +64,10 @@ class AppFlowController: ObservableObject {
     private let verificationCacheKey = "isPhoneVerified_cached"
     private let verificationTimestampKey = "isPhoneVerified_timestamp"
     
+    // Session refresh guard to avoid duplicate refresh on cold launch
+    private let sessionRefreshCooldown: TimeInterval = 5 // seconds
+    private var lastSessionRefreshAt: Date?
+    
     init(keychainManager: KeychainManager,
          profileStorage: ProfileStorageProtocol,
          authRepository: AuthRepository) {
@@ -118,21 +122,19 @@ class AppFlowController: ObservableObject {
         // Step 3.5: Load App Attest key for this user
         let attestService = AppAttestService.shared
         if attestService.isAvailable {
-            // Try to get phone number from keychain first
-            var phoneNumber = keychainManager.getPhoneNumber()
-            
-            // Fallback: use phone from cached user profile
-            if phoneNumber == nil, let phone = cachedUser.phone, !phone.isEmpty {
-                phoneNumber = phone
-                keychainManager.savePhoneNumber(phone)
-                debugLog("✅ [AppFlowController] Saved phone from cached user to keychain")
+            // Prefer userId for App Attest key identity
+            var userId = keychainManager.getUserId()
+            if userId == nil || userId?.isEmpty == true {
+                userId = cachedUser.id
+                keychainManager.saveUserId(cachedUser.id)
+                debugLog("✅ [AppFlowController] Saved userId from cached user to keychain")
             }
             
-            if let phoneNumber = phoneNumber {
-                attestService.loadKeyForUser(phoneNumber)
-                debugLog("✅ [AppFlowController] Loaded App Attest key for cached user: \(phoneNumber)")
+            if let userId = userId, !userId.isEmpty {
+                attestService.loadKeyForUser(userId)
+                debugLog("✅ [AppFlowController] Loaded App Attest key for cached user: \(userId)")
             } else {
-                debugLog("⚠️ [AppFlowController] No phone number available for App Attest key loading")
+                debugLog("⚠️ [AppFlowController] No userId available for App Attest key loading")
             }
         }
         
@@ -156,11 +158,26 @@ class AppFlowController: ObservableObject {
     func validateAuthState() async {
         debugLog("🔄 [AppFlowController] Validating auth state with server")
         
-        guard currentState != .guestReady && currentState != .loggedOut else {
-            debugLog("⏭️ [AppFlowController] In guest/logged out mode, skipping validation")
+        let hasRefreshToken = {
+            if let token = keychainManager.getRefreshToken(), !token.isEmpty { return true }
+            return false
+        }()
+        
+        if (currentState == .guestReady || currentState == .loggedOut), !hasRefreshToken {
+            debugLog("⏭️ [AppFlowController] In guest/logged out mode with no refresh token, skipping validation")
             return
         }
         
+        // Proactively refresh session on app open to extend refresh token lifetime
+        await refreshSessionIfNeeded()
+        
+        guard let accessToken = keychainManager.getAccessToken(), !accessToken.isEmpty else {
+            debugLog("⏭️ [AppFlowController] No access token after refresh attempt, skipping server validation")
+            return
+        }
+        
+        let previousState = currentState
+
         // Update state to checking
         currentState = .checkingAuth
         
@@ -168,7 +185,14 @@ class AppFlowController: ObservableObject {
             // Fetch current user from server
             let user = try await authRepository.getCurrentUser()
             debugLog("✅ [AppFlowController] Server validation success")
-            
+
+            // If server says guest, immediately switch to guest mode.
+            if user.id == "guest" {
+                debugLog("➡️ [AppFlowController] Server returned guest user")
+                currentState = .guestReady
+                return
+            }
+
             // Update cached data
             profileStorage.saveUser(user)
             
@@ -189,7 +213,7 @@ class AppFlowController: ObservableObject {
             } else {
                 // Network error - fall back to cached state
                 debugLog("⚠️ [AppFlowController] Using cached state due to network error")
-                // Stay in current state (already set from cache in initializeSync)
+                currentState = previousState
             }
         }
     }
@@ -197,6 +221,17 @@ class AppFlowController: ObservableObject {
     /// Called on app resume from background
     func handleAppResume() async {
         debugLog("🔄 [AppFlowController] Handling app resume")
+        
+        // Always attempt a refresh on app open/foreground to extend session
+        await refreshSessionIfNeeded()
+        
+        // If we were in guest mode but now have a token, re-validate
+        if currentState == .guestReady {
+            if let token = keychainManager.getAccessToken(), !token.isEmpty {
+                await validateAuthState()
+                return
+            }
+        }
         
         // Check if verification cache is still valid
         let (_, isCacheValid) = checkCachedVerificationStatus()
@@ -300,13 +335,16 @@ class AppFlowController: ObservableObject {
     
     private func clearAuthState() {
         // Clear App Attest key before clearing phone number
-        if let phoneNumber = keychainManager.getPhoneNumber() {
+        if let userId = keychainManager.getUserId() {
+            AppAttestService.shared.clearKeyForUser(userId)
+        } else if let phoneNumber = keychainManager.getPhoneNumber() {
             AppAttestService.shared.clearKeyForUser(phoneNumber)
         }
         
         keychainManager.deleteAccessToken()
         keychainManager.deleteRefreshToken()
         keychainManager.deletePhoneNumber()
+        keychainManager.deleteUserId()
         profileStorage.clearUser()
         UserDefaults.standard.removeObject(forKey: verificationCacheKey)
         UserDefaults.standard.removeObject(forKey: verificationTimestampKey)
@@ -314,6 +352,14 @@ class AppFlowController: ObservableObject {
     }
     
     private func isAuthError(_ error: Error) -> Bool {
+        if case NetworkError.unauthorized = error {
+            return true
+        }
+
+        if case NetworkError.forbidden = error {
+            return true
+        }
+
         // Check if error is 401/403 (unauthorized)
         if error is URLError {
             return false // Network errors, not auth errors
@@ -325,5 +371,22 @@ class AppFlowController: ObservableObject {
                errorString.contains("expired") ||
                errorString.contains("401") ||
                errorString.contains("403")
+    }
+
+    private func refreshSessionIfNeeded() async {
+        guard let refreshToken = keychainManager.getRefreshToken(), !refreshToken.isEmpty else {
+            return
+        }
+        
+        if let lastRefresh = lastSessionRefreshAt,
+           Date().timeIntervalSince(lastRefresh) < sessionRefreshCooldown {
+            return
+        }
+        
+        let didRefresh = await authRepository.refreshSessionOnAppOpen()
+        if didRefresh {
+            lastSessionRefreshAt = Date()
+            debugLog("✅ [AppFlowController] Session refreshed on app open")
+        }
     }
 }

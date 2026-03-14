@@ -38,11 +38,12 @@ struct CheckoutView: View {
     
     @State private var showDeliverySheet = false
     @State private var showStoreSheet = false
+    @State private var showVoucherSheet = false
+    @State private var showPaymentMethodSheet = false
     
     @FocusState private var focusedField: CheckoutField?
     
     enum CheckoutField: Hashable {
-        case voucher
         case points
     }
     
@@ -60,6 +61,18 @@ struct CheckoutView: View {
         } else {
             return storeViewModel.selectedStore != nil
         }
+    }
+
+    private var selectedVoucherDisplay: String {
+        let applied = checkoutViewModel.appliedVoucher?.trimmingCharacters(in: .whitespacesAndNewlines)
+        if let applied, !applied.isEmpty {
+            return applied
+        }
+        let typed = voucherCode.trimmingCharacters(in: .whitespacesAndNewlines)
+        if !typed.isEmpty {
+            return typed.uppercased()
+        }
+        return String(localized: "promotion_code_placeholder")
     }
     
     init() {
@@ -100,22 +113,22 @@ struct CheckoutView: View {
                             .overlay {
                                 Circle()
                                     .strokeBorder(Color.textPrimary, lineWidth: min(66.6, max(scrollOffset, 0.0)) / 66.6)
-                                    .opacity(min(88.8, max(scrollOffset, 0.0)) / 99.9)
+                                .opacity(min(88.8, max(scrollOffset, 0.0)) / 99.9)
                             }
                     }
                     
-                    Text("Checkout")
-                        .font(AppTypography.displayMedium)
-                        .lineLimit(1)
-                        .foregroundColor(Color.textPrimary)
-                        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
-                        .hidden()
-                }
-                .frame(minHeight: AppLayout.touchTarget)
-                .padding(.horizontal, AppLayout.spacing)
-                .padding(.top, AppLayout.spacingCompact)
-                .zIndex(1)
-                .fixedSize(horizontal: false, vertical: true)
+                Text("Checkout")
+                    .font(AppTypography.displayMedium)
+                    .lineLimit(1)
+                    .foregroundColor(Color.textPrimary)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
+                    .hidden()
+            }
+            .frame(minHeight: AppLayout.touchTarget)
+            .padding(.horizontal, AppLayout.spacing)
+            .padding(.top, AppLayout.spacingCompact)
+            .zIndex(1)
+            .fixedSize(horizontal: false, vertical: true)
                 
                 VStack(spacing: 0) {
                     ScrollView(.vertical) { LazyVStack(spacing: AppLayout.spacing) {
@@ -289,6 +302,106 @@ struct CheckoutView: View {
                                                       style: StrokeStyle(lineWidth: 1, dash: cartViewModel.cart.tableId != nil ? [] : AppLayout.dashedPattern))
                                 }
                             }
+
+                            Divider().hidden()
+
+                            // MARK: Price Breakdown
+                            VStack(alignment: .leading, spacing: AppLayout.spacingSmall) {
+                                Text("order_summary")
+                                    .font(AppFont.sectionHeader)
+                                    .foregroundColor(Color.textPrimary)
+
+                                Divider()
+
+                                // Subtotal
+                                HStack {
+                                    Text("subtotal_label")
+                                        .font(AppFont.body)
+                                        .foregroundColor(Color.textSecondary)
+                                    Spacer()
+                                    Text(cartViewModel.subtotal.formattedVND)
+                                        .font(AppFont.monoBody)
+                                        .foregroundColor(Color.textPrimary)
+                                }
+
+                                // Discount (if any)
+                                if cartViewModel.discount > 0 {
+                                    HStack {
+                                        Text("discount_label")
+                                            .font(AppFont.body)
+                                            .foregroundColor(Color.accentPrimary)
+                                        Spacer()
+                                        Text("-\(cartViewModel.discount.formattedVND)")
+                                            .font(AppFont.monoBody)
+                                            .foregroundColor(Color.accentPrimary)
+                                    }
+                                }
+
+                                // Points discount (if any)
+                                if cartViewModel.pointsDiscount > 0 {
+                                    HStack {
+                                        Text("points_discount_label")
+                                            .font(AppFont.body)
+                                            .foregroundColor(Color.accentPrimary)
+                                        Spacer()
+                                        Text("-\(cartViewModel.pointsDiscount.formattedVND)")
+                                            .font(AppFont.monoBody)
+                                            .foregroundColor(Color.accentPrimary)
+                                    }
+                                }
+
+                                // Membership tier discount
+                                if let user = authViewModel.currentUser,
+                                   user.membershipTier != .bronze {
+                                    let tierPct = user.membershipTier.discountPercentage
+                                    let tierAmount = cartViewModel.subtotal * (tierPct / 100.0)
+                                    HStack {
+                                        HStack(spacing: 4) {
+                                            Image(systemName: "crown.fill")
+                                                .font(.system(size: 12))
+                                            Text("\(user.membershipTier.displayName) -\(Int(tierPct))%")
+                                                .font(AppFont.body)
+                                        }
+                                        .foregroundColor(Color.accentPrimary)
+                                        Spacer()
+                                        Text("-\(tierAmount.formattedVND)")
+                                            .font(AppFont.monoBody)
+                                            .foregroundColor(Color.accentPrimary)
+                                    }
+                                }
+
+                                // Tax (8%)
+                                let tierDiscountAmount: Double = {
+                                    guard let user = authViewModel.currentUser, user.membershipTier != .bronze else { return 0 }
+                                    return cartViewModel.subtotal * (user.membershipTier.discountPercentage / 100.0)
+                                }()
+                                let taxable = max(0, cartViewModel.subtotal - cartViewModel.discount - cartViewModel.pointsDiscount - tierDiscountAmount)
+                                let taxAmount = taxable * 0.08
+                                HStack {
+                                    Text("tax_label")
+                                        .font(AppFont.body)
+                                        .foregroundColor(Color.textSecondary)
+                                    Spacer()
+                                    Text(taxAmount.formattedVND)
+                                        .font(AppFont.monoBody)
+                                        .foregroundColor(Color.textPrimary)
+                                }
+
+                                if cartViewModel.cart.mode == .delivery {
+                                    HStack {
+                                        Text("delivery_fee_label")
+                                            .font(AppFont.body)
+                                            .foregroundColor(Color.textSecondary)
+                                        Spacer()
+                                        Text(cartViewModel.deliveryFee.formattedVND)
+                                            .font(AppFont.monoBody)
+                                            .foregroundColor(Color.textPrimary)
+                                    }
+                                }
+
+                                Divider()
+                            }
+                            .frame(maxWidth: .infinity, alignment: .leading)
                             
                             Divider().hidden()
                             
@@ -406,32 +519,34 @@ struct CheckoutView: View {
                                     .textCase(.uppercase)
                                     .font(AppFont.sectionHeader)
                                     .foregroundColor(Color.textPrimary)
-                                
-                                HStack(spacing: 8) {
-                                    CapsuleTextField(
-                                        placeholder: String(localized: "promotion_code_placeholder"),
-                                        text: $voucherCode,
-                                        icon: nil
-                                    )
-                                    .focused($focusedField, equals: .voucher)
-                                    .submitLabel(.done)
-                                    
-                                    Button {
-                                        focusedField = nil
-                                        Task {
-                                            await checkoutViewModel.applyVoucher(code: voucherCode, cartViewModel: cartViewModel)
+
+                                Button {
+                                    focusedField = nil
+                                    showVoucherSheet = true
+                                } label: {
+                                    HStack {
+                                        VStack(alignment: .leading, spacing: 2) {
+                                            Text("selected_voucher_header")
+                                                .font(AppFont.uiMicro)
+                                                .foregroundStyle(Color.textSecondary)
+
+                                            Text(selectedVoucherDisplay)
+                                                .font(AppFont.body)
+                                                .foregroundStyle(checkoutViewModel.appliedVoucher == nil ? Color.textTertiary : Color.textPrimary)
+                                                .lineLimit(1)
                                         }
-                                    } label: {
-                                        Text("\(Image(systemName: "checkmark"))")
-                                            .font(AppFont.uiButton)
-                                            .foregroundColor(voucherCode.trimmingCharacters(in: .whitespacesAndNewlines).uppercased() == checkoutViewModel.appliedVoucher ? Color.textSecondary : Color.bgPrimary)
-                                            .padding(.horizontal, 16)
-                                            .frame(height: 48)
-                                            .background(voucherCode.trimmingCharacters(in: .whitespacesAndNewlines).uppercased() == checkoutViewModel.appliedVoucher ? Color.surfacePrimary : Color.accentPrimary)
-                                            .clipShape(Capsule())
+
+                                        Spacer()
+
+                                        Image(systemName: "chevron.right")
+                                            .font(.system(size: 14))
+                                            .foregroundStyle(Color.textSecondary)
                                     }
-                                    //                                    .opacity(voucherCode.trimmingCharacters(in: .whitespacesAndNewlines).uppercased() == checkoutViewModel.appliedVoucher ? 0.3 : 1)
-                                    .disabled(voucherCode.trimmingCharacters(in: .whitespacesAndNewlines).uppercased() == checkoutViewModel.appliedVoucher)
+                                    .padding(12)
+                                    .overlay {
+                                        RoundedRectangle(cornerRadius: AppRadius.medium, style: .continuous)
+                                            .strokeBorder(Color.border, lineWidth: 1)
+                                    }
                                 }
                             }
                             .frame(maxWidth: .infinity, alignment: .leading)
@@ -510,35 +625,32 @@ struct CheckoutView: View {
                                     .textCase(.uppercase)
                                     .font(AppFont.sectionHeader)
                                     .foregroundColor(Color.textPrimary)
-                                
-                                ScrollView(.horizontal, showsIndicators: false) {
-                                    HStack(spacing: AppLayout.spacingMedium) {
-                                        ForEach(PaymentMethod.validForCheckout, id: \.self) { method in
-                                            Button {
-                                                checkoutViewModel.paymentMethod = method
-                                            } label: {
-                                                VStack(spacing: 4) {
-                                                    IconView(name: method.iconName)
-                                                        .font(AppFont.navIcon)
-                                                    Text(method.displayName)
-                                                        .font(AppFont.monoBody)
-                                                }
-                                                .padding(.vertical, 12)
-                                                .padding(.horizontal, 16)
-                                                .frame(minWidth: 100)
-                                                .background(checkoutViewModel.paymentMethod == method ? Color.accentPrimary : Color.clear)
-                                                .foregroundColor(checkoutViewModel.paymentMethod == method ? Color.bgPrimary : Color.textPrimary)
-                                                .overlay(
-                                                    RoundedRectangle(cornerRadius: AppRadius.medium, style: .continuous)
-                                                        .strokeBorder(Color.border, lineWidth: 1)
-                                                )
-                                                .clipShape(RoundedRectangle(cornerRadius: AppRadius.medium, style: .continuous))
-                                            }
+
+                                Button {
+                                    focusedField = nil
+                                    showPaymentMethodSheet = true
+                                } label: {
+                                    HStack {
+                                        HStack(spacing: 10) {
+                                            IconView(name: checkoutViewModel.paymentMethod.iconName)
+                                                .font(AppFont.navIcon)
+                                            Text(checkoutViewModel.paymentMethod.displayName)
+                                                .font(AppFont.body)
+                                                .foregroundStyle(Color.textPrimary)
                                         }
+
+                                        Spacer()
+
+                                        Image(systemName: "chevron.right")
+                                            .font(.system(size: 14))
+                                            .foregroundStyle(Color.textSecondary)
                                     }
-                                    .padding(.horizontal, AppLayout.spacing)
+                                    .padding(12)
+                                    .overlay {
+                                        RoundedRectangle(cornerRadius: AppRadius.medium, style: .continuous)
+                                            .strokeBorder(Color.border, lineWidth: 1)
+                                    }
                                 }
-                                .padding(.horizontal, -AppLayout.spacing)
                             }
                             .frame(maxWidth: .infinity, alignment: .leading)
                             
@@ -580,104 +692,6 @@ struct CheckoutView: View {
                             //                                )
                             //                            }
                         }
-                        // MARK: - H1 FIX: Price Breakdown
-                        VStack(alignment: .leading, spacing: AppLayout.spacingSmall) {
-                            Text("order_summary")
-                                .font(AppFont.sectionHeader)
-                                .foregroundColor(Color.textPrimary)
-                            
-                            Divider()
-                            
-                            // Subtotal
-                            HStack {
-                                Text("subtotal_label")
-                                    .font(AppFont.body)
-                                    .foregroundColor(Color.textSecondary)
-                                Spacer()
-                                Text(cartViewModel.subtotal.formattedVND)
-                                    .font(AppFont.monoBody)
-                                    .foregroundColor(Color.textPrimary)
-                            }
-                            
-                            // Discount (if any)
-                            if cartViewModel.discount > 0 {
-                                HStack {
-                                    Text("discount_label")
-                                        .font(AppFont.body)
-                                        .foregroundColor(Color.accentPrimary)
-                                    Spacer()
-                                    Text("-\(cartViewModel.discount.formattedVND)")
-                                        .font(AppFont.monoBody)
-                                        .foregroundColor(Color.accentPrimary)
-                                }
-                            }
-                            
-                            // Points discount (if any)
-                            if cartViewModel.pointsDiscount > 0 {
-                                HStack {
-                                    Text("points_discount_label")
-                                        .font(AppFont.body)
-                                        .foregroundColor(Color.accentPrimary)
-                                    Spacer()
-                                    Text("-\(cartViewModel.pointsDiscount.formattedVND)")
-                                        .font(AppFont.monoBody)
-                                        .foregroundColor(Color.accentPrimary)
-                                }
-                            }
-                            
-                            // H7 FIX: Membership tier discount
-                            if let user = authViewModel.currentUser,
-                               user.membershipTier != .bronze {
-                                let tierPct = user.membershipTier.discountPercentage
-                                let tierAmount = cartViewModel.subtotal * (tierPct / 100.0)
-                                HStack {
-                                    HStack(spacing: 4) {
-                                        Image(systemName: "crown.fill")
-                                            .font(.system(size: 12))
-                                        Text("\(user.membershipTier.displayName) -\(Int(tierPct))%")
-                                            .font(AppFont.body)
-                                    }
-                                    .foregroundColor(Color.accentPrimary)
-                                    Spacer()
-                                    Text("-\(tierAmount.formattedVND)")
-                                        .font(AppFont.monoBody)
-                                        .foregroundColor(Color.accentPrimary)
-                                }
-                            }
-                            
-                            // Tax (8%) — H7 FIX: Include tier discount in taxable base
-                            let tierDiscountAmount: Double = {
-                                guard let user = authViewModel.currentUser, user.membershipTier != .bronze else { return 0 }
-                                return cartViewModel.subtotal * (user.membershipTier.discountPercentage / 100.0)
-                            }()
-                            let taxable = max(0, cartViewModel.subtotal - cartViewModel.discount - cartViewModel.pointsDiscount - tierDiscountAmount)
-                            let taxAmount = taxable * 0.08
-                            HStack {
-                                Text("tax_label")
-                                    .font(AppFont.body)
-                                    .foregroundColor(Color.textSecondary)
-                                Spacer()
-                                Text(taxAmount.formattedVND)
-                                    .font(AppFont.monoBody)
-                                    .foregroundColor(Color.textPrimary)
-                            }
-                            
-                            // Delivery fee (if delivery)
-                            if cartViewModel.cart.mode == .delivery {
-                                HStack {
-                                    Text("delivery_fee_label")
-                                        .font(AppFont.body)
-                                        .foregroundColor(Color.textSecondary)
-                                    Spacer()
-                                    Text(cartViewModel.deliveryFee.formattedVND)
-                                        .font(AppFont.monoBody)
-                                        .foregroundColor(Color.textPrimary)
-                                }
-                            }
-                            
-                            Divider()
-                        }
-                        .frame(maxWidth: .infinity, alignment: .leading)
                     }
                     .padding(.bottom, 72)
                     .padding(.horizontal, AppLayout.spacing)
@@ -783,6 +797,20 @@ struct CheckoutView: View {
             StorePickerSheet()
                 .environmentObject(storeViewModel)
         }
+        .sheet(isPresented: $showVoucherSheet) {
+            VouchersView(
+                onSelect: { voucher in
+                    voucherCode = voucher.code
+                    Task {
+                        await checkoutViewModel.applyVoucher(code: voucher.code, cartViewModel: cartViewModel)
+                    }
+                },
+                voucherRepository: DependencyContainer.shared.voucherRepository
+            )
+        }
+        .sheet(isPresented: $showPaymentMethodSheet) {
+            PaymentMethodPickerSheet(selectedMethod: $checkoutViewModel.paymentMethod)
+        }
         .alert("Switch Store?", isPresented: $cartViewModel.showStoreConflictAlert) {
             Button("Cancel", role: .cancel) {
                 cartViewModel.cancelStoreSwitch()
@@ -880,12 +908,6 @@ struct CheckoutView: View {
             syncCartWithSelection()
         }
         .onChange(of: focusedField) { newField in
-            // Apply logic when focus is lost (newField is nil or different)
-            if newField != .voucher {
-                Task {
-                    await checkoutViewModel.applyVoucher(code: voucherCode, cartViewModel: cartViewModel)
-                }
-            }
             if newField != .points {
                 let points = authViewModel.currentUser?.points ?? 0
                 checkoutViewModel.applyPoints(input: redeemPoints, availablePoints: points, cartViewModel: cartViewModel)
@@ -965,6 +987,84 @@ extension CheckoutView {
     }
 }
 
+// MARK: - Payment Method Picker
+
+struct PaymentMethodPickerSheet: View {
+    @Environment(\.dismiss) private var dismiss
+    @Binding var selectedMethod: PaymentMethod
+
+    var body: some View {
+        ZStack(alignment: .top) {
+            Color.bgPrimary.ignoresSafeArea()
+
+            VStack(spacing: 0) {
+                VStack(spacing: AppLayout.marginCompact) {
+                    HStack(alignment: .center, spacing: AppLayout.spacing) {
+                        Text("payment_method_section")
+                            .font(AppTypography.displayMedium)
+                            .foregroundStyle(Color.textPrimary)
+                            .lineLimit(1)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+
+                        Button { dismiss() } label: {
+                            Image(systemName: "xmark")
+                                .font(.system(size: 17, weight: .medium))
+                                .foregroundStyle(Color.textPrimary)
+                                .padding(12)
+                                .background { Circle().fill(Color.bgPrimary) }
+                                .overlay { Circle().strokeBorder(Color.borderSecondary, lineWidth: 1) }
+                        }
+                    }
+                    .frame(minHeight: AppLayout.touchTarget)
+
+                    Divider()
+                        .background(Color.borderSecondary)
+                        .padding(.horizontal, -AppLayout.spacing)
+                }
+                .padding(.horizontal, AppLayout.spacing)
+                .padding(.top, AppLayout.spacing)
+                .background(Color.bgPrimary)
+
+                ScrollView {
+                    LazyVStack(spacing: AppLayout.spacing) {
+                        ForEach(PaymentMethod.validForCheckout, id: \.self) { method in
+                            Button {
+                                selectedMethod = method
+                                dismiss()
+                            } label: {
+                                HStack(spacing: 12) {
+                                    IconView(name: method.iconName)
+                                        .font(AppFont.navIcon)
+                                        .foregroundStyle(Color.textPrimary)
+
+                                    Text(method.displayName)
+                                        .font(AppFont.body)
+                                        .foregroundStyle(Color.textPrimary)
+
+                                    Spacer()
+
+                                    if method == selectedMethod {
+                                        Image(systemName: "checkmark.circle.fill")
+                                            .foregroundStyle(Color.accentPrimary)
+                                    }
+                                }
+                                .padding(12)
+                                .overlay {
+                                    RoundedRectangle(cornerRadius: AppRadius.medium, style: .continuous)
+                                        .strokeBorder(method == selectedMethod ? Color.accentPrimary : Color.border, lineWidth: 1)
+                                }
+                            }
+                        }
+                    }
+                    .padding(AppLayout.spacing)
+                }
+            }
+        }
+        .presentationDetents([.medium])
+        .presentationDragIndicator(.visible)
+    }
+}
+
 
 // MARK: - Empty State
 
@@ -997,4 +1097,3 @@ struct CheckoutEmptyState: View {
         }
     }
 }
-

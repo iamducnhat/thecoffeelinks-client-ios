@@ -21,42 +21,52 @@ struct AddAddressView: View {
             Color.bgPrimary.ignoresSafeArea()
             
             VStack(spacing: 0) {
-                // Header
-                HStack {
-                    Button { dismiss() } label: {
-                        Text(String(localized: "common_cancel"))
-                            .font(AppFont.body)
-                            .foregroundStyle(Color.textSecondary)
-                    }
-                    
-                    Spacer()
-                    
-                    Text("Add Address")
-                        .font(AppFont.displayTitle)
-                        .foregroundStyle(Color.textPrimary)
-                    
-                    Spacer()
-                    
-                    Button {
-                        Task {
-                            if let _ = await deliveryViewModel.saveAddress() {
-                                dismiss()
+                // Header (centered title, balanced actions)
+                VStack(spacing: AppLayout.marginCompact) {
+                    HStack(alignment: .center, spacing: AppLayout.spacing) {
+                        Text("Add Address")
+                            .font(AppTypography.displayMedium)
+                            .foregroundStyle(Color.textPrimary)
+                            .lineLimit(1)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                        
+                        Button { dismiss() } label: {
+                            Text(String(localized: "common_cancel"))
+                                .font(AppFont.body)
+                                .foregroundStyle(Color.textSecondary)
+                                .padding(.vertical, AppLayout.spacingMicro)
+                                .padding(.horizontal, AppLayout.spacingSmall)
+                        }
+                        
+                        Button {
+                            Task {
+                                if let _ = await deliveryViewModel.saveAddress() {
+                                    dismiss()
+                                }
+                            }
+                        } label: {
+                            if deliveryViewModel.isLoading {
+                                ProgressView().tint(Color.accentPrimary)
+                                    .frame(height: AppLayout.touchTarget / 2)
+                            } else {
+                                Text(String(localized: "common_save"))
+                                    .font(AppFont.headline)
+                                    .foregroundStyle(deliveryViewModel.canSaveAddress ? Color.accentPrimary : Color.textSecondary)
+                                    .padding(.vertical, AppLayout.spacingMicro)
+                                    .padding(.horizontal, AppLayout.spacingSmall)
                             }
                         }
-                    } label: {
-                        if deliveryViewModel.isLoading {
-                            ProgressView().tint(Color.accentPrimary)
-                        } else {
-                            Text(String(localized: "common_save"))
-                                .font(AppFont.headline)
-                                .foregroundStyle(deliveryViewModel.canSaveAddress ? Color.accentPrimary : Color.textSecondary)
-                        }
+                        .disabled(!deliveryViewModel.canSaveAddress || deliveryViewModel.isLoading)
                     }
-                    .disabled(!deliveryViewModel.canSaveAddress || deliveryViewModel.isLoading)
+                    .frame(minHeight: AppLayout.touchTarget)
+                    
+                    Divider()
+                        .background(Color.borderSecondary)
+                        .padding(.horizontal, -AppLayout.spacing)
                 }
-                .padding(AppLayout.spacing)
-                
-                Color.secondary.frame(height: 1)
+                .padding(.horizontal, AppLayout.spacing)
+                .padding(.top, AppLayout.spacing)
+                .background(Color.bgPrimary)
                 
                 ScrollView {
                     VStack(spacing: AppLayout.spacingXL) {

@@ -24,26 +24,38 @@ struct StoreSelectionSheet: View {
             
             VStack(spacing: 0) {
                 // Header
-                HStack {
-                    Button { dismiss() } label: {
-                        Text(String(localized: "common_cancel"))
-                            .font(AppFont.body)
-                            .foregroundStyle(Color.textSecondary)
+                VStack(spacing: AppLayout.marginCompact) {
+                    HStack(alignment: .top, spacing: AppLayout.spacing) {
+                        Text(String(localized: "store_selection_title"))
+                            .font(AppTypography.displayMedium)
+                            .foregroundStyle(Color.textPrimary)
+                            .lineLimit(1)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+
+                        Button { dismiss() } label: {
+                            Image(systemName: "xmark")
+                                .font(.system(size: 17, weight: .medium))
+                                .foregroundStyle(Color.textPrimary)
+                                .padding(12)
+                                .background {
+                                    Circle()
+                                        .fill(Color.bgPrimary)
+                                }
+                                .overlay {
+                                    Circle()
+                                        .strokeBorder(Color.borderSecondary, lineWidth: 1)
+                                }
+                        }
                     }
-                    
-                    Spacer()
-                    
-                    Text(String(localized: "store_selection_title"))
-                        .font(AppFont.displayTitle)
-                        .foregroundStyle(Color.textPrimary)
-                    
-                    Spacer()
-                    
-                    Color.clear.frame(width: 50)
+                    .frame(minHeight: AppLayout.touchTarget)
+
+                    Divider()
+                        .background(Color.borderSecondary)
+                        .padding(.horizontal, -AppLayout.spacing)
                 }
-                .padding(AppLayout.spacing)
-                
-                Color.secondary.frame(height: 1)
+                .padding(.horizontal, AppLayout.spacing)
+                .padding(.top, AppLayout.spacing)
+                .background(Color.bgPrimary)
                 
                 // Search
                 VStack {

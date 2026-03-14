@@ -74,13 +74,23 @@ class AuthRepository {
         
         await networkService.clearAuthToken()
     }
+
+    /// Proactively refresh session on app open to extend refresh token lifetime.
+    @MainActor
+    func refreshSessionOnAppOpen() async -> Bool {
+        await networkService.refreshSessionOnAppOpen()
+    }
     
     func getCurrentUser() async throws -> User {
          // Correct Endpoint: /api/user/profile
          // Server returns: { success: true, user: { ... pointsHistory: [] } }
          let response: UserResponse = try await networkService.request("/api/user/profile")
-         
-         // Save phone number to keychain if we have it (in case user logged in before this was implemented)
+
+        // If server returned a guest response, handle as guest.
+        if response.guest == true {
+            return User.guest
+        }
+
          if let phone = response.user.phone, !phone.isEmpty {
              let existingPhone = keychainManager.getPhoneNumber()
              if existingPhone == nil || existingPhone != phone {

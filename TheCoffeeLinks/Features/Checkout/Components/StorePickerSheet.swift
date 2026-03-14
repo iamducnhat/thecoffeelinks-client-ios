@@ -21,31 +21,35 @@ struct StorePickerSheet: View {
             Color.bgPrimary.ignoresSafeArea()
             
             VStack(spacing: 0) {
-                // Header
-                HStack {
-                    Button { dismiss() } label: {
-                        Text(String(localized: "common_close"))
-                            .font(AppFont.body)
-                            .foregroundStyle(Color.textSecondary)
+                // Header (aligned with product detail pattern)
+                VStack(spacing: AppLayout.marginCompact) {
+                    HStack(alignment: .center, spacing: AppLayout.spacing) {
+                        Text(String(localized: "store_selection_title"))
+                            .font(AppTypography.displayMedium)
+                            .foregroundStyle(Color.textPrimary)
+                            .lineLimit(1)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+
+                        Button { dismiss() } label: {
+                            Image(systemName: "xmark")
+                                .font(.system(size: 17, weight: .medium))
+                                .foregroundStyle(Color.textPrimary)
+                                .padding(12)
+                                .background { Circle().fill(Color.bgPrimary) }
+                                .overlay { Circle().strokeBorder(Color.borderSecondary, lineWidth: 1) }
+                        }
                     }
-                    
-                    Spacer()
-                    
-                    Text(String(localized: "store_selection_title"))
-                        .font(AppFont.displayTitle)
-                        .foregroundStyle(Color.textPrimary)
-                    
-                    Spacer()
-                    
-                    // Invisible spacer for balance
-                    Text(String(localized: "common_close")).font(AppFont.body).hidden()
+                    .frame(minHeight: AppLayout.touchTarget)
+
+                    Divider()
+                        .background(Color.borderSecondary)
+                        .padding(.horizontal, -AppLayout.spacing)
                 }
-                .padding(AppLayout.spacing)
-                
-                Color.secondary.frame(height: 1)
+                .padding(.horizontal, AppLayout.spacing)
+                .padding(.top, AppLayout.spacing)
+                .background(Color.bgPrimary)
                 
                 // Embedded StoresView logic/content
-                // Since StoresView is complex, let's use a simplified list here interacting with StoreViewModel
                 ScrollView {
                     LazyVStack(spacing: AppLayout.spacing) {
                         if storeViewModel.stores.isEmpty {
@@ -115,11 +119,11 @@ struct StoreCardSimple: View {
             }
         }
         .padding(AppLayout.spacing)
-        .background(isSelected ? Color.surfacePrimary : Color.bgPrimary)
+        .background(Color.surfacePrimary)
         .overlay(
-            Capsule()
+            RoundedRectangle(cornerRadius: AppRadius.medium, style: .continuous)
                 .strokeBorder(isSelected ? Color.accentPrimary : Color.border, lineWidth: 1)
         )
-        .clipShape(Capsule())
+        .clipShape(RoundedRectangle(cornerRadius: AppRadius.medium, style: .continuous))
     }
 }

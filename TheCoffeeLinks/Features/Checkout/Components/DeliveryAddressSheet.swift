@@ -17,33 +17,44 @@ struct DeliveryAddressSheet: View {
             Color.bgPrimary.ignoresSafeArea()
             
             VStack(spacing: 0) {
-                // Header
-                HStack {
-                    Button { dismiss() } label: {
-                        Text(String(localized: "common_close"))
-                            .font(AppFont.body)
-                            .foregroundStyle(Color.textSecondary)
+                // Header (centered title, balanced controls)
+                VStack(spacing: AppLayout.marginCompact) {
+                    HStack(alignment: .center, spacing: AppLayout.spacing) {
+                        Text("Delivery Address")
+                            .font(AppTypography.displayMedium)
+                            .foregroundStyle(Color.textPrimary)
+                            .lineLimit(1)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                        
+                        Button {
+                            showAddAddress = true
+                        } label: {
+                            Image(systemName: "plus")
+                                .font(.system(size: 17, weight: .medium))
+                                .foregroundStyle(Color.accentPrimary)
+                                .padding(12)
+                                .background { Circle().fill(Color.bgPrimary) }
+                                .overlay { Circle().strokeBorder(Color.borderSecondary, lineWidth: 1) }
+                        }
+                        
+                        Button { dismiss() } label: {
+                            Image(systemName: "xmark")
+                                .font(.system(size: 17, weight: .medium))
+                                .foregroundStyle(Color.textPrimary)
+                                .padding(12)
+                                .background { Circle().fill(Color.bgPrimary) }
+                                .overlay { Circle().strokeBorder(Color.borderSecondary, lineWidth: 1) }
+                        }
                     }
+                    .frame(minHeight: AppLayout.touchTarget)
                     
-                    Spacer()
-                    
-                    Text("Delivery Address")
-                        .font(AppFont.displayTitle)
-                        .foregroundStyle(Color.textPrimary)
-                    
-                    Spacer()
-                    
-                    Button {
-                        showAddAddress = true
-                    } label: {
-                        Image("plus")
-                            .font(AppFont.navIcon)
-                            .foregroundStyle(Color.accentPrimary)
-                    }
+                    Divider()
+                        .background(Color.borderSecondary)
+                        .padding(.horizontal, -AppLayout.spacing)
                 }
-                .padding(AppLayout.spacing)
-                
-                Color.secondary.frame(height: 1)
+                .padding(.horizontal, AppLayout.spacing)
+                .padding(.top, AppLayout.spacing)
+                .background(Color.bgPrimary)
                 
                 // Content
                 ScrollView {

@@ -243,6 +243,7 @@ struct CapsuleTextField: View {
     var icon: String? = nil
     var prefix: String? = nil
     var isSecure: Bool = false
+    var isFocused: FocusState<Bool>.Binding? = nil
     #if canImport(UIKit)
     var keyboardType: UIKeyboardType = .default
     #endif
@@ -264,8 +265,10 @@ struct CapsuleTextField: View {
             Group {
                 if isSecure {
                     SecureField(placeholder, text: $text)
+                        .applyOptionalFocus(isFocused)
                 } else {
                     TextField(placeholder, text: $text)
+                        .applyOptionalFocus(isFocused)
                         #if canImport(UIKit)
                         .keyboardType(keyboardType)
                         #endif
@@ -281,6 +284,17 @@ struct CapsuleTextField: View {
         .overlay(
             Capsule().strokeBorder(Color.borderPrimary, lineWidth: 0.5)
         )
+    }
+}
+
+private extension View {
+    @ViewBuilder
+    func applyOptionalFocus(_ focusBinding: FocusState<Bool>.Binding?) -> some View {
+        if let focusBinding {
+            self.focused(focusBinding)
+        } else {
+            self
+        }
     }
 }
 

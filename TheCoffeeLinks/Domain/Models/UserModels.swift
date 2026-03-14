@@ -458,7 +458,25 @@ struct AuthResponse: Codable, Sendable {
 
 // MARK: - API Responses
 
-struct UserResponse: Codable, Sendable { let success: Bool; let user: User }
+struct UserResponse: Codable, Sendable { let success: Bool; let guest: Bool?; let user: User }
+
+extension User {
+    static var guest: User {
+        User(
+            id: "guest",
+            shortId: nil,
+            shortIdVersion: nil,
+            email: nil,
+            phone: nil,
+            phoneVerified: false, phoneVerificationStatus: .unverified, displayName: "Guest",
+            avatarUrl: nil,
+            membershipTier: .bronze,
+            points: 0,
+            createdAt: Date(),
+            preferences: .default
+        )
+    }
+}
 struct StoresResponse: Codable, Sendable { let success: Bool; let stores: [Store] }
 struct StoreResponse: Codable, Sendable { let success: Bool; let store: Store }
 struct FavoritesResponse: Codable, Sendable { let success: Bool; let favorites: [FavoriteItem] }

@@ -7,7 +7,10 @@ class AuthViewModel: BaseViewModel {
     
     // Reference to AppFlowController for state synchronization
     // Note: Set via dependency injection after initialization to avoid circular dependency
-    weak var appFlowController: AppFlowController?
+    weak var appFlowController: AppFlowController? {
+        didSet { bindAppFlowController() }
+    }
+    private var appFlowCancellable: AnyCancellable?
 
     @Published var currentUser: User? {
         didSet {
@@ -43,6 +46,7 @@ class AuthViewModel: BaseViewModel {
         super.init()
         // Auth state is now managed by AppFlowController
         // checkSession() is called by AppFlowController during initialization
+        loadCachedSession()
     }
 
     /// Check session - DEPRECATED, use AppFlowController instead
@@ -50,6 +54,33 @@ class AuthViewModel: BaseViewModel {
     func checkSession() {
         // No-op: Auth state is now managed by AppFlowController
         debugLog("⚠️ [AuthViewModel] checkSession() called - this is deprecated, use AppFlowController")
+    }
+
+    private func bindAppFlowController() {
+        appFlowCancellable = appFlowController?.$currentState
+            .receive(on: RunLoop.main)
+            .sink { [weak self] state in
+                guard let self else { return }
+                if state.requiresAuth {
+                    self.loadCachedSession()
+                } else {
+                    self.isAuthenticated = false
+                    self.currentUser = nil
+                }
+            }
+    }
+    
+    private func loadCachedSession() {
+        let hasToken = DependencyContainer.shared.keychainManager.getAccessToken() != nil
+        if hasToken, let cachedUser = profileStorage.loadUser() {
+            currentUser = cachedUser
+            isAuthenticated = true
+            isPhoneVerified = cachedUser.phoneVerificationStatus == .verified
+        } else if !hasToken {
+            isAuthenticated = false
+            currentUser = nil
+            isPhoneVerified = false
+        }
     }
     
     // MARK: - Phone + Password Auth
@@ -363,4 +394,3 @@ class AuthViewModel: BaseViewModel {
         return dateString
     }
 }
-

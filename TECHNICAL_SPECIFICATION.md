@@ -368,8 +368,8 @@ User in Delivery Mode
 
 - **Storage**: Keychain (AES-256 encrypted)
 - **Transmission**: HTTPS only
-- **Rotation**: Refresh token every 24 hours
-- **Expiry**: Access token 1 hour, refresh token 30 days
+- **Rotation**: Refresh token on every app open (foreground/launch) and on 401 fallback
+- **Expiry**: Access token 1 hour, refresh token 6 months
 
 ### Guest Mode Limitations
 

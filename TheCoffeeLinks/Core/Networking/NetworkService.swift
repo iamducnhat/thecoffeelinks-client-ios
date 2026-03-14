@@ -63,7 +63,7 @@ class NetworkService: ObservableObject {
     
     @Published var authToken: String?
     private var refreshToken: String?
-    private var refreshTask: Task<Bool, Never>?
+    private var refreshTask: Task<RefreshOutcome, Never>?
     
     // Helper to safely read token from any thread
     private var currentToken: String? {
@@ -164,15 +164,35 @@ class NetworkService: ObservableObject {
         self.keychainManager.deleteRefreshToken()
     }
     
+    private enum RefreshOutcome {
+        case success
+        case failedAuth
+        case failedOther(Error)
+    }
+
     // Thread-safe token refresh with task deduplication
     @MainActor
-    private func refreshAuthToken() async -> Bool {
+    private func refreshAuthToken() async -> RefreshOutcome {
+        await performTokenRefresh(clearAuthOnFailure: true)
+    }
+
+    /// Proactive refresh used on app open to extend session lifetime.
+    /// Unlike refreshAuthToken(), this avoids clearing tokens on transient network errors.
+    @MainActor
+    func refreshSessionOnAppOpen() async -> Bool {
+        let outcome = await performTokenRefresh(clearAuthOnFailure: false)
+        if case .success = outcome { return true }
+        return false
+    }
+
+    @MainActor
+    private func performTokenRefresh(clearAuthOnFailure: Bool) async -> RefreshOutcome {
         if let existingTask = refreshTask {
             return await existingTask.value
         }
         
-        let task = Task<Bool, Never> { @MainActor in
-            guard let currentRefreshToken = self.refreshToken else { return false }
+        let task = Task<RefreshOutcome, Never> { @MainActor in
+            guard let currentRefreshToken = self.refreshToken else { return .failedAuth }
             
             struct RefreshRequest: Encodable {
                 let refresh_token: String
@@ -194,11 +214,21 @@ class NetworkService: ObservableObject {
                 let response: RefreshResponse = try await _performRequest("/api/auth/refresh", method: "POST", body: RefreshRequest(refresh_token: currentRefreshToken), isRetry: true)
                 
                 self.setAuthSession(accessToken: response.session.access_token, refreshToken: response.session.refresh_token)
-                return true
+                return .success
+            } catch let error as NetworkError {
+                debugLog("❌ Token Refresh Failed: \(error)")
+                switch error {
+                case .unauthorized, .forbidden:
+                    if clearAuthOnFailure {
+                        self.clearAuthToken()
+                    }
+                    return .failedAuth
+                default:
+                    return .failedOther(error)
+                }
             } catch {
                 debugLog("❌ Token Refresh Failed: \(error)")
-                self.clearAuthToken()
-                return false
+                return .failedOther(error)
             }
         }
         
@@ -212,10 +242,13 @@ class NetworkService: ObservableObject {
         do {
             return try await _performRequest(endpoint, method: method, body: body, queryItems: queryItems, encoder: encoder, includeAppAttest: true)
         } catch NetworkError.unauthorized {
-            if await refreshAuthToken() {
+            switch await refreshAuthToken() {
+            case .success:
                 return try await _performRequest(endpoint, method: method, body: body, queryItems: queryItems, encoder: encoder, includeAppAttest: true)
-            } else {
+            case .failedAuth:
                 throw NetworkError.unauthorized
+            case .failedOther(let error):
+                throw error
             }
         } catch {
             throw error
@@ -377,10 +410,13 @@ class NetworkService: ObservableObject {
              // I'll make a _performRequestEmpty
              try await _performRequestEmpty(endpoint, method: method, body: body, queryItems: queryItems)
         } catch NetworkError.unauthorized {
-            if await refreshAuthToken() {
-                 try await _performRequestEmpty(endpoint, method: method, body: body, queryItems: queryItems)
-            } else {
+            switch await refreshAuthToken() {
+            case .success:
+                try await _performRequestEmpty(endpoint, method: method, body: body, queryItems: queryItems)
+            case .failedAuth:
                 throw NetworkError.unauthorized
+            case .failedOther(let error):
+                throw error
             }
         } catch {
              throw error

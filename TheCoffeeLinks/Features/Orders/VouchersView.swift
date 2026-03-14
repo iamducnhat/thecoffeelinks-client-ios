@@ -43,54 +43,38 @@ struct VouchersView: View {
             VStack(spacing: 0) {
                 // Header
                 VStack(spacing: AppSpacing.lg) {
-                    HStack {
+                    HStack(alignment: .center, spacing: AppSpacing.md) {
                         Text(String(localized: "vouchers_title"))
                             .font(AppTypography.displayMedium)
                             .foregroundStyle(Color.textPrimary)
-                            .fixedSize()
-                            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
+                            .lineLimit(1)
+                            .frame(maxWidth: .infinity, alignment: .leading)
                         
                         Button { dismiss() } label: {
                             Image(systemName: "xmark")
                                 .font(.system(size: 17, weight: .medium))
                                 .foregroundStyle(Color.textPrimary)
                                 .padding(12)
+                                .background { Circle().fill(Color.bgPrimary) }
+                                .overlay { Circle().strokeBorder(Color.borderSecondary, lineWidth: 1) }
                         }
                     }
+                    .frame(minHeight: AppLayout.touchTarget)
                     .padding(.horizontal, AppSpacing.screenPadding)
                     
                     Divider()
                         .background(Color.borderSecondary)
                         .padding(.horizontal, -AppSpacing.screenPadding)
                     
-                    // Tab Picker
-                    HStack(spacing: 0) {
-                        ForEach(VoucherTab.allCases, id: \.self) { tab in
-                            Button {
-                                withAnimation(.easeInOut(duration: 0.2)) {
-                                    selectedTab = tab
-                                }
-                            } label: {
-                                Text(tab.rawValue)
-                                    .font(AppFont.monoBody)
-                                    .foregroundStyle(selectedTab == tab ? .white : Color.textPrimary)
-                                    .frame(maxWidth: .infinity)
-                                    .padding(.vertical, AppLayout.spacingCompact)
-                                    .background(selectedTab == tab ? Color.accentPrimary : Color.surfacePrimary)
-                                    .overlay(
-                                        Rectangle()
-                                            .strokeBorder(Color.borderPrimary, lineWidth: 1)
-                                    )
-                            }
-                        }
-                    }
-                    .clipShape(Capsule())
-                    .overlay(
-                        Capsule()
-                            .strokeBorder(Color.borderPrimary, lineWidth: 1)
+                    // Tab Picker - aligned with Stores segmented style
+                    CapsuleSegmentedPicker(
+                        selection: $selectedTab,
+                        options: VoucherTab.allCases.map { ($0, $0.rawValue) }
                     )
+                    .padding(.horizontal, AppSpacing.screenPadding)
                 }
-                .padding(AppLayout.spacing)
+                .padding(.top, AppLayout.spacing)
+                .background(Color.bgPrimary)
                 
                 ScrollView {
                     LazyVStack(spacing: AppLayout.spacing) {

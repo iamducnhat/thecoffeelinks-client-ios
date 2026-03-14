@@ -151,15 +151,15 @@ struct PromotionsView: View {
                     .padding(.vertical, 12)
                     .frame(maxWidth: .infinity, alignment: .center)
                     .background(Color.accentPrimary)
-                    .clipShape(Capsule())
+                    .clipShape(RoundedRectangle(cornerRadius: AppRadius.medium, style: .continuous))
             }
         }
         .padding(AppLayout.spacing)
         .background(Color.surfacePrimary)
         .overlay(
-            Capsule()
+            RoundedRectangle(cornerRadius: AppRadius.medium, style: .continuous)
                 .strokeBorder(Color.border, lineWidth: 1)
         )
-        .clipShape(Capsule())
+        .clipShape(RoundedRectangle(cornerRadius: AppRadius.medium, style: .continuous))
     }
 }

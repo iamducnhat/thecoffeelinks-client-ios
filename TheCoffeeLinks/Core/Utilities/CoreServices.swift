@@ -14,7 +14,10 @@ import UIKit
 
 private struct AppleLoginRequest: Codable, Sendable { let identityToken: String }
 private struct OTPRequestBody: Codable, Sendable { let phone: String }
-private struct RefreshRequestBody: Codable, Sendable { let refreshToken: String }
+private struct RefreshRequestBody: Codable, Sendable {
+    let refreshToken: String
+    enum CodingKeys: String, CodingKey { case refreshToken = "refresh_token" }
+}
 
 // MARK: - Auth Service
 

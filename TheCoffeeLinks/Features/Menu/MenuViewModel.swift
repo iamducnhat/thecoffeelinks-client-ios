@@ -67,6 +67,11 @@ final class MenuViewModel: ObservableObject {
         self.categories = menu.categories.filter { $0.isActive }.sorted { $0.sortOrder < $1.sortOrder }
         self.products = menu.products
         self.toppings = menu.toppings
+
+        if let selected = selectedCategory,
+           !self.categories.contains(where: { $0.id == selected.id }) {
+            selectedCategory = nil
+        }
     }
     
     func refresh() async { await load() }

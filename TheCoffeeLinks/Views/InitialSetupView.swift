@@ -13,8 +13,6 @@ struct InitialSetupView: View {
     @EnvironmentObject private var appState: AppState
     @EnvironmentObject private var storeViewModel: StoreViewModel
     @EnvironmentObject private var appFlowController: AppFlowController
-    @State private var currentStep = 0
-    @State private var selectedTaste: String?
     
     @State private var isLocationAuthorized = false
     @State private var isNotificationAuthorized = false
@@ -25,26 +23,14 @@ struct InitialSetupView: View {
             
             VStack(spacing: 0) {
                 // Progress Bar
-                HStack(spacing: 4) {
-                    Rectangle()
-                        .fill(currentStep >= 0 ? Color.primaryEspresso : Color.border)
-                        .frame(height: 2)
-                    Rectangle()
-                        .fill(currentStep >= 1 ? Color.primaryEspresso : Color.border)
-                        .frame(height: 2)
-                }
+                Rectangle()
+                    .fill(Color.primaryEspresso)
+                    .frame(height: 2)
                 .padding(.top, 24)
                 .padding(.horizontal, 24)
                 
-                if currentStep == 0 {
-                    permissionsStep
-                        .transition(.asymmetric(insertion: .move(edge: .trailing), removal: .move(edge: .leading)))
-                } else {
-                    tasteQuizStep
-                        .transition(.asymmetric(insertion: .move(edge: .trailing), removal: .move(edge: .leading)))
-                }
+                permissionsStep
             }
-            .animation(.easeInOut(duration: 0.3), value: currentStep)
         }
         .onAppear {
             checkCurrentPermissions()
@@ -88,6 +74,7 @@ struct InitialSetupView: View {
                     .font(AppFont.body)
                     .foregroundStyle(Color.textMuted)
             }
+            .frame(maxWidth: .infinity, alignment: .leading)
             .padding(.horizontal, 24)
             
             VStack(spacing: AppLayout.spacing) {
@@ -113,38 +100,21 @@ struct InitialSetupView: View {
             
             Spacer()
             
-            HStack(spacing: AppLayout.spacing) {
-                Button {
-                    withAnimation {
-                        currentStep = 1
-                    }
-                } label: {
-                    Text("Skip")
-                        .font(AppFont.monoCTA)
-                        .foregroundStyle(Color.textSecondary)
-                        .padding(.vertical, 12)
-                        .frame(maxWidth: .infinity)
-                        .background(Color.surfaceCard)
-                        .clipShape(RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle))
-                }
-                
-                Button {
-                    withAnimation {
-                        currentStep = 1
-                    }
-                } label: {
-                    Text("Continue")
-                        .font(AppFont.monoCTA)
-                        .foregroundStyle(Color.backgroundPaper)
-                        .padding(.vertical, 12)
-                        .frame(maxWidth: .infinity)
-                        .background(Color.accentColor)
-                        .clipShape(RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle))
-                }
+            Button {
+                completeSetup()
+            } label: {
+                Text("Continue")
+                    .font(AppFont.monoCTA)
+                    .foregroundStyle(Color.backgroundPaper)
+                    .frame(maxWidth: .infinity)
+                    .frame(height: 52)
+                    .background(Color.accentPrimary)
+                    .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
             }
-            .padding(24)
-            .padding(.bottom, 24)
+            .padding(.horizontal, 24)
+            .padding(.bottom, 32)
         }
+        .frame(maxWidth: .infinity, alignment: .leading)
     }
     
     private func requestLocationPermission() {
@@ -164,77 +134,6 @@ struct InitialSetupView: View {
                 self.isNotificationAuthorized = granted
                 checkCurrentPermissions()
             }
-        }
-    }
-    
-    // MARK: - Step 2: Taste Quiz
-    private var tasteQuizStep: some View {
-        VStack(spacing: AppLayout.spacingXL) {
-            Spacer()
-            
-            VStack(alignment: .leading, spacing: AppLayout.spacing) {
-                Text("Taste Profile")
-                    .textCase(.uppercase)
-                    .font(AppFont.monoBody)
-                    .foregroundStyle(Color.primaryEspresso)
-                
-                Text("Your Preference")
-                    .font(AppFont.displayTitle)
-                    .foregroundStyle(Color.textInk)
-                
-                Text("Help us optimize recommendations for your taste.")
-                    .font(AppFont.body)
-                    .foregroundStyle(Color.textMuted)
-            }
-            .padding(.horizontal, 24)
-            
-            VStack(spacing: AppLayout.spacing) {
-                SelectableRow(
-                    title: "Bold & Strong",
-                    isSelected: selectedTaste == "Bold"
-                ) { selectedTaste = "Bold" }
-                
-                SelectableRow(
-                    title: "Fruity & Floral",
-                    isSelected: selectedTaste == "Fruity"
-                ) { selectedTaste = "Fruity" }
-                
-                SelectableRow(
-                    title: "Smooth & Milky",
-                    isSelected: selectedTaste == "Milky"
-                ) { selectedTaste = "Milky" }
-            }
-            .padding(.horizontal, 24)
-            
-            Spacer()
-            
-            HStack(spacing: AppLayout.spacing) {
-                Button {
-                    completeSetup()
-                } label: {
-                    Text("Skip")
-                        .font(AppFont.monoCTA)
-                        .foregroundStyle(Color.textSecondary)
-                        .padding(.vertical, 12)
-                        .frame(maxWidth: .infinity)
-                        .background(Color.surfaceCard)
-                        .clipShape(RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle))
-                }
-                
-                Button {
-                    completeSetup()
-                } label: {
-                    Text("Start Browsing")
-                        .font(AppFont.monoCTA)
-                        .foregroundStyle(Color.backgroundPaper)
-                        .padding(.vertical, 12)
-                        .frame(maxWidth: .infinity)
-                        .background(Color.accentColor)
-                        .clipShape(RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle))
-                }
-            }
-            .padding(24)
-            .padding(.bottom, 24)
         }
     }
     
@@ -307,37 +206,3 @@ struct PermissionTile: View {
     }
 }
 
-struct SelectableRow: View {
-    let title: String
-    let isSelected: Bool
-    let action: () -> Void
-    
-    var body: some View {
-        Button(action: action) {
-            HStack {
-                Text(title)
-                    .font(AppFont.body)
-                    .foregroundStyle(Color.textInk)
-                
-                Spacer()
-                
-                if isSelected {
-                    Image("circle_check")
-                        .font(.system(size: 20))
-                        .foregroundStyle(Color.primaryEspresso)
-                } else {
-                    Image("circle")
-                        .font(.system(size: 20))
-                        .foregroundStyle(Color.border)
-                }
-            }
-            .padding(AppLayout.spacing)
-            .background(isSelected ? Color.surfaceCard : Color.backgroundPaper)
-            .overlay(
-                RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle)
-                    .strokeBorder(isSelected ? Color.primaryEspresso : Color.border, lineWidth: 1)
-            )
-            .clipShape(RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle))
-        }
-    }
-}

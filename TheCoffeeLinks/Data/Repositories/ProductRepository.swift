@@ -43,6 +43,10 @@ final class ProductRepository: ProductRepositoryProtocol, @unchecked Sendable {
         // 1. Try to get from cache
         if let data: Data = await cacheService.get(menuCacheKey),
            let cached = try? JSONDecoder().decode(Menu.self, from: data) {
+            // If cache was persisted during a temporary empty-data incident, force refresh.
+            if cached.products.isEmpty {
+                return try await refreshMenu()
+            }
             
             // 2. Check if stale
             if let serverVersion = syncManager.serverVersion(for: "menu") {
