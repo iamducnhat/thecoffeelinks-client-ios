@@ -90,6 +90,23 @@ final class OrderRepository: OrderRepositoryProtocol, @unchecked Sendable {
             throw OrderError.undoFailed(response.message ?? "Failed to restore order")
         }
     }
+
+    func reportOrderIssue(id: String, category: String, subject: String, description: String?) async throws {
+        struct IncidentRequest: Encodable {
+            let orderId: String
+            let category: String
+            let subject: String
+            let description: String?
+        }
+        struct IncidentResponse: Decodable {
+            let success: Bool
+        }
+
+        let _: IncidentResponse = try await networkService.post(
+            "/api/support/incidents",
+            body: IncidentRequest(orderId: id, category: category, subject: subject, description: description)
+        )
+    }
 }
 
 private struct EmptyBody: Encodable {}

@@ -12,6 +12,10 @@ struct OrderDetailView: View {
     let order: Order
     @Environment(\.dismiss) var dismiss
     @State private var scrollOffset = CGFloat.zero
+    @State private var showingIssueSheet = false
+    @State private var issueText = ""
+    @State private var issueMessage: String?
+    @State private var isSubmittingIssue = false
     
     var body: some View {
         ZStack(alignment: .top) {
@@ -191,6 +195,48 @@ struct OrderDetailView: View {
                             )
                         }
                         .padding(.horizontal, AppLayout.spacing)
+
+                        // Support / Recovery
+                        VStack(alignment: .leading, spacing: AppLayout.spacing) {
+                            Text("Need help?")
+                                .textCase(.uppercase)
+                                .font(AppFont.sectionHeader)
+                                .foregroundStyle(Color.textPrimary)
+
+                            VStack(alignment: .leading, spacing: 12) {
+                                Text("Report a payment, pickup, delivery, or quality issue tied to this order.")
+                                    .font(AppFont.uiCaption)
+                                    .foregroundStyle(Color.textSecondary)
+
+                                Button {
+                                    showingIssueSheet = true
+                                } label: {
+                                    HStack {
+                                        Image(systemName: "lifepreserver")
+                                        Text("Contact support")
+                                        Spacer()
+                                        Image(systemName: "chevron.right")
+                                    }
+                                    .font(AppFont.uiButton)
+                                    .foregroundStyle(Color.bgPrimary)
+                                    .padding(AppLayout.spacing)
+                                    .background(Color.textPrimary)
+                                }
+
+                                if let issueMessage {
+                                    Text(issueMessage)
+                                        .font(AppFont.uiCaption)
+                                        .foregroundStyle(Color.textSecondary)
+                                }
+                            }
+                            .padding(AppLayout.spacing)
+                            .background(Color.surfacePrimary)
+                            .overlay(
+                                Capsule()
+                                    .strokeBorder(Color.border, lineWidth: 1)
+                            )
+                        }
+                        .padding(.horizontal, AppLayout.spacing)
                     }
                     .padding(.top, AppLayout.spacing)
                     .padding(.bottom, 100)
@@ -199,6 +245,75 @@ struct OrderDetailView: View {
                 .scrollIndicators(.hidden)
             }
             .zIndex(-Double.infinity)
+        }
+        .sheet(isPresented: $showingIssueSheet) {
+            VStack(alignment: .leading, spacing: AppLayout.spacing) {
+                Text("Order support")
+                    .font(AppFont.displayTitle)
+                    .foregroundStyle(Color.textPrimary)
+
+                Text("Tell us what happened. Support will see this with your order receipt.")
+                    .font(AppFont.uiCaption)
+                    .foregroundStyle(Color.textSecondary)
+
+                TextEditor(text: $issueText)
+                    .frame(minHeight: 160)
+                    .padding(8)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 8)
+                            .strokeBorder(Color.border, lineWidth: 1)
+                    )
+
+                Button {
+                    submitIssue()
+                } label: {
+                    HStack {
+                        if isSubmittingIssue {
+                            ProgressView()
+                        }
+                        Text(isSubmittingIssue ? "Sending..." : "Send to support")
+                    }
+                    .frame(maxWidth: .infinity)
+                    .padding(AppLayout.spacing)
+                    .background(Color.textPrimary)
+                    .foregroundStyle(Color.bgPrimary)
+                }
+                .disabled(isSubmittingIssue || issueText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+
+                Button("Cancel") {
+                    showingIssueSheet = false
+                }
+                .frame(maxWidth: .infinity)
+            }
+            .padding(AppLayout.spacingXL)
+            .presentationDetents([.medium])
+        }
+    }
+
+    private func submitIssue() {
+        let detail = issueText.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !detail.isEmpty else { return }
+        isSubmittingIssue = true
+        Task {
+            do {
+                try await DependencyContainer.shared.orderRepository.reportOrderIssue(
+                    id: order.id,
+                    category: "support",
+                    subject: "Customer reported an order issue",
+                    description: detail
+                )
+                await MainActor.run {
+                    issueMessage = "Support request sent."
+                    issueText = ""
+                    showingIssueSheet = false
+                    isSubmittingIssue = false
+                }
+            } catch {
+                await MainActor.run {
+                    issueMessage = error.localizedDescription
+                    isSubmittingIssue = false
+                }
+            }
         }
     }
     
