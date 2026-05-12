@@ -18,41 +18,44 @@ struct SavedLocationsView: View {
     
     var body: some View {
         ZStack(alignment: .top) {
-            Color.bgPrimary.ignoresSafeArea()
+            BaseViewColor.background.ignoresSafeArea()
             
             VStack(spacing: 0) {
-                // Header
                 HStack {
                     Button(action: { dismiss() }) {
                         Image(systemName: "chevron.left")
-                            .font(AppFont.body)
-                            .foregroundStyle(Color.textPrimary)
+                            .font(.system(size: 18, weight: .medium))
+                            .foregroundStyle(BaseViewColor.textPrimary)
                     }
                     
                     Spacer()
                     
                     Text(String(localized: "action_saved_locations"))
-                        .font(AppFont.sectionHeader)
-                        .foregroundStyle(Color.textPrimary)
+                        .font(BaseViewFont.sectionTitle)
+                        .foregroundStyle(BaseViewColor.textPrimary)
                     
                     Spacer()
                     
-                    // Invisible button to balance layout
                     Image(systemName: "chevron.left").opacity(0)
                         
                 }
-                .padding(AppLayout.spacing)
+                .padding(.horizontal, BaseViewLayout.screenInset)
+                .padding(.top, BaseViewLayout.screenTopInset)
+                .padding(.bottom, BaseViewLayout.screenInset)
                 
-                Color.secondary.frame(height: 1)
-                    .opacity(0.1)
+                Rectangle()
+                    .fill(BaseViewColor.border)
+                    .frame(height: BaseViewLayout.cardBorderWidth)
                 
                 ScrollView {
-                    VStack(spacing: AppLayout.spacing) {
+                    VStack(spacing: BaseViewLayout.cardGap) {
                         ForEach(savedLocations) { location in
                             LocationRow(location: location)
                         }
                     }
-                    .padding(AppLayout.spacing)
+                    .padding(.horizontal, BaseViewLayout.screenInset)
+                    .padding(.top, BaseViewLayout.sectionGap)
+                    .padding(.bottom, 100)
                 }
             }
         }
@@ -70,28 +73,28 @@ struct LocationRow: View {
     let location: SavedLocation
     
     var body: some View {
-        HStack(spacing: AppLayout.spacing) {
+        HStack(spacing: BaseViewLayout.badgeInset) {
             ZStack {
-                Circle()
-                    .fill(Color.surfacePrimary)
+                Rectangle()
+                    .fill(BaseViewColor.elevatedSurface)
                     .frame(width: 40, height: 40)
                     .overlay(
-                        Circle().strokeBorder(Color.border, lineWidth: 1)
+                        Rectangle().stroke(BaseViewColor.border, lineWidth: BaseViewLayout.cardBorderWidth)
                     )
                 
                 Image(location.icon)
                     .font(.system(size: 16))
-                    .foregroundStyle(Color.textSecondary)
+                    .foregroundStyle(BaseViewColor.textSecondary)
             }
             
             VStack(alignment: .leading, spacing: 4) {
                 Text(location.name)
-                    .font(AppFont.body)
-                    .foregroundStyle(Color.textPrimary)
+                    .font(BaseViewFont.body)
+                    .foregroundStyle(BaseViewColor.textPrimary)
                 
                 Text(location.address)
-                    .font(AppFont.uiCaption)
-                    .foregroundStyle(Color.textSecondary)
+                    .font(BaseViewFont.label)
+                    .foregroundStyle(BaseViewColor.textSecondary)
                     .lineLimit(1)
             }
             
@@ -99,14 +102,13 @@ struct LocationRow: View {
             
             Image("pencil")
                 .font(.system(size: 16))
-                .foregroundStyle(Color.textSecondary)
+                .foregroundStyle(BaseViewColor.textSecondary)
         }
-        .padding(AppLayout.spacing)
-        .background(Color.bgPrimary)
-        .clipShape(RoundedRectangle(cornerRadius: AppRadius.medium, style: .continuous))
+        .padding(BaseViewLayout.badgeInset)
+        .background(BaseViewColor.elevatedSurface)
         .overlay(
-            RoundedRectangle(cornerRadius: AppRadius.medium, style: .continuous)
-                .strokeBorder(Color.border, lineWidth: 1)
+            Rectangle()
+                .stroke(BaseViewColor.border, lineWidth: BaseViewLayout.cardBorderWidth)
         )
     }
 }

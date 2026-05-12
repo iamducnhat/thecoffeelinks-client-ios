@@ -34,7 +34,7 @@ struct OrdersView: View {
                         }
                         .overlay {
                             Circle()
-                                .strokeBorder(Color.textPrimary, lineWidth: min(66.6, max(scrollOffset, 0.0)) / 66.6)
+                                .strokeBorder(Color.textPrimary, lineWidth: 1)
                                 .opacity(min(88.8, max(scrollOffset, 0.0)) / 99.9)
                         }
                 }

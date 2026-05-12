@@ -22,9 +22,9 @@ protocol OrderRepositoryProtocol: Sendable {
 // MARK: - Product Repository
 
 protocol ProductRepositoryProtocol: Sendable {
-    func getMenu() async throws -> Menu
-    func getCachedMenu() async -> Menu?
-    func refreshMenu() async throws -> Menu
+    func getMenu(storeId: String?) async throws -> Menu
+    func getCachedMenu(storeId: String?) async -> Menu?
+    func refreshMenu(storeId: String?) async throws -> Menu
     func getProducts(categoryId: String?) async throws -> [Product]
     func getProduct(id: String) async throws -> Product
     func getCategories() async throws -> [Category]
@@ -33,6 +33,20 @@ protocol ProductRepositoryProtocol: Sendable {
     func getCachedPopularProducts() async -> [PopularProduct]?
     func refreshPopularProducts(period: String, limit: Int) async throws -> [PopularProduct]
     func searchProducts(query: String) async throws -> [Product]
+}
+
+extension ProductRepositoryProtocol {
+    func getMenu() async throws -> Menu {
+        try await getMenu(storeId: nil)
+    }
+
+    func getCachedMenu() async -> Menu? {
+        await getCachedMenu(storeId: nil)
+    }
+
+    func refreshMenu() async throws -> Menu {
+        try await refreshMenu(storeId: nil)
+    }
 }
 
 // MARK: - Delivery Repository

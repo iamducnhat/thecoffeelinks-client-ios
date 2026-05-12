@@ -116,7 +116,19 @@ final class HomeViewModel: ObservableObject {
     
     private func loadVouchers() async {
         do {
-            let allVouchers = try await voucherRepository.refreshVouchers()
+            let allVouchers: [Voucher]
+
+            if let user = await userRepository.getCachedUser(), user.id != "guest" {
+                do {
+                    allVouchers = try await voucherRepository.fetchAndDistributeVouchers(userId: user.id)
+                } catch {
+                    debugLog("⚠️ Voucher distribution fallback to refresh: \(error)")
+                    allVouchers = try await voucherRepository.refreshVouchers()
+                }
+            } else {
+                allVouchers = try await voucherRepository.refreshVouchers()
+            }
+
             // Only show active vouchers in the banner
             vouchers = allVouchers.filter { $0.isValid }
         } catch {

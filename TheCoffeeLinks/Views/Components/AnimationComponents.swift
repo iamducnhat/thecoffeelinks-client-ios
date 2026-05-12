@@ -74,13 +74,13 @@ struct SuccessCheckmark: View {
         ZStack {
             // Circle
             Circle()
-                .stroke(Editorial.Colors.semanticSuccess.opacity(0.2), lineWidth: 4)
+                .stroke(Editorial.Colors.semanticSuccess.opacity(0.2), lineWidth: 1)
                 .frame(width: 80, height: 80)
             
             // Animated circle
             Circle()
                 .trim(from: 0, to: isAnimating ? 1 : 0)
-                .stroke(Editorial.Colors.semanticSuccess, style: StrokeStyle(lineWidth: 4, lineCap: .round))
+                .stroke(Editorial.Colors.semanticSuccess, style: StrokeStyle(lineWidth: 1, lineCap: .round))
                 .frame(width: 80, height: 80)
                 .rotationEffect(Angle.degrees(-90))
                 .animation(Animation.easeInOut(duration: 0.6), value: isAnimating)
@@ -92,7 +92,7 @@ struct SuccessCheckmark: View {
                 path.addLine(to: CGPoint(x: 58, y: 28))
             }
             .trim(from: 0, to: isAnimating ? 1 : 0)
-            .stroke(Editorial.Colors.semanticSuccess, style: StrokeStyle(lineWidth: 4, lineCap: .round, lineJoin: .round))
+            .stroke(Editorial.Colors.semanticSuccess, style: StrokeStyle(lineWidth: 1, lineCap: .round, lineJoin: .round))
             .animation(Animation.easeInOut(duration: 0.4).delay(0.4), value: isAnimating)
         }
         .onAppear {

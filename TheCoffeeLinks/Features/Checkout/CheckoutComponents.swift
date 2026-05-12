@@ -24,12 +24,12 @@ struct UndoCountdownView: View {
             
             ZStack {
                 Circle()
-                    .strokeBorder(Color.border, lineWidth: 2)
+                    .strokeBorder(Color.border, lineWidth: 1)
                     .frame(width: 80, height: 80)
                 
                 Circle()
                     .trim(from: 0, to: CGFloat(timeRemaining / duration))
-                    .stroke(Color.accentPrimary, style: StrokeStyle(lineWidth: 2, lineCap: .square))
+                    .stroke(Color.accentPrimary, style: StrokeStyle(lineWidth: 1, lineCap: .square))
                     .frame(width: 80, height: 80)
                     .rotationEffect(.degrees(-90))
                     .animation(.linear(duration: 1), value: timeRemaining)

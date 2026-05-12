@@ -221,6 +221,22 @@ class ProfileViewModel: BaseViewModel {
         guard !isRefreshingProfile else { return } // Prevent duplicate refreshes
         await performProfileRefresh()
     }
+
+    /// Distribute available vouchers to the current user then refresh the voucher list.
+    func distributeAndRefreshVouchers() async {
+        guard let userId = authViewModel?.currentUser?.id else { return }
+        do {
+            let _ = try await voucherRepository.fetchAndDistributeVouchers(userId: userId)
+            // Removed intermediate UI update with distributed vouchers to prevent sorting flicker
+        } catch {
+            // Silently ignore — user may simply have no eligible vouchers
+        }
+        // Always follow up with a normal refresh to get the latest state
+        do {
+            let fresh = try await voucherRepository.refreshVouchers()
+            await MainActor.run { self.vouchers = fresh }
+        } catch {}
+    }
     
     private func loadDraft() {
         if let draftName: String = storage.load(String.self, key: "profile_name_draft"), !draftName.isEmpty {

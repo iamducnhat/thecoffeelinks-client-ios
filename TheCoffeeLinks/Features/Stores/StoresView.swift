@@ -1,57 +1,26 @@
 import SwiftUI
 
-/// Refactored StoresView - Design System v2
-/// Clean list with capsule search and view toggle
 struct StoresView: View {
     @EnvironmentObject var viewModel: StoresViewModel
     @State private var selectedStore: Store?
-    @State private var viewMode = 0 // 0: List, 1: Map
-    
+    @State private var showMapView = false
+    @State private var displayedCount: Int = 10
+    @FocusState private var isSearchFocused: Bool
+
     var body: some View {
-        ZStack {
-            Color.bgPrimary.ignoresSafeArea()
-            
-            VStack(spacing: 0) {
-                // Header
-                VStack(spacing: AppSpacing.lg) {
-                    SectionHeader(title: "Stores", subtitle: "Find a location near you")
-                        .padding(.horizontal, AppSpacing.screenPadding)
-                    
-                    // Search
-                    CapsuleTextField(
-                        placeholder: "Search by name or address...",
-                        text: $viewModel.searchQuery,
-                        icon: "magnifyingglass"
-                    )
-                    .padding(.horizontal, AppSpacing.screenPadding)
-                    
-                    // View mode toggle
-                    CapsuleSegmentedPicker(
-                        selection: $viewMode,
-                        options: [
-                            (0, "List"),
-                            (1, "Map")
-                        ]
-                    )
-                    .padding(.horizontal, AppSpacing.screenPadding)
-                    
-                    Divider().background(Color.borderSecondary)
-                }
-                .padding(.top, AppSpacing.sm)
-                .background(Color.bgPrimary)
-                
-                // Content
-                if viewModel.filteredStores.isEmpty && !viewModel.isLoading {
-                    emptyState
-                } else {
-                    if viewMode == 0 {
-                        listView
-                    } else {
-                        mapView
-                    }
-                }
+        VStack(spacing: 0) {
+            stickyHeader
+
+            if showMapView {
+                StoreMapView(stores: viewModel.filteredStores, selectedStore: $selectedStore)
+            } else if viewModel.filteredStores.isEmpty && !viewModel.isLoading {
+                emptyState
+            } else {
+                listView
             }
         }
+        .background(BaseViewColor.background)
+        .ignoresSafeArea(edges: .bottom)
         .fullScreenCover(item: $selectedStore) { store in
             StoreDetailView(store: store, viewModel: viewModel)
         }
@@ -59,130 +28,339 @@ struct StoresView: View {
             Task { await viewModel.load() }
         }
     }
-    
+
+    // MARK: - Sticky Header
+
+    private var stickyHeader: some View {
+        VStack(spacing: 0) {
+            // Row 1: Search + Map toggle
+            HStack(spacing: 8) {
+                TextField("", text: $viewModel.searchQuery, prompt:
+                    Text("Tìm kiếm")
+                        .foregroundColor(Color(.systemGray))
+                )
+                .textFieldStyle(PlainTextFieldStyle())
+                .font(BaseViewFont.label)
+                .foregroundStyle(BaseViewColor.textPrimary)
+                .focused($isSearchFocused)
+                .submitLabel(.search)
+                .onSubmit { isSearchFocused = false }
+                .frame(height: BaseViewLayout.accentBadgeHeight)
+                .frame(maxHeight: .infinity, alignment: .center)
+                .padding(.horizontal, 13)
+                .background(Color.textPrimary.opacity(0.08))
+                .toolbar {
+                    ToolbarItemGroup(placement: .keyboard) {
+                        Spacer()
+                        Button("Huỷ") {
+                            viewModel.searchQuery = ""
+                            isSearchFocused = false
+                        }
+                        .font(BaseViewFont.labelStrong)
+                        .foregroundStyle(BaseViewColor.accent)
+                    }
+                }
+
+                Button {
+                    withAnimation(.easeInOut(duration: 0.2)) { showMapView.toggle() }
+                } label: {
+                    BaseAccentBadge(title: showMapView ? "DANH SÁCH" : "BẢN ĐỒ")
+                }
+                .buttonStyle(.plain)
+            }
+            .fixedSize(horizontal: false, vertical: true)
+            .padding(.horizontal, 23)
+            .padding(.top, 10)
+
+            // Row 2: City / District filters
+            HStack(spacing: 0) {
+                Text("Tỉnh/Thành phố")
+                    .font(BaseViewFont.label)
+                    .foregroundStyle(Color(.systemGray))
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.horizontal, 13)
+                    .frame(height: 26)
+                    .overlay(Rectangle().stroke(Color(.systemGray3), lineWidth: 1))
+
+                Spacer().frame(width: 8)
+
+                Text("Quận/Huyện")
+                    .font(BaseViewFont.label)
+                    .foregroundStyle(Color(.systemGray))
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.horizontal, 13)
+                    .frame(height: 26)
+                    .overlay(Rectangle().stroke(Color(.systemGray3), lineWidth: 1))
+            }
+            .padding(.horizontal, 23)
+            .padding(.top, 9)
+
+            // Separator
+            Rectangle()
+                .fill(Color.textPrimary.opacity(0.15))
+                .frame(height: 0.5)
+                .padding(.top, 13)
+        }
+        .padding(.bottom, 0)
+        .background(BaseViewColor.background)
+    }
+
     // MARK: - List View
-    
+
     private var listView: some View {
         ScrollView {
-            LazyVStack(spacing: AppSpacing.md) {
-                ForEach(viewModel.filteredStores) { store in
-                    StoreCard(store: store, viewModel: viewModel)
-                        .onTapGesture {
-                            selectedStore = store
-                        }
+            LazyVStack(spacing: 0) {
+                ForEach(Array(viewModel.filteredStores.prefix(displayedCount))) { store in
+                    StoreListCard(store: store, viewModel: viewModel)
+                    .padding(.horizontal, 23)
+                    .padding(.top, 13)
+                }
+
+                // Pagination trigger
+                if displayedCount < viewModel.filteredStores.count {
+                    Color.clear
+                        .frame(height: 1)
+                        .onAppear { loadMore() }
                 }
             }
-            .padding(AppSpacing.screenPadding)
+            .padding(.top, 10)
+            .padding(.bottom, 24)
+        }
+        .onChange(of: viewModel.searchQuery) { _ in
+            displayedCount = 10
         }
     }
-    
-    // MARK: - Map View
-    
-    private var mapView: some View {
-        StoreMapView(
-            stores: viewModel.filteredStores,
-            selectedStore: $selectedStore
-        )
-        .padding(AppSpacing.screenPadding)
+
+    private func loadMore() {
+        displayedCount = min(displayedCount + 10, viewModel.filteredStores.count)
     }
-    
+
     // MARK: - Empty State
-    
+
     private var emptyState: some View {
-        VStack(spacing: AppSpacing.lg) {
-            Image("map_pin")
-                .font(.system(size: 48))
-                .foregroundStyle(Color.textTertiary)
-            
-            Text("No stores found")
-                .font(AppTypography.displayMedium)
-                .foregroundStyle(Color.textPrimary)
-            
-            Text("Try adjusting your search")
-                .font(AppTypography.bodyMedium)
-                .foregroundStyle(Color.textSecondary)
+        VStack(spacing: 12) {
+            Text("KHÔNG TÌM THẤY CỬA HÀNG")
+                .font(BaseViewFont.sectionTitle)
+                .foregroundStyle(BaseViewColor.textPrimary)
+                .multilineTextAlignment(.center)
+
+            Text("Thử điều chỉnh từ khoá tìm kiếm.")
+                .font(BaseViewFont.label)
+                .foregroundStyle(BaseViewColor.textSecondary)
+                .multilineTextAlignment(.center)
         }
         .frame(maxHeight: .infinity)
-        .padding(AppSpacing.xxl)
+        .padding(24)
     }
 }
 
-// MARK: - Store Card
+// MARK: - Store List Card
+
+private struct StoreListCard: View {
+    @Environment(\.openURL) private var openURL
+    let store: Store
+    @ObservedObject var viewModel: StoresViewModel
+
+    @State private var distance: String? = nil
+
+    private let buttonRowHeight: CGFloat = 38
+    private var isSelected: Bool {
+        viewModel.selectedStore?.id == store.id
+    }
+
+    var body: some View {
+        VStack(spacing: 0) {
+            // Content area — GeometryReader drives square image (height == imageWidth)
+            GeometryReader { geometry in
+                let imageWidth = geometry.size.height
+                HStack(spacing: 0) {
+                    storeImage
+                        .frame(width: imageWidth, height: geometry.size.height)
+
+                    VStack(alignment: .leading, spacing: 0) {
+                        Text(store.name.uppercased())
+                            .font(BaseViewFont.cardTitle)
+                            .foregroundStyle(BaseViewColor.textPrimary)
+                            .lineLimit(2)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .padding(.top, 9)
+
+                        Spacer(minLength: 4)
+
+                        HStack(alignment: .firstTextBaseline) {
+                            Text("Giờ mở cửa")
+                                .font(BaseViewFont.body)
+                                .foregroundStyle(BaseViewColor.textPrimary)
+                            Spacer()
+                            Text(openTime ?? "--:--")
+                                .font(BaseViewFont.body)
+                                .foregroundStyle(BaseViewColor.textPrimary)
+                        }
+
+                        HStack(alignment: .firstTextBaseline) {
+                            Text("Giờ đóng cửa")
+                                .font(BaseViewFont.body)
+                                .foregroundStyle(BaseViewColor.textPrimary)
+                            Spacer()
+                            Text(closeTime ?? "--:--")
+                                .font(BaseViewFont.body)
+                                .foregroundStyle(BaseViewColor.textPrimary)
+                        }
+                        .padding(.bottom, 9)
+                    }
+                    .padding(.horizontal, 13)
+                }
+                .frame(width: geometry.size.width, height: geometry.size.height)
+                .clipped()
+            }
+            .aspectRatio(356 / 116, contentMode: .fit)
+
+            // Horizontal divider
+            Rectangle()
+                .fill(Color(.systemGray4))
+                .frame(height: 0.5)
+
+            // Action buttons
+            HStack(spacing: 0) {
+                Button(action: openDirections) {
+                    Text("CHỈ ĐƯỜNG")
+                        .font(BaseViewFont.labelStrong)
+                        .tracking(2)
+                        .foregroundStyle(BaseViewColor.accent)
+                        .frame(maxWidth: .infinity)
+                        .frame(height: buttonRowHeight)
+                }
+
+                Rectangle()
+                    .fill(Color(.systemGray4))
+                    .frame(width: 0.5, height: buttonRowHeight)
+
+                Button(action: selectStore) {
+                    Text(isSelected ? "ĐÃ CHỌN" : "CHỌN")
+                        .font(BaseViewFont.labelStrong)
+                        .tracking(2)
+                        .foregroundStyle(isSelected ? BaseViewColor.accent : BaseViewColor.accentForeground)
+                        .frame(maxWidth: .infinity)
+                        .frame(height: buttonRowHeight)
+                        .background(isSelected ? Color.clear : BaseViewColor.accent)
+                }
+                .buttonStyle(.plain)
+                .disabled(isSelected)
+            }
+        }
+        .overlay(Rectangle().stroke(Color(.systemGray4), lineWidth: 0.5))
+        .task {
+            distance = await viewModel.getDistance(to: store)
+        }
+    }
+
+    private var storeImage: some View {
+        ZStack(alignment: .bottomLeading) {
+            // Solid placeholder (always present as background)
+            Rectangle().fill(Color(red: 0.29, green: 0.38, blue: 0.70))
+
+            // Async image overlaid on top
+            if let urlString = store.imageUrl, let url = URL(string: urlString) {
+                AsyncImage(url: url) { phase in
+                    if case .success(let img) = phase {
+                        img
+                            .resizable()
+                            .scaledToFill()
+                            .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    }
+                }
+            }
+
+            if let dist = distance {
+                Text(dist)
+                    .font(BaseViewFont.labelStrong)
+                    .foregroundStyle(BaseViewColor.textPrimary)
+                    .padding(.horizontal, 6)
+                    .padding(.vertical, 2)
+                    .background(.regularMaterial)
+                    .padding(6)
+            }
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .clipped()
+    }
+
+    private var openTime: String? {
+        todayHours?.openTime
+    }
+
+    private var closeTime: String? {
+        todayHours?.closeTime
+    }
+
+    private var todayHours: OpeningHour? {
+        let weekday = Calendar.current.component(.weekday, from: Date())
+        return store.openingHours?.first(where: { $0.dayOfWeek == weekday })
+    }
+
+    private func openDirections() {
+        let lat = store.latitude
+        let lng = store.longitude
+        let name = store.name.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? ""
+        if let url = URL(string: "maps://?ll=\(lat),\(lng)&q=\(name)") {
+            openURL(url)
+        }
+    }
+
+    private func selectStore() {
+        guard !isSelected else { return }
+        viewModel.selectStore(store)
+    }
+}
+
+// MARK: - Store Card (used in StoreSelectionSheet and other contexts)
 
 struct StoreCard: View {
     let store: Store
     let viewModel: StoresViewModel
-    
+
     var body: some View {
-        HStack(spacing: AppSpacing.lg) {
-            // Store image
-            if let imageUrl = store.imageUrl {
-                AsyncImage(url: URL(string: imageUrl)) { phase in
-                    switch phase {
-                    case .success(let image):
-                        image
-                            .resizable()
-                            .aspectRatio(contentMode: .fill)
-                    case .empty:
-                        Rectangle()
-                            .fill(Color.surfacePrimary)
-                            .overlay {
-                                ProgressView()
-                                    .tint(Color.textTertiary)
-                            }
-                    case .failure:
-                        Rectangle()
-                            .fill(Color.surfacePrimary)
-                            .overlay {
-                                Image("store")
-                                    .font(.system(size: 24))
-                                    .foregroundStyle(Color.textTertiary)
-                            }
-                    @unknown default:
-                        EmptyView()
+        HStack(spacing: 0) {
+            // Image
+            Group {
+                if let urlString = store.imageUrl, let url = URL(string: urlString) {
+                    AsyncImage(url: url) { phase in
+                        if case .success(let img) = phase {
+                            img.resizable().scaledToFill()
+                        } else {
+                            Rectangle().fill(Color(red: 0.29, green: 0.38, blue: 0.70))
+                        }
                     }
+                } else {
+                    Rectangle().fill(Color(red: 0.29, green: 0.38, blue: 0.70))
                 }
-                .frame(width: 80, height: 80)
-                .clipShape(RoundedRectangle(cornerRadius: AppRadius.small, style: .continuous))
-            } else {
-                Rectangle()
-                    .fill(Color.surfacePrimary)
-                    .frame(width: 80, height: 80)
-                    .overlay {
-                        Image("store")
-                            .font(.system(size: 24))
-                            .foregroundStyle(Color.textTertiary)
-                    }
-                    .clipShape(RoundedRectangle(cornerRadius: AppRadius.small, style: .continuous))
             }
-            
-            VStack(alignment: .leading, spacing: AppSpacing.xs) {
-                Text(store.name)
-                    .font(AppTypography.labelLarge)
-                    .foregroundStyle(Color.textPrimary)
-                    .lineLimit(1)
-                
-                Text(store.address)
-                    .font(AppTypography.bodySmall)
-                    .foregroundStyle(Color.textSecondary)
+            .frame(width: 56, height: 56)
+            .clipped()
+
+            VStack(alignment: .leading, spacing: 3) {
+                Text(store.name.uppercased())
+                    .font(BaseViewFont.labelStrong)
+                    .foregroundStyle(BaseViewColor.textPrimary)
                     .lineLimit(2)
-                
-                // Distance calculation would go here if location services enabled
-                // For now, hide distance display
+
+                Text(store.address)
+                    .font(BaseViewFont.label)
+                    .foregroundStyle(BaseViewColor.textSecondary)
+                    .lineLimit(1)
             }
-            
+            .padding(.horizontal, 13)
+
             Spacer()
-            
+
             Image(systemName: "chevron.right")
-                .font(.system(size: 14, weight: .semibold))
-                .foregroundStyle(Color.textTertiary)
+                .font(.system(size: 13, weight: .semibold))
+                .foregroundStyle(BaseViewColor.textSecondary)
+                .padding(.trailing, 13)
         }
-        .padding(AppSpacing.lg)
-        .background(Color.surfacePrimary)
-        .clipShape(RoundedRectangle(cornerRadius: AppRadius.medium, style: .continuous))
-        .overlay(
-            RoundedRectangle(cornerRadius: AppRadius.medium, style: .continuous).strokeBorder(Color.borderSecondary, lineWidth: 0.5)
-        )
+        .frame(height: 56)
+        .background(BaseViewColor.elevatedSurface)
+        .overlay(Rectangle().stroke(BaseViewColor.border, lineWidth: BaseViewLayout.cardBorderWidth))
     }
 }
 

@@ -22,30 +22,30 @@ struct SearchView: View {
     
     var body: some View {
         ZStack(alignment: .top) {
-            Color.bgPrimary.ignoresSafeArea()
+            BaseViewColor.background.ignoresSafeArea()
             
             // Fixed Navigation Header
             HStack(alignment: .center, spacing: AppLayout.spacing) {
                 Button { dismiss() } label: {
                     Image(systemName: "xmark")
                         .font(.system(size: 17, weight: .medium))
-                        .foregroundStyle(Color.textPrimary)
+                        .foregroundStyle(BaseViewColor.textPrimary)
                         .padding(12)
                         .background {
                             Circle()
-                                .fill(Color.bgPrimary)
+                                .fill(BaseViewColor.background)
                         }
                         .overlay {
                             Circle()
-                                .strokeBorder(Color.textPrimary, lineWidth: min(66.6, max(scrollOffset, 0.0)) / 66.6)
+                                .strokeBorder(BaseViewColor.border, lineWidth: 1)
                                 .opacity(min(88.8, max(scrollOffset, 0.0)) / 99.9)
                         }
                 }
                 
                 Text(String(localized: "common_search"))
-                    .font(AppTypography.displayMedium)
+                    .font(BaseViewFont.sectionTitle)
                     .lineLimit(1)
-                    .foregroundStyle(Color.textPrimary)
+                    .foregroundStyle(BaseViewColor.textPrimary)
                     .fixedSize()
                     .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
                     .hidden()
@@ -68,9 +68,9 @@ struct SearchView: View {
                                 .hidden()
                             
                             Text(String(localized: "common_search"))
-                                .font(AppTypography.displayMedium)
+                                .font(BaseViewFont.sectionTitle)
                                 .lineLimit(1)
-                                .foregroundColor(Color.textPrimary)
+                                .foregroundColor(BaseViewColor.textPrimary)
                                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
                         }
                         
@@ -80,7 +80,7 @@ struct SearchView: View {
                     }
                     .padding(.horizontal, AppLayout.spacing)
                     .padding(.top, AppLayout.spacingCompact)
-                    .background(Color.bgPrimary)
+                    .background(BaseViewColor.background)
                     .background(GeometryReader {
                         Color.clear.preference(key: ViewOffsetKey.self, value: -$0.frame(in: .named("scroll")).origin.y)
                     })
@@ -91,30 +91,27 @@ struct SearchView: View {
                     // Search Bar
                     HStack(spacing: AppLayout.spacingMedium) {
                         Image("magnifyingglass")
-                            .font(AppFont.body)
-                            .foregroundStyle(Color.textSecondary)
+                            .font(BaseViewFont.body)
+                            .foregroundStyle(BaseViewColor.textSecondary)
                         
                         TextField("Search products...", text: $viewModel.searchQuery)
                             .textFieldStyle(PlainTextFieldStyle())
-                            .font(AppFont.body)
-                            .foregroundStyle(Color.textPrimary)
+                            .font(BaseViewFont.body)
+                            .foregroundStyle(BaseViewColor.textPrimary)
                         
                         if !viewModel.searchQuery.isEmpty {
                             Button {
                                 viewModel.searchQuery = ""
                             } label: {
                                 Image("circle_x")
-                                    .font(AppFont.body)
-                                    .foregroundStyle(Color.textSecondary)
+                                    .font(BaseViewFont.body)
+                                    .foregroundStyle(BaseViewColor.textSecondary)
                             }
                         }
                     }
-                    .padding(.horizontal, 8)
-                    .padding(.vertical, 6)
-                    .overlay {
-                        Capsule()
-                            .strokeBorder(Color.borderSecondary, style: StrokeStyle(lineWidth: 1, dash: AppLayout.dashedPattern))
-                    }
+                    .padding(.horizontal, BaseViewLayout.badgeInset)
+                    .frame(height: 49)
+                    .background(BaseViewColor.elevatedSurface)
                     .padding(.horizontal, AppLayout.spacing)
                     
                     Color.secondary.frame(height: 1)
@@ -127,8 +124,8 @@ struct SearchView: View {
                             VStack(alignment: .leading, spacing: AppLayout.spacing) {
                                 Text(String(localized: "common_recent"))
                                     .textCase(.uppercase)
-                                    .font(AppFont.sectionHeader)
-                                    .foregroundStyle(Color.textPrimary)
+                                    .font(BaseViewFont.labelStrong)
+                                    .foregroundStyle(BaseViewColor.textPrimary)
                                 
                                 VStack(spacing: 0) {
                                     ForEach(Array(viewModel.recentSearches.enumerated()), id: \.element) { index, query in
@@ -138,14 +135,14 @@ struct SearchView: View {
                                             VStack(spacing: 0) {
                                                 HStack {
                                                     Text(query)
-                                                        .font(AppFont.body)
-                                                        .foregroundStyle(Color.textPrimary)
+                                                        .font(BaseViewFont.body)
+                                                        .foregroundStyle(BaseViewColor.textPrimary)
                                                     
                                                     Spacer()
                                                     
                                                     Image(systemName: "arrow.up.left")
                                                         .font(.system(size: 12))
-                                                        .foregroundStyle(Color.textSecondary)
+                                                        .foregroundStyle(BaseViewColor.textSecondary)
                                                 }
                                                 .padding(AppLayout.spacing)
                                                 
@@ -156,10 +153,10 @@ struct SearchView: View {
                                         }
                                     }
                                 }
-                                .background(Color.bgPrimary)
+                                .background(BaseViewColor.elevatedSurface)
                                 .overlay(
-                                    Capsule()
-                                        .strokeBorder(Color.border, lineWidth: 1)
+                                    Rectangle()
+                                        .stroke(BaseViewColor.border, lineWidth: BaseViewLayout.cardBorderWidth)
                                 )
                             }
                             .padding(.horizontal, AppLayout.spacing)
@@ -173,18 +170,18 @@ struct SearchView: View {
                         } else if viewModel.searchResults.isEmpty {
                             VStack(spacing: AppLayout.spacing) {
                                 Text(String(localized: "search_empty_title"))
-                                    .font(AppFont.sectionHeader)
-                                    .foregroundStyle(Color.textPrimary)
+                                    .font(BaseViewFont.sectionTitle)
+                                    .foregroundStyle(BaseViewColor.textPrimary)
                                 
                                 Text(String(localized: "search_empty_desc"))
-                                    .font(AppFont.body)
-                                    .foregroundStyle(Color.textSecondary)
+                                    .font(BaseViewFont.body)
+                                    .foregroundStyle(BaseViewColor.textSecondary)
                             }
                             .frame(maxWidth: .infinity)
                             .padding(60)
                             .overlay(
-                                Capsule()
-                                    .strokeBorder(Color.border, style: StrokeStyle(lineWidth: 1, dash: AppLayout.dashedPattern))
+                                Rectangle()
+                                    .stroke(BaseViewColor.border, lineWidth: BaseViewLayout.cardBorderWidth)
                             )
                             .padding(AppLayout.spacing)
                         } else {
@@ -234,8 +231,8 @@ struct SearchResultRow: View {
                             Color.surfacePrimary
                                 .overlay(
                                     Text(String(product.name.prefix(1)))
-                                        .font(AppFont.sectionHeader)
-                                        .foregroundStyle(Color.textSecondary)
+                                        .font(BaseViewFont.sectionTitle)
+                                        .foregroundStyle(BaseViewColor.textSecondary)
                                 )
                         case .success(let image):
                             image
@@ -254,27 +251,27 @@ struct SearchResultRow: View {
                     
                     VStack(alignment: .leading, spacing: 4) {
                         Text(product.name)
-                            .font(AppFont.body)
-                            .foregroundStyle(Color.textPrimary)
+                            .font(BaseViewFont.cardTitle)
+                            .foregroundStyle(BaseViewColor.textPrimary)
                             .lineLimit(2)
                         
                         if let description = product.description {
                             Text(description)
-                                .font(AppFont.uiCaption)
-                                .foregroundStyle(Color.textSecondary)
+                                .font(BaseViewFont.label)
+                                .foregroundStyle(BaseViewColor.textSecondary)
                                 .lineLimit(2)
                         }
                         
                         Text(product.priceRange)
-                            .font(AppFont.monoBody)
-                            .foregroundStyle(Color.accentPrimary)
+                            .font(BaseViewFont.labelStrong)
+                            .foregroundStyle(BaseViewColor.accent)
                     }
                     
                     Spacer()
                     
                     Image(systemName: "chevron.right")
                         .font(.system(size: 12))
-                        .foregroundStyle(Color.textSecondary)
+                        .foregroundStyle(BaseViewColor.textSecondary)
                 }
                 .padding(.vertical, AppLayout.spacing)
                 

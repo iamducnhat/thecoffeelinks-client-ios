@@ -14,6 +14,7 @@ final class CartViewModel: ObservableObject {
     @Published var cart: Cart = .empty
     @Published var deliveryFee: Double = 0
     @Published var discount: Double = 0
+
     @Published var voucherValidation: VoucherValidation?
     @Published var deliveryAvailability: DeliveryAvailability?
     @Published var isValidatingVoucher = false
@@ -69,20 +70,38 @@ final class CartViewModel: ObservableObject {
     var total: Double {
         var amount = subtotal
         if cart.mode == .delivery { amount += deliveryFee }
-        amount -= discount
+        amount -= bestDiscount
         amount -= pointsDiscount
         return max(0, amount)
     }
     
+    var tierDiscount: Double {
+        let pct = DependencyContainer.shared.profileStorage.loadUser()?.membershipStatus.discountPercent ?? 0
+        return subtotal * (Double(pct) / 100.0)
+    }
+    
+    var bestDiscount: Double {
+        max(discount, tierDiscount)
+    }
+    
+    var currentDiscountSource: DiscountSource {
+        if discount >= tierDiscount && discount > 0 {
+            return .voucher
+        } else if tierDiscount > 0 {
+            return .tier
+        }
+        return .none
+    }
+
     var summary: CartSummary {
         let minAmount = deliveryAvailability?.minOrderAmount ?? 0
         let remaining = max(0, minAmount - subtotal)
-        let totalDiscount = discount + pointsDiscount
+        let totalDiscount = bestDiscount + pointsDiscount
         return CartSummary(subtotal: subtotal, deliveryFee: cart.mode == .delivery ? deliveryFee : 0, discount: totalDiscount,
                           total: total, itemCount: itemCount, meetsMinimum: subtotal >= minAmount,
                           minimumOrderAmount: minAmount, remainingForMinimum: remaining)
     }
-    
+
     var canCheckout: Bool {
         guard !isEmpty else { return false }
         if cart.mode == .delivery {
@@ -429,4 +448,8 @@ final class CartViewModel: ObservableObject {
 enum VoucherError: LocalizedError {
     case invalid(String)
     var errorDescription: String? { switch self { case .invalid(let msg): return msg } }
+}
+
+enum DiscountSource: String, Codable, Sendable {
+    case none, tier, voucher
 }

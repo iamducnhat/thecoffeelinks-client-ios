@@ -9,7 +9,6 @@ final class ProductRepository: ProductRepositoryProtocol, @unchecked Sendable {
     private let networkService: NetworkServiceProtocol
     private let cacheService: CacheServiceProtocol
     private let syncManager: SyncManager
-    private let menuCacheKey = "menu_cache"
     private let menuCacheTTL: TimeInterval = 300
     
     init(networkService: NetworkServiceProtocol, cacheService: CacheServiceProtocol, syncManager: SyncManager) {
@@ -17,48 +16,69 @@ final class ProductRepository: ProductRepositoryProtocol, @unchecked Sendable {
         self.cacheService = cacheService
         self.syncManager = syncManager
     }
+
+    private func normalizedStoreId(_ storeId: String?) -> String? {
+        let trimmed = storeId?.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard let trimmed, !trimmed.isEmpty else { return nil }
+        return trimmed
+    }
+
+    private func menuCacheKey(for storeId: String?) -> String {
+        if let storeId = normalizedStoreId(storeId) {
+            return "menu_cache_\(storeId)"
+        }
+        return "menu_cache_global"
+    }
+
+    private func menuVersionKey(for storeId: String?) -> String {
+        if let storeId = normalizedStoreId(storeId) {
+            return "menu:\(storeId)"
+        }
+        return "menu:global"
+    }
     
-    func getCachedMenu() async -> Menu? {
-        guard let data: Data = await cacheService.get(menuCacheKey) else { return nil }
+    func getCachedMenu(storeId: String?) async -> Menu? {
+        guard let data: Data = await cacheService.get(menuCacheKey(for: storeId)) else { return nil }
         return try? JSONDecoder().decode(Menu.self, from: data)
     }
     
-    func refreshMenu() async throws -> Menu {
-        let response: APIMenuResponse = try await networkService.get("/api/menu", queryItems: nil)
+    func refreshMenu(storeId: String?) async throws -> Menu {
+        let queryItems = normalizedStoreId(storeId).map { [URLQueryItem(name: "store_id", value: $0)] }
+        let response: APIMenuResponse = try await networkService.get("/api/menu", queryItems: queryItems)
         let menu = response.toMenu()
         
         if let data = try? JSONEncoder().encode(menu) {
-            await cacheService.set(menuCacheKey, value: data, ttl: menuCacheTTL)
+            await cacheService.set(menuCacheKey(for: storeId), value: data, ttl: menuCacheTTL)
         }
         
         // Update local version if we have a server version from sync manager
         if let serverVersion = syncManager.serverVersion(for: "menu") {
-            syncManager.updateLocalVersion(key: "menu", version: serverVersion)
+            syncManager.updateLocalVersion(key: menuVersionKey(for: storeId), version: serverVersion)
         }
         
         return menu
     }
     
-    func getMenu() async throws -> Menu {
+    func getMenu(storeId: String?) async throws -> Menu {
         // 1. Try to get from cache
-        if let data: Data = await cacheService.get(menuCacheKey),
+        if let data: Data = await cacheService.get(menuCacheKey(for: storeId)),
            let cached = try? JSONDecoder().decode(Menu.self, from: data) {
             // If cache was persisted during a temporary empty-data incident, force refresh.
             if cached.products.isEmpty {
-                return try await refreshMenu()
+                return try await refreshMenu(storeId: storeId)
             }
             
             // 2. Check if stale
             if let serverVersion = syncManager.serverVersion(for: "menu") {
-                if syncManager.isStale(key: "menu", serverVersion: serverVersion) {
-                    return try await refreshMenu()
+                if syncManager.isStale(key: menuVersionKey(for: storeId), serverVersion: serverVersion) {
+                    return try await refreshMenu(storeId: storeId)
                 }
             }
             return cached
         }
         
         // 3. Not in cache or version unknown (first time), fetch and update
-        return try await refreshMenu()
+        return try await refreshMenu(storeId: storeId)
     }
     
     func getProducts(categoryId: String?) async throws -> [Product] {

@@ -26,6 +26,7 @@ struct APIMenuResponse: Codable {
     let sizes: [String: APISizeModifier]
     let sugar_options: [APIOption]
     let ice_options: [APIOption]
+    let store_id: String?
     
     func toMenu() -> Menu {
         // Convert API sizes to domain SizeOptions
@@ -37,7 +38,7 @@ struct APIMenuResponse: Codable {
         
         return Menu(
             categories: categories.map { $0.toDomain() },
-            products: products.map { $0.toDomain(sizeDefaults: sizeDefaults) },
+            products: products.map { $0.toDomain(sizeDefaults: sizeDefaults, storeId: store_id) },
             toppings: toppings.map { $0.toDomain() },
             lastUpdated: Date()
         )
@@ -54,12 +55,17 @@ struct APIProduct: Codable {
     let is_popular: Bool
     let is_new: Bool
     let is_available: Bool
+    let is_globally_available: Bool?
+    let inventory_state: ProductInventoryState?
+    let quantity_on_hand: Int?
+    let has_store_override: Bool?
+    let uses_quantity_inventory: Bool?
     let is_hot_supported: Bool?
     let is_deliverable: Bool?
     let available_toppings: [String]
     let size_options: APISizeOptionsObject?
     
-    func toDomain(sizeDefaults: [ProductSize: Double]) -> Product {
+    func toDomain(sizeDefaults: [ProductSize: Double], storeId: String?) -> Product {
         // Parse size_options from server (object format)
         let sizeOptions: [SizeOption]
         if let apiSizeOpts = size_options {
@@ -99,7 +105,12 @@ struct APIProduct: Codable {
             availableToppings: available_toppings,
             isPopular: is_popular,
             isNew: is_new,
-            isActive: is_available,
+            isActive: is_globally_available ?? is_available,
+            isStoreAvailable: storeId == nil ? nil : is_available,
+            inventoryState: inventory_state,
+            quantityOnHand: quantity_on_hand,
+            hasStoreOverride: has_store_override ?? false,
+            usesQuantityInventory: uses_quantity_inventory ?? false,
             isHotSupported: is_hot_supported ?? false,
             isDeliverable: is_deliverable ?? true,
             deliveryPrepMinutes: nil,

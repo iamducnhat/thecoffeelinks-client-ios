@@ -47,6 +47,10 @@
 		<string>Geologica-Bold.ttf</string>
 		<string>NotoSansMono-Regular.ttf</string>
 		<string>NotoSansMono-Medium.ttf</string>
+		<string>BeVietnamPro-Regular.ttf</string>
+		<string>BeVietnamPro-Medium.ttf</string>
+		<string>BeVietnamPro-SemiBold.ttf</string>
+		<string>BeVietnamPro-Bold.ttf</string>
 	</array>
 	<key>UIApplicationSceneManifest</key>
 	<dict>

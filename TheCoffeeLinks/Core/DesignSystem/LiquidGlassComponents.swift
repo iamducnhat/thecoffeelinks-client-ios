@@ -125,7 +125,7 @@ struct LiquidGlassButton: View {
                             startPoint: .topLeading,
                             endPoint: .bottomTrailing
                         ),
-                        lineWidth: 1.5
+                        lineWidth: 1
                     )
             }
             .shadow(color: Color.black.opacity(0.08), radius: 8, x: 0, y: 2)

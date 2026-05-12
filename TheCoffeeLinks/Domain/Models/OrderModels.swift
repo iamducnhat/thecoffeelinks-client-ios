@@ -447,6 +447,11 @@ struct CreateOrderResponse: Codable, Sendable {
         let items: [APICreateOrderItem]
         let estimated_ready_at: String?
         let payment_url: String?
+        let tax: Double?
+        let tax_rate: Double?
+        let points_used: Int?
+        let voucher_snapshot: VoucherSnapshot?
+        let store_snapshot: StoreSnapshot?
         
         struct APICreateOrderItem: Codable {
             let order_id: String
@@ -578,11 +583,11 @@ struct CreateOrderResponse: Codable, Sendable {
             cancelledAt: orderStatus == .cancelled ? updatedDate : nil,
             cancellationReason: nil,
             paymentUrl: apiOrder.payment_url,
-            tax: nil,
-            taxRate: nil,
-            pointsUsed: nil,
-            voucherSnapshot: nil,
-            storeSnapshot: nil
+            tax: apiOrder.tax,
+            taxRate: apiOrder.tax_rate,
+            pointsUsed: apiOrder.points_used,
+            voucherSnapshot: apiOrder.voucher_snapshot,
+            storeSnapshot: apiOrder.store_snapshot
         )
     }
 }

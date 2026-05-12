@@ -20,80 +20,70 @@ struct StoreSelectionSheet: View {
     
     var body: some View {
         ZStack(alignment: .top) {
-            Color.bgPrimary.ignoresSafeArea()
+            BaseViewColor.background.ignoresSafeArea()
             
             VStack(spacing: 0) {
-                // Header
-                VStack(spacing: AppLayout.marginCompact) {
+                VStack(spacing: 0) {
                     HStack(alignment: .top, spacing: AppLayout.spacing) {
                         Text(String(localized: "store_selection_title"))
-                            .font(AppTypography.displayMedium)
-                            .foregroundStyle(Color.textPrimary)
+                            .font(BaseViewFont.sectionTitle)
+                            .foregroundStyle(BaseViewColor.textPrimary)
                             .lineLimit(1)
                             .frame(maxWidth: .infinity, alignment: .leading)
 
                         Button { dismiss() } label: {
                             Image(systemName: "xmark")
                                 .font(.system(size: 17, weight: .medium))
-                                .foregroundStyle(Color.textPrimary)
-                                .padding(12)
-                                .background {
-                                    Circle()
-                                        .fill(Color.bgPrimary)
-                                }
-                                .overlay {
-                                    Circle()
-                                        .strokeBorder(Color.borderSecondary, lineWidth: 1)
-                                }
+                                .foregroundStyle(BaseViewColor.textPrimary)
+                                .frame(width: AppLayout.touchTarget, height: AppLayout.touchTarget)
                         }
                     }
                     .frame(minHeight: AppLayout.touchTarget)
+                    .padding(.horizontal, BaseViewLayout.screenInset)
+                    .padding(.top, BaseViewLayout.screenTopInset)
+                    .padding(.bottom, BaseViewLayout.screenInset)
 
-                    Divider()
-                        .background(Color.borderSecondary)
-                        .padding(.horizontal, -AppLayout.spacing)
+                    Rectangle()
+                        .fill(BaseViewColor.border)
+                        .frame(height: BaseViewLayout.cardBorderWidth)
                 }
-                .padding(.horizontal, AppLayout.spacing)
-                .padding(.top, AppLayout.spacing)
-                .background(Color.bgPrimary)
+                .background(BaseViewColor.background)
                 
-                // Search
                 VStack {
                     HStack(spacing: AppLayout.spacingMedium) {
                         Image("magnifyingglass")
-                            .font(AppFont.body)
-                            .foregroundStyle(Color.textSecondary)
+                            .font(BaseViewFont.body)
+                            .foregroundStyle(BaseViewColor.textSecondary)
                         
                         TextField("Search stores...", text: $viewModel.searchQuery)
                             .textFieldStyle(PlainTextFieldStyle())
-                            .font(AppFont.body)
-                            .foregroundStyle(Color.textPrimary)
+                            .font(BaseViewFont.body)
+                            .foregroundStyle(BaseViewColor.textPrimary)
                     }
-                    .padding(.horizontal, 8)
-                    .padding(.vertical, 6)
-                    .overlay {
-                        Capsule()
-                            .strokeBorder(Color.borderSecondary, style: StrokeStyle(lineWidth: 1, dash: AppLayout.dashedPattern))
-                    }
+                    .padding(.horizontal, BaseViewLayout.badgeInset)
+                    .frame(height: BaseViewLayout.rowHeight)
+                    .background(Color.textPrimary.opacity(0.08))
                 }
-                .padding(AppLayout.spacing)
+                .padding(.horizontal, BaseViewLayout.screenInset)
+                .padding(.top, BaseViewLayout.sectionGap)
+                .padding(.bottom, BaseViewLayout.sectionGap)
                 
                 if viewModel.isLoading && viewModel.stores.isEmpty {
                     ReceiptLoadingLog()
-                        .padding(AppLayout.spacing)
+                        .padding(.horizontal, BaseViewLayout.screenInset)
                 } else if viewModel.filteredStores.isEmpty {
                     VStack(spacing: AppLayout.spacing) {
                         Image("mappin.slash")
                             .font(.system(size: 32))
-                            .foregroundStyle(Color.textSecondary)
+                            .foregroundStyle(BaseViewColor.textSecondary)
                         Text(String(localized: "stores_empty_search"))
-                            .font(AppFont.body)
-                            .foregroundStyle(Color.textSecondary)
+                            .font(BaseViewFont.body)
+                            .foregroundStyle(BaseViewColor.textSecondary)
                     }
                     .padding(40)
                 } else {
                     ScrollView {
-                        LazyVStack(spacing: AppLayout.spacing) {
+                        LazyVStack(spacing: BaseViewLayout.cardGap) {
                             ForEach(viewModel.filteredStores) { store in
                                 StoreCard(store: store, viewModel: viewModel)
                                     .onTapGesture {
@@ -103,7 +93,8 @@ struct StoreSelectionSheet: View {
                                     }
                             }
                         }
-                        .padding(AppLayout.spacing)
+                        .padding(.horizontal, BaseViewLayout.screenInset)
+                        .padding(.bottom, BaseViewLayout.sectionGap)
                     }
                 }
             }

@@ -226,7 +226,7 @@ private struct ProgressPoint: View {
             .frame(width: 8, height: 8)
             .background(
                 Circle()
-                    .strokeBorder(Color.surfacePrimary, lineWidth: 4)
+                    .strokeBorder(Color.surfacePrimary, lineWidth: 1)
             )
     }
 }

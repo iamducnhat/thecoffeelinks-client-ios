@@ -112,7 +112,7 @@ struct CheckoutView: View {
                             }
                             .overlay {
                                 Circle()
-                                    .strokeBorder(Color.textPrimary, lineWidth: min(66.6, max(scrollOffset, 0.0)) / 66.6)
+                                    .strokeBorder(Color.textPrimary, lineWidth: 1)
                                 .opacity(min(88.8, max(scrollOffset, 0.0)) / 99.9)
                             }
                     }
@@ -146,7 +146,7 @@ struct CheckoutView: View {
                                         }
                                         .overlay {
                                             Circle()
-                                                .strokeBorder(Color.textPrimary, lineWidth: min(66.6, max(scrollOffset, 0.0)) / 66.6)
+                                                .strokeBorder(Color.textPrimary, lineWidth: 1)
                                                 .opacity(min(88.8, max(scrollOffset, 0.0)) / 99.9)
                                         }
                                 }
@@ -350,32 +350,39 @@ struct CheckoutView: View {
                                     }
                                 }
 
-                                // Membership tier discount
-                                if let user = authViewModel.currentUser,
-                                   user.membershipTier != .bronze {
-                                    let tierPct = user.membershipTier.discountPercentage
+                                // Membership & Promo Discount Explanation
+                                if let user = authViewModel.currentUser, user.id != "guest" {
+                                    let status = user.membershipStatus
+                                    let tierPct = status.discountPercent
                                     let tierAmount = cartViewModel.subtotal * (tierPct / 100.0)
-                                    HStack {
-                                        HStack(spacing: 4) {
-                                            Image(systemName: "crown.fill")
-                                                .font(.system(size: 12))
-                                            Text("\(user.membershipTier.displayName) -\(Int(tierPct))%")
-                                                .font(AppFont.body)
+                                    
+                                    if cartViewModel.currentDiscountSource == .tier && tierAmount > 0 {
+                                        HStack {
+                                            HStack(spacing: 4) {
+                                                Image(systemName: "crown.fill")
+                                                    .font(.system(size: 12))
+                                                Text("\(user.membershipTier.displayName) -\(Int(tierPct))%")
+                                                    .font(AppFont.body)
+                                            }
+                                            Spacer()
+                                            Text("-\(tierAmount.formattedVND)")
+                                                .font(AppFont.monoBody)
                                         }
                                         .foregroundColor(Color.accentPrimary)
-                                        Spacer()
-                                        Text("-\(tierAmount.formattedVND)")
-                                            .font(AppFont.monoBody)
-                                            .foregroundColor(Color.accentPrimary)
+                                        
+                                        Text("You are saving with your \(user.membershipTier.displayName) benefits.")
+                                            .font(AppFont.uiMicro)
+                                            .foregroundColor(Color.textSecondary)
+                                    } else if cartViewModel.currentDiscountSource == .voucher && tierAmount > 0 {
+                                        Text("Best available discount applied. Your \(user.membershipTier.displayName) benefit resumes when promo ends.")
+                                            .font(AppFont.uiMicro)
+                                            .foregroundColor(Color.textSecondary)
                                     }
                                 }
 
                                 // Tax (8%)
-                                let tierDiscountAmount: Double = {
-                                    guard let user = authViewModel.currentUser, user.membershipTier != .bronze else { return 0 }
-                                    return cartViewModel.subtotal * (user.membershipTier.discountPercentage / 100.0)
-                                }()
-                                let taxable = max(0, cartViewModel.subtotal - cartViewModel.discount - cartViewModel.pointsDiscount - tierDiscountAmount)
+                                let totalDiscount = cartViewModel.bestDiscount
+                                let taxable = max(0, cartViewModel.subtotal - totalDiscount - cartViewModel.pointsDiscount)
                                 let taxAmount = taxable * 0.08
                                 HStack {
                                     Text("tax_label")

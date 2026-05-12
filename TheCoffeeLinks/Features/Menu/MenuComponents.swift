@@ -2,398 +2,528 @@
 //  MenuComponents.swift
 //  thecoffeelinks-client-ios
 //
-//  Receipt-Editorial Design
-//  Aligned with canonical CheckoutView.swift
-//
 
 import SwiftUI
-import CachedAsyncImage // CHANGED
-
-// MARK: - Product Detail Sheet
-
-private struct ProductOffsetKey: PreferenceKey {
-    typealias Value = CGFloat
-    static var defaultValue = CGFloat.zero
-    static func reduce(value: inout Value, nextValue: () -> Value) {
-        value += nextValue()
-    }
-}
-
 
 struct ProductDetailSheet: View {
     let product: Product
-    var cartItem: CartItem? = nil // Support for editing
-    @Environment(\.dismiss) var dismiss
-    @EnvironmentObject var cartViewModel: CartViewModel
-    @EnvironmentObject var menuViewModel: MenuViewModel
-    
-    
+    var cartItem: CartItem? = nil
+
+    @Environment(\.dismiss) private var dismiss
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+    @EnvironmentObject private var cartViewModel: CartViewModel
+    @EnvironmentObject private var menuViewModel: MenuViewModel
+    @ScaledMetric(relativeTo: .body) private var ctaButtonVerticalPadding: CGFloat = 10
+    @ScaledMetric(relativeTo: .body) private var ctaButtonHorizontalPadding: CGFloat = 16
+
     @State private var quantity = 1
     @State private var selectedSize: ProductSize = .medium
     @State private var selectedToppings: Set<String> = []
     @State private var notes: String = ""
-    @State private var sugarLevel: SugarLevel = .full
+    @State private var sugarLevel: SugarLevel = .half
     @State private var iceLevel: IceLevel = .normal
-    @State private var scrollOffset = CGFloat.zero
-    
-    // Initialize state from cart item if editing
+
+    private enum SVG {
+        static let horizontalInset: CGFloat = 23
+
+        static let metadataHeight: CGFloat = 227
+        static let sugarHeight: CGFloat = 109
+        static let iceHeight: CGFloat = 224
+        static let toppingsHeight: CGFloat = 188
+        static let notesHeight: CGFloat = 230
+
+        static let gapAfterDivider: CGFloat = 23
+        static let gapTitleToContent: CGFloat = 28
+        static let gapBetweenRows: CGFloat = 13
+
+        static let metadataTitleToDescriptionGap: CGFloat = 10
+
+        static let listRowHeight: CGFloat = 23
+        static let listRowTopInset: CGFloat = 3.5
+
+        static let notesBottomGap: CGFloat = 46
+        static let notesBoxHeight: CGFloat = 114
+
+        static let titleSize: CGFloat = 22
+        static let titleTwoLineHeight: CGFloat = 56
+        static let bodySize: CGFloat = 18
+        static let bodyLineSpacing: CGFloat = 5
+
+        static let ctaTopInset: CGFloat = 23
+        static let ctaLabelToPriceGap: CGFloat = 13
+        static let ctaPriceToButtonGap: CGFloat = 13
+        static let ctaPriceTopInset: CGFloat = 41
+        static let ctaQuantityTopInset: CGFloat = 43
+        static let ctaButtonTopInset: CGFloat = 82
+        static let qtyControlHeight: CGFloat = 23
+        static let qtyControlGap: CGFloat = 8
+        static let qtyValueWidth: CGFloat = 36
+        static let ctaBottomInset: CGFloat = 25
+    }
+
+    private let dividerColor = BaseViewColor.border
+    private let secondaryTextColor = BaseViewColor.textSecondary
+    private let notesBg = Color(hex: "727272").opacity(0.08)
+    private let heroPlaceholder = BaseViewColor.placeholder
+    private let sheetBackground = BaseViewColor.background
+
     init(product: Product, cartItem: CartItem? = nil) {
         self.product = product
         self.cartItem = cartItem
-        
+
         if let item = cartItem {
             _quantity = State(initialValue: item.quantity)
             _selectedSize = State(initialValue: item.customization.size)
-            
-            let toppingIds = Set(item.customization.toppings.map { $0.id })
-            _selectedToppings = State(initialValue: toppingIds)
-            
+            _selectedToppings = State(initialValue: Set(item.customization.toppings.map { $0.id }))
             _notes = State(initialValue: item.customization.notes ?? "")
-            _sugarLevel = State(initialValue: item.customization.sugar ?? .full)
+            _sugarLevel = State(initialValue: item.customization.sugar ?? .half)
             _iceLevel = State(initialValue: item.customization.ice ?? .normal)
         }
     }
-    
+
     var body: some View {
-        ZStack(alignment: .top) {
-            Color.bgPrimary.ignoresSafeArea()
-            
-            // Fixed Navigation Header (Overlay)
-            HStack(alignment: .top, spacing: AppLayout.spacing) {
-                // Hidden title placeholder for alignment
-                Text(product.name)
-                    .font(AppTypography.displayMedium)
-                    .foregroundStyle(Color.textPrimary)
-                    .lineLimit(1)
-                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
-                    .hidden()
-                
-//                SectionHeader(title: product.name)
-//                    .hidden()
-                
-                Button { dismiss() } label: {
-                    Image(systemName: "xmark")
-                        .font(.system(size: 17, weight: .medium))
-                        .foregroundStyle(Color.textPrimary)
-                        .padding(12)
-                        .background {
-                            Circle()
-                                .fill(Color.bgPrimary)
+        ScrollView(showsIndicators: false) {
+            VStack(alignment: .leading, spacing: 0) {
+                hero
+                content
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(sheetBackground)
+        }
+        .safeAreaInset(edge: .bottom, spacing: 0) {
+            ctaOverlay
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+        .background(sheetBackground.ignoresSafeArea())
+    }
+
+    private var hero: some View {
+        Rectangle()
+            .fill(heroPlaceholder)
+            .overlay {
+                if let imageUrl = product.displayImageUrl, let url = URL(string: imageUrl) {
+                    AsyncImage(url: url) { phase in
+                        switch phase {
+                        case .success(let image):
+                            image
+                                .resizable()
+                                .aspectRatio(contentMode: .fill)
+                                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                        default:
+                            EmptyView()
                         }
-                        .overlay {
-                            Circle()
-                                .strokeBorder(Color.textPrimary, lineWidth: min(66.6, max(scrollOffset, 0.0)) / 66.6)
-                                .opacity(min(88.8, max(scrollOffset, 0.0)) / 99.9)
-                        }
-                        //.padding(.top, -AppLayout.spacing)
+                    }
                 }
             }
-            .frame(minHeight: AppLayout.touchTarget)
-            .padding(.horizontal, AppLayout.spacing)
-            .padding(.top, AppLayout.spacing)
-            .zIndex(1)
-            .fixedSize(horizontal: false, vertical: true)
-            
-            VStack(spacing: 0) {
-                ScrollView {
-                    LazyVStack(alignment: .leading, spacing: AppLayout.spacing) {
-                        // Navigation Header (Scrollable Title)
-                        VStack(spacing: AppLayout.marginCompact) {
-                            HStack(alignment: .top, spacing: AppLayout.spacing) {
-                                Text(product.name)
-                                    .font(AppTypography.displayMedium)
-                                    .lineLimit(1)
-                                    .foregroundColor(Color.textPrimary)
-                                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
-                                                                
-                                // Hidden button placeholder for alignment
-                                Button { dismiss() } label: {
-                                    Image(systemName: "xmark")
-                                        .font(.system(size: 17, weight: .medium))
-                                        .foregroundStyle(Color.textPrimary)
-                                        .padding(12)
-                                        .background {
-                                            Circle()
-                                                .fill(Color.bgPrimary)
-                                        }
-                                        .overlay {
-                                            Circle()
-                                                .strokeBorder(Color.textPrimary, lineWidth: min(66.6, max(scrollOffset, 0.0)) / 66.6)
-                                                .opacity(min(88.8, max(scrollOffset, 0.0)) / 99.9)
-                                        }
-                                        //.padding(.top, AppLayout.spacing)
-                                }
-                                .hidden()
-                            }
-                            .frame(minHeight: AppLayout.touchTarget)
-                            .fixedSize(horizontal: false, vertical: true)
-                            
-                            Divider()
-                                .background(Color.borderSecondary)
-                                .padding(.horizontal, -AppLayout.spacing)
-                        }
-                        .padding(.horizontal, AppLayout.spacing)
-                        .padding(.top, AppLayout.spacing)
-                        .background(Color.bgPrimary)
-                        .background(GeometryReader {
-                            Color.clear.preference(key: ProductOffsetKey.self, value: -$0.frame(in: .named("scroll")).origin.y)
-                        })
-                        .onPreferenceChange(ProductOffsetKey.self) {
-                            self.scrollOffset = $0
-                        }
-                        .padding(.bottom, -AppLayout.spacing)
-                        
-                        // Image Section
-                        // CHANGED: Using CachedAsyncImage
-                        if let imageUrl = product.displayImageUrl, let url = URL(string: imageUrl) {
-                            CachedAsyncImage(url: url) { phase in // CHANGED
-                                switch phase { // CHANGED
-                                case .empty: // CHANGED
-                                    Rectangle() // CHANGED
-                                        .fill(Color.surfacePrimary) // CHANGED
-                                        .overlay { // CHANGED
-                                            ProgressView() // CHANGED
-                                                .tint(Color.accentPrimary) // CHANGED
-                                        } // CHANGED
-                                case .success(let image): // CHANGED
-                                    image // CHANGED
-                                        .resizable() // CHANGED
-                                        .aspectRatio(contentMode: .fit) // CHANGED
-                                case .failure: // CHANGED
-                                    Rectangle() // CHANGED
-                                        .fill(Color.surfacePrimary) // CHANGED
-                                @unknown default: // CHANGED
-                                    EmptyView() // CHANGED
-                                } // CHANGED
-                            } // CHANGED
-                            .frame(height: 240)
-                            .frame(maxWidth: .infinity)
-                            .background(Color.surfacePrimary)
-                        }
-                        
-                        // Metadata Section
-                        VStack(alignment: .leading, spacing: AppLayout.spacing) {
-                            HStack {
-                                Text("\(product.name)")
-                                    .font(AppFont.uiCaption)
-                                    .foregroundStyle(Color.textSecondary)
-                                Spacer()
-                                Text(calculateTotal().formattedVND)
-                                    .font(AppFont.monoBody.bold())
-                                    .foregroundStyle(Color.accentPrimary)
-                            }
-                            
-                            if let description = product.description {
-                                Text(description)
-                                    .font(AppFont.body)
-                                    .foregroundColor(Color.textPrimary)
-                            }
-                        }
-                        .padding(.horizontal, AppLayout.spacing)
-                        
-                        Divider().hidden()
-                        
-                        // Size Selection
-                        if product.sizeOptions.count > 1 {
-                            VStack(alignment: .leading, spacing: AppLayout.spacing) {
-                                Text(String(localized: "product_size_label"))
-                                    .textCase(.uppercase)
-                                    .font(AppFont.sectionHeader)
-                                    .foregroundStyle(Color.textPrimary)
-                                
-                                HStack(spacing: AppLayout.spacingMedium) {
-                                    ForEach(product.sizeOptions, id: \.size) { option in
-                                        Button {
-                                            selectedSize = option.size
-                                        } label: {
-                                            VStack(spacing: 4) {
-                                                Text(option.size.displayName)
-                                                    .font(AppFont.monoBody)
-                                                Text(option.price.formattedVND)
-                                                    .font(AppFont.uiMicro)
-                                            }
-                                            .padding(.vertical, 12)
-                                            .frame(maxWidth: .infinity)
-                                            .background(selectedSize == option.size ? Color.accentPrimary : Color.bgPrimary)
-                                            .foregroundColor(selectedSize == option.size ? Color.bgPrimary : Color.textPrimary)
-                                            .overlay(
-                                                Capsule()
-                                                    .strokeBorder(selectedSize == option.size ? Color.accentPrimary : Color.border, lineWidth: 1)
-                                            )
-                                            .clipShape(Capsule())
-                                        }
-                                    }
-                                }
-                            }
-                            .padding(.horizontal, AppLayout.spacing)
-                        }
-                        
-                        Divider().hidden()
-                        
-                        // Sugar Level
-                        VStack(alignment: .leading, spacing: AppLayout.spacing) {
-                            Text(String(localized: "product_sugar_label"))
-                                .textCase(.uppercase)
-                                .font(AppFont.sectionHeader)
-                                .foregroundStyle(Color.textPrimary)
-                            
-                            CapsuleSegmentedPicker(
-                                selection: $sugarLevel,
-                                options: SugarLevel.allCases.map { ($0, $0.displayName) }
-                            )
-                            .padding(.top, 4)
-                        }
-                        .padding(.horizontal, AppLayout.spacing) 
-                        
-                        Divider().hidden()
-                        
-                        // Ice Level
-                        VStack(alignment: .leading, spacing: AppLayout.spacing) {
-                            Text(String(localized: "product_ice_label"))
-                                .textCase(.uppercase)
-                                .font(AppFont.sectionHeader)
-                                .foregroundStyle(Color.textPrimary)
-                            
-                            CapsuleSegmentedPicker(
-                                selection: $iceLevel,
-                                options: IceLevel.allCases.map { ($0, $0.displayName.capitalized) }
-                            )
-                            .padding(.top, 4)
-                        }
-                        .padding(.horizontal, AppLayout.spacing)
-                        
-                        Divider().hidden()
-                        
-                        // Toppings
-                        if !product.availableToppings.isEmpty {
-                            VStack(alignment: .leading, spacing: AppLayout.spacing) {
-                                Text(String(localized: "product_addons_label"))
-                                    .textCase(.uppercase)
-                                    .font(AppFont.sectionHeader)
-                                    .foregroundStyle(Color.textPrimary)
-                                
-                                ForEach(product.availableToppings, id: \.self) { toppingId in
-                                    if let topping = menuViewModel.toppings.first(where: { $0.id == toppingId }) {
-                                        Button {
-                                            if selectedToppings.contains(toppingId) {
-                                                selectedToppings.remove(toppingId)
-                                            } else {
-                                                selectedToppings.insert(toppingId)
-                                            }
-                                        } label: {
-                                            HStack {
-                                                Image(systemName: !selectedToppings.contains(toppingId) ? "circle" : "checkmark.circle.fill")
-                                                    .foregroundStyle(selectedToppings.contains(toppingId) ? Color.accentPrimary : Color.textSecondary)
-                                                
-                                                Text(topping.name)
-                                                    .font(AppFont.body)
-                                                    .foregroundColor(Color.textPrimary)
-                                                
-                                                Spacer()
-                                                
-                                                Text("+\(topping.price.formattedVND)")
-                                                    .font(AppFont.monoBody)
-                                                    .foregroundStyle(Color.accentPrimary)
-                                            }
-                                            .padding(AppLayout.spacing)
-                                            .background(Color.surfacePrimary)
-                                            .overlay(
-                                                Capsule()
-                                                    .strokeBorder(Color.border, lineWidth: 1)
-                                            )
-                                            .clipShape(Capsule())
-                                        }
-                                    }
-                                }
-                            }
-                            .padding(.horizontal, AppLayout.spacing)
-                        }
-                        
-                        Divider().hidden()
-                        
-                        // Special Instructions
-                        VStack(alignment: .leading, spacing: AppLayout.spacing) {
-                            Text(String(localized: "product_special_instructions"))
-                                .textCase(.uppercase)
-                                .font(AppFont.sectionHeader)
-                                .foregroundStyle(Color.textPrimary)
-                            
-                            TextField("Anything else we should know?", text: $notes, axis: .vertical)
-                                .textFieldStyle(PlainTextFieldStyle())
-                                .font(AppFont.body)
-                                .padding(AppLayout.spacing)
-                                .overlay {
-                                    RoundedRectangle(cornerRadius: AppRadius.medium, style: .continuous)
-                                        .strokeBorder(Color.borderSecondary, style: StrokeStyle(lineWidth: 1, dash: AppLayout.dashedPattern))
-                                }
-                                .lineLimit(2...4)
-                        }
-                        .padding(.horizontal, AppLayout.spacing)
-                        
-                        Divider().hidden()
-                        
-                        // Quantity
-                        HStack {
-//                            Text(String(localized: "product_quantity_label"))
-//                                .font(AppFont.body)
-//                                .foregroundStyle(Color.textPrimary)
-//                            
-                            Spacer()
-//
-                            ReceiptQuantityStepper(
-                                quantity: quantity,
-                                onDecrease: { if quantity > 1 { quantity -= 1 } },
-                                onIncrease: { if quantity < 10 { quantity += 1 } }
-                            )
-                            Spacer()
-                        }
-                        .padding(.horizontal, AppLayout.spacing)
-                        
-                        Spacer(minLength: 140)
-                    }
-                    //.padding(.top, AppLayout.spacing)
+            .overlay(alignment: .topTrailing) {
+                Button {
+                    dismiss()
+                } label: {
+                    BaseUnderlinedCTA(title: "HUỶ BỎ")
+                        .padding(4)
+                        .background(sheetBackground)
                 }
-                .coordinateSpace(name: "scroll")
-                
-                // Total Bar
-                ReceiptTotalBar(
-                    totalLabel: "TOTAL",
-                    totalValue: (calculateTotal() * Double(quantity)).formattedVND,
-                    ctaTitle: cartItem != nil ? "Update Order" : "Add to Cart",
-                    action: {
-                        let allToppings = menuViewModel.toppings
-                        let toppingSelections = allToppings.filter { selectedToppings.contains($0.id) }.map {
-                            ToppingSelection(id: $0.id, name: $0.name, price: $0.price, quantity: 1)
+                .buttonStyle(.plain)
+                .padding(.top, SVG.horizontalInset)
+                .padding(.trailing, SVG.horizontalInset)
+            }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .aspectRatio(1, contentMode: .fit)
+        .clipped()
+    }
+
+    private var content: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            metadataSection
+            sectionDivider
+            sugarSection
+            sectionDivider
+            iceSection
+            sectionDivider
+            toppingsSection
+            sectionDivider
+            notesSection
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(sheetBackground)
+    }
+
+    private var metadataSection: some View {
+        VStack(alignment: .leading, spacing: SVG.metadataTitleToDescriptionGap) {
+            TwoLineText(
+                text: product.name.uppercased(),
+                font: BaseViewFont.sectionTitle,
+                color: BaseViewColor.textPrimary,
+                height: SVG.titleTwoLineHeight
+            )
+
+            if let description = product.description, !description.isEmpty {
+                Text(description)
+                    .font(BaseViewFont.body)
+                    .lineSpacing(SVG.bodyLineSpacing)
+                    .foregroundStyle(BaseViewColor.textSecondary)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+        }
+        .padding(.horizontal, SVG.horizontalInset)
+        .padding(.top, SVG.gapAfterDivider)
+        .padding(.bottom, SVG.gapAfterDivider)
+        .frame(maxWidth: .infinity, alignment: .topLeading)
+    }
+
+    private var sugarSection: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            Text("Đường")
+                .font(BaseViewFont.bodyStrong)
+                .foregroundStyle(BaseViewColor.textPrimary)
+                .padding(.bottom, SVG.gapTitleToContent)
+
+            ExactSugarSlider(selection: $sugarLevel)
+                .frame(maxWidth: .infinity)
+                .frame(height: 16)
+        }
+        .padding(.horizontal, SVG.horizontalInset)
+        .padding(.top, SVG.gapAfterDivider)
+        .padding(.bottom, SVG.gapAfterDivider)
+        .frame(maxWidth: .infinity, minHeight: SVG.sugarHeight, alignment: .topLeading)
+    }
+
+    private var iceSection: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            Text("Đá")
+                .font(BaseViewFont.bodyStrong)
+                .foregroundStyle(BaseViewColor.textPrimary)
+                .padding(.bottom, SVG.gapTitleToContent)
+
+            VStack(alignment: .leading, spacing: SVG.gapBetweenRows) {
+                ForEach(iceOptions, id: \.self) { level in
+                    Button {
+                        iceLevel = level
+                    } label: {
+                        ZStack(alignment: .topLeading) {
+                            HStack(spacing: 12) {
+                                AppTickbox(isSelected: iceLevel == level, size: 16)
+
+                                Text(level.displayName)
+                                    .font(BaseViewFont.body)
+                                    .foregroundStyle(iceLevel == level ? BaseViewColor.textPrimary : secondaryTextColor)
+                            }
+                            .padding(.top, SVG.listRowTopInset)
                         }
-                        
-                        let customization = OrderCustomization(
-                            size: selectedSize,
-                            sugar: sugarLevel,
-                            ice: iceLevel,
-                            toppings: toppingSelections,
-                            notes: notes.isEmpty ? nil : notes
-                        )
-                        
-                        if let existingItem = cartItem {
-                            cartViewModel.updateItem(id: existingItem.id, quantity: quantity, customization: customization)
+                        .frame(height: SVG.listRowHeight, alignment: .topLeading)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .contentShape(Rectangle())
+                        .background(sheetBackground)
+                    }
+                    .buttonStyle(.plain)
+                }
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+        }
+        .padding(.horizontal, SVG.horizontalInset)
+        .padding(.top, SVG.gapAfterDivider)
+        .padding(.bottom, SVG.gapAfterDivider)
+        .frame(maxWidth: .infinity, minHeight: SVG.iceHeight, alignment: .topLeading)
+    }
+
+    private var toppingsSection: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            Text("Đi kèm")
+                .font(BaseViewFont.bodyStrong)
+                .foregroundStyle(BaseViewColor.textPrimary)
+                .padding(.bottom, SVG.gapTitleToContent)
+
+            VStack(alignment: .leading, spacing: SVG.gapBetweenRows) {
+                ForEach(availableToppings.prefix(3), id: \.id) { topping in
+                    Button {
+                        if selectedToppings.contains(topping.id) {
+                            selectedToppings.remove(topping.id)
                         } else {
-                            cartViewModel.addItem(product: product, quantity: quantity, customization: customization)
+                            selectedToppings.insert(topping.id)
                         }
-                        dismiss()
+                    } label: {
+                        ZStack(alignment: .topLeading) {
+                            HStack(spacing: 12) {
+                                AppCheckbox(isSelected: selectedToppings.contains(topping.id), size: 16)
+
+                                Text(topping.name)
+                                    .font(BaseViewFont.body)
+                                    .foregroundStyle(selectedToppings.contains(topping.id) ? BaseViewColor.textPrimary : secondaryTextColor)
+
+                                Spacer()
+
+                                Text(topping.price.formattedVND)
+                                    .font(BaseViewFont.body)
+                                    .foregroundStyle(selectedToppings.contains(topping.id) ? BaseViewColor.textPrimary : secondaryTextColor)
+                            }
+                            .padding(.top, SVG.listRowTopInset)
+                        }
+                        .frame(height: SVG.listRowHeight, alignment: .topLeading)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .contentShape(Rectangle())
+                        .background(sheetBackground)
                     }
-                )
+                    .buttonStyle(.plain)
+                }
             }
+            .frame(maxWidth: .infinity, alignment: .leading)
+        }
+        .padding(.horizontal, SVG.horizontalInset)
+        .padding(.top, SVG.gapAfterDivider)
+        .padding(.bottom, SVG.gapAfterDivider)
+        .frame(maxWidth: .infinity, minHeight: SVG.toppingsHeight, alignment: .topLeading)
+    }
+
+    private var notesSection: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            Text("Lưu ý cho món")
+                .font(BaseViewFont.bodyStrong)
+                .foregroundStyle(BaseViewColor.textPrimary)
+                .padding(.bottom, SVG.gapTitleToContent)
+
+            ZStack(alignment: .topLeading) {
+                Rectangle().fill(notesBg)
+                if notes.isEmpty {
+                    Text("Bấm để nhập...")
+                        .font(BaseViewFont.body)
+                        .foregroundStyle(secondaryTextColor)
+                        .padding(.top, 12)
+                        .padding(.leading, 6)
+                }
+                TextEditor(text: $notes)
+                    .font(BaseViewFont.body)
+                    .scrollContentBackground(.hidden)
+                    .background(Color.clear)
+                    .foregroundStyle(BaseViewColor.textPrimary)
+                    .padding(.horizontal, 2)
+                    .padding(.vertical, 6)
+            }
+            .frame(maxWidth: .infinity)
+            .frame(height: SVG.notesBoxHeight)
+        }
+        .padding(.horizontal, SVG.horizontalInset)
+        .padding(.top, SVG.gapAfterDivider)
+        .padding(.bottom, SVG.notesBottomGap)
+        .frame(maxWidth: .infinity, minHeight: SVG.notesHeight, alignment: .topLeading)
+    }
+
+    private var ctaOverlay: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            if dynamicTypeSize.isAccessibilitySize {
+                VStack(alignment: .leading, spacing: SVG.ctaLabelToPriceGap) {
+                    Text("\(quantity) sản phẩm")
+                        .font(BaseViewFont.labelStrong)
+                        .foregroundStyle(secondaryTextColor)
+
+                    Text((unitPrice * Double(quantity)).formattedVND)
+                        .font(BaseViewFont.sectionTitle)
+                        .foregroundStyle(Color.textPrimary)
+
+                    Text("Số lượng")
+                        .font(BaseViewFont.labelStrong)
+                        .foregroundStyle(secondaryTextColor)
+
+                    quantityPicker
+                }
+                .padding(.bottom, SVG.ctaPriceToButtonGap)
+            } else {
+                ZStack(alignment: .topLeading) {
+                    HStack(alignment: .top) {
+                        Text("\(quantity) sản phẩm")
+                            .font(BaseViewFont.labelStrong)
+                            .foregroundStyle(secondaryTextColor)
+
+                        Spacer()
+
+                        Text("Số lượng")
+                            .font(BaseViewFont.labelStrong)
+                            .foregroundStyle(secondaryTextColor)
+                    }
+                    .frame(maxWidth: .infinity, alignment: .topLeading)
+
+                    Text((unitPrice * Double(quantity)).formattedVND)
+                        .font(BaseViewFont.sectionTitle)
+                        .foregroundStyle(Color.textPrimary)
+                        .padding(.top, SVG.ctaPriceTopInset - SVG.ctaTopInset)
+
+                    quantityPicker
+                        .frame(maxWidth: .infinity, alignment: .topTrailing)
+                        .padding(.top, SVG.ctaQuantityTopInset - SVG.ctaTopInset)
+
+                    ctaButton
+                        .padding(.top, SVG.ctaButtonTopInset - SVG.ctaTopInset)
+                }
+                .padding(.bottom, SVG.ctaBottomInset)
+            }
+
+            if dynamicTypeSize.isAccessibilitySize {
+                ctaButton
+            }
+        }
+        .padding(.top, SVG.ctaTopInset)
+        .padding(.horizontal, SVG.horizontalInset)
+        .padding(.bottom, dynamicTypeSize.isAccessibilitySize ? SVG.ctaBottomInset : 0)
+        .background(sheetBackground)
+        .overlay(alignment: .top) {
+            Rectangle()
+                .fill(Color.textPrimary)
+                .frame(height: 1)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
+    private var ctaButton: some View {
+        BaseCTAButton(title: "THÊM VÀO GIỎ HÀNG", fillsWidth: true) {
+            addOrUpdateCartItem()
         }
     }
-    
-    private func calculateTotal() -> Double {
-        var total = product.price(for: selectedSize)
-        let toppings = menuViewModel.toppings
-        for toppingId in selectedToppings {
-            if let topping = toppings.first(where: { $0.id == toppingId }) {
-                total += topping.price
+
+    private var quantityPicker: some View {
+        HStack(spacing: SVG.qtyControlGap) {
+            Button {
+                quantity = max(1, quantity - 1)
+            } label: {
+                Image(systemName: "minus")
+                    .font(.system(size: 14, weight: .regular))
+                    .foregroundStyle(BaseViewColor.accentForeground)
+                    .frame(width: SVG.qtyControlHeight, height: SVG.qtyControlHeight)
+                    .background(BaseViewColor.accent.opacity(0.7))
             }
+            .buttonStyle(.plain)
+
+            ZStack {
+                Text("9999")
+                    .font(BaseViewFont.body)
+                    .hidden()
+                Text("\(quantity)")
+                    .font(BaseViewFont.body)
+                    .foregroundStyle(Color.textPrimary)
+            }
+            .frame(minWidth: SVG.qtyValueWidth)
+            .frame(height: SVG.qtyControlHeight)
+            .overlay(
+                Rectangle().stroke(BaseViewColor.border, lineWidth: 1)
+            )
+
+            Button {
+                quantity = min(9999, quantity + 1)
+            } label: {
+                Image(systemName: "plus")
+                    .font(.system(size: 14, weight: .regular))
+                    .foregroundStyle(BaseViewColor.accentForeground)
+                    .frame(width: SVG.qtyControlHeight, height: SVG.qtyControlHeight)
+                    .background(BaseViewColor.accent)
+            }
+            .buttonStyle(.plain)
         }
-        return total
+    }
+
+    private var unitPrice: Double {
+        let toppingTotal = menuViewModel.toppings
+            .filter { selectedToppings.contains($0.id) }
+            .reduce(0) { $0 + $1.price }
+        return product.price(for: selectedSize) + toppingTotal
+    }
+
+    private func addOrUpdateCartItem() {
+        let toppingSelections = menuViewModel.toppings
+            .filter { selectedToppings.contains($0.id) }
+            .map { ToppingSelection(id: $0.id, name: $0.name, price: $0.price, quantity: 1) }
+
+        let customization = OrderCustomization(
+            size: selectedSize,
+            sugar: sugarLevel,
+            ice: iceLevel,
+            toppings: toppingSelections,
+            notes: notes.isEmpty ? nil : notes
+        )
+
+        if let existingItem = cartItem {
+            cartViewModel.updateItem(id: existingItem.id, quantity: quantity, customization: customization)
+        } else {
+            cartViewModel.addItem(product: product, quantity: quantity, customization: customization)
+        }
+        dismiss()
+    }
+
+    private var sectionDivider: some View {
+        Rectangle()
+            .fill(dividerColor)
+            .frame(height: 0.5)
+            .frame(maxWidth: .infinity)
+    }
+
+    private var iceOptions: [IceLevel] {
+        [.normal, .less, .extra, .none]
+    }
+
+    private var availableToppings: [Topping] {
+        product.availableToppings.compactMap { toppingId in
+            menuViewModel.toppings.first(where: { $0.id == toppingId && $0.isAvailable })
+        }
     }
 }
+
+private struct ExactSugarSlider: View {
+    @Binding var selection: SugarLevel
+
+    private let levels = SugarLevel.allCases
+    private let markerSize: CGFloat = 16
+    private let visualHeight: CGFloat = 16
+    private let hitPaddingY: CGFloat = 14
+    private let markerCenterY: CGFloat = 8
+    private let trackHeight: CGFloat = 2
+    private let trackY: CGFloat = 7
+
+    var body: some View {
+        GeometryReader { geo in
+            let halfMarker = markerSize / 2
+            let usableWidth = max(0, geo.size.width - markerSize)
+            let step = usableWidth / CGFloat(max(1, levels.count - 1))
+
+            let centers: [CGFloat] = (0..<levels.count).map { index in
+                halfMarker + (CGFloat(index) * step)
+            }
+            let selectedCenter = centers[selectedIndex]
+            let dragGesture = DragGesture(minimumDistance: 0)
+                .onChanged { value in
+                    updateSelection(for: value.location.x, in: geo.size.width, step: step, halfMarker: halfMarker)
+                }
+
+            ZStack(alignment: .topLeading) {
+                Rectangle()
+                    .fill(BaseViewColor.border)
+                    .frame(width: max(0, selectedCenter - halfMarker), height: trackHeight)
+                    .offset(x: halfMarker, y: trackY)
+
+                Rectangle()
+                    .fill(BaseViewColor.border)
+                    .frame(width: max(0, geo.size.width - selectedCenter), height: trackHeight)
+                    .offset(x: selectedCenter, y: trackY)
+
+                ForEach(0..<levels.count, id: \.self) { i in
+                    AppTickbox(isSelected: i <= selectedIndex, size: markerSize)
+                    .position(x: centers[i], y: markerCenterY)
+                }
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+            .padding(.vertical, hitPaddingY)
+            .contentShape(Rectangle())
+            .gesture(dragGesture)
+            .padding(.vertical, -hitPaddingY)
+        }
+        .frame(height: visualHeight)
+    }
+
+    private var selectedIndex: Int {
+        levels.firstIndex(of: selection) ?? 0
+    }
+
+    private func updateSelection(for x: CGFloat, in width: CGFloat, step: CGFloat, halfMarker: CGFloat) {
+        let clampedX = min(max(x, halfMarker), width - halfMarker)
+        let rawIndex = Int(round((clampedX - halfMarker) / max(step, 1)))
+        let index = min(max(rawIndex, 0), levels.count - 1)
+        selection = levels[index]
+    }
+}
+

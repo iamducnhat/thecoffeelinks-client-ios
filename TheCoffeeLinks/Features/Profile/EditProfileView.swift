@@ -19,58 +19,57 @@ struct EditProfileView: View {
     
     var body: some View {
         ZStack(alignment: .top) {
-            Color.bgPrimary.ignoresSafeArea()
+            BaseViewColor.background.ignoresSafeArea()
             
             VStack(spacing: 0) {
-                // Header
-                VStack(spacing: AppSpacing.lg) {
-                    HStack {
-                        Button(String(localized: "common_cancel")) {
-                            dismiss()
-                        }
-                        .font(AppTypography.bodyMedium)
-                        .foregroundStyle(Color.textSecondary)
-                        
-                        Text(String(localized: "profile_edit_title"))
-                            .font(AppTypography.displayMedium)
-                            .foregroundStyle(Color.textPrimary)
-                            .fixedSize()
-                            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
-                        
-                        Button(String(localized: "common_save")) {
-                            saveProfile()
-                        }
-                        .font(AppTypography.bodyMedium)
-                        .foregroundStyle(Color.accentPrimary)
-                        .disabled(name.isEmpty || authViewModel.isLoading)
+                HStack {
+                    Button(String(localized: "common_cancel")) {
+                        dismiss()
                     }
-                    .padding(.horizontal, AppSpacing.screenPadding)
-                    
-                    Divider()
-                        .background(Color.borderSecondary)
-                        .padding(.horizontal, -AppSpacing.screenPadding)
+                    .font(BaseViewFont.labelStrong)
+                    .foregroundStyle(BaseViewColor.textSecondary)
+
+                    Spacer()
+
+                    Text(String(localized: "profile_edit_title"))
+                        .font(BaseViewFont.sectionTitle)
+                        .foregroundStyle(BaseViewColor.textPrimary)
+
+                    Spacer()
+
+                    Button(String(localized: "common_save")) {
+                        saveProfile()
+                    }
+                    .font(BaseViewFont.labelStrong)
+                    .foregroundStyle(name.isEmpty || authViewModel.isLoading ? BaseViewColor.textSecondary : BaseViewColor.accent)
+                    .disabled(name.isEmpty || authViewModel.isLoading)
                 }
-                .background(Color.bgPrimary)
+                .padding(.horizontal, BaseViewLayout.screenInset)
+                .padding(.top, BaseViewLayout.screenTopInset)
+                .padding(.bottom, BaseViewLayout.screenInset)
+
+                Rectangle()
+                    .fill(BaseViewColor.border)
+                    .frame(height: BaseViewLayout.cardBorderWidth)
                 
                 ScrollView {
-                    VStack(spacing: AppLayout.spacingXL) {
-                        // Section 1: Basic Info
-                        VStack(alignment: .leading, spacing: AppLayout.spacing) {
+                    VStack(alignment: .leading, spacing: BaseViewLayout.majorSectionGap) {
+                        VStack(alignment: .leading, spacing: BaseViewLayout.cardGap) {
                             Text(String(localized: "profile_public_label"))
-                                .font(AppFont.uiCaption)
-                                .foregroundStyle(Color.textSecondary)
-                                .padding(.horizontal, AppLayout.spacingCompact)
+                                .font(BaseViewFont.label)
+                                .foregroundStyle(BaseViewColor.textSecondary)
                             
                             AppInput(title: "Name", text: $name, placeholder: "Your name")
                             
                             AppInput(title: "Bio", text: $bio, placeholder: "Tell us about yourself")
                         }
                     }
-                    .padding(AppLayout.spacing)
+                    .padding(.horizontal, BaseViewLayout.screenInset)
+                    .padding(.top, BaseViewLayout.sectionGap)
+                    .padding(.bottom, 100)
                 }
             }
             
-            // Loading Overlay
             if authViewModel.isLoading {
                 Color.black.opacity(0.1).ignoresSafeArea()
                 ProgressView()
@@ -78,10 +77,6 @@ struct EditProfileView: View {
         }
         .onAppear {
             initializeForm()
-        }
-        .onChange(of: authViewModel.currentUser) { _ in
-            // If user updates, we can dismiss? Or just stay.
-            // Let's assume on successful save we dismiss.
         }
     }
     

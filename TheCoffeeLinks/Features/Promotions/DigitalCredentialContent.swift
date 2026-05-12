@@ -8,50 +8,55 @@ struct DigitalCredentialContent: View {
     let vouchersCount: Int
     let ordersCount: Int
     let onRefresh: () -> Void
-    
+
     var body: some View {
-        VStack(spacing: AppLayout.spacing) {
-            // Header
+        VStack(spacing: BaseViewLayout.sectionGap) {
             HStack {
                 VStack(alignment: .leading, spacing: 4) {
                     Text(userName)
-                        .font(AppFont.sectionHeader)
-                        .foregroundColor(Color.textPrimary)
+                        .font(BaseViewFont.screenTitle)
+                        .foregroundStyle(BaseViewColor.textPrimary)
+
                     Text(tier)
-                        .font(AppFont.uiCaption)
-                        .foregroundColor(Color.textSecondary)
+                        .font(BaseViewFont.label)
+                        .foregroundStyle(BaseViewColor.textSecondary)
                 }
+
                 Spacer()
-                // Refresh Button
+
                 Button(action: onRefresh) {
                     Image("rotate_cw")
                         .font(.system(size: 16, weight: .medium))
-                        .foregroundColor(Color.textSecondary)
+                        .foregroundStyle(BaseViewColor.textSecondary)
                 }
+                .buttonStyle(.plain)
             }
-            
-            Divider().padding(.horizontal, -AppLayout.spacing)
-            
-            // QR Code Section
-            // Payload format: u:<shortUserId>
-            // We use the memberId (shortId) directly
-            VStack(spacing: 8) {
-                QRRenderView(payload: "u:\(memberId)")
-                    .frame(width: 180, height: 180, alignment: .center)
-                    .padding(AppLayout.spacing)
+
+            Rectangle()
+                .fill(BaseViewColor.border)
+                .frame(height: BaseViewLayout.cardBorderWidth)
+
+            VStack(spacing: 12) {
+                BarcodeRenderView(payload: "u:\(memberId)")
+                    .frame(width: 220, height: 55, alignment: .center)
+                    .padding(BaseViewLayout.badgeInset)
                     .background(Color.white)
-                    .cornerRadius(AppRadius.small)
-                
+                    .overlay(
+                        Rectangle()
+                            .stroke(BaseViewColor.border, lineWidth: BaseViewLayout.cardBorderWidth)
+                    )
+
                 Text(memberId)
-                    .font(AppFont.monoHeadline)
+                    .font(BaseViewFont.screenSubtitle)
                     .tracking(2)
-                    .foregroundColor(Color.textPrimary)
+                    .foregroundStyle(BaseViewColor.textPrimary)
             }
-            .padding(.vertical, AppLayout.spacing)
-            
-            Divider().padding(.horizontal, -AppLayout.spacing)
-            
-            // Stats Row
+            .frame(maxWidth: .infinity)
+
+            Rectangle()
+                .fill(BaseViewColor.border)
+                .frame(height: BaseViewLayout.cardBorderWidth)
+
             HStack(spacing: 0) {
                 statItem(value: "\(points)", label: "Points")
                 Spacer()
@@ -60,18 +65,23 @@ struct DigitalCredentialContent: View {
                 statItem(value: "\(ordersCount)", label: "Orders")
             }
         }
-        .padding(AppLayout.spacing)
-        .background(Color.surfacePrimary)
+        .padding(BaseViewLayout.screenInset)
+        .background(BaseViewColor.elevatedSurface)
+        .overlay(
+            Rectangle()
+                .stroke(BaseViewColor.border, lineWidth: BaseViewLayout.cardBorderWidth)
+        )
     }
-    
+
     private func statItem(value: String, label: String) -> some View {
         VStack(spacing: 4) {
             Text(value)
-                .font(AppFont.monoHeadline)
-                .foregroundColor(Color.textPrimary)
+                .font(BaseViewFont.sectionTitle)
+                .foregroundStyle(BaseViewColor.textPrimary)
+
             Text(label)
-                .font(AppFont.uiCaption)
-                .foregroundColor(Color.textSecondary)
+                .font(BaseViewFont.label)
+                .foregroundStyle(BaseViewColor.textSecondary)
         }
     }
 }

@@ -8,11 +8,11 @@ struct AppInput: View {
     var isSecure: Bool = false
     
     var body: some View {
-        VStack(alignment: .leading, spacing: AppLayout.spacingMicro) {
+        VStack(alignment: .leading, spacing: 6) {
             if !title.isEmpty {
                 Text(title)
-                    .fontMicro()
-                    .foregroundColor(.textMuted)
+                    .font(BaseViewFont.label)
+                    .foregroundStyle(BaseViewColor.textSecondary)
             }
             
             Group {
@@ -22,15 +22,11 @@ struct AppInput: View {
                     TextField(placeholder, text: $text)
                 }
             }
-            .fontBody()
-            .foregroundColor(.textInk)
-            .padding(AppLayout.spacingCompact)
-            .background(Color.surfaceCard)
-            .cornerRadius(AppLayout.cornerRadius)
-            .overlay(
-                RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle)
-                    .strokeBorder(Color.border, lineWidth: AppLayout.borderWidth)
-            )
+            .font(BaseViewFont.body)
+            .foregroundStyle(BaseViewColor.textPrimary)
+            .padding(.horizontal, BaseViewLayout.badgeInset)
+            .frame(height: BaseViewLayout.rowHeight)
+            .background(BaseViewColor.elevatedSurface)
             .keyboardType(keyboardType)
         }
     }
@@ -43,7 +39,7 @@ struct AppInput_Previews: PreviewProvider {
             AppInput(title: "Password", text: .constant("secret"), isSecure: true)
         }
         .padding()
-        .background(Color.backgroundPaper)
+        .background(BaseViewColor.background)
         .previewLayout(.sizeThatFits)
     }
 }

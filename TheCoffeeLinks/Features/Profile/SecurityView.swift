@@ -15,58 +15,58 @@ struct SecurityView: View {
     
     var body: some View {
         ZStack(alignment: .top) {
-            Color.bgPrimary.ignoresSafeArea()
+            BaseViewColor.background.ignoresSafeArea()
             
             VStack(spacing: 0) {
-                // Header
                 HStack {
                     Button(action: { dismiss() }) {
                         Image(systemName: "chevron.left")
-                            .font(AppFont.body)
-                            .foregroundStyle(Color.textPrimary)
+                            .font(.system(size: 18, weight: .medium))
+                            .foregroundStyle(BaseViewColor.textPrimary)
                     }
                     
                     Spacer()
                     
                     Text(String(localized: "action_security"))
-                        .font(AppFont.sectionHeader)
-                        .foregroundStyle(Color.textPrimary)
+                        .font(BaseViewFont.sectionTitle)
+                        .foregroundStyle(BaseViewColor.textPrimary)
                     
                     Spacer()
                     
                     Image(systemName: "chevron.left").opacity(0)
                 }
-                .padding(AppLayout.spacing)
+                .padding(.horizontal, BaseViewLayout.screenInset)
+                .padding(.top, BaseViewLayout.screenTopInset)
+                .padding(.bottom, BaseViewLayout.screenInset)
                 
-                Color.secondary.frame(height: 1)
-                    .opacity(0.1)
+                Rectangle()
+                    .fill(BaseViewColor.border)
+                    .frame(height: BaseViewLayout.cardBorderWidth)
                 
                 ScrollView {
-                    VStack(spacing: AppLayout.spacingXL) {
-                        
-                        // Password Section
-                        VStack(alignment: .leading, spacing: AppLayout.spacing) {
+                    VStack(alignment: .leading, spacing: BaseViewLayout.majorSectionGap) {
+                        VStack(alignment: .leading, spacing: BaseViewLayout.cardGap) {
                             ProfileSectionHeader(title: "Password")
                             
                             ProfileRow(title: "Change Password", icon: "key", action: {})
                         }
                         
-                        // Biometrics Section
-                        VStack(alignment: .leading, spacing: AppLayout.spacing) {
+                        VStack(alignment: .leading, spacing: BaseViewLayout.cardGap) {
                             ProfileSectionHeader(title: "Authentication")
                             
                             ToggleRow(title: "Face ID / Touch ID", icon: "faceid", isOn: $biometricsEnabled)
                             ToggleRow(title: "Two-Factor Auth", icon: "shield.checklist", isOn: $twoFactorEnabled)
                         }
                         
-                        // Devices Section
-                        VStack(alignment: .leading, spacing: AppLayout.spacing) {
+                        VStack(alignment: .leading, spacing: BaseViewLayout.cardGap) {
                             ProfileSectionHeader(title: "Devices")
                             
                             ProfileRow(title: "Manage Devices", icon: "iphone", action: {})
                         }
                     }
-                    .padding(AppLayout.spacing)
+                    .padding(.horizontal, BaseViewLayout.screenInset)
+                    .padding(.top, BaseViewLayout.sectionGap)
+                    .padding(.bottom, 100)
                 }
             }
         }

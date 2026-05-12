@@ -33,7 +33,7 @@ extension Color {
     
     /// Secondary text - Warm cocoa brown (light) / Muted cream (dark)
     static var textMuted: Color {
-        Color("Colors/TextMuted")
+        Color("Colors/TextMuted").opacity(0.72)
     }
     
     // MARK: - Accent Colors

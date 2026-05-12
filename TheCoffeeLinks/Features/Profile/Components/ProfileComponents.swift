@@ -15,18 +15,18 @@ struct MetricBox: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
             Text(value)
-                .font(AppFont.monoTitle)
-                .foregroundStyle(Color.textPrimary)
+                .font(BaseViewFont.sectionTitle)
+                .foregroundStyle(BaseViewColor.textPrimary)
             Text(label)
-                .font(AppFont.uiMicro)
-                .foregroundStyle(Color.textSecondary)
+                .font(BaseViewFont.label)
+                .foregroundStyle(BaseViewColor.textSecondary)
         }
-        .padding(AppLayout.spacing)
+        .padding(BaseViewLayout.badgeInset)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(Color.surfacePrimary)
+        .background(BaseViewColor.elevatedSurface)
         .overlay(
-            Capsule()
-                .strokeBorder(Color.border, lineWidth: 1)
+            Rectangle()
+                .stroke(BaseViewColor.border, lineWidth: BaseViewLayout.cardBorderWidth)
         )
     }
 }
@@ -38,8 +38,8 @@ struct ProfileSectionHeader: View {
     var body: some View {
         Text(title)
             .textCase(.uppercase)
-            .font(AppFont.sectionHeader)
-            .foregroundStyle(Color.textPrimary)
+            .font(BaseViewFont.labelStrong)
+            .foregroundStyle(BaseViewColor.textPrimary)
     }
 }
 
@@ -83,26 +83,25 @@ struct ProfileRow<Destination: View>: View {
         HStack(spacing: AppLayout.spacing) {
             Image(icon)
                 .font(.system(size: 20))
-                .foregroundStyle(Color.textSecondary)
+                .foregroundStyle(BaseViewColor.textSecondary)
                 .frame(width: 24)
             
             Text(title)
-                .font(AppFont.body)
-                .foregroundStyle(Color.textPrimary)
+                .font(BaseViewFont.body)
+                .foregroundStyle(BaseViewColor.textPrimary)
             
             Spacer()
             
             Image("chevron_right")
                 .font(.system(size: 14))
-                .foregroundStyle(Color.textSecondary)
+                .foregroundStyle(BaseViewColor.textSecondary)
         }
-        .padding(AppLayout.spacing)
-        .background(Color.bgPrimary)
-        // Note: No border here to allow stacking in a group if needed, 
-        // but design usually has them as list items.
-        // If we want grouped style with separators, we might need a container.
-        // For now, let's keep the row simple. The container will handle borders if needed.
-        // Or we can add a bottom divider.
+        .padding(BaseViewLayout.badgeInset)
+        .background(BaseViewColor.elevatedSurface)
+        .overlay(
+            Rectangle()
+                .stroke(BaseViewColor.border, lineWidth: BaseViewLayout.cardBorderWidth)
+        )
     }
 }
 
@@ -116,26 +115,26 @@ struct ToggleRow: View {
         HStack(spacing: AppLayout.spacing) {
             Image(icon)
                 .font(.system(size: 20))
-                .foregroundStyle(Color.textSecondary)
+                .foregroundStyle(BaseViewColor.textSecondary)
                 .frame(width: 24)
             
             Text(title)
-                .font(AppFont.body)
-                .foregroundStyle(Color.textPrimary)
+                .font(BaseViewFont.body)
+                .foregroundStyle(BaseViewColor.textPrimary)
             
             Spacer()
             
             Toggle("", isOn: $isOn)
                 .labelsHidden()
-                .tint(Color.accentPrimary)
+                .tint(BaseViewColor.accent)
                 .accessibilityIdentifier(title)
                 .accessibilityLabel(title)
         }
-        .padding(AppLayout.spacing)
-        .background(Color.bgPrimary)
+        .padding(BaseViewLayout.badgeInset)
+        .background(BaseViewColor.elevatedSurface)
         .overlay(
-            Capsule()
-                .strokeBorder(Color.border, lineWidth: 1)
+            Rectangle()
+                .stroke(BaseViewColor.border, lineWidth: BaseViewLayout.cardBorderWidth)
         )
     }
 }

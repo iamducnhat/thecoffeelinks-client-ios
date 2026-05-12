@@ -22,6 +22,7 @@ final class MenuViewModel: ObservableObject {
     @Published var error: Error?
     @Published var showDeliverableOnly = false
     @Published var orderingMode: OrderingMode = .pickup
+    @Published private(set) var currentStoreId: String?
     
     private let productRepository: ProductRepositoryProtocol
     private let cacheService: CacheServiceProtocol
@@ -34,6 +35,12 @@ final class MenuViewModel: ObservableObject {
         self.refreshCoordinator = refreshCoordinator
         setupSearchDebounce()
     }
+
+    private func normalizedStoreId(_ storeId: String?) -> String? {
+        let trimmed = storeId?.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard let trimmed, !trimmed.isEmpty else { return nil }
+        return trimmed
+    }
     
     var filteredProducts: [Product] {
         var result = selectedCategory != nil ? products.filter { $0.categoryId == selectedCategory?.id } : products
@@ -41,22 +48,26 @@ final class MenuViewModel: ObservableObject {
         return result.filter { $0.isActive }
     }
     
-    func load() async {
+    func load(storeId: String? = nil) async {
+        let resolvedStoreId = normalizedStoreId(storeId)
+        currentStoreId = resolvedStoreId
+
         // 1. Load Cache
-        if let cachedMenu = await productRepository.getCachedMenu() {
+        if let cachedMenu = await productRepository.getCachedMenu(storeId: resolvedStoreId) {
             self.updateMenu(cachedMenu)
         }
         
         // 2. Schedule Refresh
-        await refreshCoordinator.schedule(id: "menu_refresh", priority: .high) { [weak self] in
-            await self?.performRefresh()
+        await refreshCoordinator.schedule(id: "menu_refresh_\(resolvedStoreId ?? "global")", priority: .high) { [weak self] in
+            await self?.performRefresh(storeId: resolvedStoreId)
         }
     }
     
-    private func performRefresh() async {
+    private func performRefresh(storeId: String?) async {
         isLoading = true; error = nil
         do {
-            let menu = try await productRepository.refreshMenu()
+            let menu = try await productRepository.refreshMenu(storeId: storeId)
+            guard currentStoreId == normalizedStoreId(storeId) else { return }
             updateMenu(menu)
         } catch { self.error = error }
         isLoading = false
@@ -74,7 +85,7 @@ final class MenuViewModel: ObservableObject {
         }
     }
     
-    func refresh() async { await load() }
+    func refresh() async { await load(storeId: currentStoreId) }
     func selectCategory(_ category: Category?) { selectedCategory = category }
     
     private func setupSearchDebounce() {

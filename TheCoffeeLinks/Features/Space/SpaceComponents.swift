@@ -96,7 +96,7 @@ struct EditorialBookingSheet: View {
     }
 }
 
-// MARK: - Editorial QR Check-In View
+// MARK: - Editorial Barcode Check-In View
 struct EditorialQRCheckInView: View {
     @Environment(\.dismiss) var dismiss
 
@@ -121,7 +121,7 @@ struct EditorialQRCheckInView: View {
                 }
                 .padding()
 
-                Text(String(localized: "space_scan_qr"))
+                Text(String(localized: "space_scan_barcode"))
                     .font(AppFont.displayTitle)
                     .foregroundStyle(.white)
 
@@ -129,7 +129,7 @@ struct EditorialQRCheckInView: View {
 
                 // Scanner Frame (Sharp)
                 Rectangle()
-                    .strokeBorder(Color.white, style: StrokeStyle(lineWidth: 4, dash: [20]))
+                    .strokeBorder(Color.white, style: StrokeStyle(lineWidth: 1, dash: [20]))
                     .frame(width: 280, height: 280)
                     .overlay(
                         VStack(spacing: AppLayout.spacing) {
@@ -144,7 +144,7 @@ struct EditorialQRCheckInView: View {
 
                 Spacer()
 
-                Text(String(localized: "qr_scan_instruction"))
+                Text(String(localized: "barcode_scan_instruction"))
                     .font(AppFont.body)
                     .foregroundStyle(.white.opacity(0.8))
                     .multilineTextAlignment(.center)

@@ -283,7 +283,9 @@ struct Voucher: Codable, Identifiable, Sendable {
         case minOrderAmount = "min_order"
         case maxDiscount = "max_discount"
         case validUntil = "valid_until"
+        case expiresAt = "expires_at"
         case isActive = "is_active"
+        case isUsed = "is_used"
         case maxUsesPerUser = "max_uses_per_user"
         case userUsesCount = "user_uses_count"
     }
@@ -300,6 +302,7 @@ struct Voucher: Codable, Identifiable, Sendable {
         minOrderAmount = try container.decodeIfPresent(Double.self, forKey: .minOrderAmount)
         maxDiscount = try container.decodeIfPresent(Double.self, forKey: .maxDiscount)
         validUntil = try container.decodeIfPresent(Date.self, forKey: .validUntil)
+            ?? container.decodeIfPresent(Date.self, forKey: .expiresAt)
         maxUsesPerUser = try container.decodeIfPresent(Int.self, forKey: .maxUsesPerUser) ?? 1
         userUsesCount = try container.decodeIfPresent(Int.self, forKey: .userUsesCount) ?? 0
         
@@ -308,10 +311,8 @@ struct Voucher: Codable, Identifiable, Sendable {
         usageLimit = nil
         usedCount = 0
         
-        // isActive is now directly mapped to is_active (boolean) in DB
-        // If API returns is_active, great. If it returns isUsed, we might have an issue.
-        // Assuming update to is_active based on task: "ALL server boundaries MUST use snake_case"
-        isActive = try container.decodeIfPresent(Bool.self, forKey: .isActive) ?? true
+        let isUsed = try container.decodeIfPresent(Bool.self, forKey: .isUsed) ?? false
+        isActive = try container.decodeIfPresent(Bool.self, forKey: .isActive) ?? !isUsed
         
         applicableProducts = nil
         applicableModes = nil

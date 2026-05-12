@@ -209,7 +209,7 @@ enum MembershipTier: String, Codable, CaseIterable, Sendable {
     
     var discountPercentage: Double {
         switch self {
-        case .bronze: return 0
+        case .bronze: return 5
         case .silver: return 5
         case .gold: return 10
         case .platinum: return 15
@@ -483,3 +483,47 @@ struct FavoritesResponse: Codable, Sendable { let success: Bool; let favorites: 
 struct FavoriteResponse: Codable, Sendable { let success: Bool; let favorite: FavoriteItem }
 struct PreferencesResponse: Codable, Sendable { let success: Bool; let preferences: UserPreferences }
 struct EmptyResponse: Codable, Sendable { let success: Bool }
+
+// MARK: - Membership Status (Client-side resolution or Server-side mirror)
+
+struct MembershipStatus: Codable, Sendable {
+    let currentTier: MembershipTier
+    let discountPercent: Double
+    let pointsBalance: Int
+    let nextTier: NextTierProgress?
+    
+    struct NextTierProgress: Codable, Sendable {
+        let tier: MembershipTier
+        let pointsThreshold: Int
+        let pointsRemaining: Int
+        let progressPercent: Int
+    }
+}
+
+extension User {
+    var membershipStatus: MembershipStatus {
+        // Simple client-side resolution for UI, should ideally mirror server logic
+        let tier = self.membershipTier
+        let points = self.points
+        
+        var next: MembershipStatus.NextTierProgress? = nil
+        
+        switch tier {
+        case .bronze:
+            next = .init(tier: .silver, pointsThreshold: 201, pointsRemaining: max(0, 201 - points), progressPercent: min(100, Int(Double(points) / 201.0 * 100)))
+        case .silver:
+            next = .init(tier: .gold, pointsThreshold: 501, pointsRemaining: max(0, 501 - points), progressPercent: min(100, Int(Double(points - 201) / 300.0 * 100)))
+        case .gold:
+            next = .init(tier: .platinum, pointsThreshold: 1001, pointsRemaining: max(0, 1001 - points), progressPercent: min(100, Int(Double(points - 501) / 500.0 * 100)))
+        case .platinum:
+            next = nil
+        }
+        
+        return MembershipStatus(
+            currentTier: tier,
+            discountPercent: tier.discountPercentage,
+            pointsBalance: points,
+            nextTier: next
+        )
+    }
+}

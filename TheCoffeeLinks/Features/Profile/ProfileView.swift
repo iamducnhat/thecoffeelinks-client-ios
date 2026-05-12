@@ -1,8 +1,5 @@
 import SwiftUI
-import CachedAsyncImage
 
-/// Refactored ProfileView - Design System v2
-/// Clean list-based layout with capsule buttons
 struct ProfileView: View {
     @EnvironmentObject var authViewModel: AuthViewModel
     @EnvironmentObject var profileViewModel: ProfileViewModel
@@ -10,117 +7,32 @@ struct ProfileView: View {
     
     @State private var showLogin = false
     @State private var showEditProfile = false
+
+    private let rowSpacing: CGFloat = 5
+    private let membershipCardHeight: CGFloat = 98
     
     var body: some View {
         ZStack {
-            Color.bgPrimary.ignoresSafeArea()
+            BaseViewColor.background.ignoresSafeArea()
             
-            ScrollView {
-                VStack(spacing: AppSpacing.sectionGap) {
-                    // Header
-                    SectionHeader(title: "Profile")
-                        .padding(.horizontal, AppSpacing.screenPadding)
-                        .padding(.top, AppSpacing.screenPadding)
-                    
-                    // Profile Card
-                    if authViewModel.isAuthenticated {
-                        profileHeader
+            ScrollView(.vertical, showsIndicators: false) {
+                VStack(alignment: .leading, spacing: 0) {
+                    profileName
+                        .padding(.horizontal, BaseViewLayout.screenInset)
+                        .padding(.top, BaseViewLayout.screenTopInset)
+
+                    Spacer().frame(height: 23)
+
+                    if authViewModel.isAuthenticated, let user = profileViewModel.userProfile {
+                        authenticatedSections(for: user)
                     } else {
-                        guestPrompt
+                        guestSections
                     }
-                    
-                    // Stats
-                    if authViewModel.isAuthenticated {
-                        statsSection
-                    }
-                    
-                    // Activity Section
-                    VStack(alignment: .leading, spacing: AppSpacing.sm) {
-                        Text("Activity")
-                            .font(AppTypography.labelLarge)
-                            .foregroundStyle(Color.textSecondary)
-                            .padding(.horizontal, AppSpacing.screenPadding)
-                        
-                        VStack(spacing: 1) {
-                            if authViewModel.isAuthenticated {
-                                ListRow(title: "Order History", icon: "list", destination: OrdersView(isPresentedModally: false))
-                                Divider().background(Color.borderSecondary)
-                                ListRow(title: "Saved Locations", icon: "map_pin", destination: SavedLocationsView())
-                                Divider().background(Color.borderSecondary)
-                                ListRow(title: "My Vouchers", icon: "ticket") {
-                                    appState.selectedTab = 3
-                                }
-                            } else {
-                                ListRow(title: "Order History", icon: "list.bullet") { showLogin = true }
-                                Divider().background(Color.borderSecondary)
-                                ListRow(title: "Saved Locations", icon: "mappin.circle") { showLogin = true }
-                                Divider().background(Color.borderSecondary)
-                                ListRow(title: "My Vouchers", icon: "ticket") { showLogin = true }
-                            }
-                        }
-                        .clipShape(RoundedRectangle(cornerRadius: AppRadius.medium, style: .continuous))
-        .overlay(
-                            RoundedRectangle(cornerRadius: AppRadius.medium, style: .continuous).strokeBorder(Color.borderSecondary, lineWidth: 0.5)
-                        )
-                    }
-                    .padding(.horizontal, AppSpacing.screenPadding)
-                    
-                    // Settings Section
-                    VStack(alignment: .leading, spacing: AppSpacing.sm) {
-                        Text("Settings")
-                            .font(AppTypography.labelLarge)
-                            .foregroundStyle(Color.textSecondary)
-                            .padding(.horizontal, AppSpacing.screenPadding)
-                        
-                        VStack(spacing: 1) {
-                            ListRow(title: "Edit Profile", icon: "user") {
-                                if authViewModel.isAuthenticated {
-                                    showEditProfile = true
-                                } else {
-                                    showLogin = true
-                                }
-                            }
-                            Divider().background(Color.borderSecondary)
-                            
-                            if authViewModel.isAuthenticated {
-                                ListRow(title: "Security", icon: "lock", destination: SecurityView())
-                            } else {
-                                ListRow(title: "Security", icon: "lock") { showLogin = true }
-                            }
-                            Divider().background(Color.borderSecondary)
-                            
-                            ListRow(title: "Notifications", icon: "bell", destination: NotificationsView())
-                        }
-                        .clipShape(RoundedRectangle(cornerRadius: AppRadius.medium, style: .continuous))
-        .overlay(
-                            RoundedRectangle(cornerRadius: AppRadius.medium, style: .continuous).strokeBorder(Color.borderSecondary, lineWidth: 0.5)
-                        )
-                    }
-                    .padding(.horizontal, AppSpacing.screenPadding)
-                    
-                    // Sign In / Out
-                    VStack(spacing: AppSpacing.md) {
-                        if authViewModel.isAuthenticated {
-                            CapsuleButton("Sign Out", style: .secondary) {
-                                authViewModel.logout()
-                            }
-                        } else {
-                            CapsuleButton("Sign In or Join", style: .primary) {
-                                showLogin = true
-                            }
-                        }
-                        
-                        if let appVersion = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String {
-                            Text("Version \(appVersion)")
-                                .font(AppTypography.bodySmall)
-                                .foregroundStyle(Color.textTertiary)
-                        }
-                    }
-                    .padding(.horizontal, AppSpacing.screenPadding)
-                    .padding(.bottom, 100)
                 }
+                .padding(.bottom, 100)
             }
         }
+        .navigationBarHidden(true)
         .onAppear {
             if authViewModel.isAuthenticated {
                 profileViewModel.loadProfile()
@@ -139,130 +51,225 @@ struct ProfileView: View {
             EditProfileView()
         }
     }
-    
-    // MARK: - Profile Header
-    
-    private var profileHeader: some View {
-        HStack(spacing: AppSpacing.lg) {
-            // Avatar
-            Circle()
-                .fill(Color.surfaceElevated)
-                .frame(width: 64, height: 64)
-                .overlay {
-                    if let avatarUrl = profileViewModel.userProfile?.avatarUrl {
-                        CachedAsyncImage(url: URL(string: avatarUrl)) { phase in
-                            if case .success(let image) = phase {
-                                image
-                                    .resizable()
-                                    .aspectRatio(contentMode: .fill)
-                            } else {
-                                Image("user")
-                                    .font(.system(size: 28))
-                                    .foregroundStyle(Color.textTertiary)
-                            }
-                        }
-                        .clipShape(Circle())
-                    } else {
-                        Image(systemName: "person.fill")
-                            .font(.system(size: 28))
-                            .foregroundStyle(Color.textTertiary)
-                    }
-                }
-            
-            VStack(alignment: .leading, spacing: AppSpacing.xs) {
-                Text(profileViewModel.userProfile?.fullName ?? "Member")
-                    .font(AppTypography.displayMedium)
-                    .foregroundStyle(Color.textPrimary)
-                
-                Text(profileViewModel.userProfile?.membershipTier.displayName ?? "Member")
-                    .font(AppTypography.bodyMedium)
-                    .foregroundStyle(Color.textSecondary)
-            }
-            
-            Spacer()
-        }
-        .padding(AppSpacing.lg)
-        .background(Color.surfacePrimary)
-        .clipShape(RoundedRectangle(cornerRadius: AppRadius.medium, style: .continuous))
-        .overlay(
-            RoundedRectangle(cornerRadius: AppRadius.medium, style: .continuous).strokeBorder(Color.borderSecondary, lineWidth: 0.5)
-        )
-        .padding(.horizontal, AppSpacing.screenPadding)
+
+    private var profileName: some View {
+        Text(profileViewModel.userProfile?.fullName ?? String(localized: "guest_name"))
+            .font(BaseViewFont.screenTitle)
+            .foregroundStyle(BaseViewColor.textPrimary)
+            .frame(maxWidth: .infinity, alignment: .leading)
     }
-    
-    // MARK: - Guest Prompt
-    
-    private var guestPrompt: some View {
-        VStack(spacing: AppSpacing.lg) {
-            Image("user")
-                .font(.system(size: 48))
-                .foregroundStyle(Color.textTertiary)
-            
-            Text("Sign in for full access")
-                .font(AppTypography.displayMedium)
-                .foregroundStyle(Color.textPrimary)
-            
-            Text("Track orders, save favorites, and earn rewards")
-                .font(AppTypography.bodyMedium)
-                .foregroundStyle(Color.textSecondary)
-                .multilineTextAlignment(.center)
+
+    @ViewBuilder
+    private func authenticatedSections(for user: User) -> some View {
+        VStack(alignment: .leading, spacing: 0) {
+            VStack(spacing: rowSpacing) {
+                membershipCard(status: user.membershipStatus)
+
+                Button {
+                    appState.selectedTab = 3
+                } label: {
+                    profileRow(title: "View benefit")
+                }
+                .buttonStyle(.plain)
+            }
+            .padding(.horizontal, BaseViewLayout.screenInset)
+
+            Spacer().frame(height: BaseViewLayout.majorSectionGap)
+
+            VStack(spacing: rowSpacing) {
+                NavigationLink {
+                    OrdersView(isPresentedModally: false)
+                } label: {
+                    profileRow(title: "Order history", detail: "\(profileViewModel.orderCount)")
+                }
+                .buttonStyle(.plain)
+
+                NavigationLink {
+                    SavedLocationsView()
+                } label: {
+                    profileRow(title: "Saved locations", detail: "2")
+                }
+                .buttonStyle(.plain)
+            }
+            .padding(.horizontal, BaseViewLayout.screenInset)
+
+            Spacer().frame(height: BaseViewLayout.majorSectionGap)
+
+            VStack(spacing: rowSpacing) {
+                Button {
+                    showEditProfile = true
+                } label: {
+                    profileRow(title: "Edit profile")
+                }
+                .buttonStyle(.plain)
+
+                NavigationLink {
+                    SecurityView()
+                } label: {
+                    profileRow(title: "Security")
+                }
+                .buttonStyle(.plain)
+
+                NavigationLink {
+                    NotificationsView()
+                } label: {
+                    profileRow(title: "Notifications")
+                }
+                .buttonStyle(.plain)
+
+                Button {
+                } label: {
+                    profileRow(title: "Themes", detail: "Default", detailColor: BaseViewColor.textSecondary)
+                }
+                .buttonStyle(.plain)
+            }
+            .padding(.horizontal, BaseViewLayout.screenInset)
+
+            Spacer().frame(height: BaseViewLayout.majorSectionGap)
+
+            Button {
+                authViewModel.logout()
+            } label: {
+                profileRow(title: "Sign out")
+            }
+            .buttonStyle(.plain)
+            .padding(.horizontal, BaseViewLayout.screenInset)
+        }
+    }
+
+    private var guestSections: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            Button {
+                showLogin = true
+            } label: {
+                profileRow(title: "Sign In or Join")
+            }
+            .buttonStyle(.plain)
+            .padding(.horizontal, BaseViewLayout.screenInset)
+
+            Spacer().frame(height: BaseViewLayout.majorSectionGap)
+
+            VStack(spacing: rowSpacing) {
+                Button {
+                    showLogin = true
+                } label: {
+                    profileRow(title: "Order history")
+                }
+                .buttonStyle(.plain)
+
+                Button {
+                    showLogin = true
+                } label: {
+                    profileRow(title: "Saved locations")
+                }
+                .buttonStyle(.plain)
+            }
+            .padding(.horizontal, BaseViewLayout.screenInset)
+
+            Spacer().frame(height: BaseViewLayout.majorSectionGap)
+
+            VStack(spacing: rowSpacing) {
+                Button {
+                    showLogin = true
+                } label: {
+                    profileRow(title: "Edit profile")
+                }
+                .buttonStyle(.plain)
+
+                Button {
+                    showLogin = true
+                } label: {
+                    profileRow(title: "Security")
+                }
+                .buttonStyle(.plain)
+
+                Button {
+                    showLogin = true
+                } label: {
+                    profileRow(title: "Notifications")
+                }
+                .buttonStyle(.plain)
+
+                profileRow(title: "Themes", detail: "Default", detailColor: BaseViewColor.textSecondary)
+            }
+            .padding(.horizontal, BaseViewLayout.screenInset)
+        }
+    }
+
+    private func membershipCard(status: MembershipStatus) -> some View {
+        let nextTier = status.nextTier
+        let progress = CGFloat(nextTier?.progressPercent ?? 100) / 100
+
+        return VStack(alignment: .leading, spacing: 0) {
+            Text("\(status.currentTier.displayName.uppercased()) MEMBER")
+                .font(BaseViewFont.labelStrong)
+                .tracking(2)
+                .foregroundStyle(BaseViewColor.accentForeground)
+                .padding(4)
+                .background(status.currentTier.badgeColor)
+                .padding(.top, BaseViewLayout.badgeInset)
+                .padding(.horizontal, BaseViewLayout.badgeInset)
+
+            Spacer().frame(height: 12)
+
+            GeometryReader { geometry in
+                ZStack(alignment: .leading) {
+                    Rectangle()
+                        .fill(status.currentTier.badgeColor.opacity(0.2))
+
+                    Rectangle()
+                        .fill(status.currentTier.badgeColor)
+                        .frame(width: geometry.size.width * max(0, min(progress, 1)))
+                }
+            }
+            .frame(height: 3)
+            .padding(.horizontal, BaseViewLayout.badgeInset)
+
+            Spacer().frame(height: 13)
+
+            Text(progressLabel(for: status))
+                .font(BaseViewFont.labelStrong)
+                .tracking(2)
+                .foregroundStyle(BaseViewColor.textPrimary)
+                .padding(.horizontal, BaseViewLayout.badgeInset)
+
+            Spacer(minLength: 0)
         }
         .frame(maxWidth: .infinity)
-        .padding(AppSpacing.xl)
-        .background(Color.surfacePrimary)
-        .clipShape(RoundedRectangle(cornerRadius: AppRadius.medium, style: .continuous))
-        .overlay(
-            RoundedRectangle(cornerRadius: AppRadius.medium, style: .continuous).strokeBorder(Color.borderSecondary, lineWidth: 0.5)
-        )
-        .padding(.horizontal, AppSpacing.screenPadding)
+        .frame(height: membershipCardHeight)
+        .background(BaseViewColor.elevatedSurface)
+        .overlay(Rectangle().stroke(BaseViewColor.border, lineWidth: BaseViewLayout.cardBorderWidth))
     }
-    
-    // MARK: - Stats Section
-    
-    private var statsSection: some View {
-        HStack(spacing: AppSpacing.md) {
-            StatCard(
-                value: "\(profileViewModel.userProfile?.points ?? 0)",
-                label: "Points"
-            )
-            
-            StatCard(
-                value: "\(profileViewModel.vouchers.count)",
-                label: "Vouchers"
-            )
-            
-            StatCard(
-                value: "\(profileViewModel.orderCount)",
-                label: "Orders"
-            )
+
+    private func progressLabel(for status: MembershipStatus) -> String {
+        guard let nextTier = status.nextTier else {
+            return "TOP TIER UNLOCKED"
         }
-        .padding(.horizontal, AppSpacing.screenPadding)
+
+        return "$\(nextTier.pointsRemaining) TO \(nextTier.tier.displayName.uppercased())"
+    }
+
+    private func profileRow(
+        title: String,
+        detail: String? = nil,
+        detailColor: Color = BaseViewColor.textSecondary
+    ) -> some View {
+        BaseListRow(title: title, detail: detail, detailColor: detailColor)
     }
 }
 
-// MARK: - Stat Card
-
-struct StatCard: View {
-    let value: String
-    let label: String
-    
-    var body: some View {
-        VStack(spacing: AppSpacing.xs) {
-            Text(value)
-                .font(AppTypography.monoLarge)
-                .foregroundStyle(Color.textPrimary)
-            
-            Text(label)
-                .font(AppTypography.bodySmall)
-                .foregroundStyle(Color.textSecondary)
+private extension MembershipTier {
+    var badgeColor: Color {
+        switch self {
+        case .bronze:
+            return Color(hex: "#B82000")
+        case .silver:
+            return Color(hex: "#8C919A")
+        case .gold:
+            return Color(hex: "#B8860B")
+        case .platinum:
+            return Color(hex: "#4A5A6A")
         }
-        .frame(maxWidth: .infinity)
-        .padding(.vertical, AppSpacing.lg)
-        .background(Color.surfacePrimary)
-        .clipShape(RoundedRectangle(cornerRadius: AppRadius.medium, style: .continuous))
-        .overlay(
-            RoundedRectangle(cornerRadius: AppRadius.medium, style: .continuous).strokeBorder(Color.borderSecondary, lineWidth: 0.5)
-        )
     }
 }
 

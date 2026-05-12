@@ -40,29 +40,31 @@ struct StoreMapView: View {
                     selectedStore = store
                 } label: {
                     VStack(spacing: 0) {
-                        // Wait time label (if available)
                         if let waitMinutes = store.currentWaitMinutes {
                             Text("\(waitMinutes)m")
-                                .font(AppFont.uiMicro)
-                                .foregroundStyle(Color.bgPrimary)
+                                .font(BaseViewFont.labelStrong)
+                                .foregroundStyle(BaseViewColor.accentForeground)
                                 .padding(.horizontal, 6)
                                 .padding(.vertical, 2)
-                                .background(Color.accentPrimary)
-                                .clipShape(Capsule())
+                                .background(BaseViewColor.accent)
+                                .overlay(
+                                    Rectangle()
+                                        .stroke(BaseViewColor.accent, lineWidth: 1)
+                                )
                                 .shadow(radius: 2, y: 1)
                         }
                         
                         Image("triangle")
                             .resizable()
                             .frame(width: 8, height: 6)
-                            .foregroundStyle(Color.accentPrimary)
+                            .foregroundStyle(BaseViewColor.accent)
                             .rotationEffect(.degrees(180))
                             .offset(y: -2)
                         
-                        Circle()
-                            .fill(Color.bgPrimary)
+                        Rectangle()
+                            .fill(BaseViewColor.background)
                             .frame(width: 12, height: 12)
-                            .overlay(Circle().strokeBorder(Color.accentPrimary, lineWidth: 2))
+                            .overlay(Rectangle().stroke(BaseViewColor.accent, lineWidth: 1))
                     }
                 }
             }

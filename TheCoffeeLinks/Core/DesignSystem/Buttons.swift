@@ -107,10 +107,12 @@ struct ReceiptUtilityButton: View {
             .foregroundStyle(isSelected ? Color.backgroundPaper : Color.textInk)
             .background(isSelected ? Color.textInk : Color.backgroundPaper)
             .clipShape(RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle))
-            .overlay(
-                RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle)
-                    .strokeBorder(Color.textInk, lineWidth: isSelected ? 0 : 1)
-            )
+            .overlay {
+                if !isSelected {
+                    RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle)
+                        .strokeBorder(Color.textInk, lineWidth: 1)
+                }
+            }
         }
     }
 }

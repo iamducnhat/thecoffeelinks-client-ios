@@ -29,30 +29,30 @@ struct StoreDetailView: View {
     
     var body: some View {
         ZStack(alignment: .top) {
-            Color.bgPrimary.ignoresSafeArea()
+            BaseViewColor.background.ignoresSafeArea()
             
             // Fixed Navigation Header
             HStack(alignment: .center, spacing: AppLayout.spacing) {
                 Button { dismiss() } label: {
                     Image(systemName: "xmark")
                         .font(.system(size: 17, weight: .medium))
-                        .foregroundStyle(Color.textPrimary)
+                        .foregroundStyle(BaseViewColor.textPrimary)
                         .padding(12)
                         .background {
                             Circle()
-                                .fill(Color.bgPrimary)
+                                .fill(BaseViewColor.background)
                         }
                         .overlay {
                             Circle()
-                                .strokeBorder(Color.textPrimary, lineWidth: min(66.6, max(scrollOffset, 0.0)) / 66.6)
+                                .strokeBorder(BaseViewColor.border, lineWidth: 1)
                                 .opacity(min(88.8, max(scrollOffset, 0.0)) / 99.9)
                         }
                 }
                 
                 Text(store.name)
-                    .font(AppTypography.displayMedium)
+                    .font(BaseViewFont.sectionTitle)
                     .lineLimit(1)
-                    .foregroundStyle(Color.textPrimary)
+                    .foregroundStyle(BaseViewColor.textPrimary)
                     .fixedSize()
                     .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
                     .hidden()
@@ -75,9 +75,9 @@ struct StoreDetailView: View {
                                 .hidden()
                             
                             Text(store.name)
-                                .font(AppTypography.displayMedium)
+                                .font(BaseViewFont.sectionTitle)
                                 .lineLimit(1)
-                                .foregroundColor(Color.textPrimary)
+                                .foregroundColor(BaseViewColor.textPrimary)
                                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
                         }
                         
@@ -87,7 +87,7 @@ struct StoreDetailView: View {
                     }
                     .padding(.horizontal, AppLayout.spacing)
                     .padding(.top, AppLayout.spacingCompact)
-                    .background(Color.bgPrimary)
+                    .background(BaseViewColor.background)
                     .background(GeometryReader {
                         Color.clear.preference(key: ViewOffsetKey.self, value: -$0.frame(in: .named("scroll")).origin.y)
                     })
@@ -106,7 +106,7 @@ struct StoreDetailView: View {
                                         .fill(Color.surfacePrimary) // CHANGED
                                         .overlay { // CHANGED
                                             ProgressView() // CHANGED
-                                                .tint(Color.accentPrimary) // CHANGED
+                                                .tint(BaseViewColor.accent) // CHANGED
                                         } // CHANGED
                                 case .success(let image): // CHANGED
                                     image // CHANGED
@@ -118,7 +118,7 @@ struct StoreDetailView: View {
                                         .overlay { // CHANGED
                                             Text(String(store.name.prefix(1))) // CHANGED
                                                 .font(AppFont.displayTitle) // CHANGED
-                                                .foregroundStyle(Color.textSecondary) // CHANGED
+                                                .foregroundStyle(BaseViewColor.textSecondary) // CHANGED
                                         } // CHANGED
                                 @unknown default: // CHANGED
                                     EmptyView() // CHANGED
@@ -128,36 +128,36 @@ struct StoreDetailView: View {
                             .clipped()
                             
                             Text(store.address)
-                                .font(AppFont.body)
-                                .foregroundStyle(Color.textSecondary)
+                                .font(BaseViewFont.body)
+                                .foregroundStyle(BaseViewColor.textSecondary)
                                 .multilineTextAlignment(.center)
                         }
                         .overlay(
-                            Capsule()
-                                .strokeBorder(Color.border, lineWidth: 1)
+                            Rectangle()
+                                .stroke(BaseViewColor.border, lineWidth: BaseViewLayout.cardBorderWidth)
                         )
-                        .clipShape(Capsule())
+                        .background(BaseViewColor.elevatedSurface)
                         .padding(.horizontal, AppLayout.spacing)
                         
                         // Map
                         Map(coordinateRegion: .constant(region), annotationItems: [store]) { store in
                             MapAnnotation(coordinate: CLLocationCoordinate2D(latitude: store.latitude, longitude: store.longitude)) {
                                 Rectangle()
-                                    .fill(Color.accentPrimary)
+                                    .fill(BaseViewColor.accent)
                                     .frame(width: 24, height: 24)
                                     .overlay(
                                         Image("coffee")
                                             .font(.system(size: 12))
-                                            .foregroundStyle(Color.bgPrimary)
+                                            .foregroundStyle(BaseViewColor.accentForeground)
                                     )
                             }
                         }
                         .frame(height: 200)
                         .overlay(
-                            Capsule()
-                                .strokeBorder(Color.border, lineWidth: 1)
+                            Rectangle()
+                                .stroke(BaseViewColor.border, lineWidth: BaseViewLayout.cardBorderWidth)
                         )
-                        .clipShape(Capsule())
+                        .clipShape(RoundedRectangle(cornerRadius: AppRadius.medium, style: .continuous))
                         .padding(.horizontal, AppLayout.spacing)
                         
                         // Store Info
@@ -166,19 +166,17 @@ struct StoreDetailView: View {
                             if let phone = store.phone {
                                 HStack {
                                     Image("phone")
-                                        .foregroundStyle(Color.accentPrimary)
+                                        .foregroundStyle(BaseViewColor.accent)
                                     Text(phone)
-                                        .font(AppFont.body)
-                                        .foregroundStyle(Color.textPrimary)
+                                        .font(BaseViewFont.body)
+                                        .foregroundStyle(BaseViewColor.textPrimary)
                                     Spacer()
                                     Button {
                                         if let url = URL(string: "tel://\(phone.filter("0123456789".contains))") {
                                             UIApplication.shared.open(url)
                                         }
                                     } label: {
-                                        Text("store_call")
-                                            .font(AppFont.monoBody)
-                                            .foregroundStyle(Color.accentPrimary)
+                                        BaseCTAButton(title: String(localized: "store_call"), style: .outlined, action: {})
                                     }
                                 }
                                 .padding(AppLayout.spacing)
@@ -189,26 +187,26 @@ struct StoreDetailView: View {
                             // Hours
                             HStack {
                                 Image("clock")
-                                    .foregroundStyle(Color.accentPrimary)
+                                    .foregroundStyle(BaseViewColor.accent)
                                 VStack(alignment: .leading, spacing: 2) {
                                     Text(store.isCurrentlyOpen ? String(localized: "store_open_now") : String(localized: "store_closed"))
-                                        .font(AppFont.body)
+                                        .font(BaseViewFont.body)
                                         .foregroundStyle(store.isCurrentlyOpen ? Color.stateSuccess : Color.stateError)
                                     
                                     if let hours = store.openingHours?.first(where: { $0.dayOfWeek == Calendar.current.component(.weekday, from: Date()) }) {
                                         Text("\(hours.openTime) - \(hours.closeTime)")
-                                            .font(AppFont.uiCaption)
-                                            .foregroundStyle(Color.textSecondary)
+                                            .font(BaseViewFont.label)
+                                            .foregroundStyle(BaseViewColor.textSecondary)
                                     }
                                 }
                                 Spacer()
                             }
                             .padding(AppLayout.spacing)
                         }
-                        .background(Color.bgPrimary)
+                        .background(BaseViewColor.elevatedSurface)
                         .overlay(
-                            Capsule()
-                                .strokeBorder(Color.border, lineWidth: 1)
+                            Rectangle()
+                                .stroke(BaseViewColor.border, lineWidth: BaseViewLayout.cardBorderWidth)
                         )
                         .padding(.horizontal, AppLayout.spacing)
                         
@@ -217,22 +215,22 @@ struct StoreDetailView: View {
                             VStack(alignment: .leading, spacing: AppLayout.spacing) {
                                 Text("store_amenities_section")
                                     .textCase(.uppercase)
-                                    .font(AppFont.sectionHeader)
-                                    .foregroundStyle(Color.textPrimary)
+                                    .font(BaseViewFont.labelStrong)
+                                    .foregroundStyle(BaseViewColor.textPrimary)
                                 
                                 LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: AppLayout.spacingMedium) {
                                     ForEach(amenities, id: \.self) { amenity in
                                         HStack(spacing: 4) {
                                             IconView(name: amenity.iconName)
-                                                .foregroundStyle(Color.accentPrimary)
+                                                .foregroundStyle(BaseViewColor.accent)
                                                 .font(.system(size: 14))
                                             Text(amenity.displayName)
-                                                .font(AppFont.uiCaption)
-                                                .foregroundStyle(Color.textPrimary)
+                                                .font(BaseViewFont.label)
+                                                .foregroundStyle(BaseViewColor.textPrimary)
                                             Spacer()
                                         }
                                         .padding(AppLayout.spacingMedium)
-                                        .background(Color.surfacePrimary)
+                                        .background(BaseViewColor.elevatedSurface)
                                     }
                                 }
                             }
@@ -243,8 +241,8 @@ struct StoreDetailView: View {
                         VStack(spacing: AppLayout.spacing) {
                             Text("store_order_options_section")
                                 .textCase(.uppercase)
-                                .font(AppFont.sectionHeader)
-                                .foregroundStyle(Color.textPrimary)
+                                .font(BaseViewFont.labelStrong)
+                                .foregroundStyle(BaseViewColor.textPrimary)
                                 .frame(maxWidth: .infinity, alignment: .leading)
                             
                             HStack(spacing: AppLayout.spacing) {
@@ -258,12 +256,12 @@ struct StoreDetailView: View {
                                             Image("fork.knife")
                                                 .font(.system(size: 20))
                                             Text("store_dine_in")
-                                                .font(AppFont.uiCaption)
+                                                .font(BaseViewFont.label)
                                         }
-                                        .foregroundStyle(Color.bgPrimary)
+                                        .foregroundStyle(BaseViewColor.accentForeground)
                                         .frame(maxWidth: .infinity)
                                         .frame(height: 72)
-                                        .background(Color.accentPrimary)
+                                        .background(BaseViewColor.accent)
                                         .clipShape(Capsule())
                                     }
                                 }
@@ -278,12 +276,12 @@ struct StoreDetailView: View {
                                             Image("bag")
                                                 .font(.system(size: 20))
                                             Text("store_take_away")
-                                                .font(AppFont.uiCaption)
+                                                .font(BaseViewFont.label)
                                         }
-                                        .foregroundStyle(Color.bgPrimary)
+                                        .foregroundStyle(BaseViewColor.accentForeground)
                                         .frame(maxWidth: .infinity)
                                         .frame(height: 72)
-                                        .background(Color.accentPrimary)
+                                        .background(BaseViewColor.accent)
                                         .clipShape(Capsule())
                                     }
                                 }
@@ -295,11 +293,11 @@ struct StoreDetailView: View {
                                 showingCheckIn = true
                             } label: {
                                 Text("store_check_in")
-                                    .font(AppFont.monoCTA)
-                                    .foregroundStyle(Color.bgPrimary)
+                                    .font(BaseViewFont.bodyStrong)
+                                    .foregroundStyle(BaseViewColor.accentForeground)
                                     .padding(.vertical, 12)
                                     .frame(maxWidth: .infinity)
-                                    .background(Color.accentPrimary)
+                                    .background(BaseViewColor.accent)
                                     .clipShape(Capsule())
                             }
                             
@@ -312,9 +310,9 @@ struct StoreDetailView: View {
                                     Image("map")
                                         .font(.system(size: 16))
                                     Text("store_get_directions")
-                                        .font(AppFont.monoBody)
+                                        .font(BaseViewFont.body)
                                 }
-                                .foregroundStyle(Color.accentPrimary)
+                                .foregroundStyle(BaseViewColor.accent)
                                 .padding(.vertical, 12)
                                 .frame(maxWidth: .infinity)
                                 .overlay(

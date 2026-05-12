@@ -7,6 +7,11 @@
 
 import Foundation
 
+enum ProductInventoryState: String, Codable, Hashable, Sendable {
+    case available
+    case soldOut = "sold_out"
+}
+
 // MARK: - Type Aliases for External Access
 typealias ProductCategory = Category
 
@@ -31,6 +36,11 @@ struct Product: Codable, Identifiable, Hashable, Sendable {
     let isPopular: Bool
     let isNew: Bool
     let isActive: Bool
+    let isStoreAvailable: Bool?
+    let inventoryState: ProductInventoryState?
+    let quantityOnHand: Int?
+    let hasStoreOverride: Bool
+    let usesQuantityInventory: Bool
     let isHotSupported: Bool
     let isDeliverable: Bool
     let deliveryPrepMinutes: Int?
@@ -49,6 +59,11 @@ struct Product: Codable, Identifiable, Hashable, Sendable {
         case isPopular = "is_popular"
         case isNew = "is_new"
         case isActive = "is_active"
+        case isStoreAvailable = "is_store_available"
+        case inventoryState = "inventory_state"
+        case quantityOnHand = "quantity_on_hand"
+        case hasStoreOverride = "has_store_override"
+        case usesQuantityInventory = "uses_quantity_inventory"
         case isHotSupported = "is_hot_supported"
         case isDeliverable = "is_deliverable"
         case deliveryPrepMinutes = "delivery_prep_minutes"
@@ -57,7 +72,7 @@ struct Product: Codable, Identifiable, Hashable, Sendable {
         case allergens
     }
     
-    nonisolated init(id: String, name: String, description: String?, categoryId: String, categoryName: String?, imageUrl: String?, basePrice: Double, sizeOptions: [SizeOption], availableToppings: [String], isPopular: Bool, isNew: Bool, isActive: Bool, isHotSupported: Bool, isDeliverable: Bool, deliveryPrepMinutes: Int?, tags: [String], nutritionInfo: NutritionInfo?, allergens: [String]) {
+    nonisolated init(id: String, name: String, description: String?, categoryId: String, categoryName: String?, imageUrl: String?, basePrice: Double, sizeOptions: [SizeOption], availableToppings: [String], isPopular: Bool, isNew: Bool, isActive: Bool, isStoreAvailable: Bool? = nil, inventoryState: ProductInventoryState? = nil, quantityOnHand: Int? = nil, hasStoreOverride: Bool = false, usesQuantityInventory: Bool = false, isHotSupported: Bool, isDeliverable: Bool, deliveryPrepMinutes: Int?, tags: [String], nutritionInfo: NutritionInfo?, allergens: [String]) {
         self.id = id
         self.name = name
         self.description = description
@@ -70,6 +85,11 @@ struct Product: Codable, Identifiable, Hashable, Sendable {
         self.isPopular = isPopular
         self.isNew = isNew
         self.isActive = isActive
+        self.isStoreAvailable = isStoreAvailable
+        self.inventoryState = inventoryState
+        self.quantityOnHand = quantityOnHand
+        self.hasStoreOverride = hasStoreOverride
+        self.usesQuantityInventory = usesQuantityInventory
         self.isHotSupported = isHotSupported
         self.isDeliverable = isDeliverable
         self.deliveryPrepMinutes = deliveryPrepMinutes
@@ -92,6 +112,11 @@ struct Product: Codable, Identifiable, Hashable, Sendable {
         isPopular = try container.decode(Bool.self, forKey: .isPopular)
         isNew = try container.decode(Bool.self, forKey: .isNew)
         isActive = try container.decode(Bool.self, forKey: .isActive)
+        isStoreAvailable = try container.decodeIfPresent(Bool.self, forKey: .isStoreAvailable)
+        inventoryState = try container.decodeIfPresent(ProductInventoryState.self, forKey: .inventoryState)
+        quantityOnHand = try container.decodeIfPresent(Int.self, forKey: .quantityOnHand)
+        hasStoreOverride = try container.decodeIfPresent(Bool.self, forKey: .hasStoreOverride) ?? false
+        usesQuantityInventory = try container.decodeIfPresent(Bool.self, forKey: .usesQuantityInventory) ?? false
         isHotSupported = try container.decodeIfPresent(Bool.self, forKey: .isHotSupported) ?? false
         isDeliverable = try container.decode(Bool.self, forKey: .isDeliverable)
         deliveryPrepMinutes = try container.decodeIfPresent(Int.self, forKey: .deliveryPrepMinutes)
@@ -114,6 +139,11 @@ struct Product: Codable, Identifiable, Hashable, Sendable {
         try container.encode(isPopular, forKey: .isPopular)
         try container.encode(isNew, forKey: .isNew)
         try container.encode(isActive, forKey: .isActive)
+        try container.encodeIfPresent(isStoreAvailable, forKey: .isStoreAvailable)
+        try container.encodeIfPresent(inventoryState, forKey: .inventoryState)
+        try container.encodeIfPresent(quantityOnHand, forKey: .quantityOnHand)
+        try container.encode(hasStoreOverride, forKey: .hasStoreOverride)
+        try container.encode(usesQuantityInventory, forKey: .usesQuantityInventory)
         try container.encode(isHotSupported, forKey: .isHotSupported)
         try container.encode(isDeliverable, forKey: .isDeliverable)
         try container.encodeIfPresent(deliveryPrepMinutes, forKey: .deliveryPrepMinutes)
@@ -124,14 +154,14 @@ struct Product: Codable, Identifiable, Hashable, Sendable {
     
     var canBeDelivered: Bool { isDeliverable && isActive }
     var price: Double { basePrice } // UI Compatibility
+    var isSoldOut: Bool { inventoryState == .soldOut }
+    var effectiveAvailability: Bool { isStoreAvailable ?? isActive }
     
     /// Check if product is available at a specific store
-    /// TODO: When backend implements store_product_availability endpoint,
-    /// this should fetch real-time availability from server
-    /// For now, falls back to global isDeliverable and isActive flags
     func isAvailableAt(storeId: String?) -> Bool {
-        // Placeholder: Uses global availability
-        // In future, check against store-specific availability map
+        if storeId != nil {
+            return effectiveAvailability
+        }
         return isActive && isDeliverable
     }
     

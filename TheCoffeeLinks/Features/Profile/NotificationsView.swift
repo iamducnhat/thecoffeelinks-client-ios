@@ -17,56 +17,60 @@ struct NotificationsView: View {
     
     var body: some View {
         ZStack(alignment: .top) {
-            Color.bgPrimary.ignoresSafeArea()
+            BaseViewColor.background.ignoresSafeArea()
             
             VStack(spacing: 0) {
-                // Header
                 HStack {
                     Button(action: { dismiss() }) {
                         Image(systemName: "chevron.left")
-                            .font(AppFont.body)
-                            .foregroundStyle(Color.textPrimary)
+                            .font(.system(size: 18, weight: .medium))
+                            .foregroundStyle(BaseViewColor.textPrimary)
                     }
                     
                     Spacer()
                     
                     Text(String(localized: "action_notifications"))
-                        .font(AppFont.sectionHeader)
-                        .foregroundStyle(Color.textPrimary)
+                        .font(BaseViewFont.sectionTitle)
+                        .foregroundStyle(BaseViewColor.textPrimary)
                     
                     Spacer()
                     
                     Image(systemName: "chevron.left").opacity(0)
                 }
-                .padding(AppLayout.spacing)
+                .padding(.horizontal, BaseViewLayout.screenInset)
+                .padding(.top, BaseViewLayout.screenTopInset)
+                .padding(.bottom, BaseViewLayout.screenInset)
                 
-                Color.secondary.frame(height: 1)
-                    .opacity(0.1)
+                Rectangle()
+                    .fill(BaseViewColor.border)
+                    .frame(height: BaseViewLayout.cardBorderWidth)
                 
                 ScrollView {
-                    VStack(spacing: AppLayout.spacingXL) {
+                    VStack(alignment: .leading, spacing: BaseViewLayout.majorSectionGap) {
                         
-                        // Channels
-                        VStack(alignment: .leading, spacing: AppLayout.spacing) {
+                        VStack(alignment: .leading, spacing: BaseViewLayout.cardGap) {
                             Text("Channels")
-                                .font(AppFont.sectionHeader)
-                                .foregroundStyle(Color.textPrimary)
+                                .font(BaseViewFont.labelStrong)
+                                .textCase(.uppercase)
+                                .foregroundStyle(BaseViewColor.textPrimary)
                             
                             ToggleRow(title: "Push Notifications", icon: "bell", isOn: $pushEnabled)
                             ToggleRow(title: "Email", icon: "envelope", isOn: $emailEnabled)
                             ToggleRow(title: "SMS", icon: "message", isOn: $smsEnabled)
                         }
                         
-                        // Types
-                        VStack(alignment: .leading, spacing: AppLayout.spacing) {
+                        VStack(alignment: .leading, spacing: BaseViewLayout.cardGap) {
                             Text("Preferences")
-                                .font(AppFont.sectionHeader)
-                                .foregroundStyle(Color.textPrimary)
+                                .font(BaseViewFont.labelStrong)
+                                .textCase(.uppercase)
+                                .foregroundStyle(BaseViewColor.textPrimary)
                             
                             ToggleRow(title: "Promotions & Offers", icon: "tag", isOn: $promoEnabled)
                         }
                     }
-                    .padding(AppLayout.spacing)
+                    .padding(.horizontal, BaseViewLayout.screenInset)
+                    .padding(.top, BaseViewLayout.sectionGap)
+                    .padding(.bottom, 100)
                 }
             }
         }

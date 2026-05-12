@@ -54,7 +54,9 @@ struct MainTabView: View {
                     
                     // 2. Menu (Medium) - Must refresh even if not opened
                     Task(priority: .medium) {
-                        await menuViewModel.load()
+                        await menuViewModel.load(
+                            storeId: storesViewModel.selectedStore?.id ?? DependencyContainer.shared.userPreferences.selectedStoreId
+                        )
                     }
                     // NOTE: getCurrentUser() is already called by AppFlowController.validateAuthState()
                     // Vouchers are already fetched by HomeViewModel.load() → loadVouchers()
@@ -76,7 +78,11 @@ struct MainTabView: View {
             }
             .task {
                 await homeViewModel.load()
-                Task(priority: .medium) { await menuViewModel.load() }
+                Task(priority: .medium) {
+                    await menuViewModel.load(
+                        storeId: storesViewModel.selectedStore?.id ?? DependencyContainer.shared.userPreferences.selectedStoreId
+                    )
+                }
                 // NOTE: getCurrentUser() is already called by AppFlowController.validateAuthState()
                 // Vouchers are already fetched by HomeViewModel.load() → loadVouchers()
             }
@@ -113,6 +119,7 @@ struct MainTabView: View {
             NavigationStack {
                 MenuView()
                     .environmentObject(menuViewModel)
+                    .environmentObject(storesViewModel)
             }
             .tabItem {
                 Image("bag").renderingMode(.template)

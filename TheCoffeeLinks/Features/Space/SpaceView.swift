@@ -27,7 +27,7 @@ struct SpaceView: View {
                     Circle()
                         .fill(Color.accentColor)
                         .frame(width: 24, height: 24)
-                        .overlay(Circle().strokeBorder(Color.bgPrimary, lineWidth: 2))
+                        .overlay(Circle().strokeBorder(Color.bgPrimary, lineWidth: 1))
                         .onTapGesture {
                             storeViewModel.selectStore(store)
                         }

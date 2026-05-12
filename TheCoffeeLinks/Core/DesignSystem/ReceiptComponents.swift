@@ -412,130 +412,156 @@ struct ReceiptLoadingLog: View {
 
 // MARK: - Voucher Card (With Image Support)
 
+// MARK: - Ghost preview card (shown when user has no vouchers)
+
+private let ghostColors: [[Color]] = [
+    [Color(red: 0.290, green: 0.376, blue: 0.698), Color(red: 0.16, green: 0.24, blue: 0.56)],
+    [Color(red: 0.18,  green: 0.52,  blue: 0.36),  Color(red: 0.07, green: 0.34, blue: 0.24)],
+    [Color(red: 0.82,  green: 0.45,  blue: 0.18),  Color(red: 0.63, green: 0.27, blue: 0.06)],
+]
+
+struct VoucherCardGhost: View {
+    let index: Int
+    private var colors: [Color] { ghostColors[index % ghostColors.count] }
+
+    var body: some View {
+        HStack(spacing: 0) {
+            ZStack {
+                colors[0]
+                Image(systemName: "cup.and.saucer.fill")
+                    .font(.system(size: 30, weight: .light))
+                    .foregroundStyle(.white.opacity(0.22))
+            }
+            .frame(width: 116)
+
+            VStack(alignment: .leading, spacing: 0) {
+                Text("VOUCHER")
+                    .font(.custom("GeologicaThinRoman-Medium", size: 18))
+                    .foregroundStyle(Color.textPrimary)
+                RoundedRectangle(cornerRadius: 3)
+                    .fill(Color.gray.opacity(0.3))
+                    .frame(width: 80, height: 12)
+                    .padding(.top, 6)
+                Spacer()
+                Divider().padding(.bottom, 6)
+                HStack {
+                    VStack(alignment: .leading, spacing: 2) {
+                        RoundedRectangle(cornerRadius: 2).fill(Color.gray.opacity(0.25)).frame(width: 30, height: 9)
+                        RoundedRectangle(cornerRadius: 2).fill(Color.gray.opacity(0.25)).frame(width: 60, height: 9)
+                    }
+                    Spacer()
+                    Text("DÙNG")
+                        .font(AppFont.uiMicro)
+                        .fontWeight(.semibold)
+                        .kerning(2)
+                        .underline()
+                        .foregroundStyle(Color.textPrimary)
+                }
+            }
+            .padding(.leading, 13)
+            .padding(.trailing, 14)
+            .padding(.vertical, 9)
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
+            .background(Color.white)
+        }
+        .frame(height: 116)
+        .overlay(Rectangle().strokeBorder(Color(UIColor.separator), lineWidth: 0.5))
+    }
+}
+
+// MARK: - Wallet-style Voucher Pass Card
+
 struct VoucherCard: View {
     let voucher: Voucher
     var showApplyButton: Bool = true
     let action: () -> Void
-    
+
+    private var leftColor: Color {
+        switch voucher.discountType {
+        case .percentage:    return Color(red: 0.290, green: 0.376, blue: 0.698) // #4A60B2
+        case .fixed, .discount: return Color(red: 0.18, green: 0.52, blue: 0.36)
+        case .freeDelivery:  return Color(red: 0.82, green: 0.45, blue: 0.18)
+        }
+    }
+
     var body: some View {
-        VStack(alignment: .leading, spacing: 0) {
-            // Full-width image banner (16:9 aspect ratio)
-            if let imageUrl = voucher.imageUrl, let url = URL(string: imageUrl) {
-                AsyncImage(url: url) { phase in
-                    if let image = phase.image {
-                        image
-                            .resizable()
-                            .aspectRatio(contentMode: .fill)
-                    } else if phase.error != nil {
-                        // Error placeholder
-                        voucherImagePlaceholder
-                    } else {
-                        // Loading placeholder
-                        voucherImagePlaceholder
-                    }
-                }
-                .frame(maxWidth: .infinity)
-                .aspectRatio(16/9, contentMode: .fit)
-                .clipped()
-            } else {
-                // No image URL - show colored placeholder
-                voucherImagePlaceholder
-                    .aspectRatio(16/9, contentMode: .fit)
+        HStack(spacing: 0) {
+
+            // ── Left colour block ────────────────────────────────────────
+            ZStack {
+                leftColor
+                Image(systemName: "cup.and.saucer.fill")
+                    .font(.system(size: 30, weight: .light))
+                    .foregroundStyle(.white.opacity(0.22))
             }
-            
-            Color.secondary.frame(height: 1)
-            
-            // Voucher details
-            VStack(alignment: .leading, spacing: AppLayout.spacingMedium) {
-                HStack(alignment: .top) {
-                    VStack(alignment: .leading, spacing: 4) {
-                        Text(voucher.displayTitle)
-                            .font(AppFont.headline)
-                            .foregroundStyle(Color.textInk)
-                        if let description = voucher.description {
-                            Text(description)
-                                .font(AppFont.uiCaption)
-                                .foregroundStyle(Color.textMuted)
+            .frame(width: 116)
+
+            // ── Right content ────────────────────────────────────────────
+            VStack(alignment: .leading, spacing: 0) {
+
+                // Title row
+                Text("VOUCHER")
+                    .font(.custom("GeologicaThinRoman-Medium", size: 18))
+                    .foregroundStyle(Color.textPrimary)
+
+                // Discount value
+                Text(voucher.displayValue)
+                    .font(AppFont.monoHeadline)
+                    .foregroundStyle(Color.textPrimary)
+                    .padding(.top, 2)
+
+                Spacer()
+
+                Divider()
+                    .padding(.bottom, 6)
+
+                // Bottom row: expiry + CTA
+                HStack(alignment: .bottom) {
+                    if let date = voucher.validUntil {
+                        VStack(alignment: .leading, spacing: 1) {
+                            Text("HSD:")
+                                .font(AppFont.uiMicro)
+                                .foregroundStyle(Color.textSecondary)
+                            Text(date.formatted(.dateTime.day().month(.twoDigits).year(.defaultDigits)))
+                                .font(AppFont.uiMicro)
+                                .foregroundStyle(Color.textSecondary)
                         }
-                    }
-                    Spacer()
-                    Text(voucher.displayValue)
-                        .font(AppFont.monoBody.bold())
-                        .foregroundStyle(Color.primaryEspresso)
-                }
-                
-                Color.secondary.frame(height: 1)
-                
-                HStack {
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text("Code: \(voucher.code)")
+                    } else {
+                        Text(String(localized: "voucher_no_expiry"))
                             .font(AppFont.uiMicro)
-                        if let validUntil = voucher.validUntil {
-                            Text("Valid until: \(validUntil.formatted(.dateTime.month().day().year()))")
-                                .font(AppFont.uiMicro)
-                        } else {
-                            Text("No expiration")
-                                .font(AppFont.uiMicro)
-                        }
+                            .foregroundStyle(Color.textSecondary)
                     }
-                    .foregroundStyle(Color.textMuted)
-                    
+
                     Spacer()
-                    
+
                     if showApplyButton {
                         Button(action: action) {
-                            Text("Apply")
-                                .font(AppFont.monoBody)
-                                .foregroundStyle(Color.backgroundPaper)
-                                .padding(.horizontal, 16)
-                                .padding(.vertical, 8)
-                                .background(Color.primaryEspresso)
-                                .clipShape(RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle))
+                            Text(String(localized: "voucher_use_cta"))
+                                .font(AppFont.uiMicro)
+                                .fontWeight(.semibold)
+                                .kerning(2)
+                                .underline()
+                                .foregroundStyle(Color.textPrimary)
                         }
                     } else {
-                        Text("Used")
+                        Text(String(localized: "voucher_used_label"))
                             .font(AppFont.uiMicro)
-                            .foregroundStyle(Color.textMuted)
-                            .padding(.horizontal, 16)
-                            .padding(.vertical, 8)
-                            .background(Color.surfaceCard)
-                            .overlay(
-                                RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle)
-                                    .strokeBorder(Color.border, lineWidth: 1)
-                            )
+                            .foregroundStyle(Color.textSecondary)
                     }
                 }
             }
-            .padding(AppLayout.spacing)
+            .padding(.leading, 13)
+            .padding(.trailing, 14)
+            .padding(.vertical, 9)
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
+            .background(Color.white)
         }
-        .background(Color.backgroundPaper)
-        .clipShape(RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle))
+        .frame(height: 116)
+        .saturation(showApplyButton ? 1.0 : 0.3)
+        .opacity(showApplyButton ? 1.0 : 0.7)
         .overlay(
-            RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle)
-                .strokeBorder(Color.border, lineWidth: 1)
+            Rectangle()
+                .strokeBorder(Color(UIColor.separator), lineWidth: 0.5)
         )
-    }
-    
-    private var voucherImagePlaceholder: some View {
-        Rectangle()
-            .fill(
-                LinearGradient(
-                    colors: [
-                        Color.primaryEspresso.opacity(0.15),
-                        Color.primaryEspresso.opacity(0.08)
-                    ],
-                    startPoint: .topLeading,
-                    endPoint: .bottomTrailing
-                )
-            )
-            .overlay(
-                VStack {
-                    Spacer()
-                    Image("ticket")
-                        .font(.system(size: 40))
-                        .foregroundStyle(Color.primaryEspresso.opacity(0.3))
-                    Spacer()
-                }
-            )
     }
 }
