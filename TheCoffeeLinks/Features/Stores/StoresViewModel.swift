@@ -16,13 +16,13 @@ final class StoresViewModel: ObservableObject {
     @Published var error: Error?
     @Published var searchQuery = ""
     
-    private let userRepository: UserRepositoryProtocol
+    private let storeRepository: StoreRepositoryProtocol
     private let locationService: LocationServiceProtocol
     private let refreshCoordinator: ContentRefreshCoordinator
     private var cancellables = Set<AnyCancellable>()
     
-    init(userRepository: UserRepositoryProtocol, locationService: LocationServiceProtocol, refreshCoordinator: ContentRefreshCoordinator) {
-        self.userRepository = userRepository
+    init(storeRepository: StoreRepositoryProtocol, locationService: LocationServiceProtocol, refreshCoordinator: ContentRefreshCoordinator) {
+        self.storeRepository = storeRepository
         self.locationService = locationService
         self.refreshCoordinator = refreshCoordinator
         loadLastSelectedStore()
@@ -38,9 +38,9 @@ final class StoresViewModel: ObservableObject {
     }
     
     func load() async {
-        // 1. Cache
-        if let cached = await userRepository.getCachedStores() {
-            self.stores = cached
+        // 1. Load local stores immediately when available.
+        if let cached = try? await storeRepository.getStores() {
+            stores = cached
             await loadNearbyStores()
         }
         
@@ -54,11 +54,7 @@ final class StoresViewModel: ObservableObject {
         isLoading = true
         error = nil
         do {
-            let location = await locationService.currentLocation
-            stores = try await userRepository.refreshStores(
-                latitude: location?.latitude,
-                longitude: location?.longitude
-            )
+            stores = try await storeRepository.refreshStores()
             await loadNearbyStores()
         } catch {
             self.error = error

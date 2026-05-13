@@ -28,8 +28,10 @@ struct AppProductCard: View {
         VStack(alignment: .leading, spacing: 0) {
             AppRemoteImage(
                 url: imageURL,
+                source: .native,
                 width: width,
-                aspectRatio: imageAspectRatio,
+                height: imageHeight,
+                aspectRatio: width == nil ? imageAspectRatio : nil,
                 cornerRadius: 0,
                 placeholderIcon: nil
             ) {
@@ -62,6 +64,13 @@ struct AppProductCard: View {
                 if let actionTitle, let onAction {
                     Spacer().frame(height: 24)
                     AppButton(actionTitle, style: .underlined, fillsWidth: false, action: onAction)
+                } else if let actionTitle {
+                    Spacer().frame(height: 24)
+                    Text(actionTitle)
+                        .font(BaseViewFont.cta)
+                        .tracking(2)
+                        .underline()
+                        .foregroundStyle(BaseViewColor.textPrimary)
                 }
             }
             .padding(.leading, BaseViewLayout.contentInset)
@@ -75,6 +84,11 @@ struct AppProductCard: View {
                 .stroke(BaseViewColor.border, lineWidth: BaseViewLayout.cardBorderWidth)
         )
         .contentShape(Rectangle())
+    }
+
+    private var imageHeight: CGFloat? {
+        guard let width else { return nil }
+        return width / max(imageAspectRatio, 0.001)
     }
 }
 

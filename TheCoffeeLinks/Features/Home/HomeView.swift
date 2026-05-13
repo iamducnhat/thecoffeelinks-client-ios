@@ -200,8 +200,7 @@ private struct PopularProductCard: View {
             imageURL: URL(string: product?.product.displayImageUrl ?? ""),
             actionTitle: "MUA NGAY",
             width: cardWidth,
-            onTap: product.map { current in { onBuyNow(current.product) } },
-            onAction: product.map { current in { onBuyNow(current.product) } }
+            onTap: product.map { current in { onBuyNow(current.product) } }
         )
     }
 

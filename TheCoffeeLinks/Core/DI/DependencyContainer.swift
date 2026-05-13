@@ -133,7 +133,7 @@ class DependencyContainer: ObservableObject {
     @MainActor
     func makeStoresViewModel() -> StoresViewModel {
         StoresViewModel(
-            userRepository: userRepository,
+            storeRepository: storeRepository,
             locationService: locationManager,
             refreshCoordinator: refreshCoordinator
         )
