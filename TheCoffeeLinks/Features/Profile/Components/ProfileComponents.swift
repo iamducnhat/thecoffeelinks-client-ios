@@ -7,6 +7,60 @@
 
 import SwiftUI
 
+// MARK: - Profile Navigation Header
+struct ProfileNavigationHeader<Trailing: View>: View {
+    let title: String
+    let onBack: () -> Void
+    @ViewBuilder var trailing: () -> Trailing
+
+    init(
+        title: String,
+        onBack: @escaping () -> Void,
+        @ViewBuilder trailing: @escaping () -> Trailing
+    ) {
+        self.title = title
+        self.onBack = onBack
+        self.trailing = trailing
+    }
+
+    var body: some View {
+        ZStack {
+            Text(title)
+                .font(BaseViewFont.screenTitle)
+                .foregroundStyle(BaseViewColor.textPrimary)
+                .lineLimit(1)
+                .frame(maxWidth: .infinity)
+
+            HStack {
+                Button(action: onBack) {
+                    Image(systemName: "chevron.left")
+                        .font(.system(size: 14, weight: .regular))
+                        .foregroundStyle(BaseViewColor.accentForeground)
+                        .frame(width: BaseViewLayout.navButtonSize, height: BaseViewLayout.navButtonSize)
+                        .background(BaseViewColor.accent)
+                }
+                .buttonStyle(.plain)
+
+                Spacer()
+
+                trailing()
+            }
+        }
+        .frame(height: BaseViewLayout.navButtonSize)
+        .padding(.horizontal, BaseViewLayout.screenInset)
+        .padding(.top, BaseViewLayout.screenTopInset)
+        .padding(.bottom, BaseViewLayout.screenTopInset)
+    }
+}
+
+extension ProfileNavigationHeader where Trailing == EmptyView {
+    init(title: String, onBack: @escaping () -> Void) {
+        self.init(title: title, onBack: onBack) {
+            EmptyView()
+        }
+    }
+}
+
 // MARK: - Metric Box (Points / Vouchers)
 struct MetricBox: View {
     let label: String

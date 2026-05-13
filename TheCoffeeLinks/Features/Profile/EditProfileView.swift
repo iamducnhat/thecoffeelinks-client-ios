@@ -22,21 +22,9 @@ struct EditProfileView: View {
             BaseViewColor.background.ignoresSafeArea()
             
             VStack(spacing: 0) {
-                HStack {
-                    Button(String(localized: "common_cancel")) {
-                        dismiss()
-                    }
-                    .font(BaseViewFont.labelStrong)
-                    .foregroundStyle(BaseViewColor.textSecondary)
-
-                    Spacer()
-
-                    Text(String(localized: "profile_edit_title"))
-                        .font(BaseViewFont.sectionTitle)
-                        .foregroundStyle(BaseViewColor.textPrimary)
-
-                    Spacer()
-
+                ProfileNavigationHeader(title: String(localized: "profile_edit_title")) {
+                    dismiss()
+                } trailing: {
                     Button(String(localized: "common_save")) {
                         saveProfile()
                     }
@@ -44,13 +32,6 @@ struct EditProfileView: View {
                     .foregroundStyle(name.isEmpty || authViewModel.isLoading ? BaseViewColor.textSecondary : BaseViewColor.accent)
                     .disabled(name.isEmpty || authViewModel.isLoading)
                 }
-                .padding(.horizontal, BaseViewLayout.screenInset)
-                .padding(.top, BaseViewLayout.screenTopInset)
-                .padding(.bottom, BaseViewLayout.screenInset)
-
-                Rectangle()
-                    .fill(BaseViewColor.border)
-                    .frame(height: BaseViewLayout.cardBorderWidth)
                 
                 ScrollView {
                     VStack(alignment: .leading, spacing: BaseViewLayout.majorSectionGap) {
@@ -78,6 +59,8 @@ struct EditProfileView: View {
         .onAppear {
             initializeForm()
         }
+        .navigationBarHidden(true)
+        .toolbar(.hidden, for: .navigationBar)
     }
     
     private func initializeForm() {

@@ -18,30 +18,9 @@ struct SecurityView: View {
             BaseViewColor.background.ignoresSafeArea()
             
             VStack(spacing: 0) {
-                HStack {
-                    Button(action: { dismiss() }) {
-                        Image(systemName: "chevron.left")
-                            .font(.system(size: 18, weight: .medium))
-                            .foregroundStyle(BaseViewColor.textPrimary)
-                    }
-                    
-                    Spacer()
-                    
-                    Text(String(localized: "action_security"))
-                        .font(BaseViewFont.sectionTitle)
-                        .foregroundStyle(BaseViewColor.textPrimary)
-                    
-                    Spacer()
-                    
-                    Image(systemName: "chevron.left").opacity(0)
+                ProfileNavigationHeader(title: String(localized: "action_security")) {
+                    dismiss()
                 }
-                .padding(.horizontal, BaseViewLayout.screenInset)
-                .padding(.top, BaseViewLayout.screenTopInset)
-                .padding(.bottom, BaseViewLayout.screenInset)
-                
-                Rectangle()
-                    .fill(BaseViewColor.border)
-                    .frame(height: BaseViewLayout.cardBorderWidth)
                 
                 ScrollView {
                     VStack(alignment: .leading, spacing: BaseViewLayout.majorSectionGap) {
@@ -70,5 +49,7 @@ struct SecurityView: View {
                 }
             }
         }
+        .navigationBarHidden(true)
+        .toolbar(.hidden, for: .navigationBar)
     }
 }

@@ -16,6 +16,7 @@ struct BaseViewLayout {
     static let inlineCTAHeight: CGFloat = 52
     static let accentBadgeHeight: CGFloat = 26
     static let accentBadgeInset: CGFloat = 5
+    static let navButtonSize: CGFloat = 23
 }
 
 struct BaseViewColor {
