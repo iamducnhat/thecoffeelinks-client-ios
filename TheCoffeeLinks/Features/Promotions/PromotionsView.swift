@@ -172,9 +172,9 @@ struct PromotionsView: View {
 
     private var guestContent: some View {
         AppAuthPromptCard(
-            title: String(localized: "auth_feature_prompt_title"),
-            message: String(localized: "auth_feature_prompt_desc"),
-            actionTitle: String(localized: "auth_sign_in_or_join").uppercased(with: .autoupdatingCurrent)
+            title: "Đăng nhập để sử dụng tính năng này",
+            message: "Tham gia hội viên để nhận được điểm, phần thưởng\nvà nhiều ưu đãi khác.",
+            actionTitle: "ĐĂNG NHẬP HOẶC THAM GIA"
         ) {
             showLogin = true
         }
