@@ -225,28 +225,16 @@ struct SearchResultRow: View {
             VStack(spacing: 0) {
                 HStack(spacing: AppLayout.spacing) {
                     // Product image
-                    AsyncImage(url: URL(string: product.displayImageUrl ?? "")) { phase in
-                        switch phase {
-                        case .empty, .failure:
-                            Color.surfacePrimary
-                                .overlay(
-                                    Text(String(product.name.prefix(1)))
-                                        .font(BaseViewFont.sectionTitle)
-                                        .foregroundStyle(BaseViewColor.textSecondary)
-                                )
-                        case .success(let image):
-                            image
-                                .resizable()
-                                .aspectRatio(contentMode: .fill)
-                        @unknown default:
-                            EmptyView()
-                        }
-                    }
-                    .frame(width: 64, height: 64)
-                    .clipShape(RoundedRectangle(cornerRadius: AppRadius.medium, style: .continuous))
-        .overlay(
-                        Capsule()
-                            .strokeBorder(Color.border, lineWidth: 1)
+                    AppRemoteImage(
+                        url: URL(string: product.displayImageUrl ?? ""),
+                        source: .native,
+                        width: 64,
+                        height: 64,
+                        cornerRadius: AppRadius.medium,
+                        backgroundColor: Color.surfacePrimary,
+                        borderColor: Color.border,
+                        placeholderIcon: nil,
+                        placeholderText: String(product.name.prefix(1))
                     )
                     
                     VStack(alignment: .leading, spacing: 4) {

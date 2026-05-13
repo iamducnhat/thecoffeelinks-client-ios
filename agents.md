@@ -2,7 +2,7 @@
 
 ## Scope
 
-This folder is the native iOS client for TheCoffeeLinks. Keep this directory focused on Swift, SwiftUI, Xcode project files, assets, tests, and these two agent docs. Do not add one-off Python scripts or extra markdown reports here; update `agents.md` or `claude.md` instead.
+This folder is the native iOS client for TheCoffeeLinks. Keep this directory focused on Swift, SwiftUI, Xcode project files, assets, tests, and the durable docs that belong here. Do not add one-off Python scripts or extra markdown reports here; only update `agents.md`, `claude.md`, or `UI.md` when durable documentation changes.
 
 ## Project Facts
 
@@ -60,8 +60,11 @@ Onboarding is tracked in `UserDefaults`; secure auth state is tracked in Keychai
 ## Design System
 
 - Prefer semantic tokens from `Core/DesignSystem`.
+- Read `UI.md` before creating or changing reusable UI.
+- Reuse an existing shared component when it fits; if none fits, add a new shared component under `TheCoffeeLinks/Core/DesignSystem/Components` first, then update `UI.md`.
 - Use `DesignSystemV2.swift` and existing app components before creating new primitives.
 - Avoid hardcoded colors, spacing, and repeated button styles.
+- Use `BaseViewColor.placeholder` for remote-image fallback.
 - Use `strokeBorder` for shape borders.
 - Keep cards and controls touch-friendly and consistent with the current SwiftUI style.
 - The old docs identified design-system drift across receipt/editorial/liquid-glass styles. New UI work should reduce duplication, not add another visual dialect.

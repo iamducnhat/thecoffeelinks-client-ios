@@ -98,34 +98,15 @@ struct StoreDetailView: View {
                     LazyVStack(spacing: AppLayout.spacingXL) {
                         // Store Header
                         VStack(spacing: AppLayout.spacing) {
-                            // CHANGED: Using CachedAsyncImage
-                            CachedAsyncImage(url: URL(string: store.imageUrl ?? "")) { phase in // CHANGED
-                                switch phase { // CHANGED
-                                case .empty: // CHANGED
-                                    Rectangle() // CHANGED
-                                        .fill(Color.surfacePrimary) // CHANGED
-                                        .overlay { // CHANGED
-                                            ProgressView() // CHANGED
-                                                .tint(BaseViewColor.accent) // CHANGED
-                                        } // CHANGED
-                                case .success(let image): // CHANGED
-                                    image // CHANGED
-                                        .resizable() // CHANGED
-                                        .aspectRatio(contentMode: .fill) // CHANGED
-                                case .failure: // CHANGED
-                                    Rectangle() // CHANGED
-                                        .fill(Color.surfacePrimary) // CHANGED
-                                        .overlay { // CHANGED
-                                            Text(String(store.name.prefix(1))) // CHANGED
-                                                .font(AppFont.displayTitle) // CHANGED
-                                                .foregroundStyle(BaseViewColor.textSecondary) // CHANGED
-                                        } // CHANGED
-                                @unknown default: // CHANGED
-                                    EmptyView() // CHANGED
-                                } // CHANGED
-                            } // CHANGED
-                            .frame(height: 200)
-                            .clipped()
+                            AppRemoteImage(
+                                url: URL(string: store.imageUrl ?? ""),
+                                width: nil,
+                                height: 200,
+                                backgroundColor: Color.surfacePrimary,
+                                showsProgress: true,
+                                placeholderIcon: nil,
+                                placeholderText: String(store.name.prefix(1))
+                            )
                             
                             Text(store.address)
                                 .font(BaseViewFont.body)

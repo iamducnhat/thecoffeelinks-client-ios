@@ -153,38 +153,16 @@ struct FavoriteItemRow: View {
         Button(action: action) {
             VStack(spacing: 0) {
                 HStack(spacing: AppLayout.spacing) {
-                    // Image
-                    // CHANGED: Using CachedAsyncImage
-                    CachedAsyncImage(url: URL(string: favorite.product.displayImageUrl ?? "")) { phase in // CHANGED
-                        switch phase { // CHANGED
-                        case .empty: // CHANGED
-                            Rectangle() // CHANGED
-                                .fill(Color.surfacePrimary) // CHANGED
-                                .overlay { // CHANGED
-                                    ProgressView() // CHANGED
-                                        .tint(Color.accentPrimary) // CHANGED
-                                } // CHANGED
-                        case .success(let image): // CHANGED
-                            image // CHANGED
-                                .resizable() // CHANGED
-                                .aspectRatio(contentMode: .fill) // CHANGED
-                        case .failure: // CHANGED
-                            Rectangle() // CHANGED
-                                .fill(Color.surfacePrimary) // CHANGED
-                                .overlay { // CHANGED
-                                    Text(String(favorite.product.name.prefix(1))) // CHANGED
-                                        .font(AppFont.sectionHeader) // CHANGED
-                                        .foregroundStyle(Color.textSecondary) // CHANGED
-                                } // CHANGED
-                        @unknown default: // CHANGED
-                            EmptyView() // CHANGED
-                        } // CHANGED
-                    } // CHANGED
-                    .frame(width: 70, height: 70)
-                    .clipShape(RoundedRectangle(cornerRadius: AppRadius.medium, style: .continuous))
-        .overlay(
-                        Capsule()
-                            .strokeBorder(Color.border, lineWidth: 1)
+                    AppRemoteImage(
+                        url: URL(string: favorite.product.displayImageUrl ?? ""),
+                        width: 70,
+                        height: 70,
+                        cornerRadius: AppRadius.medium,
+                        backgroundColor: Color.surfacePrimary,
+                        borderColor: Color.border,
+                        showsProgress: true,
+                        placeholderIcon: nil,
+                        placeholderText: String(favorite.product.name.prefix(1))
                     )
                     
                     VStack(alignment: .leading, spacing: 4) {

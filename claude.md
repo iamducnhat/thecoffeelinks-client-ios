@@ -2,7 +2,15 @@
 
 ## Prime Directive
 
-This iOS repo was cleaned so future agents do not need to parse old generated reports. Keep context here concise and current. When you learn something durable about the app, update this file or `agents.md`; do not create another standalone markdown audit.
+This iOS repo was cleaned so future agents do not need to parse old generated reports. Keep context here concise and current. When you learn something durable about the app, update this file, `agents.md`, or `UI.md`; do not create another standalone markdown audit.
+
+## UI Consolidation
+
+- Shared UI source of truth now lives in `UI.md`.
+- Before adding or changing reusable UI, check `UI.md` first.
+- `TheCoffeeLinks/Core/DesignSystem/Components` is the app UI kit.
+- Legacy names such as `BaseCTAButton`, `CapsuleButton`, `ReceiptPrimaryButton`, `ReceiptQuantityStepper`, `BaseListRow`, `ProfileRow`, and `VoucherCard` should stay thin compatibility wrappers until they can be removed safely.
+- All remote images should go through `AppRemoteImage` and default to `BaseViewColor.placeholder`.
 
 ## What Was Consolidated
 

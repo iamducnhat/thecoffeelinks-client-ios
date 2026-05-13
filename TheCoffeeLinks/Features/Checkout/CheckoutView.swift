@@ -415,35 +415,13 @@ struct CheckoutView: View {
                             // MARK: Cart Items
                             ForEach(cartViewModel.cart.items) { item in
                                 HStack(spacing: AppLayout.spacingMedium) {
-                                    // Image Placeholder
-                                    // CHANGED: Using CachedAsyncImage
-                                    CachedAsyncImage(url: URL(string: item.product.displayImageUrl ?? "")) { phase in // CHANGED
-                                        switch phase { // CHANGED
-                                        case .empty: // CHANGED
-                                            Rectangle() // CHANGED
-                                                .fill(Color.surfacePrimary) // CHANGED
-                                                .overlay { // CHANGED
-                                                    ProgressView() // CHANGED
-                                                        .tint(Color.accentPrimary) // CHANGED
-                                                } // CHANGED
-                                        case .success(let image): // CHANGED
-                                            image // CHANGED
-                                                .resizable() // CHANGED
-                                                .aspectRatio(contentMode: .fill) // CHANGED
-                                        case .failure: // CHANGED
-                                            Rectangle() // CHANGED
-                                                .fill(Color.textPrimary.opacity(0.1)) // CHANGED
-                                                .overlay { // CHANGED
-                                                    Image("photo") // CHANGED
-                                                        .font(AppFont.productTitle) // CHANGED
-                                                        .foregroundStyle(Color.textPrimary) // CHANGED
-                                                } // CHANGED
-                                        @unknown default: // CHANGED
-                                            EmptyView() // CHANGED
-                                        } // CHANGED
-                                    } // CHANGED
-                                    .frame(width: AppLayout.productImageSize, height: AppLayout.productImageSize)
-                                    .cornerRadius(AppLayout.cornerRadius)
+                                    AppRemoteImage(
+                                        url: URL(string: item.product.displayImageUrl ?? ""),
+                                        width: AppLayout.productImageSize,
+                                        height: AppLayout.productImageSize,
+                                        backgroundColor: Color.surfacePrimary,
+                                        showsProgress: true
+                                    )
                                     
                                     VStack(alignment: .leading, spacing: 0) {
                                         Text(item.product.name)

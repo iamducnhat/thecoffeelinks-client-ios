@@ -72,7 +72,9 @@ class AuthRepository {
         keychainManager.deleteUserId()
         keychainManager.deletePhoneNumber()
         
-        await networkService.clearAuthToken()
+        await MainActor.run {
+            networkService.clearAuthToken()
+        }
     }
 
     /// Proactively refresh session on app open to extend refresh token lifetime.
@@ -183,7 +185,9 @@ class AuthRepository {
             body: LoginRequest(phone: phone, password: password)
         )
         
-        await networkService.setAuthSession(accessToken: response.session.accessToken, refreshToken: response.session.refreshToken)
+        await MainActor.run {
+            networkService.setAuthSession(accessToken: response.session.accessToken, refreshToken: response.session.refreshToken)
+        }
         
         // Save phone number and user ID for App Attest key association
         keychainManager.savePhoneNumber(phone)
@@ -196,7 +200,7 @@ class AuthRepository {
             do {
                 attestService.loadKeyForUser(userId)
                 try await attestService.ensureRegistered()
-                try await attestService.registerKeyWithServer()
+                _ = try await attestService.registerKeyWithServer()
                 debugLog("✅ [AuthRepository] App Attest registered for user: \(userId)")
             } catch {
                 debugLog("⚠️ [AuthRepository] AppAttest registration failed: \(error.localizedDescription)")
@@ -251,7 +255,9 @@ class AuthRepository {
         )
         
         // 2. Set auth session with the new token
-        await networkService.setAuthSession(accessToken: response.session.accessToken, refreshToken: response.session.refreshToken)
+        await MainActor.run {
+            networkService.setAuthSession(accessToken: response.session.accessToken, refreshToken: response.session.refreshToken)
+        }
         
         // 2.5. Save phone number and user ID for App Attest key association
         keychainManager.savePhoneNumber(phoneNumber)
@@ -267,7 +273,7 @@ class AuthRepository {
                 attestService.loadKeyForUser(userId)
                 
                 try await attestService.ensureRegistered() // ensure local key exists
-                try await attestService.registerKeyWithServer() // register with server using auth token
+                _ = try await attestService.registerKeyWithServer() // register with server using auth token
                 debugLog("✅ [AuthRepository] App Attest registered for user: \(userId)")
             } catch {
                 debugLog("⚠️ [AuthRepository] AppAttest registration failed: \(error.localizedDescription)")
@@ -331,7 +337,9 @@ class AuthRepository {
         }
         
         let response = try decoder.decode(DevResponse.self, from: rawData)
-        await networkService.setAuthSession(accessToken: response.session.accessToken, refreshToken: response.session.refreshToken)
+        await MainActor.run {
+            networkService.setAuthSession(accessToken: response.session.accessToken, refreshToken: response.session.refreshToken)
+        }
         
         return User(
             id: response.user.id,

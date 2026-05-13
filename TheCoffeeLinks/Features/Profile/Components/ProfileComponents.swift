@@ -24,32 +24,7 @@ struct ProfileNavigationHeader<Trailing: View>: View {
     }
 
     var body: some View {
-        ZStack {
-            Text(title)
-                .font(BaseViewFont.screenTitle)
-                .foregroundStyle(BaseViewColor.textPrimary)
-                .lineLimit(1)
-                .frame(maxWidth: .infinity)
-
-            HStack {
-                Button(action: onBack) {
-                    Image(systemName: "chevron.left")
-                        .font(.system(size: 14, weight: .regular))
-                        .foregroundStyle(BaseViewColor.accentForeground)
-                        .frame(width: BaseViewLayout.navButtonSize, height: BaseViewLayout.navButtonSize)
-                        .background(BaseViewColor.accent)
-                }
-                .buttonStyle(.plain)
-
-                Spacer()
-
-                trailing()
-            }
-        }
-        .frame(height: BaseViewLayout.navButtonSize)
-        .padding(.horizontal, BaseViewLayout.screenInset)
-        .padding(.top, BaseViewLayout.screenTopInset)
-        .padding(.bottom, BaseViewLayout.screenTopInset)
+        AppNavigationHeader(title: title, onBack: onBack, trailing: trailing)
     }
 }
 
@@ -90,10 +65,7 @@ struct ProfileSectionHeader: View {
     let title: String
     
     var body: some View {
-        Text(title)
-            .textCase(.uppercase)
-            .font(BaseViewFont.labelStrong)
-            .foregroundStyle(BaseViewColor.textPrimary)
+        AppSectionHeader(title: title.uppercased())
     }
 }
 
@@ -134,27 +106,10 @@ struct ProfileRow<Destination: View>: View {
     }
     
     private var rowContent: some View {
-        HStack(spacing: AppLayout.spacing) {
-            Image(icon)
-                .font(.system(size: 20))
-                .foregroundStyle(BaseViewColor.textSecondary)
-                .frame(width: 24)
-            
-            Text(title)
-                .font(BaseViewFont.body)
-                .foregroundStyle(BaseViewColor.textPrimary)
-            
-            Spacer()
-            
-            Image("chevron_right")
-                .font(.system(size: 14))
-                .foregroundStyle(BaseViewColor.textSecondary)
-        }
-        .padding(BaseViewLayout.badgeInset)
-        .background(BaseViewColor.elevatedSurface)
-        .overlay(
-            Rectangle()
-                .stroke(BaseViewColor.border, lineWidth: BaseViewLayout.cardBorderWidth)
+        AppListRow(
+            title: title,
+            icon: icon,
+            showsChevron: true
         )
     }
 }
@@ -166,29 +121,8 @@ struct ToggleRow: View {
     @Binding var isOn: Bool
     
     var body: some View {
-        HStack(spacing: AppLayout.spacing) {
-            Image(icon)
-                .font(.system(size: 20))
-                .foregroundStyle(BaseViewColor.textSecondary)
-                .frame(width: 24)
-            
-            Text(title)
-                .font(BaseViewFont.body)
-                .foregroundStyle(BaseViewColor.textPrimary)
-            
-            Spacer()
-            
-            Toggle("", isOn: $isOn)
-                .labelsHidden()
-                .tint(BaseViewColor.accent)
-                .accessibilityIdentifier(title)
-                .accessibilityLabel(title)
-        }
-        .padding(BaseViewLayout.badgeInset)
-        .background(BaseViewColor.elevatedSurface)
-        .overlay(
-            Rectangle()
-                .stroke(BaseViewColor.border, lineWidth: BaseViewLayout.cardBorderWidth)
-        )
+        AppToggleRow(title: title, icon: icon, isOn: $isOn)
+            .accessibilityIdentifier(title)
+            .accessibilityLabel(title)
     }
 }

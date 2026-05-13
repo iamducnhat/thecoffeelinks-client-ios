@@ -30,7 +30,6 @@ struct ConnectView: View {
             
             VStack(spacing: 0) {
                 ScrollView(.vertical) {
-                    // Header
                     VStack(spacing: AppSpacing.lg) {
                         SectionHeader(
                             title: String(localized: "network_connect_action"),
@@ -51,7 +50,6 @@ struct ConnectView: View {
                     
                     LazyVStack(spacing: AppLayout.spacingXL) {
                         if viewModel.isCheckedIn {
-                            // Active Check-In Status
                             VStack(alignment: .leading, spacing: AppLayout.spacing) {
                                 Text("Currently at")
                                     .textCase(.uppercase)
@@ -102,7 +100,6 @@ struct ConnectView: View {
                             }
                             .padding(.horizontal, AppLayout.spacing)
                             
-                            // Nearby People
                             VStack(alignment: .leading, spacing: AppLayout.spacing) {
                                 Text("People here")
                                     .textCase(.uppercase)
@@ -148,7 +145,6 @@ struct ConnectView: View {
                             }
                             .padding(.horizontal, AppLayout.spacing)
                         } else {
-                            // Offline Prompt
                             VStack(spacing: AppLayout.spacingXL) {
                                 Text("Connect with people")
                                     .font(AppFont.displayTitle)
@@ -175,7 +171,6 @@ struct ConnectView: View {
                             .padding(.vertical, 60)
                         }
                         
-                        // Privacy & Safety
                         VStack(alignment: .leading, spacing: AppLayout.spacing) {
                             Text("Privacy & Safety")
                                 .textCase(.uppercase)
@@ -256,49 +251,16 @@ struct PresenceRow: View {
     var body: some View {
         Button(action: onTap) {
             HStack(spacing: AppLayout.spacing) {
-                // Avatar
-                ZStack {
-                    Rectangle()
-                        .fill(Color.surfacePrimary)
-                        .frame(width: 44, height: 44)
-                    
-                    if let avatarUrl = user.avatarUrl, let url = URL(string: avatarUrl) {
-                        CachedAsyncImage(url: url) { phase in
-                            switch phase {
-                            case .empty:
-                                Rectangle()
-                                    .fill(Color.surfacePrimary)
-                                    .overlay {
-                                        ProgressView()
-                                            .tint(Color.accentPrimary)
-                                    }
-                            case .success(let image):
-                                image
-                                    .resizable()
-                                    .aspectRatio(contentMode: .fill)
-                            case .failure:
-                                Rectangle()
-                                    .fill(Color.surfacePrimary)
-                                    .overlay {
-                                        Text(user.displayName.prefix(1))
-                                            .font(AppFont.body)
-                                            .foregroundStyle(Color.accentPrimary)
-                                    }
-                            @unknown default:
-                                EmptyView()
-                            }
-                        }
-                    } else {
-                        Text(user.displayName.prefix(1))
-                            .font(AppFont.body)
-                            .foregroundStyle(Color.accentPrimary)
-                    }
-                }
-                .frame(width: 44, height: 44)
-                .clipShape(RoundedRectangle(cornerRadius: AppRadius.medium, style: .continuous))
-                .overlay(
-                    RoundedRectangle(cornerRadius: AppRadius.medium, style: .continuous)
-                        .strokeBorder(Color.border, lineWidth: 1)
+                AppRemoteImage(
+                    url: URL(string: user.avatarUrl ?? ""),
+                    width: 44,
+                    height: 44,
+                    cornerRadius: AppRadius.medium,
+                    backgroundColor: Color.surfacePrimary,
+                    borderColor: Color.border,
+                    showsProgress: true,
+                    placeholderIcon: nil,
+                    placeholderText: String(user.displayName.prefix(1))
                 )
                 
                 VStack(alignment: .leading, spacing: 2) {
@@ -320,6 +282,7 @@ struct PresenceRow: View {
             }
             .padding(AppLayout.spacing)
         }
+        .buttonStyle(.plain)
     }
 }
 
@@ -527,48 +490,16 @@ struct UserProfileSheet: View {
                     VStack(spacing: AppLayout.spacingXL) {
                         // Avatar & Info
                         VStack(spacing: AppLayout.spacing) {
-                            ZStack {
-                                Rectangle()
-                                    .fill(Color.surfacePrimary)
-                                    .frame(width: 100, height: 100)
-                                
-                                if let avatarUrl = user.avatarUrl, let url = URL(string: avatarUrl) {
-                                    CachedAsyncImage(url: url) { phase in
-                                        switch phase {
-                                        case .empty:
-                                            Rectangle()
-                                                .fill(Color.surfacePrimary)
-                                                .overlay {
-                                                    ProgressView()
-                                                        .tint(Color.accentPrimary)
-                                                }
-                                        case .success(let image):
-                                            image
-                                                .resizable()
-                                                .aspectRatio(contentMode: .fill)
-                                        case .failure:
-                                            Rectangle()
-                                                .fill(Color.surfacePrimary)
-                                                .overlay {
-                                                    Text(user.displayName.prefix(1))
-                                                        .font(.system(size: 32))
-                                                        .foregroundStyle(Color.accentPrimary)
-                                                }
-                                        @unknown default:
-                                            EmptyView()
-                                        }
-                                    }
-                                } else {
-                                    Text(user.displayName.prefix(1))
-                                        .font(.system(size: 32))
-                                        .foregroundStyle(Color.accentPrimary)
-                                }
-                            }
-                            .frame(width: 100, height: 100)
-                            .clipShape(RoundedRectangle(cornerRadius: AppRadius.medium, style: .continuous))
-                            .overlay(
-                                RoundedRectangle(cornerRadius: AppRadius.medium, style: .continuous)
-                                    .strokeBorder(Color.border, lineWidth: 1)
+                            AppRemoteImage(
+                                url: URL(string: user.avatarUrl ?? ""),
+                                width: 100,
+                                height: 100,
+                                cornerRadius: AppRadius.medium,
+                                backgroundColor: Color.surfacePrimary,
+                                borderColor: Color.border,
+                                showsProgress: true,
+                                placeholderIcon: nil,
+                                placeholderText: String(user.displayName.prefix(1))
                             )
                             
                             Text(user.displayName)

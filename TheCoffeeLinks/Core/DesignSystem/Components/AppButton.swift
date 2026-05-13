@@ -4,22 +4,27 @@ struct AppButton: View {
     enum Style {
         case primary
         case secondary
+        case ghost
+        case underlined
         case destructive
+        case icon
     }
-    
-    let title: LocalizedStringKey
+
+    let title: LocalizedStringKey?
     let icon: String?
     let style: Style
     let isLoading: Bool
     let isDisabled: Bool
+    let fillsWidth: Bool
     let action: () -> Void
-    
+
     init(
         _ title: LocalizedStringKey,
         icon: String? = nil,
         style: Style = .primary,
         isLoading: Bool = false,
         isDisabled: Bool = false,
+        fillsWidth: Bool = true,
         action: @escaping () -> Void
     ) {
         self.title = title
@@ -27,6 +32,7 @@ struct AppButton: View {
         self.style = style
         self.isLoading = isLoading
         self.isDisabled = isDisabled
+        self.fillsWidth = fillsWidth
         self.action = action
     }
 
@@ -36,68 +42,161 @@ struct AppButton: View {
         style: Style = .primary,
         isLoading: Bool = false,
         isDisabled: Bool = false,
+        fillsWidth: Bool = true,
         action: @escaping () -> Void
     ) {
-        self.init(LocalizedStringKey(title), icon: icon, style: style, isLoading: isLoading, isDisabled: isDisabled, action: action)
+        self.init(LocalizedStringKey(title), icon: icon, style: style, isLoading: isLoading, isDisabled: isDisabled, fillsWidth: fillsWidth, action: action)
     }
-    
+
+    init(
+        icon: String,
+        style: Style = .icon,
+        isLoading: Bool = false,
+        isDisabled: Bool = false,
+        action: @escaping () -> Void
+    ) {
+        self.title = nil
+        self.icon = icon
+        self.style = style
+        self.isLoading = isLoading
+        self.isDisabled = isDisabled
+        self.fillsWidth = false
+        self.action = action
+    }
+
     var body: some View {
         Button {
             action()
         } label: {
-            HStack(spacing: AppLayout.spacingCompact) {
-                if let icon = icon {
-                    Image(icon)
-                        .font(.system(size: 20, weight: .semibold))
+            ZStack {
+                if isLoading {
+                    ProgressView()
+                        .tint(foregroundColor)
                 }
-                
-                Text(title)
-                    .fontButton()
-            }
-            .frame(maxWidth: .infinity)
-            .frame(height: 48)
-            .background(backgroundColor)
-            .foregroundColor(foregroundColor)
-            .cornerRadius(AppLayout.cornerRadius)
-            .overlay(
-                RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle)
-                    .strokeBorder(borderColor, lineWidth: AppLayout.borderWidth)
-            )
-            .opacity(isDisabled || isLoading ? 0.6 : 1.0)
-            .overlay(
-                Group {
-                    if isLoading {
-                        ProgressView()
-                            .tint(foregroundColor)
+
+                HStack(spacing: AppLayout.spacingCompact) {
+                    if let icon = icon {
+                        IconView(name: icon)
+                            .font(iconFont)
+                    }
+
+                    if let title {
+                        Text(title)
+                            .font(buttonFont)
+                            .tracking(style == .underlined ? 2 : 1.2)
+                            .underline(style == .underlined)
                     }
                 }
+                .opacity(isLoading ? 0 : 1)
+            }
+            .padding(.horizontal, horizontalPadding)
+            .frame(maxWidth: fillsWidth ? .infinity : nil)
+            .frame(minWidth: style == .icon ? AppLayout.touchTarget : nil)
+            .frame(minHeight: style == .icon ? AppLayout.touchTarget : 44)
+            .background(background)
+            .foregroundStyle(foregroundColor)
+            .overlay(
+                border
             )
+            .opacity(isDisabled || isLoading ? 0.6 : 1.0)
         }
         .disabled(isDisabled || isLoading)
-        .buttonStyle(ScaleButtonStyle())
+        .buttonStyle(.plain)
+        .scaleEffect(isDisabled ? 1.0 : 1.0)
+        .modifier(ScaleButtonStyleModifier())
     }
-    
+
+    private var buttonFont: Font {
+        switch style {
+        case .primary, .secondary, .destructive:
+            return BaseViewFont.cta
+        case .ghost, .underlined:
+            return BaseViewFont.cta
+        case .icon:
+            return AppFont.body
+        }
+    }
+
+    private var iconFont: Font {
+        style == .icon ? AppFont.navIcon : AppFont.body
+    }
+
+    private var horizontalPadding: CGFloat {
+        switch style {
+        case .icon:
+            return 10
+        case .ghost, .underlined:
+            return 0
+        default:
+            return 18
+        }
+    }
+
+    @ViewBuilder
+    private var background: some View {
+        switch style {
+        case .primary:
+            RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle)
+                .fill(backgroundColor)
+        case .secondary, .destructive, .icon:
+            RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle)
+                .fill(backgroundColor)
+        case .ghost, .underlined:
+            Color.clear
+        }
+    }
+
+    @ViewBuilder
+    private var border: some View {
+        switch style {
+        case .secondary, .destructive, .icon:
+            RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle)
+                .strokeBorder(borderColor, lineWidth: AppLayout.borderWidth)
+        case .primary, .ghost, .underlined:
+            EmptyView()
+        }
+    }
+
     private var backgroundColor: Color {
         switch style {
-        case .primary: return .primaryEspresso
-        case .secondary: return .clear
-        case .destructive: return .semanticError.opacity(0.1)
+        case .primary:
+            return BaseViewColor.accent
+        case .secondary, .ghost, .underlined:
+            return .clear
+        case .destructive:
+            return Color.semanticError.opacity(0.08)
+        case .icon:
+            return BaseViewColor.elevatedSurface
         }
     }
-    
+
     private var foregroundColor: Color {
         switch style {
-        case .primary: return .surfaceCard
-        case .secondary: return .primaryEspresso
-        case .destructive: return .semanticError
+        case .primary:
+            return BaseViewColor.accentForeground
+        case .secondary:
+            return BaseViewColor.accent
+        case .ghost:
+            return BaseViewColor.textSecondary
+        case .underlined:
+            return BaseViewColor.textPrimary
+        case .destructive:
+            return Color.semanticError
+        case .icon:
+            return BaseViewColor.textPrimary
         }
     }
-    
+
     private var borderColor: Color {
         switch style {
-        case .primary: return .clear
-        case .secondary: return .primaryEspresso
-        case .destructive: return .clear
+        case .primary, .ghost, .underlined:
+            return .clear
+        case .secondary:
+            return BaseViewColor.accent
+        case .destructive:
+            return Color.semanticError.opacity(0.24)
+        case .icon:
+            return BaseViewColor.border
         }
     }
 }
@@ -111,13 +210,21 @@ struct ScaleButtonStyle: ButtonStyle {
     }
 }
 
+private struct ScaleButtonStyleModifier: ViewModifier {
+    func body(content: Content) -> some View {
+        content
+    }
+}
+
 struct AppButton_Previews: PreviewProvider {
     static var previews: some View {
         Group {
             VStack(spacing: 20) {
                 AppButton("Checkout", style: .primary) {}
                 AppButton("Browse Menu", style: .secondary) {}
+                AppButton("View Tier Details", style: .underlined, fillsWidth: false) {}
                 AppButton("Sign out", icon: "log_out", style: .destructive) {}
+                AppButton(icon: "chevron.left") {}
             }
             .padding()
             .previewLayout(.sizeThatFits)
@@ -127,7 +234,9 @@ struct AppButton_Previews: PreviewProvider {
             VStack(spacing: 20) {
                 AppButton("Checkout", style: .primary) {}
                 AppButton("Browse Menu", style: .secondary) {}
+                AppButton("View Tier Details", style: .underlined, fillsWidth: false) {}
                 AppButton("Sign out", icon: "log_out", style: .destructive) {}
+                AppButton(icon: "chevron.left") {}
             }
             .padding()
             .previewLayout(.sizeThatFits)

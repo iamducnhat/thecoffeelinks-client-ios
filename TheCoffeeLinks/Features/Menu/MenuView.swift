@@ -418,26 +418,15 @@ private struct MenuProductCard: View {
     }
 
     private var productImage: some View {
-        ZStack {
-            Rectangle()
-                .fill(placeholderFill)
-
-            if let imageURL = product.displayImageUrl, let url = URL(string: imageURL) {
-                AsyncImage(url: url) { phase in
-                    switch phase {
-                    case .success(let image):
-                        image
-                            .resizable()
-                            .scaledToFill()
-                            .frame(maxWidth: .infinity, maxHeight: .infinity)
-                    default:
-                        Color.clear
-                    }
-                }
-            }
-        }
+        AppRemoteImage(
+            url: URL(string: product.displayImageUrl ?? ""),
+            source: .native,
+            contentMode: .fill,
+            cornerRadius: 0,
+            backgroundColor: placeholderFill,
+            placeholderIcon: nil
+        )
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .clipped()
     }
 
     private var placeholderFill: Color {
@@ -461,6 +450,11 @@ private struct OverscrollDetector: UIViewRepresentable {
     private let threshold: CGFloat = 100
 
     func makeCoordinator() -> Coordinator { Coordinator(threshold: threshold, onOverscroll: onOverscroll) }
+
+    @MainActor
+    static func dismantleUIView(_ uiView: UIView, coordinator: Coordinator) {
+        coordinator.detach()
+    }
 
     func makeUIView(context: Context) -> UIView {
         let v = UIView()
@@ -498,10 +492,22 @@ private struct OverscrollDetector: UIViewRepresentable {
             observation = scrollView.observe(\.contentOffset, options: .new) { [weak self] _, change in
                 guard let self, let y = change.newValue?.y else { return }
                 if y < -self.threshold {
-                    self.hasTriggered = true
-                    debugPrint("[OverscrollDetector] armed at y=\(y)")
+                    DispatchQueue.main.async { [weak self] in
+                        guard let self else { return }
+                        self.hasTriggered = true
+                        debugPrint("[OverscrollDetector] armed at y=\(y)")
+                    }
                 }
             }
+        }
+
+        @MainActor
+        func detach() {
+            observation?.invalidate()
+            observation = nil
+            attachedScrollView?.panGestureRecognizer.removeTarget(self, action: #selector(handlePan(_:)))
+            attachedScrollView = nil
+            hasTriggered = false
         }
 
         @objc private func handlePan(_ gesture: UIPanGestureRecognizer) {
@@ -514,7 +520,6 @@ private struct OverscrollDetector: UIViewRepresentable {
 
         deinit {
             observation?.invalidate()
-            attachedScrollView?.panGestureRecognizer.removeTarget(self, action: #selector(handlePan(_:)))
         }
     }
 }

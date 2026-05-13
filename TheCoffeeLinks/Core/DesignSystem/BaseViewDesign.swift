@@ -57,44 +57,12 @@ struct BaseCTAButton: View {
     let action: () -> Void
 
     var body: some View {
-        Button(action: action) {
-            Text(title)
-                .font(BaseViewFont.cta)
-                .tracking(1.6)
-                .frame(maxWidth: fillsWidth ? .infinity : nil)
-                .frame(minHeight: BaseViewLayout.smallCTAHeight)
-                .padding(.horizontal, fillsWidth ? 0 : 18)
-                .foregroundStyle(foregroundColor)
-                .background(
-                    Rectangle()
-                        .fill(backgroundColor)
-                )
-                .overlay {
-                    if style == .outlined {
-                        Rectangle()
-                            .stroke(BaseViewColor.accent, lineWidth: 1)
-                    }
-                }
-        }
-        .buttonStyle(.plain)
-    }
-
-    private var backgroundColor: Color {
-        switch style {
-        case .filled:
-            return BaseViewColor.accent
-        case .outlined:
-            return .clear
-        }
-    }
-
-    private var foregroundColor: Color {
-        switch style {
-        case .filled:
-            return BaseViewColor.accentForeground
-        case .outlined:
-            return BaseViewColor.accent
-        }
+        AppButton(
+            title,
+            style: style == .filled ? .primary : .secondary,
+            fillsWidth: fillsWidth,
+            action: action
+        )
     }
 }
 
@@ -115,13 +83,7 @@ struct BaseAccentBadge: View {
     let title: String
 
     var body: some View {
-        Text(title)
-            .font(BaseViewFont.labelStrong)
-            .tracking(2)
-            .foregroundStyle(BaseViewColor.accentForeground)
-            .padding(.horizontal, BaseViewLayout.accentBadgeInset)
-            .padding(.vertical, BaseViewLayout.accentBadgeInset)
-            .background(BaseViewColor.accent)
+        AppBadge(text: title)
     }
 }
 
@@ -191,25 +153,10 @@ struct BaseListRow: View {
     var detailColor: Color = BaseViewColor.textSecondary
 
     var body: some View {
-        HStack(spacing: 12) {
-            Text(title)
-                .font(BaseViewFont.body)
-                .foregroundStyle(BaseViewColor.textPrimary)
-
-            Spacer(minLength: 12)
-
-            if let detail {
-                Text(detail)
-                    .font(BaseViewFont.body)
-                    .foregroundStyle(detailColor)
-            }
-        }
-        .padding(13)
-        .frame(maxWidth: .infinity)
-        .background(BaseViewColor.elevatedSurface)
-        .overlay(
-            Rectangle()
-                .stroke(BaseViewColor.border, lineWidth: BaseViewLayout.cardBorderWidth)
+        AppListRow(
+            title: title,
+            detail: detail,
+            detailColor: detailColor
         )
     }
 }

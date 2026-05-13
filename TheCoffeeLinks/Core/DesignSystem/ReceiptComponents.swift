@@ -236,24 +236,13 @@ struct ReceiptItemRow: View {
     
     var body: some View {
         HStack(spacing: AppLayout.spacingMedium) {
-            // Image Placeholder
-            AsyncImage(url: URL(string: imageUrl ?? "")) { phase in
-                if let image = phase.image {
-                    image
-                        .resizable()
-                        .aspectRatio(contentMode: .fill)
-                } else {
-                    Rectangle()
-                        .fill(Color.textInk.opacity(0.1))
-                        .overlay {
-                            Image("photo")
-                                .font(AppFont.productTitle)
-                                .foregroundStyle(Color.textInk)
-                        }
-                }
-            }
-            .frame(width: AppLayout.productImageSize, height: AppLayout.productImageSize)
-            .cornerRadius(AppLayout.cornerRadius)
+            AppRemoteImage(
+                url: URL(string: imageUrl ?? ""),
+                source: .native,
+                contentMode: .fill,
+                width: AppLayout.productImageSize,
+                height: AppLayout.productImageSize
+            )
             
             VStack(alignment: .leading, spacing: 0) {
                 Text(name)
@@ -298,23 +287,7 @@ struct ReceiptQuantityStepper: View {
     let onIncrease: () -> Void
     
     var body: some View {
-        HStack(spacing: AppLayout.spacingSmall) {
-            ReceiptStepperButton(
-                icon: "minus",
-                isDisabled: quantity <= 1,
-                action: onDecrease
-            )
-            
-            Text("\(quantity)")
-                .font(AppFont.monoHeadline)
-                .frame(minWidth: AppLayout.quantityMinWidth)
-            
-            ReceiptStepperButton(
-                icon: "plus",
-                action: onIncrease
-            )
-        }
-        .fixedSize()
+        AppQuantityStepper(quantity: quantity, onDecrease: onDecrease, onIncrease: onIncrease)
     }
 }
 
@@ -377,13 +350,13 @@ struct ReceiptImagePlaceholder: View {
     
     var body: some View {
         Rectangle()
-            .fill(Color.textInk.opacity(0.1))
+            .fill(BaseViewColor.placeholder)
             .frame(width: size, height: size)
             .cornerRadius(AppLayout.cornerRadius)
             .overlay {
                 Image("photo")
                     .font(AppFont.productTitle)
-                    .foregroundStyle(Color.textInk)
+                    .foregroundStyle(Color.textPrimary.opacity(0.72))
             }
     }
 }
@@ -485,83 +458,14 @@ struct VoucherCard: View {
     }
 
     var body: some View {
-        HStack(spacing: 0) {
-
-            // ── Left colour block ────────────────────────────────────────
-            ZStack {
-                leftColor
-                Image(systemName: "cup.and.saucer.fill")
-                    .font(.system(size: 30, weight: .light))
-                    .foregroundStyle(.white.opacity(0.22))
-            }
-            .frame(width: 116)
-
-            // ── Right content ────────────────────────────────────────────
-            VStack(alignment: .leading, spacing: 0) {
-
-                // Title row
-                Text("VOUCHER")
-                    .font(.custom("GeologicaThinRoman-Medium", size: 18))
-                    .foregroundStyle(Color.textPrimary)
-
-                // Discount value
-                Text(voucher.displayValue)
-                    .font(AppFont.monoHeadline)
-                    .foregroundStyle(Color.textPrimary)
-                    .padding(.top, 2)
-
-                Spacer()
-
-                Divider()
-                    .padding(.bottom, 6)
-
-                // Bottom row: expiry + CTA
-                HStack(alignment: .bottom) {
-                    if let date = voucher.validUntil {
-                        VStack(alignment: .leading, spacing: 1) {
-                            Text("HSD:")
-                                .font(AppFont.uiMicro)
-                                .foregroundStyle(Color.textSecondary)
-                            Text(date.formatted(.dateTime.day().month(.twoDigits).year(.defaultDigits)))
-                                .font(AppFont.uiMicro)
-                                .foregroundStyle(Color.textSecondary)
-                        }
-                    } else {
-                        Text(String(localized: "voucher_no_expiry"))
-                            .font(AppFont.uiMicro)
-                            .foregroundStyle(Color.textSecondary)
-                    }
-
-                    Spacer()
-
-                    if showApplyButton {
-                        Button(action: action) {
-                            Text(String(localized: "voucher_use_cta"))
-                                .font(AppFont.uiMicro)
-                                .fontWeight(.semibold)
-                                .kerning(2)
-                                .underline()
-                                .foregroundStyle(Color.textPrimary)
-                        }
-                    } else {
-                        Text(String(localized: "voucher_used_label"))
-                            .font(AppFont.uiMicro)
-                            .foregroundStyle(Color.textSecondary)
-                    }
-                }
-            }
-            .padding(.leading, 13)
-            .padding(.trailing, 14)
-            .padding(.vertical, 9)
-            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
-            .background(Color.white)
-        }
-        .frame(height: 116)
-        .saturation(showApplyButton ? 1.0 : 0.3)
-        .opacity(showApplyButton ? 1.0 : 0.7)
-        .overlay(
-            Rectangle()
-                .strokeBorder(Color(UIColor.separator), lineWidth: 0.5)
+        AppVoucherPassCard(
+            title: "VOUCHER",
+            value: voucher.displayValue,
+            subtitle: voucher.validUntil.map { "HSD: \($0.formatted(.dateTime.day().month(.twoDigits).year(.defaultDigits)))" } ?? String(localized: "voucher_no_expiry"),
+            accentColor: leftColor,
+            actionTitle: showApplyButton ? String(localized: "voucher_use_cta") : nil,
+            isMuted: !showApplyButton,
+            action: showApplyButton ? action : nil
         )
     }
 }

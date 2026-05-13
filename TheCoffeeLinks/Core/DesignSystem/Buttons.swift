@@ -32,55 +32,13 @@ struct ReceiptPrimaryButton: View {
     let action: () -> Void
     
     var body: some View {
-        if #available(iOS 26.0, *) {
-            Button(action: action) {
-                HStack {
-                    if isLoading {
-                        ZStack {
-                            Text(title)
-                                .font(AppFont.monoCTA)
-                                .hidden()
-                            ProgressView()
-                                .tint(.white)
-                        }
-                    } else {
-                        Text(title)
-                            .font(AppFont.monoCTA)
-                    }
-                }
-                .foregroundStyle(Color.bgPrimary)
-                .padding(.vertical, 12)
-                .frame(maxWidth: .infinity, alignment: .center)
-                .clipShape(Capsule())
-            }
-            .buttonStyle(.glassProminent)
-            .disabled(isDisabled || isLoading)
-            .tint(Color.accentPrimary)
-        } else {
-            Button(action: action) {
-                HStack {
-                    if isLoading {
-                        ZStack {
-                            Text(title)
-                                .font(AppFont.monoCTA)
-                                .hidden()
-                            ProgressView()
-                                .tint(.white)
-                        }
-                    } else {
-                        Text(title)
-                            .font(AppFont.monoCTA)
-                    }
-                }
-                .foregroundStyle(Color.backgroundPaper)
-                .padding(.vertical, 12)
-                .frame(maxWidth: .infinity, alignment: .center)
-                .background(Color.primaryEspresso)
-                .clipShape(Capsule())
-            }
-            .disabled(isDisabled || isLoading)
-            .opacity(isDisabled ? 0.666 : 1.0)
-        }
+        AppButton(
+            title,
+            style: .primary,
+            isLoading: isLoading,
+            isDisabled: isDisabled,
+            action: action
+        )
     }
 }
 
@@ -93,27 +51,13 @@ struct ReceiptUtilityButton: View {
     let action: () -> Void
     
     var body: some View {
-        Button(action: action) {
-            HStack(spacing: 8) {
-                Text(title)
-                    .textCase(.uppercase)
-                    .font(AppFont.monoBody)
-                if let icon = icon {
-                    IconView(name: icon)
-                        .font(AppFont.monoCaption)
-                }
-            }
-            .padding(AppLayout.spacingMicro)
-            .foregroundStyle(isSelected ? Color.backgroundPaper : Color.textInk)
-            .background(isSelected ? Color.textInk : Color.backgroundPaper)
-            .clipShape(RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle))
-            .overlay {
-                if !isSelected {
-                    RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle)
-                        .strokeBorder(Color.textInk, lineWidth: 1)
-                }
-            }
-        }
+        AppButton(
+            title,
+            icon: icon,
+            style: isSelected ? .primary : .secondary,
+            fillsWidth: false,
+            action: action
+        )
     }
 }
 
@@ -125,16 +69,7 @@ struct ReceiptStepperButton: View {
     let action: () -> Void
     
     var body: some View {
-        Button(action: action) {
-            IconView(name: icon)
-                .font(AppFont.body)
-                .padding(AppLayout.spacingMicro)
-                .foregroundStyle(Color.backgroundPaper)
-                .background(Color.textInk)
-                .clipShape(RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle))
-        }
-        .disabled(isDisabled)
-        .opacity(isDisabled ? 0.666 : 1.0)
+        AppButton(icon: icon, isDisabled: isDisabled, action: action)
     }
 }
 

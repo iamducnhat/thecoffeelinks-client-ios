@@ -98,17 +98,11 @@ private struct VoucherCarouselSection: View {
         VStack(alignment: .leading, spacing: 10) {
             TabView(selection: $selectedIndex) {
                 ForEach(Array(vouchers.enumerated()), id: \.element.id) { index, voucher in
-                    CachedAsyncImage(url: URL(string: voucher.imageUrl ?? "")) { phase in
-                        switch phase {
-                        case .success(let image):
-                            image
-                                .resizable()
-                                .aspectRatio(contentMode: .fill)
-                        default:
-                            Rectangle()
-                                .fill(BaseViewColor.placeholder)
-                        }
-                    }
+                    AppRemoteImage(
+                        url: URL(string: voucher.imageUrl ?? ""),
+                        cornerRadius: 0,
+                        placeholderIcon: nil
+                    )
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
                     .clipped()
                     .tag(index)
@@ -200,73 +194,15 @@ private struct PopularProductCard: View {
     let onBuyNow: (Product) -> Void
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 0) {
-            ZStack(alignment: .bottomLeading) {
-                Group {
-                    if let product, let urlString = product.product.displayImageUrl, let url = URL(string: urlString) {
-                        CachedAsyncImage(url: url) { phase in
-                            switch phase {
-                            case .success(let image):
-                                image
-                                    .resizable()
-                                    .aspectRatio(contentMode: .fill)
-                            default:
-                                Rectangle().fill(BaseViewColor.placeholder)
-                            }
-                        }
-                    } else {
-                        Rectangle().fill(BaseViewColor.placeholder)
-                    }
-                }
-                .frame(width: cardWidth, height: cardWidth)
-                .clipped()
-
-                Text(priceText)
-                    .font(BaseViewFont.labelStrong)
-                    .foregroundStyle(BaseViewColor.textPrimary)
-                    .padding(.horizontal, 4)
-                    .padding(.vertical, 4)
-                    .background(BaseViewColor.elevatedSurface)
-                    .padding(.leading, BaseViewLayout.badgeInset)
-                    .padding(.bottom, BaseViewLayout.badgeInset)
-            }
-
-            VStack(alignment: .leading, spacing: 0) {
-                TwoLineText(
-                    text: (product?.product.name ?? "COLDBREW CHANH VÀNG").uppercased(),
-                    font: BaseViewFont.cardTitle,
-                    color: BaseViewColor.textPrimary,
-                    height: BaseViewLayout.cardTitleTwoLineHeight
-                )
-
-                Spacer().frame(height: 24)
-
-                Button {
-                    if let product {
-                        onBuyNow(product.product)
-                    }
-                }
-                label: {
-                    BaseUnderlinedCTA(title: "MUA NGAY")
-                }
-                .buttonStyle(.plain)
-            }
-            .padding(.leading, BaseViewLayout.contentInset)
-            .padding(.top, BaseViewLayout.contentInset)
-            .padding(.bottom, BaseViewLayout.contentInset)
-            .frame(width: cardWidth, alignment: .topLeading)
-        }
-        .frame(width: cardWidth, alignment: .topLeading)
-        .overlay(
-            Rectangle()
-                .stroke(BaseViewColor.border, lineWidth: BaseViewLayout.cardBorderWidth)
+        AppProductCard(
+            title: product?.product.name ?? "COLDBREW CHANH VÀNG",
+            price: priceText,
+            imageURL: URL(string: product?.product.displayImageUrl ?? ""),
+            actionTitle: "MUA NGAY",
+            width: cardWidth,
+            onTap: product.map { current in { onBuyNow(current.product) } },
+            onAction: product.map { current in { onBuyNow(current.product) } }
         )
-        .contentShape(Rectangle())
-        .onTapGesture {
-            if let product {
-                onBuyNow(product.product)
-            }
-        }
     }
 
     private var priceText: String {
@@ -378,24 +314,13 @@ private struct EventCard: View {
 
     var body: some View {
         ZStack(alignment: .topLeading) {
-            Group {
-                if let event, let urlString = event.imageUrl, let url = URL(string: urlString) {
-                    CachedAsyncImage(url: url) { phase in
-                        switch phase {
-                        case .success(let image):
-                            image
-                                .resizable()
-                                .aspectRatio(contentMode: .fill)
-                        default:
-                            Rectangle().fill(BaseViewColor.placeholder)
-                        }
-                    }
-                } else {
-                    Rectangle().fill(BaseViewColor.placeholder)
-                }
-            }
-            .frame(width: cardWidth, height: cardHeight)
-            .clipped()
+            AppRemoteImage(
+                url: URL(string: event?.imageUrl ?? ""),
+                width: cardWidth,
+                height: cardHeight,
+                cornerRadius: 0,
+                placeholderIcon: nil
+            )
 
             VStack(alignment: .leading, spacing: 5) {
                 Text(event?.title ?? "Đêm nhạc Bolero")

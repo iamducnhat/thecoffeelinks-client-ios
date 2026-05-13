@@ -144,8 +144,6 @@ struct CapsuleButton: View {
     let isDisabled: Bool
     let action: () -> Void
     
-    @Environment(\.colorScheme) private var colorScheme
-    
     init(
         _ title: String,
         style: CapsuleButtonStyle = .primary,
@@ -161,76 +159,24 @@ struct CapsuleButton: View {
     }
     
     var body: some View {
-        Button(action: action) {
-            HStack(spacing: AppSpacing.sm) {
-                if isLoading {
-                    ProgressView()
-                        .tint(foregroundColor)
-                } else {
-                    Text(title)
-                        .font(AppTypography.labelLarge)
-                }
-            }
-            .foregroundStyle(foregroundColor)
-            .frame(height: 48)
-            .frame(maxWidth: style == .ghost ? nil : .infinity)
-            .padding(.horizontal, style == .ghost ? AppSpacing.lg : 0)
-            .background(background)
-            .clipShape(Capsule())
-            .overlay(border)
-        }
-        .disabled(isDisabled || isLoading)
-        .opacity(isDisabled ? 0.5 : 1.0)
+        AppButton(
+            title,
+            style: mappedStyle,
+            isLoading: isLoading,
+            isDisabled: isDisabled,
+            fillsWidth: style != .ghost,
+            action: action
+        )
     }
-    
-    @ViewBuilder
-    private var background: some View {
+
+    private var mappedStyle: AppButton.Style {
         switch style {
         case .primary:
-            // Accent color button (green)
-            Color.accentPrimary
-                .shadow(color: Color.accentPrimary.opacity(0.2), radius: 8, x: 0, y: 4)
+            return .primary
         case .secondary:
-            // Light mode: black/80% black, Dark mode: liquid glass effect
-            Group {
-                if colorScheme == .dark {
-                    ZStack {
-                        Capsule().fill(.ultraThinMaterial)
-                        Capsule().fill(Color.white.opacity(0.15))
-                        Capsule()
-                            .strokeBorder(
-                                LinearGradient(
-                                    colors: [.white.opacity(0.5), .white.opacity(0.1)],
-                                    startPoint: .topLeading,
-                                    endPoint: .bottomTrailing
-                                ),
-                                lineWidth: 0.5
-                            )
-                    }
-                    .shadow(color: Color.white.opacity(0.1), radius: 8, x: 0, y: 4)
-                } else {
-                    Color.buttonHighlight
-                }
-            }
+            return .secondary
         case .ghost:
-            Color.clear
-        }
-    }
-    
-    @ViewBuilder
-    private var border: some View {
-        // No border needed for any style now
-        EmptyView()
-    }
-    
-    private var foregroundColor: Color {
-        switch style {
-        case .primary:
-            return .white
-        case .secondary:
-            return colorScheme == .dark ? .white : .white
-        case .ghost:
-            return .textSecondary
+            return .ghost
         }
     }
 }
@@ -416,35 +362,11 @@ struct ListRow<Destination: View>: View {
     }
     
     private var rowContent: some View {
-        HStack(spacing: AppSpacing.md) {
-            if let icon {
-                IconView(name: icon)
-                    .font(.system(size: 20))
-                    .foregroundStyle(Color.textSecondary)
-                    .frame(width: 24)
-            }
-            
-            Text(title)
-                .font(AppTypography.bodyLarge)
-                .foregroundStyle(Color.textPrimary)
-            
-            Spacer()
-            
-            if let value {
-                Text(value)
-                    .font(AppTypography.bodyMedium)
-                    .foregroundStyle(Color.textTertiary)
-            }
-            
-            if destination != nil || action != nil {
-                Image(systemName: "chevron.right")
-                    .font(.system(size: 14, weight: .semibold))
-                    .foregroundStyle(Color.textTertiary)
-            }
-        }
-        .padding(.vertical, AppSpacing.md)
-        .padding(.horizontal, AppSpacing.lg)
-        .background(Color.surfacePrimary)
-        .contentShape(Rectangle())
+        AppListRow(
+            title: title,
+            detail: value,
+            icon: icon,
+            showsChevron: destination != nil || action != nil
+        )
     }
 }

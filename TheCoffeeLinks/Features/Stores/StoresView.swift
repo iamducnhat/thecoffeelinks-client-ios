@@ -255,22 +255,13 @@ private struct StoreListCard: View {
     }
 
     private var storeImage: some View {
-        ZStack(alignment: .bottomLeading) {
-            // Solid placeholder (always present as background)
-            Rectangle().fill(Color(red: 0.29, green: 0.38, blue: 0.70))
-
-            // Async image overlaid on top
-            if let urlString = store.imageUrl, let url = URL(string: urlString) {
-                AsyncImage(url: url) { phase in
-                    if case .success(let img) = phase {
-                        img
-                            .resizable()
-                            .scaledToFill()
-                            .frame(maxWidth: .infinity, maxHeight: .infinity)
-                    }
-                }
-            }
-
+        AppRemoteImage(
+            url: URL(string: store.imageUrl ?? ""),
+            source: .native,
+            contentMode: .fill,
+            cornerRadius: 0,
+            placeholderIcon: nil
+        ) {
             if let dist = distance {
                 Text(dist)
                     .font(BaseViewFont.labelStrong)
@@ -279,10 +270,10 @@ private struct StoreListCard: View {
                     .padding(.vertical, 2)
                     .background(.regularMaterial)
                     .padding(6)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomLeading)
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .clipped()
     }
 
     private var openTime: String? {
@@ -320,47 +311,12 @@ struct StoreCard: View {
     let viewModel: StoresViewModel
 
     var body: some View {
-        HStack(spacing: 0) {
-            // Image
-            Group {
-                if let urlString = store.imageUrl, let url = URL(string: urlString) {
-                    AsyncImage(url: url) { phase in
-                        if case .success(let img) = phase {
-                            img.resizable().scaledToFill()
-                        } else {
-                            Rectangle().fill(Color(red: 0.29, green: 0.38, blue: 0.70))
-                        }
-                    }
-                } else {
-                    Rectangle().fill(Color(red: 0.29, green: 0.38, blue: 0.70))
-                }
-            }
-            .frame(width: 56, height: 56)
-            .clipped()
-
-            VStack(alignment: .leading, spacing: 3) {
-                Text(store.name.uppercased())
-                    .font(BaseViewFont.labelStrong)
-                    .foregroundStyle(BaseViewColor.textPrimary)
-                    .lineLimit(2)
-
-                Text(store.address)
-                    .font(BaseViewFont.label)
-                    .foregroundStyle(BaseViewColor.textSecondary)
-                    .lineLimit(1)
-            }
-            .padding(.horizontal, 13)
-
-            Spacer()
-
-            Image(systemName: "chevron.right")
-                .font(.system(size: 13, weight: .semibold))
-                .foregroundStyle(BaseViewColor.textSecondary)
-                .padding(.trailing, 13)
-        }
-        .frame(height: 56)
-        .background(BaseViewColor.elevatedSurface)
-        .overlay(Rectangle().stroke(BaseViewColor.border, lineWidth: BaseViewLayout.cardBorderWidth))
+        AppStoreCard(
+            title: store.name,
+            address: store.address,
+            imageURL: URL(string: store.imageUrl ?? ""),
+            variant: .simple
+        )
     }
 }
 

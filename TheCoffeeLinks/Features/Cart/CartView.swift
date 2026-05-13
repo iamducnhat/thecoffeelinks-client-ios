@@ -40,7 +40,7 @@ struct CartView: View {
                                     .opacity(min(88.8, max(scrollOffset, 0.0)) / 99.9)
                             }
                     }
-                    
+
                     Text("cart_header_count \(cartViewModel.itemCount)")
                         .font(AppTypography.displayMedium)
                         .lineLimit(1)
@@ -256,35 +256,13 @@ struct CartItemRow: View {
     
     var body: some View {
         HStack(spacing: AppLayout.spacingMedium) {
-            // Image
-            // CHANGED: Using CachedAsyncImage
-            CachedAsyncImage(url: URL(string: item.product.displayImageUrl ?? "")) { phase in // CHANGED
-                switch phase { // CHANGED
-                case .empty: // CHANGED
-                    Rectangle() // CHANGED
-                        .fill(Color.surfacePrimary) // CHANGED
-                        .overlay { // CHANGED
-                            ProgressView() // CHANGED
-                                .tint(Color.accentPrimary) // CHANGED
-                        } // CHANGED
-                case .success(let image): // CHANGED
-                    image // CHANGED
-                        .resizable() // CHANGED
-                        .aspectRatio(contentMode: .fill) // CHANGED
-                case .failure: // CHANGED
-                    Rectangle() // CHANGED
-                        .fill(Color.textPrimary.opacity(0.1)) // CHANGED
-                        .overlay { // CHANGED
-                            Image("photo") // CHANGED
-                                .font(AppFont.productTitle) // CHANGED
-                                .foregroundStyle(Color.textPrimary) // CHANGED
-                        } // CHANGED
-                @unknown default: // CHANGED
-                    EmptyView() // CHANGED
-                } // CHANGED
-            } // CHANGED
-            .frame(width: AppLayout.productImageSize, height: AppLayout.productImageSize)
-            .cornerRadius(AppLayout.cornerRadius)
+            AppRemoteImage(
+                url: URL(string: item.product.displayImageUrl ?? ""),
+                width: AppLayout.productImageSize,
+                height: AppLayout.productImageSize,
+                backgroundColor: Color.surfacePrimary,
+                showsProgress: true
+            )
             
             VStack(alignment: .leading, spacing: 0) {
                 Text(item.product.name)
@@ -336,41 +314,19 @@ struct CartItemRow: View {
                     
                     Spacer(minLength: 0)
                     
-                    // Quantity Controls
-                    HStack(spacing: AppLayout.spacingSmall) {
-                        Button {
+                    AppQuantityStepper(
+                        quantity: item.quantity,
+                        onDecrease: {
                             if item.quantity > 1 {
                                 onUpdateQuantity(item.quantity - 1)
                             } else {
                                 onRemove()
                             }
-                        } label: {
-                            Image("minus")
-                                .font(AppFont.body)
-                                .padding(AppLayout.spacingMicro)
-                                .foregroundStyle(Color.bgPrimary)
-                                .background(Color.textPrimary)
-                                .clipShape(Capsule())
-                        }
-                        .disabled(item.quantity <= 1)
-                        .opacity(item.quantity <= 1 ? 0.666 : 1.0)
-                        
-                        Text("\(item.quantity)")
-                            .font(AppFont.monoHeadline)
-                            .frame(minWidth: AppLayout.quantityMinWidth)
-                        
-                        Button {
+                        },
+                        onIncrease: {
                             onUpdateQuantity(item.quantity + 1)
-                        } label: {
-                            Image("plus")
-                                .font(AppFont.body)
-                                .padding(AppLayout.spacingMicro)
-                                .foregroundStyle(Color.bgPrimary)
-                                .background(Color.textPrimary)
-                                .clipShape(Capsule())
                         }
-                    }
-                    .fixedSize()
+                    )
                 }
             }
             .padding(.vertical, 8)
@@ -397,15 +353,7 @@ struct EmptyCartView: View {
                 .font(AppFont.body)
                 .foregroundColor(Color.textSecondary)
             
-            Button { onBrowse() } label: {
-                Text("browse_menu_button")
-                    .font(AppFont.monoCTA)
-                    .foregroundStyle(Color.bgPrimary)
-                    .padding(.horizontal, 32)
-                    .padding(.vertical, 12)
-                    .background(Color.accentPrimary)
-                    .clipShape(Capsule())
-            }
+            AppButton("browse_menu_button", style: .primary, fillsWidth: false, action: onBrowse)
             
             Spacer()
         }
@@ -437,19 +385,11 @@ struct VoucherSection: View {
                             .strokeBorder(Color.borderSecondary, style: StrokeStyle(lineWidth: 1, dash: AppLayout.dashedPattern))
                     }
                 
-                Button {
+                AppButton("apply_button", style: .primary, fillsWidth: false) {
                     Task {
                         await cartViewModel.applyVoucher(code: code)
                         code = ""
                     }
-                } label: {
-                    Text("apply_button")
-                        .font(AppFont.monoBody)
-                        .foregroundStyle(Color.bgPrimary)
-                        .padding(.horizontal, 16)
-                        .padding(.vertical, 6)
-                        .background(Color.textPrimary)
-                        .clipShape(Capsule())
                 }
             }
         }
@@ -516,28 +456,14 @@ struct EditCartItemSheet: View {
                         // Product Header
                         HStack(spacing: AppLayout.spacing) {
                         // CHANGED: Using CachedAsyncImage
-                        CachedAsyncImage(url: URL(string: item.product.displayImageUrl ?? "")) { phase in // CHANGED
-                            switch phase { // CHANGED
-                            case .empty: // CHANGED
-                                Rectangle() // CHANGED
-                                    .fill(Color.surfacePrimary) // CHANGED
-                                    .overlay { // CHANGED
-                                        ProgressView() // CHANGED
-                                            .tint(Color.accentPrimary) // CHANGED
-                                    } // CHANGED
-                            case .success(let image): // CHANGED
-                                image // CHANGED
-                                    .resizable() // CHANGED
-                                    .aspectRatio(contentMode: .fill) // CHANGED
-                            case .failure: // CHANGED
-                                Rectangle() // CHANGED
-                                    .fill(Color.surfacePrimary) // CHANGED
-                            @unknown default: // CHANGED
-                                EmptyView() // CHANGED
-                            } // CHANGED
-                        } // CHANGED
-                        .frame(width: 60, height: 60)
-                        .cornerRadius(AppLayout.cornerRadius)
+                            AppRemoteImage(
+                                url: URL(string: item.product.displayImageUrl ?? ""),
+                                width: 60,
+                                height: 60,
+                                backgroundColor: Color.surfacePrimary,
+                                showsProgress: true,
+                                placeholderIcon: nil
+                            )
                             
                             Text(item.product.name)
                                 .font(AppFont.sectionHeader)

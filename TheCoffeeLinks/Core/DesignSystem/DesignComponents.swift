@@ -134,7 +134,8 @@ struct EmptyStateView: View {
     }
     
     var body: some View {
-        EditorialEmptyState(
+        AppEmptyState(
+            icon: icon,
             title: title,
             message: message,
             actionTitle: actionTitle,
@@ -150,31 +151,12 @@ struct EditorialEmptyState: View {
     var action: (() -> Void)? = nil
     
     var body: some View {
-        VStack(spacing: Editorial.Spacing.md) {
-            Image("square")
-                .font(.system(size: 48))
-                .foregroundStyle(Editorial.Colors.textTertiary)
-            
-            Text(title)
-                .font(Editorial.heading())
-                .foregroundStyle(Editorial.Colors.textPrimary)
-            
-            Text(message)
-                .font(Editorial.body())
-                .foregroundStyle(Editorial.Colors.textSecondary)
-                .multilineTextAlignment(.center)
-            
-            if let actionTitle = actionTitle, let action = action {
-                Button(action: action) {
-                    Text(actionTitle)
-                        .font(Editorial.body())
-                        .fontWeight(.medium)
-                        .foregroundStyle(Editorial.Colors.accent)
-                }
-                .padding(.top, Editorial.Spacing.sm)
-            }
-        }
-        .padding(Editorial.Spacing.xl)
+        AppEmptyState(
+            title: title,
+            message: message,
+            actionTitle: actionTitle,
+            action: action
+        )
     }
 }
 
@@ -188,15 +170,7 @@ struct LoadingView: View {
     init(_ message: String? = nil) { self.message = message }
     
     var body: some View {
-        VStack(spacing: Editorial.Spacing.grid * 2) {
-            ProgressView()
-                .controlSize(.large)
-            if let message = message {
-                Text(message)
-                    .font(Editorial.uiCaption())
-                    .foregroundStyle(Editorial.Colors.secondaryLabel)
-            }
-        }
+        AppLoadingState(message)
     }
 }
 
@@ -225,13 +199,20 @@ struct Badge: View {
     }
     
     var body: some View {
-        Text(text)
-            .font(Editorial.uiMicro())
-            .fontWeight(.medium)
-            .foregroundStyle(style.foregroundColor)
-            .padding(.horizontal, Editorial.Spacing.grid)
-            .padding(.vertical, 4)
-            .background(style.backgroundColor, in: Capsule())
+        AppBadge(text: text, style: mappedStyle)
+    }
+
+    private var mappedStyle: AppBadge.Style {
+        switch style {
+        case .primary, .premium:
+            return .accent
+        case .success:
+            return .success
+        case .warning:
+            return .warning
+        case .danger:
+            return .destructive
+        }
     }
 }
 
@@ -251,39 +232,24 @@ struct QuantityStepper: View {
     }
     
     var body: some View {
-        HStack(spacing: 0) {
-            Button {
-                if quantity > minValue { quantity -= 1 }
-                else if let onDelete = onDelete { onDelete() }
-            } label: {
-                if quantity <= minValue && onDelete != nil {
-                    IconView(name: "trash")
-                        .font(.system(size: 14, weight: .semibold))
-                        .frame(width: 36, height: 36)
-                } else {
-                    IconView(name: "minus")
-                        .font(.system(size: 14, weight: .semibold))
-                        .frame(width: 36, height: 36)
+        AppStepper(
+            value: "\(quantity)",
+            decrementIcon: quantity <= minValue && onDelete != nil ? "trash" : "minus",
+            isDecrementDisabled: quantity <= minValue && onDelete == nil,
+            isIncrementDisabled: quantity >= maxValue,
+            onDecrement: {
+                if quantity > minValue {
+                    quantity -= 1
+                } else if let onDelete {
+                    onDelete()
+                }
+            },
+            onIncrement: {
+                if quantity < maxValue {
+                    quantity += 1
                 }
             }
-            .foregroundStyle(quantity <= minValue && onDelete != nil ? .red : Editorial.Colors.label)
-            
-            Text("\(quantity)")
-                .font(Editorial.uiBody())
-                .fontWeight(.medium)
-                .frame(minWidth: 36)
-            
-            Button {
-                if quantity < maxValue { quantity += 1 }
-            } label: {
-                IconView(name: "plus")
-                    .font(.system(size: 14, weight: .semibold))
-                    .frame(width: 36, height: 36)
-            }
-            .disabled(quantity >= maxValue)
-            .foregroundStyle(Editorial.Colors.label)
-        }
-        .background(Color(UIColor.secondarySystemBackground), in: Capsule())
+        )
     }
 }
 

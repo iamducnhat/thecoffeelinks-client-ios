@@ -88,42 +88,12 @@ struct StoreCardSimple: View {
     let isSelected: Bool
     
     var body: some View {
-        HStack(spacing: AppLayout.spacing) {
-            // Simplified content compared to full StoreCard
-            VStack(alignment: .leading, spacing: 4) {
-                Text(store.name)
-                    .font(AppFont.headline)
-                    .foregroundStyle(Color.textPrimary)
-                
-                Text(store.address)
-                    .font(AppFont.uiCaption)
-                    .foregroundStyle(Color.textSecondary)
-                    .lineLimit(2)
-                
-                HStack(spacing: 6) {
-                    Circle()
-                        .fill(store.isCurrentlyOpen ? Color.stateSuccess : Color.stateError)
-                        .frame(width: 6, height: 6)
-                    Text(store.isCurrentlyOpen ? "Open" : "Closed")
-                        .font(AppFont.uiCaption)
-                        .foregroundStyle(store.isCurrentlyOpen ? Color.stateSuccess : Color.stateError)
-                }
-            }
-            
-            Spacer()
-            
-            if isSelected {
-                Image("circle_check")
-                    .font(.system(size: 20))
-                    .foregroundStyle(Color.accentPrimary)
-            }
-        }
-        .padding(AppLayout.spacing)
-        .background(Color.surfacePrimary)
-        .overlay(
-            RoundedRectangle(cornerRadius: AppRadius.medium, style: .continuous)
-                .strokeBorder(isSelected ? Color.accentPrimary : Color.border, lineWidth: 1)
+        AppStoreCard(
+            title: store.name,
+            address: store.address,
+            statusText: store.isCurrentlyOpen ? "Open" : "Closed",
+            isSelected: isSelected,
+            variant: .simple
         )
-        .clipShape(RoundedRectangle(cornerRadius: AppRadius.medium, style: .continuous))
     }
 }

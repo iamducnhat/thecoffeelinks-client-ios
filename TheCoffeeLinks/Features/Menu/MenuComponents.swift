@@ -98,23 +98,15 @@ struct ProductDetailSheet: View {
     }
 
     private var hero: some View {
-        Rectangle()
-            .fill(heroPlaceholder)
-            .overlay {
-                if let imageUrl = product.displayImageUrl, let url = URL(string: imageUrl) {
-                    AsyncImage(url: url) { phase in
-                        switch phase {
-                        case .success(let image):
-                            image
-                                .resizable()
-                                .aspectRatio(contentMode: .fill)
-                                .frame(maxWidth: .infinity, maxHeight: .infinity)
-                        default:
-                            EmptyView()
-                        }
-                    }
-                }
-            }
+        AppRemoteImage(
+            url: URL(string: product.displayImageUrl ?? ""),
+            source: .native,
+            contentMode: .fill,
+            aspectRatio: 1,
+            cornerRadius: 0,
+            backgroundColor: heroPlaceholder,
+            placeholderIcon: nil
+        )
             .overlay(alignment: .topTrailing) {
                 Button {
                     dismiss()
@@ -128,8 +120,6 @@ struct ProductDetailSheet: View {
                 .padding(.trailing, SVG.horizontalInset)
             }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .aspectRatio(1, contentMode: .fit)
-        .clipped()
     }
 
     private var content: some View {

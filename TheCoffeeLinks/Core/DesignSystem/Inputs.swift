@@ -8,33 +8,13 @@ struct BrandTextField: View {
     var keyboardType: UIKeyboardType = .default
     
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text(title)
-                .font(Editorial.uiCaption())
-                .fontWeight(.medium)
-                .foregroundStyle(Editorial.Colors.textMuted)
-            
-            HStack {
-                if let icon = icon {
-                    Image(icon)
-                        .foregroundColor(Editorial.Colors.textMuted)
-                }
-                
-                if isSecure {
-                    SecureField("", text: $text)
-                } else {
-                    TextField("", text: $text)
-                        .keyboardType(keyboardType)
-                }
-            }
-            .padding()
-            .background(Editorial.Colors.secondaryBackground)
-            .cornerRadius(12)
-            .overlay(
-                RoundedRectangle(cornerRadius: 12)
-                    .strokeBorder(Editorial.Colors.separator, lineWidth: 1)
-            )
-        }
+        AppTextInput(
+            title: title,
+            text: $text,
+            leadingIcon: icon,
+            keyboardType: keyboardType,
+            isSecure: isSecure
+        )
     }
 }
 
@@ -43,24 +23,7 @@ struct SearchInput: View {
     var placeholder: String = "Search..."
     
     var body: some View {
-        HStack {
-            Image("magnifyingglass")
-                .foregroundColor(Editorial.Colors.textMuted)
-            
-            TextField(placeholder, text: $text)
-                .font(Editorial.uiBody())
-            
-            if !text.isEmpty {
-                Button(action: { text = "" }) {
-                    Image("circle_x")
-                        .foregroundColor(Editorial.Colors.textMuted)
-                }
-            }
-        }
-        .padding()
-        .background(Editorial.Colors.secondaryBackground)
-        .cornerRadius(12)
-        .shadow(color: Color.black.opacity(0.05), radius: 5, x: 0, y: 2)
+        AppSearchInput(text: $text, placeholder: placeholder)
     }
 }
 
