@@ -338,6 +338,56 @@ struct AppEmptyState: View {
     }
 }
 
+struct AppAuthPromptCard: View {
+    let title: String
+    let message: String
+    let actionTitle: String
+    let action: () -> Void
+
+    var body: some View {
+        VStack(spacing: 0) {
+            Text(title)
+                .font(BaseViewFont.cardTitle)
+                .foregroundStyle(BaseViewColor.textPrimary)
+                .multilineTextAlignment(.center)
+                .frame(maxWidth: .infinity)
+                .padding(.top, BaseViewLayout.screenTopInset)
+                .padding(.horizontal, BaseViewLayout.screenInset)
+
+            Text(message)
+                .font(BaseViewFont.label)
+                .foregroundStyle(BaseViewColor.textSecondary)
+                .multilineTextAlignment(.center)
+                .frame(maxWidth: .infinity)
+                .padding(.top, AppAuthPromptCardMetric.messageTopSpacing)
+                .padding(.horizontal, BaseViewLayout.contentInset)
+
+            Button(action: action) {
+                Text(actionTitle)
+                    .font(BaseViewFont.cta)
+                    .tracking(2)
+                    .foregroundStyle(.white)
+                    .frame(maxWidth: .infinity)
+                    .frame(height: AppAuthPromptCardMetric.buttonHeight)
+                    .background(Color.black)
+            }
+            .buttonStyle(.plain)
+            .padding(.top, AppAuthPromptCardMetric.buttonTopSpacing)
+            .padding(.horizontal, BaseViewLayout.screenInset)
+            .padding(.bottom, AppAuthPromptCardMetric.bottomInset)
+        }
+        .frame(maxWidth: .infinity)
+        .background(BaseViewColor.background)
+    }
+}
+
+private enum AppAuthPromptCardMetric {
+    static let messageTopSpacing: CGFloat = 14
+    static let buttonTopSpacing: CGFloat = 27
+    static let buttonHeight: CGFloat = 38
+    static let bottomInset: CGFloat = 23
+}
+
 struct AppLoadingState: View {
     let message: LocalizedStringKey?
 

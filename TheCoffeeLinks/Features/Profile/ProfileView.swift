@@ -14,22 +14,29 @@ struct ProfileView: View {
     var body: some View {
         ZStack {
             BaseViewColor.background.ignoresSafeArea()
-            
-            ScrollView(.vertical, showsIndicators: false) {
-                VStack(alignment: .leading, spacing: 0) {
-                    profileName
-                        .padding(.horizontal, BaseViewLayout.screenInset)
-                        .padding(.top, BaseViewLayout.screenTopInset)
 
-                    Spacer().frame(height: 23)
+            if authViewModel.isAuthenticated {
+                if let user = profileViewModel.userProfile {
+                    ScrollView(.vertical, showsIndicators: false) {
+                        VStack(alignment: .leading, spacing: 0) {
+                            profileName(for: user)
+                                .padding(.horizontal, BaseViewLayout.screenInset)
+                                .padding(.top, BaseViewLayout.screenTopInset)
 
-                    if authViewModel.isAuthenticated, let user = profileViewModel.userProfile {
-                        authenticatedSections(for: user)
-                    } else {
-                        guestSections
+                            Spacer().frame(height: 23)
+
+                            authenticatedSections(for: user)
+                        }
+                        .padding(.bottom, 100)
                     }
+                } else {
+                    AppLoadingState(nil as String?)
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
                 }
-                .padding(.bottom, 100)
+            } else {
+                guestPrompt
+                    .padding(.horizontal, BaseViewLayout.screenInset)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
             }
         }
         .navigationBarHidden(true)
@@ -52,8 +59,8 @@ struct ProfileView: View {
         }
     }
 
-    private var profileName: some View {
-        Text(profileViewModel.userProfile?.fullName ?? String(localized: "guest_name"))
+    private func profileName(for user: User) -> some View {
+        Text(user.fullName)
             .font(BaseViewFont.screenTitle)
             .foregroundStyle(BaseViewColor.textPrimary)
             .frame(maxWidth: .infinity, alignment: .leading)
@@ -137,62 +144,13 @@ struct ProfileView: View {
         }
     }
 
-    private var guestSections: some View {
-        VStack(alignment: .leading, spacing: 0) {
-            Button {
-                showLogin = true
-            } label: {
-                profileRow(title: "Sign In or Join")
-            }
-            .buttonStyle(.plain)
-            .padding(.horizontal, BaseViewLayout.screenInset)
-
-            Spacer().frame(height: BaseViewLayout.majorSectionGap)
-
-            VStack(spacing: rowSpacing) {
-                Button {
-                    showLogin = true
-                } label: {
-                    profileRow(title: "Order history")
-                }
-                .buttonStyle(.plain)
-
-                Button {
-                    showLogin = true
-                } label: {
-                    profileRow(title: "Saved locations")
-                }
-                .buttonStyle(.plain)
-            }
-            .padding(.horizontal, BaseViewLayout.screenInset)
-
-            Spacer().frame(height: BaseViewLayout.majorSectionGap)
-
-            VStack(spacing: rowSpacing) {
-                Button {
-                    showLogin = true
-                } label: {
-                    profileRow(title: "Edit profile")
-                }
-                .buttonStyle(.plain)
-
-                Button {
-                    showLogin = true
-                } label: {
-                    profileRow(title: "Security")
-                }
-                .buttonStyle(.plain)
-
-                Button {
-                    showLogin = true
-                } label: {
-                    profileRow(title: "Notifications")
-                }
-                .buttonStyle(.plain)
-
-                profileRow(title: "Themes", detail: "Default", detailColor: BaseViewColor.textSecondary)
-            }
-            .padding(.horizontal, BaseViewLayout.screenInset)
+    private var guestPrompt: some View {
+        AppAuthPromptCard(
+            title: String(localized: "auth_feature_prompt_title"),
+            message: String(localized: "auth_feature_prompt_desc"),
+            actionTitle: String(localized: "auth_sign_in_or_join").uppercased(with: .autoupdatingCurrent)
+        ) {
+            showLogin = true
         }
     }
 

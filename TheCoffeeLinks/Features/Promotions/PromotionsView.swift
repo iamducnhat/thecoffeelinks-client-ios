@@ -18,20 +18,25 @@ struct PromotionsView: View {
     @State private var focusedBarcode: PromotionBarcodeFocusTarget = .member
 
     var body: some View {
-        GeometryReader { proxy in
-            let layout = PromotionSvgLayout(containerWidth: proxy.size.width)
+        ZStack {
+            Color.bgPrimary.ignoresSafeArea()
 
-            ScrollView(.vertical, showsIndicators: false) {
-                if authViewModel.isAuthenticated {
+            if authViewModel.isAuthenticated {
+                GeometryReader { proxy in
+                    let layout = PromotionSvgLayout(containerWidth: proxy.size.width)
+
+                    ScrollView(.vertical, showsIndicators: false) {
                     authenticatedContent(layout: layout)
-                } else {
-                    guestContent
+                    }
+                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+                    .refreshable { await profileViewModel.manualRefresh() }
                 }
+            } else {
+                guestContent
+                    .padding(.horizontal, BaseViewLayout.screenInset)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
             }
-            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         }
-        .background(Color.bgPrimary.ignoresSafeArea())
-        .refreshable { await profileViewModel.manualRefresh() }
         .fullScreenCover(isPresented: $showLogin) { LoginView() }
         .onAppear {
             if authViewModel.isAuthenticated {
@@ -166,32 +171,13 @@ struct PromotionsView: View {
     // MARK: - Guest
 
     private var guestContent: some View {
-        VStack(spacing: 24) {
-            Image(systemName: "ticket")
-                .font(.system(size: 48))
-                .foregroundStyle(Color.textSecondary)
-            Text(String(localized: "promo_sign_in_title"))
-                .font(AppFont.sectionHeader)
-                .foregroundStyle(Color.textPrimary)
-            Text(String(localized: "promo_sign_in_desc"))
-                .font(AppFont.body)
-                .foregroundStyle(Color.textSecondary)
-                .multilineTextAlignment(.center)
-            Button {
-                showLogin = true
-            } label: {
-                Text(String(localized: "auth_sign_in_or_join"))
-                    .font(AppFont.monoCTA)
-                    .foregroundStyle(.white)
-                    .padding(.vertical, 12)
-                    .frame(maxWidth: .infinity)
-                    .background(Color.accentPrimary)
-                    .clipShape(RoundedRectangle(cornerRadius: AppRadius.medium, style: .continuous))
-            }
+        AppAuthPromptCard(
+            title: String(localized: "auth_feature_prompt_title"),
+            message: String(localized: "auth_feature_prompt_desc"),
+            actionTitle: String(localized: "auth_sign_in_or_join").uppercased(with: .autoupdatingCurrent)
+        ) {
+            showLogin = true
         }
-        .padding(24)
-        .frame(maxWidth: .infinity)
-        .padding(.top, 80)
     }
 }
 

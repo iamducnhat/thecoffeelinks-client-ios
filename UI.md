@@ -28,6 +28,7 @@
 | `AppSectionHeader` | Shared section heading row | Optional subtitle and trailing accessory |
 | `AppNavigationHeader` | Shared top nav header | Back action plus optional trailing content |
 | `AppEmptyState` | Shared empty state | Optional action CTA |
+| `AppAuthPromptCard` | Shared auth-required prompt | Centered title/body plus full-width CTA for guest-gated features |
 | `AppLoadingState` | Shared loading state | Shared `ProgressView` + message |
 | `AppBadge` | Shared badge primitive | Accent, neutral, success, warning, destructive |
 | `AppTextInput` | Shared labeled text input | Optional icon, secure mode, keyboard type |
