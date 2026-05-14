@@ -3,7 +3,7 @@
 <plist version="1.0">
 <dict>
 	<key>API_BASE_URL</key>
-	<string>https://api.thecoffeelinksvn.com</string>
+	<string>https://api.thecoffeelinks.vn</string>
 	<key>SUPABASE_ANON_KEY</key>
 	<string>eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdnaWttcHF5aGtmaGN0d3FieXRrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc3NzQyNzAsImV4cCI6MjA4MzM1MDI3MH0.uwxoh2aBR66hE5-ua_bO63LHOnrJZmy3qR0s3lUHX2Y</string>
 	<key>SUPABASE_URL</key>

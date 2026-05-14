@@ -84,7 +84,7 @@ class NetworkService: ObservableObject {
            let urlString = config["API_BASE_URL"] as? String {
             self.baseURL = urlString.trimmingCharacters(in: CharacterSet(charactersIn: "/"))
         } else {
-            self.baseURL = "https://api.thecoffeelinksvn.com"
+            self.baseURL = "https://api.thecoffeelinks.vn"
         }
         
         self.decoder = JSONDecoder()

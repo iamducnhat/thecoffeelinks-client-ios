@@ -105,7 +105,7 @@ enum PaymentMethod: String, Codable, CaseIterable, Sendable {
     
     /// Valid payment methods for checkout - excludes cash (server rejects cash payments with 400 error)
     static var validForCheckout: [PaymentMethod] {
-        [.applePay, .card, .momo, .zalopay]
+        [.card]
     }
 }
 
@@ -413,6 +413,7 @@ struct CreateOrderResponse: Codable, Sendable {
     let status: String
     let expiresAt: String?
     let estimatedReadyTime: String?
+    let paymentUrl: String?
     let order: APICreateOrder
     let orderId2: String?  // API returns both "orderId" and "order_id"
     
@@ -485,6 +486,7 @@ struct CreateOrderResponse: Codable, Sendable {
         case status
         case expiresAt
         case estimatedReadyTime
+        case paymentUrl
         case order
         case orderId2 = "order_id"
     }
@@ -582,7 +584,7 @@ struct CreateOrderResponse: Codable, Sendable {
             completedAt: orderStatus == .completed ? updatedDate : nil,
             cancelledAt: orderStatus == .cancelled ? updatedDate : nil,
             cancellationReason: nil,
-            paymentUrl: apiOrder.payment_url,
+            paymentUrl: paymentUrl ?? apiOrder.payment_url,
             tax: apiOrder.tax,
             taxRate: apiOrder.tax_rate,
             pointsUsed: apiOrder.points_used,

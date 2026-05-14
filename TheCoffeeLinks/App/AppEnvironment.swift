@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct AppEnvironment {
-    static let apiBaseURL = "https://server-nu-three-90.vercel.app/api"
+    static let apiBaseURL = "https://api.thecoffeelinks.vn/api"
     
     // Feature Flags (Simulated locally for now)
     static let enableAI = true

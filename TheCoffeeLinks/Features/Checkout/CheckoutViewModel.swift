@@ -10,7 +10,7 @@ import Combine
 
 @MainActor
 final class CheckoutViewModel: ObservableObject {
-    @Published var paymentMethod: PaymentMethod = .applePay
+    @Published var paymentMethod: PaymentMethod = .card
     @Published var selectedAddressId: String?
     @Published var tableId: String?
     @Published var isPlacingOrder = false
@@ -71,7 +71,7 @@ final class CheckoutViewModel: ObservableObject {
     
     private func loadDraft() {
         if let draft = orderStorage.loadDraft() {
-            self.paymentMethod = draft.paymentMethod
+            self.paymentMethod = PaymentMethod.validForCheckout.contains(draft.paymentMethod) ? draft.paymentMethod : .card
             self.selectedAddressId = draft.selectedAddressId
             self.tableId = draft.tableId
             // staffNotes handled via Cart, not here directly, but if moved here:
@@ -383,4 +383,3 @@ enum CheckoutError: LocalizedError {
         }
     }
 }
-
