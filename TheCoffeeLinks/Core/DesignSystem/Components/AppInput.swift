@@ -8,6 +8,22 @@ struct AppTextInput: View {
     var keyboardType: UIKeyboardType = .default
     var isSecure: Bool = false
 
+    init(
+        title: String? = nil,
+        text: Binding<String>,
+        placeholder: String = "",
+        leadingIcon: String? = nil,
+        keyboardType: UIKeyboardType = .default,
+        isSecure: Bool = false
+    ) {
+        self.title = title
+        self._text = text
+        self.placeholder = placeholder
+        self.leadingIcon = leadingIcon
+        self.keyboardType = keyboardType
+        self.isSecure = isSecure
+    }
+
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {
             if let title, !title.isEmpty {
@@ -16,10 +32,10 @@ struct AppTextInput: View {
                     .foregroundStyle(BaseViewColor.textSecondary)
             }
 
-            HStack(spacing: AppLayout.spacingCompact) {
+            HStack(spacing: BaseViewLayout.spacingCompact) {
                 if let leadingIcon {
                     IconView(name: leadingIcon)
-                        .font(AppFont.body)
+                        .font(BaseViewFont.body)
                         .foregroundStyle(BaseViewColor.textSecondary)
                 }
 
@@ -35,7 +51,8 @@ struct AppTextInput: View {
                 .keyboardType(keyboardType)
             }
             .padding(.horizontal, BaseViewLayout.badgeInset)
-            .frame(height: BaseViewLayout.rowHeight)
+            .padding(.vertical, BaseViewLayout.spacingCompact)
+            .frame(minHeight: BaseViewLayout.rowHeight)
             .background(BaseViewColor.elevatedSurface)
             .overlay(
                 Rectangle()
@@ -50,9 +67,9 @@ struct AppSearchInput: View {
     var placeholder: String = "Search..."
 
     var body: some View {
-        HStack(spacing: AppLayout.spacingCompact) {
+        HStack(spacing: BaseViewLayout.spacingCompact) {
             IconView(name: "magnifyingglass")
-                .font(AppFont.body)
+                .font(BaseViewFont.body)
                 .foregroundStyle(BaseViewColor.textSecondary)
 
             TextField(placeholder, text: $text)
@@ -64,14 +81,15 @@ struct AppSearchInput: View {
                     text = ""
                 } label: {
                     IconView(name: "circle_x")
-                        .font(AppFont.body)
+                        .font(BaseViewFont.body)
                         .foregroundStyle(BaseViewColor.textSecondary)
                 }
                 .buttonStyle(.plain)
             }
         }
         .padding(.horizontal, BaseViewLayout.badgeInset)
-        .frame(height: BaseViewLayout.rowHeight)
+        .padding(.vertical, BaseViewLayout.spacingCompact)
+        .frame(minHeight: BaseViewLayout.rowHeight)
         .background(BaseViewColor.elevatedSurface)
         .overlay(
             Rectangle()
@@ -85,6 +103,26 @@ struct AppSegmentedPicker<Option: Hashable>: View {
     @Binding var selection: Option
     let title: (Option) -> String
 
+    init(
+        options: [Option],
+        selection: Binding<Option>,
+        title: @escaping (Option) -> String
+    ) {
+        self.options = options
+        self._selection = selection
+        self.title = title
+    }
+
+    init(
+        selection: Binding<Option>,
+        options: [(value: Option, label: String)]
+    ) {
+        self.options = options.map(\.value)
+        self._selection = selection
+        let labels = Dictionary(uniqueKeysWithValues: options)
+        self.title = { option in labels[option] ?? String(describing: option) }
+    }
+
     var body: some View {
         HStack(spacing: 0) {
             ForEach(options, id: \.self) { option in
@@ -97,6 +135,8 @@ struct AppSegmentedPicker<Option: Hashable>: View {
                         .font(BaseViewFont.labelStrong)
                         .foregroundStyle(isSelected ? BaseViewColor.accentForeground : BaseViewColor.textPrimary)
                         .frame(maxWidth: .infinity)
+                        .padding(.horizontal, BaseViewLayout.badgeInset)
+                        .padding(.vertical, BaseViewLayout.spacingCompact)
                         .frame(minHeight: BaseViewLayout.rowHeight)
                         .background(isSelected ? BaseViewColor.accent : BaseViewColor.elevatedSurface)
                 }

@@ -55,17 +55,17 @@ struct OrderTrackingCard: View {
     var body: some View {
         VStack(spacing: 0) {
             // MARK: 1. Status Header (The "Receipt Header")
-            VStack(alignment: .leading, spacing: AppLayout.spacingSmall) {
+            VStack(alignment: .leading, spacing: BaseViewLayout.spacingSmall) {
                 HStack(alignment: .top) {
                     VStack(alignment: .leading, spacing: 4) {
                         Text(statusTitle)
-                            .font(AppFont.sectionHeader)
-                            .foregroundStyle(Color.accentPrimary)
+                            .font(BaseViewFont.sectionHeader)
+                            .foregroundStyle(BaseViewColor.accent)
                             .textCase(.uppercase)
                         
                         Text(statusSubtitle)
-                            .font(AppFont.body)
-                            .foregroundStyle(Color.textSecondary)
+                            .font(BaseViewFont.body)
+                            .foregroundStyle(BaseViewColor.textSecondary)
                             .lineLimit(2)
                             .fixedSize(horizontal: false, vertical: true)
                     }
@@ -74,34 +74,34 @@ struct OrderTrackingCard: View {
                     
                     // Mode Badge
                     Text(order.mode.displayName)
-                        .font(AppFont.monoCaption)
+                        .font(BaseViewFont.monoCaption)
                         .padding(.horizontal, 8)
                         .padding(.vertical, 4)
-                        .background(Color.bgPrimary)
-                        .clipShape(RoundedRectangle(cornerRadius: AppRadius.medium, style: .continuous))
+                        .background(BaseViewColor.background)
+                        .clipShape(RoundedRectangle(cornerRadius: BaseViewLayout.radiusMedium, style: .continuous))
         .overlay(
-                            RoundedRectangle(cornerRadius: AppRadius.medium, style: .continuous).strokeBorder(Color.border, lineWidth: 0.5)
+                            RoundedRectangle(cornerRadius: BaseViewLayout.radiusMedium, style: .continuous).strokeBorder(BaseViewColor.border, lineWidth: 0.5)
                         )
                 }
                 
                 if let eta = order.estimatedReadyAt, order.status.isActive {
                     HStack(spacing: 4) {
                         Image("clock")
-                            .font(AppFont.monoCaption)
+                            .font(BaseViewFont.monoCaption)
                         Text("ETA: \(timeString(from: eta))")
-                            .font(AppFont.monoHeadline)
+                            .font(BaseViewFont.monoHeadline)
                     }
-                    .foregroundStyle(Color.textPrimary)
+                    .foregroundStyle(BaseViewColor.textPrimary)
                     .padding(.top, 4)
                 }
             }
-            .padding(AppLayout.spacing)
-            .background(Color.surfacePrimary)
+            .padding(BaseViewLayout.spacing)
+            .background(BaseViewColor.surface)
             
-            // MARK: 2. Status Progress (The "Editorial Timeline")
+            // MARK: 2. Status Progress (The "Status Timeline")
             ZStack {
                 Rectangle()
-                    .fill(Color.border)
+                    .fill(BaseViewColor.border)
                     .frame(height: 1)
                 
                 HStack(spacing: 0) {
@@ -113,30 +113,30 @@ struct OrderTrackingCard: View {
                     Spacer()
                     ProgressPoint(active: order.status == .completed)
                 }
-                .padding(.horizontal, AppLayout.spacing * 2)
+                .padding(.horizontal, BaseViewLayout.spacing * 2)
             }
-            .padding(.bottom, AppLayout.spacingMedium)
-            .background(Color.surfacePrimary)
+            .padding(.bottom, BaseViewLayout.spacingMedium)
+            .background(BaseViewColor.surface)
             
             // MARK: 3. Item Manifest
-            VStack(alignment: .leading, spacing: AppLayout.spacingSmall) {
+            VStack(alignment: .leading, spacing: BaseViewLayout.spacingSmall) {
                 ForEach(order.items.prefix(3)) { item in
-                    HStack(alignment: .top, spacing: AppLayout.spacingMedium) {
+                    HStack(alignment: .top, spacing: BaseViewLayout.spacingMedium) {
                         Text("\(item.quantity)×")
-                            .font(AppFont.monoHeadline)
-                            .foregroundStyle(Color.accentPrimary)
+                            .font(BaseViewFont.monoHeadline)
+                            .foregroundStyle(BaseViewColor.accent)
                             .frame(width: 32, alignment: .leading)
                         
                         VStack(alignment: .leading, spacing: 2) {
                             Text(item.productName)
-                                .font(AppFont.headline)
-                                .foregroundStyle(Color.textPrimary)
+                                .font(BaseViewFont.headline)
+                                .foregroundStyle(BaseViewColor.textPrimary)
                                 .lineLimit(1)
                             
                             if !item.customization.displayText.isEmpty {
                                 Text(item.customization.displayText)
-                                    .font(AppFont.uiMicro)
-                                    .foregroundStyle(Color.textSecondary)
+                                    .font(BaseViewFont.uiMicro)
+                                    .foregroundStyle(BaseViewColor.textSecondary)
                                     .lineLimit(1)
                             }
                         }
@@ -144,30 +144,30 @@ struct OrderTrackingCard: View {
                         Spacer()
                         
                         Text(item.totalPrice.formattedVND)
-                            .font(AppFont.monoCaption)
-                            .foregroundStyle(Color.textSecondary)
+                            .font(BaseViewFont.monoCaption)
+                            .foregroundStyle(BaseViewColor.textSecondary)
                     }
                 }
                 
                 if order.items.count > 3 {
                     Text("+ \(order.items.count - 3) more items")
-                        .font(AppFont.uiMicro)
-                        .foregroundStyle(Color.textTertiary)
+                        .font(BaseViewFont.uiMicro)
+                        .foregroundStyle(BaseViewColor.textTertiary)
                         .padding(.leading, 44)
                 }
             }
-            .padding(AppLayout.spacing)
-            .background(Color.bgPrimary)
+            .padding(BaseViewLayout.spacing)
+            .background(BaseViewColor.background)
             
             // MARK: 4. Actions & Identification
             VStack(spacing: 0) {
                 Divider()
-                    .background(Color.border)
+                    .background(BaseViewColor.border)
                 
                 HStack {
                     Text("#\(order.id.prefix(8).uppercased())")
-                        .font(AppFont.monoCaption)
-                        .foregroundStyle(Color.textTertiary)
+                        .font(BaseViewFont.monoCaption)
+                        .foregroundStyle(BaseViewColor.textTertiary)
                     
                     Spacer()
                     
@@ -179,11 +179,11 @@ struct OrderTrackingCard: View {
                                 Text(String(localized: "order_complete_payment_action"))
                                 Image("credit_card")
                             }
-                            .font(AppFont.monoCaption)
-                            .foregroundStyle(Color.bgPrimary)
+                            .font(BaseViewFont.monoCaption)
+                            .foregroundStyle(BaseViewColor.background)
                             .padding(.horizontal, 12)
                             .padding(.vertical, 6)
-                            .background(Color.accentPrimary)
+                            .background(BaseViewColor.accent)
                             .clipShape(Capsule())
                         }
                     } else if order.status.isActive {
@@ -192,22 +192,22 @@ struct OrderTrackingCard: View {
                         } icon: {
                             Image(isDelivery ? "map" : "map_pin")
                         }
-                            .font(AppFont.monoCaption)
-                            .foregroundStyle(Color.accentPrimary)
+                            .font(BaseViewFont.monoCaption)
+                            .foregroundStyle(BaseViewColor.accent)
                     }
                 }
-                .padding(.horizontal, AppLayout.spacing)
-                .padding(.vertical, AppLayout.spacingMedium)
+                .padding(.horizontal, BaseViewLayout.spacing)
+                .padding(.vertical, BaseViewLayout.spacingMedium)
             }
-            .background(Color.bgPrimary)
+            .background(BaseViewColor.background)
         }
-        .clipShape(RoundedRectangle(cornerRadius: AppRadius.medium, style: .continuous))
+        .clipShape(RoundedRectangle(cornerRadius: BaseViewLayout.radiusMedium, style: .continuous))
         .overlay(
-            RoundedRectangle(cornerRadius: AppRadius.medium, style: .continuous)
-                .strokeBorder(Color.border, lineWidth: AppLayout.borderWidth)
+            RoundedRectangle(cornerRadius: BaseViewLayout.radiusMedium, style: .continuous)
+                .strokeBorder(BaseViewColor.border, lineWidth: BaseViewLayout.borderWidth)
         )
         .shadow(color: Color.black.opacity(0.04), radius: 12, x: 0, y: 6)
-        .padding(.horizontal, AppLayout.margin)
+        .padding(.horizontal, BaseViewLayout.margin)
     }
     
     private func timeString(from date: Date) -> String {
@@ -222,11 +222,11 @@ private struct ProgressPoint: View {
     
     var body: some View {
         Circle()
-            .fill(active ? Color.accentPrimary : Color.border)
+            .fill(active ? BaseViewColor.accent : BaseViewColor.border)
             .frame(width: 8, height: 8)
             .background(
                 Circle()
-                    .strokeBorder(Color.surfacePrimary, lineWidth: 1)
+                    .strokeBorder(BaseViewColor.surface, lineWidth: 1)
             )
     }
 }

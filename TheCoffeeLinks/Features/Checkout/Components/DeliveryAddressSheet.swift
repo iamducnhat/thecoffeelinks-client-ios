@@ -14,15 +14,15 @@ struct DeliveryAddressSheet: View {
     
     var body: some View {
         ZStack(alignment: .top) {
-            Color.bgPrimary.ignoresSafeArea()
+            BaseViewColor.background.ignoresSafeArea()
             
             VStack(spacing: 0) {
                 // Header (centered title, balanced controls)
-                VStack(spacing: AppLayout.marginCompact) {
-                    HStack(alignment: .center, spacing: AppLayout.spacing) {
+                VStack(spacing: BaseViewLayout.marginCompact) {
+                    HStack(alignment: .center, spacing: BaseViewLayout.spacing) {
                         Text("Delivery Address")
-                            .font(AppTypography.displayMedium)
-                            .foregroundStyle(Color.textPrimary)
+                            .font(BaseViewFont.displayMedium)
+                            .foregroundStyle(BaseViewColor.textPrimary)
                             .lineLimit(1)
                             .frame(maxWidth: .infinity, alignment: .leading)
                         
@@ -31,34 +31,34 @@ struct DeliveryAddressSheet: View {
                         } label: {
                             Image(systemName: "plus")
                                 .font(.system(size: 17, weight: .medium))
-                                .foregroundStyle(Color.accentPrimary)
+                                .foregroundStyle(BaseViewColor.accent)
                                 .padding(12)
-                                .background { Circle().fill(Color.bgPrimary) }
-                                .overlay { Circle().strokeBorder(Color.borderSecondary, lineWidth: 1) }
+                                .background { Circle().fill(BaseViewColor.background) }
+                                .overlay { Circle().strokeBorder(BaseViewColor.borderSecondary, lineWidth: 1) }
                         }
                         
                         Button { dismiss() } label: {
                             Image(systemName: "xmark")
                                 .font(.system(size: 17, weight: .medium))
-                                .foregroundStyle(Color.textPrimary)
+                                .foregroundStyle(BaseViewColor.textPrimary)
                                 .padding(12)
-                                .background { Circle().fill(Color.bgPrimary) }
-                                .overlay { Circle().strokeBorder(Color.borderSecondary, lineWidth: 1) }
+                                .background { Circle().fill(BaseViewColor.background) }
+                                .overlay { Circle().strokeBorder(BaseViewColor.borderSecondary, lineWidth: 1) }
                         }
                     }
-                    .frame(minHeight: AppLayout.touchTarget)
+                    .frame(minHeight: BaseViewLayout.touchTarget)
                     
                     Divider()
-                        .background(Color.borderSecondary)
-                        .padding(.horizontal, -AppLayout.spacing)
+                        .background(BaseViewColor.borderSecondary)
+                        .padding(.horizontal, -BaseViewLayout.spacing)
                 }
-                .padding(.horizontal, AppLayout.spacing)
-                .padding(.top, AppLayout.spacing)
-                .background(Color.bgPrimary)
+                .padding(.horizontal, BaseViewLayout.spacing)
+                .padding(.top, BaseViewLayout.spacing)
+                .background(BaseViewColor.background)
                 
                 // Content
                 ScrollView {
-                    VStack(spacing: AppLayout.spacing) {
+                    VStack(spacing: BaseViewLayout.spacing) {
                         if deliveryViewModel.savedAddresses.isEmpty {
                             EmptyAddressState(showAddAddress: $showAddAddress)
                         } else {
@@ -82,7 +82,7 @@ struct DeliveryAddressSheet: View {
                             }
                         }
                     }
-                    .padding(AppLayout.spacing)
+                    .padding(BaseViewLayout.spacing)
                 }
             }
         }
@@ -109,34 +109,34 @@ struct AddressCard: View {
     
     var body: some View {
         Button(action: onSelect) {
-            HStack(spacing: AppLayout.spacing) {
+            HStack(spacing: BaseViewLayout.spacing) {
                 VStack(alignment: .leading, spacing: 4) {
                     HStack {
                         Text(address.label)
-                            .font(AppFont.headline)
-                            .foregroundStyle(Color.textPrimary)
+                            .font(BaseViewFont.headline)
+                            .foregroundStyle(BaseViewColor.textPrimary)
                         
                         if address.isDefault {
                             Text("Default")
-                                .font(AppFont.uiMicro)
+                                .font(BaseViewFont.uiMicro)
                                 .padding(.horizontal, 6)
                                 .padding(.vertical, 2)
-                                .background(Color.accentPrimary.opacity(0.1))
-                                .foregroundStyle(Color.accentPrimary)
+                                .background(BaseViewColor.accent.opacity(0.1))
+                                .foregroundStyle(BaseViewColor.accent)
                                 .clipShape(Capsule())
                         }
                     }
                     
                     Text(address.fullAddress)
-                        .font(AppFont.body)
-                        .foregroundStyle(Color.textSecondary)
+                        .font(BaseViewFont.body)
+                        .foregroundStyle(BaseViewColor.textSecondary)
                         .lineLimit(2)
                         .multilineTextAlignment(.leading)
                     
                     if let notes = address.buildingInfo, !notes.isEmpty {
                          Text(notes)
-                            .font(AppFont.uiCaption)
-                            .foregroundStyle(Color.textSecondary)
+                            .font(BaseViewFont.uiCaption)
+                            .foregroundStyle(BaseViewColor.textSecondary)
                             .lineLimit(1)
                     }
                 }
@@ -146,14 +146,14 @@ struct AddressCard: View {
                 if isSelected {
                     Image("circle_check")
                         .font(.system(size: 20))
-                        .foregroundStyle(Color.accentPrimary)
+                        .foregroundStyle(BaseViewColor.accent)
                 }
             }
-            .padding(AppLayout.spacing)
-            .background(isSelected ? Color.surfacePrimary : Color.bgPrimary)
+            .padding(BaseViewLayout.spacing)
+            .background(isSelected ? BaseViewColor.surface : BaseViewColor.background)
             .overlay(
                 Capsule()
-                    .strokeBorder(isSelected ? Color.accentPrimary : Color.border, lineWidth: 1)
+                    .strokeBorder(isSelected ? BaseViewColor.accent : BaseViewColor.border, lineWidth: 1)
             )
             .clipShape(Capsule())
         }
@@ -176,34 +176,34 @@ struct EmptyAddressState: View {
     @Binding var showAddAddress: Bool
     
     var body: some View {
-        VStack(spacing: AppLayout.spacingXL) {
+        VStack(spacing: BaseViewLayout.spacingXL) {
             Spacer().frame(height: 40)
             
             Image("map")
                 .font(.system(size: 48))
-                .foregroundStyle(Color.textSecondary)
+                .foregroundStyle(BaseViewColor.textSecondary)
             
             Text("No saved addresses")
-                .font(AppFont.sectionHeader)
-                .foregroundStyle(Color.textPrimary)
+                .font(BaseViewFont.sectionHeader)
+                .foregroundStyle(BaseViewColor.textPrimary)
             
             Text("Add a delivery address to place orders.")
-                .font(AppFont.body)
-                .foregroundStyle(Color.textSecondary)
+                .font(BaseViewFont.body)
+                .foregroundStyle(BaseViewColor.textSecondary)
                 .multilineTextAlignment(.center)
             
             Button {
                 showAddAddress = true
             } label: {
                 Text("Add New Address")
-                    .font(AppFont.monoCTA)
-                    .foregroundStyle(Color.bgPrimary)
+                    .font(BaseViewFont.monoCTA)
+                    .foregroundStyle(BaseViewColor.background)
                     .padding(.vertical, 12)
                     .padding(.horizontal, 24)
-                    .background(Color.accentPrimary)
+                    .background(BaseViewColor.accent)
                     .clipShape(Capsule())
             }
         }
-        .padding(AppLayout.spacing)
+        .padding(BaseViewLayout.spacing)
     }
 }

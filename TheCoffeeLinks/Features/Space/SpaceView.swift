@@ -2,7 +2,7 @@
 //  SpaceView.swift
 //  thecoffeelinks-client-ios
 //
-//  Receipt-Editorial Design
+//  BaseView Design
 //  Aligned with canonical CheckoutView.swift
 //
 
@@ -27,7 +27,7 @@ struct SpaceView: View {
                     Circle()
                         .fill(Color.accentColor)
                         .frame(width: 24, height: 24)
-                        .overlay(Circle().strokeBorder(Color.bgPrimary, lineWidth: 1))
+                        .overlay(Circle().strokeBorder(BaseViewColor.background, lineWidth: 1))
                         .onTapGesture {
                             storeViewModel.selectStore(store)
                         }
@@ -44,7 +44,7 @@ struct SpaceView: View {
                 // Store Cards
                 VStack(spacing: 0) {
                     ScrollView(.horizontal, showsIndicators: false) {
-                        HStack(spacing: AppLayout.spacing) {
+                        HStack(spacing: BaseViewLayout.spacing) {
                             ForEach(storeViewModel.stores) { store in
                                 StoreCardCompact(store: store)
                                     .onTapGesture {
@@ -53,12 +53,12 @@ struct SpaceView: View {
                                     }
                             }
                         }
-                        .padding(AppLayout.spacing)
+                        .padding(BaseViewLayout.spacing)
                     }
                 }
                 .background(
                     LinearGradient(
-                        colors: [.clear, Color.bgPrimary.opacity(0.95)],
+                        colors: [.clear, BaseViewColor.background.opacity(0.95)],
                         startPoint: .top,
                         endPoint: .bottom
                     )
@@ -84,40 +84,40 @@ struct StoreCardCompact: View {
         VStack(alignment: .leading, spacing: 0) {
             // Image
             Rectangle()
-                .fill(Color.surfacePrimary)
+                .fill(BaseViewColor.surface)
                 .frame(height: 80)
                 .overlay(
                     Text(String(store.name.prefix(1)))
-                        .font(AppFont.displayTitle)
-                        .foregroundStyle(Color.textSecondary)
+                        .font(BaseViewFont.displayTitle)
+                        .foregroundStyle(BaseViewColor.textSecondary)
                 )
             
             VStack(alignment: .leading, spacing: 4) {
                 Text(store.name)
-                    .font(AppFont.body)
-                    .foregroundStyle(Color.textPrimary)
+                    .font(BaseViewFont.body)
+                    .foregroundStyle(BaseViewColor.textPrimary)
                     .lineLimit(1)
                 
                 Text(store.address)
-                    .font(AppFont.uiCaption)
-                    .foregroundStyle(Color.textSecondary)
+                    .font(BaseViewFont.uiCaption)
+                    .foregroundStyle(BaseViewColor.textSecondary)
                     .lineLimit(1)
                 
                 HStack(spacing: 4) {
                     Circle()
-                        .fill(store.isCurrentlyOpen ? Color.stateSuccess : Color.stateError)
+                        .fill(store.isCurrentlyOpen ? BaseViewColor.semanticSuccess : BaseViewColor.semanticError)
                         .frame(width: 6, height: 6)
                     Text(store.isCurrentlyOpen ? "Open" : "Closed")
-                        .font(AppFont.uiMicro)
-                        .foregroundStyle(store.isCurrentlyOpen ? Color.stateSuccess : Color.stateError)
+                        .font(BaseViewFont.uiMicro)
+                        .foregroundStyle(store.isCurrentlyOpen ? BaseViewColor.semanticSuccess : BaseViewColor.semanticError)
                 }
             }
-            .padding(AppLayout.spacingMedium)
+            .padding(BaseViewLayout.spacingMedium)
         }
-        .background(Color.bgPrimary)
+        .background(BaseViewColor.background)
         .overlay(
             Capsule()
-                .strokeBorder(Color.border, lineWidth: 1)
+                .strokeBorder(BaseViewColor.border, lineWidth: 1)
         )
         .clipShape(Capsule())
         .frame(width: 180)
@@ -135,40 +135,40 @@ struct StoreDetailSheet: View {
         VStack(spacing: 0) {
             // Drag Indicator
             Capsule()
-                .fill(Color.textSecondary)
+                .fill(BaseViewColor.textSecondary)
                 .frame(width: 40, height: 4)
-                .padding(.top, AppLayout.spacingMedium)
+                .padding(.top, BaseViewLayout.spacingMedium)
             
             ScrollView {
-                VStack(alignment: .leading, spacing: AppLayout.spacing) {
+                VStack(alignment: .leading, spacing: BaseViewLayout.spacing) {
                     Text(store.name)
-                        .font(AppFont.sectionHeader)
-                        .foregroundStyle(Color.textPrimary)
+                        .font(BaseViewFont.sectionHeader)
+                        .foregroundStyle(BaseViewColor.textPrimary)
                     
                     Text(store.address)
-                        .font(AppFont.body)
-                        .foregroundStyle(Color.textSecondary)
+                        .font(BaseViewFont.body)
+                        .foregroundStyle(BaseViewColor.textSecondary)
                     
                     // Amenities (if available)
                     if let amenities = store.amenities, !amenities.isEmpty {
                         ScrollView(.horizontal, showsIndicators: false) {
-                            HStack(spacing: AppLayout.spacingSmall) {
+                            HStack(spacing: BaseViewLayout.spacingSmall) {
                                 ForEach(amenities.prefix(3), id: \.self) { amenity in
                                     HStack(spacing: 4) {
                                         IconView(name: amenity.iconName)
                                             .font(.system(size: 12))
-                                            .foregroundStyle(Color.accentPrimary)
+                                            .foregroundStyle(BaseViewColor.accent)
                                         Text(amenity.displayName)
-                                            .font(AppFont.uiMicro)
-                                            .foregroundStyle(Color.textPrimary)
+                                            .font(BaseViewFont.uiMicro)
+                                            .foregroundStyle(BaseViewColor.textPrimary)
                                     }
                                     .padding(.horizontal, 8)
                                     .padding(.vertical, 4)
-                                    .background(Color.surfacePrimary)
+                                    .background(BaseViewColor.surface)
                                     .clipShape(Capsule())
                                 }
                             }
-                            .padding(.horizontal, -AppLayout.spacing)
+                            .padding(.horizontal, -BaseViewLayout.spacing)
                         }
                     }
                     
@@ -179,11 +179,11 @@ struct StoreDetailSheet: View {
                         showBooking = true
                     } label: {
                         Text(String(localized: "space_book_table"))
-                            .font(AppFont.monoCTA)
-                            .foregroundStyle(Color.bgPrimary)
+                            .font(BaseViewFont.monoCTA)
+                            .foregroundStyle(BaseViewColor.background)
                             .padding(.vertical, 12)
                             .frame(maxWidth: .infinity)
-                            .background(Color.accentPrimary)
+                            .background(BaseViewColor.accent)
                             .clipShape(Capsule())
                     }
                     
@@ -191,23 +191,23 @@ struct StoreDetailSheet: View {
                         storeViewModel.selectedStore = nil
                     } label: {
                         Text(String(localized: "common_close"))
-                            .font(AppFont.monoBody)
-                            .foregroundStyle(Color.textSecondary)
+                            .font(BaseViewFont.monoBody)
+                            .foregroundStyle(BaseViewColor.textSecondary)
                             .padding(.vertical, 12)
                             .frame(maxWidth: .infinity)
                             .overlay(
                                 Capsule()
-                                    .strokeBorder(Color.border, lineWidth: 1)
+                                    .strokeBorder(BaseViewColor.border, lineWidth: 1)
                             )
                     }
                 }
-                .padding(AppLayout.spacing)
+                .padding(BaseViewLayout.spacing)
             }
         }
-        .background(Color.bgPrimary)
+        .background(BaseViewColor.background)
         .clipShape(RoundedCorner(radius: 16, corners: [.topLeft, .topRight]))
         .sheet(isPresented: $showBooking) {
-            EditorialBookingSheet(store: store, isPresented: $showBooking)
+            BaseViewBookingSheet(store: store, isPresented: $showBooking)
         }
     }
 }

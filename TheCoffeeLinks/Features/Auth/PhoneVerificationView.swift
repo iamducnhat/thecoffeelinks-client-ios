@@ -8,26 +8,26 @@ struct PhoneVerificationView: View {
     
     var body: some View {
         ZStack(alignment: .top) {
-            Color.bgPrimary.ignoresSafeArea()
+            BaseViewColor.background.ignoresSafeArea()
             
             VStack(spacing: 32) {
                 // Header
                 VStack(spacing: 12) {
                     Text("Verify Phone Number")
-                        .font(AppFont.displayTitle)
-                        .foregroundStyle(Color.textPrimary)
+                        .font(BaseViewFont.displayTitle)
+                        .foregroundStyle(BaseViewColor.textPrimary)
                         .multilineTextAlignment(.center)
                     
                     Text("We sent a 6-digit code to your phone number.\nPlease enter it to continue.")
-                        .font(AppFont.body)
-                        .foregroundStyle(Color.textSecondary)
+                        .font(BaseViewFont.body)
+                        .foregroundStyle(BaseViewColor.textSecondary)
                         .multilineTextAlignment(.center)
                         .padding(.horizontal, 32)
                     
                     if let phone = authViewModel.currentUser?.phone {
                         Text(phone)
-                            .font(AppFont.monoBody)
-                            .foregroundStyle(Color.textPrimary)
+                            .font(BaseViewFont.monoBody)
+                            .foregroundStyle(BaseViewColor.textPrimary)
                             .padding(.top, 4)
                     }
                 }
@@ -35,10 +35,11 @@ struct PhoneVerificationView: View {
                 
                 // OTP Input
                 VStack(spacing: 32) {
-                    CapsuleTextField(
-                        placeholder: "000000",
-                        text: $authViewModel.otpCode,
-                        icon: "number",
+                    AppTextInput(
+                                        title: nil,
+                                        text: $authViewModel.otpCode,
+                                        placeholder: "000000",
+                                        leadingIcon: "number",
                         keyboardType: .numberPad
                     )
                     .onChange(of: authViewModel.otpCode) { newValue in
@@ -49,18 +50,18 @@ struct PhoneVerificationView: View {
                     
                     if authViewModel.isLoading {
                         HStack(spacing: 8) {
-                            ProgressView().tint(Color.accentPrimary)
+                            ProgressView().tint(BaseViewColor.accent)
                             Text("Verifying...")
-                                .font(AppFont.body)
-                                .foregroundStyle(Color.textSecondary)
+                                .font(BaseViewFont.body)
+                                .foregroundStyle(BaseViewColor.textSecondary)
                         }
                     }
                     
                     // Error Message
                     if let error = authViewModel.error {
                         Text(error)
-                            .font(AppFont.uiCaption)
-                            .foregroundStyle(Color.stateError)
+                            .font(BaseViewFont.uiCaption)
+                            .foregroundStyle(BaseViewColor.semanticError)
                             .multilineTextAlignment(.center)
                     }
                     
@@ -70,8 +71,8 @@ struct PhoneVerificationView: View {
                             authViewModel.logout()
                         } label: {
                             Text("Log Out")
-                                .font(AppFont.uiCaption)
-                                .foregroundStyle(Color.textSecondary)
+                                .font(BaseViewFont.uiCaption)
+                                .foregroundStyle(BaseViewColor.textSecondary)
                                 .underline()
                         }
                         
@@ -82,19 +83,19 @@ struct PhoneVerificationView: View {
                         } label: {
                             if cooldownSeconds > 0 {
                                 Text("Resend in \(cooldownSeconds)s")
-                                    .font(AppFont.uiCaption)
-                                    .foregroundStyle(Color.textSecondary)
+                                    .font(BaseViewFont.uiCaption)
+                                    .foregroundStyle(BaseViewColor.textSecondary)
                             } else {
                                 Text("Resend Code")
-                                    .font(AppFont.uiCaption)
-                                    .foregroundStyle(Color.accentPrimary)
+                                    .font(BaseViewFont.uiCaption)
+                                    .foregroundStyle(BaseViewColor.accent)
                             }
                         }
                         .disabled(cooldownSeconds > 0)
                     }
                     .padding(.horizontal, 4)
                 }
-                .padding(.horizontal, AppLayout.spacing)
+                .padding(.horizontal, BaseViewLayout.spacing)
                 
                 Spacer()
             }

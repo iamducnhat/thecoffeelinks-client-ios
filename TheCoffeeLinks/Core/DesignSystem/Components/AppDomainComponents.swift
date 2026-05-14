@@ -116,30 +116,30 @@ struct AppProductRow: View {
     }
 
     private var content: some View {
-        HStack(spacing: AppLayout.spacingMedium) {
+        HStack(spacing: BaseViewLayout.spacingMedium) {
             AppRemoteImage(
                 url: imageURL,
-                width: AppLayout.productImageSize,
-                height: AppLayout.productImageSize
+                width: BaseViewLayout.productImageSize,
+                height: BaseViewLayout.productImageSize
             )
 
             VStack(alignment: .leading, spacing: 4) {
                 Text(title)
-                    .font(AppFont.headline)
-                    .foregroundStyle(Color.textPrimary)
+                    .font(BaseViewFont.headline)
+                    .foregroundStyle(BaseViewColor.textPrimary)
 
                 if let subtitle {
                     Text(subtitle)
-                        .font(AppFont.uiCaption)
-                        .foregroundStyle(Color.textSecondary)
+                        .font(BaseViewFont.uiCaption)
+                        .foregroundStyle(BaseViewColor.textSecondary)
                 }
 
-                Spacer(minLength: AppLayout.spacing)
+                Spacer(minLength: BaseViewLayout.spacing)
 
                 HStack(spacing: 0) {
                     Text(price)
-                        .font(AppFont.monoBody)
-                        .foregroundStyle(Color.accentPrimary)
+                        .font(BaseViewFont.monoBody)
+                        .foregroundStyle(BaseViewColor.accent)
 
                     Spacer(minLength: 0)
 
@@ -182,14 +182,14 @@ struct AppStoreCard: View {
     }
 
     private var simpleContent: some View {
-        HStack(spacing: AppLayout.spacing) {
+        HStack(spacing: BaseViewLayout.spacing) {
             if variant != .compact {
                 AppRemoteImage(
                     url: imageURL,
                     source: .native,
                     width: 56,
                     height: 56,
-                    cornerRadius: AppRadius.medium,
+                    cornerRadius: BaseViewLayout.radiusMedium,
                     placeholderIcon: nil
                 )
             }
@@ -217,20 +217,20 @@ struct AppStoreCard: View {
             if isSelected {
                 IconView(name: "circle_check")
                     .font(.system(size: 20))
-                    .foregroundStyle(Color.accentPrimary)
+                    .foregroundStyle(BaseViewColor.accent)
             } else {
                 IconView(name: "chevron_right")
                     .font(.system(size: 13, weight: .semibold))
                     .foregroundStyle(BaseViewColor.textSecondary)
             }
         }
-        .padding(AppLayout.spacing)
+        .padding(BaseViewLayout.spacing)
         .background(BaseViewColor.elevatedSurface)
         .overlay(
-            RoundedRectangle(cornerRadius: AppRadius.medium, style: .continuous)
+            RoundedRectangle(cornerRadius: BaseViewLayout.radiusMedium, style: .continuous)
                 .strokeBorder(isSelected ? BaseViewColor.accent : BaseViewColor.border, lineWidth: 1)
         )
-        .clipShape(RoundedRectangle(cornerRadius: AppRadius.medium, style: .continuous))
+        .clipShape(RoundedRectangle(cornerRadius: BaseViewLayout.radiusMedium, style: .continuous))
     }
 
     private var richContent: some View {
@@ -291,8 +291,11 @@ struct AppStoreCard: View {
                             .font(BaseViewFont.labelStrong)
                             .tracking(2)
                             .foregroundStyle(BaseViewColor.accent)
+                            .multilineTextAlignment(.center)
+                            .padding(.horizontal, AppDomainActionMetric.horizontalPadding)
+                            .padding(.vertical, AppDomainActionMetric.verticalPadding)
                             .frame(maxWidth: .infinity)
-                            .frame(height: 38)
+                            .frame(minHeight: AppDomainActionMetric.minHeight)
                     }
                     .buttonStyle(.plain)
                 }
@@ -300,7 +303,8 @@ struct AppStoreCard: View {
                 if primaryActionTitle != nil && secondaryActionTitle != nil {
                     Rectangle()
                         .fill(Color(.systemGray4))
-                        .frame(width: 0.5, height: 38)
+                        .frame(width: 0.5)
+                        .frame(maxHeight: .infinity)
                 }
 
                 if let primaryActionTitle, let onPrimaryAction {
@@ -309,8 +313,11 @@ struct AppStoreCard: View {
                             .font(BaseViewFont.labelStrong)
                             .tracking(2)
                             .foregroundStyle(isSelected ? BaseViewColor.accent : BaseViewColor.accentForeground)
+                            .multilineTextAlignment(.center)
+                            .padding(.horizontal, AppDomainActionMetric.horizontalPadding)
+                            .padding(.vertical, AppDomainActionMetric.verticalPadding)
                             .frame(maxWidth: .infinity)
-                            .frame(height: 38)
+                            .frame(minHeight: AppDomainActionMetric.minHeight)
                             .background(isSelected ? Color.clear : BaseViewColor.accent)
                     }
                     .buttonStyle(.plain)
@@ -320,6 +327,12 @@ struct AppStoreCard: View {
         }
         .overlay(Rectangle().stroke(Color(.systemGray4), lineWidth: 0.5))
     }
+}
+
+private enum AppDomainActionMetric {
+    static let minHeight: CGFloat = 38
+    static let horizontalPadding: CGFloat = 13
+    static let verticalPadding: CGFloat = 10
 }
 
 struct AppVoucherPassCard: View {
@@ -345,11 +358,11 @@ struct AppVoucherPassCard: View {
             VStack(alignment: .leading, spacing: 0) {
                 Text(title)
                     .font(.custom("GeologicaThinRoman-Medium", size: 18))
-                    .foregroundStyle(Color.textPrimary)
+                    .foregroundStyle(BaseViewColor.textPrimary)
 
                 Text(value)
-                    .font(AppFont.monoHeadline)
-                    .foregroundStyle(Color.textPrimary)
+                    .font(BaseViewFont.monoHeadline)
+                    .foregroundStyle(BaseViewColor.textPrimary)
                     .padding(.top, 2)
 
                 Spacer()
@@ -360,12 +373,12 @@ struct AppVoucherPassCard: View {
                 HStack(alignment: .bottom) {
                     if let subtitle {
                         Text(subtitle)
-                            .font(AppFont.uiMicro)
-                            .foregroundStyle(Color.textSecondary)
+                            .font(BaseViewFont.uiMicro)
+                            .foregroundStyle(BaseViewColor.textSecondary)
                     } else if let statusText {
                         Text(statusText)
-                            .font(AppFont.uiMicro)
-                            .foregroundStyle(Color.textSecondary)
+                            .font(BaseViewFont.uiMicro)
+                            .foregroundStyle(BaseViewColor.textSecondary)
                     }
 
                     Spacer()
@@ -373,11 +386,11 @@ struct AppVoucherPassCard: View {
                     if let actionTitle, let action {
                         Button(action: action) {
                             Text(actionTitle)
-                                .font(AppFont.uiMicro)
+                                .font(BaseViewFont.uiMicro)
                                 .fontWeight(.semibold)
                                 .kerning(2)
                                 .underline()
-                                .foregroundStyle(Color.textPrimary)
+                                .foregroundStyle(BaseViewColor.textPrimary)
                         }
                         .buttonStyle(.plain)
                     }
@@ -487,7 +500,7 @@ struct AppOrderSummaryCard: View {
 
     var body: some View {
         AppCard {
-            VStack(alignment: .leading, spacing: AppLayout.spacing) {
+            VStack(alignment: .leading, spacing: BaseViewLayout.spacing) {
                 Text(title)
                     .font(BaseViewFont.sectionTitle)
                     .foregroundStyle(BaseViewColor.textPrimary)
@@ -495,14 +508,14 @@ struct AppOrderSummaryCard: View {
                 ForEach(lines) { line in
                     HStack {
                         Text(line.label)
-                            .font(line.isTotal ? AppFont.totalLabel : AppFont.body)
-                            .foregroundStyle(Color.textPrimary)
+                            .font(line.isTotal ? BaseViewFont.totalLabel : BaseViewFont.body)
+                            .foregroundStyle(BaseViewColor.textPrimary)
 
                         Spacer()
 
                         Text(line.value)
-                            .font(line.isTotal ? AppFont.monoTitle : AppFont.monoBody)
-                            .foregroundStyle(line.isTotal ? Color.textPrimary : Color.textSecondary)
+                            .font(line.isTotal ? BaseViewFont.monoTitle : BaseViewFont.monoBody)
+                            .foregroundStyle(line.isTotal ? BaseViewColor.textPrimary : BaseViewColor.textSecondary)
                     }
                 }
 

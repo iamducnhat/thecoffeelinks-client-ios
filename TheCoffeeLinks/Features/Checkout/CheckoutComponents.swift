@@ -2,7 +2,7 @@
 //  CheckoutComponents.swift
 //  thecoffeelinks-client-ios
 //
-//  Retro-Editorial Design
+//  BaseView Design
 //  Components for Checkout Flow
 //
 
@@ -24,12 +24,12 @@ struct UndoCountdownView: View {
             
             ZStack {
                 Circle()
-                    .strokeBorder(Color.border, lineWidth: 1)
+                    .strokeBorder(BaseViewColor.border, lineWidth: 1)
                     .frame(width: 80, height: 80)
                 
                 Circle()
                     .trim(from: 0, to: CGFloat(timeRemaining / duration))
-                    .stroke(Color.accentPrimary, style: StrokeStyle(lineWidth: 1, lineCap: .square))
+                    .stroke(BaseViewColor.accent, style: StrokeStyle(lineWidth: 1, lineCap: .square))
                     .frame(width: 80, height: 80)
                     .rotationEffect(.degrees(-90))
                     .animation(.linear(duration: 1), value: timeRemaining)
@@ -53,10 +53,10 @@ struct UndoCountdownView: View {
             .padding(.top, 8)
         }
         .padding(32)
-        .background(Color.surfacePrimary)
+        .background(BaseViewColor.surface)
         .cornerRadius(0) // Sharp
         .overlay(
-                RoundedRectangle(cornerRadius: AppRadius.medium, style: .continuous).strokeBorder(Color.border, lineWidth: 1))
+                RoundedRectangle(cornerRadius: BaseViewLayout.radiusMedium, style: .continuous).strokeBorder(BaseViewColor.border, lineWidth: 1))
         .shadow(color: Color.black.opacity(0.1), radius: 20, x: 0, y: 10)
         .onAppear {
             startTimer()

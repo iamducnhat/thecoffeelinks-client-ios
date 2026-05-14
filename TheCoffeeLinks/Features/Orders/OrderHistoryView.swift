@@ -2,7 +2,7 @@
 //  OrderHistoryView.swift
 //  thecoffeelinks-client-ios
 //
-//  Receipt-Editorial Design
+//  BaseView Design
 //  Aligned with canonical CheckoutView.swift
 //
 
@@ -32,28 +32,28 @@ struct OrderHistoryView: View {
     
     var body: some View {
         ZStack(alignment: .top) {
-            Color.bgPrimary.ignoresSafeArea()
+            BaseViewColor.background.ignoresSafeArea()
             
             // Fixed Navigation Header
-            HStack(alignment: .center, spacing: AppLayout.spacing) {
+            HStack(alignment: .center, spacing: BaseViewLayout.spacing) {
                 Button { dismiss() } label: {
                     Image(systemName: "chevron.left")
-                        .font(AppFont.navIcon)
-                        .foregroundStyle(Color.textPrimary)
-                        .frame(minWidth: AppLayout.touchTarget, minHeight: AppLayout.touchTarget)
+                        .font(BaseViewFont.navIcon)
+                        .foregroundStyle(BaseViewColor.textPrimary)
+                        .frame(minWidth: BaseViewLayout.touchTarget, minHeight: BaseViewLayout.touchTarget)
                 }
                 
                 Text(String(localized: "history_title"))
-                    .font(AppFont.displayTitle)
+                    .font(BaseViewFont.displayTitle)
                     .lineLimit(1)
-                    .foregroundStyle(Color.textPrimary)
+                    .foregroundStyle(BaseViewColor.textPrimary)
                     .padding(.vertical, 24)
                     .frame(maxWidth: .infinity, alignment: .leading)
             }
-            .frame(minHeight: AppLayout.touchTarget)
+            .frame(minHeight: BaseViewLayout.touchTarget)
             .frame(maxWidth: .infinity, alignment: .center)
-            .padding(.horizontal, AppLayout.spacing)
-            .background(Color.bgPrimary)
+            .padding(.horizontal, BaseViewLayout.spacing)
+            .background(BaseViewColor.background)
             .overlay(alignment: .bottom) {
                 Color.secondary.frame(height: 1)
             }
@@ -64,25 +64,25 @@ struct OrderHistoryView: View {
                     Spacer().frame(height: 80)
                     
                     if history.isEmpty {
-                        VStack(spacing: AppLayout.spacing) {
+                        VStack(spacing: BaseViewLayout.spacing) {
                             Text(String(localized: "orders_empty_generic"))
-                                .font(AppFont.sectionHeader)
-                                .foregroundStyle(Color.textPrimary)
+                                .font(BaseViewFont.sectionHeader)
+                                .foregroundStyle(BaseViewColor.textPrimary)
                             
                             Text(String(localized: "orders_empty_description"))
-                                .font(AppFont.uiCaption)
-                                .foregroundStyle(Color.textSecondary)
+                                .font(BaseViewFont.uiCaption)
+                                .foregroundStyle(BaseViewColor.textSecondary)
                                 .multilineTextAlignment(.center)
                         }
                         .frame(maxWidth: .infinity)
                         .padding(60)
                     } else {
-                        LazyVStack(spacing: AppLayout.spacing) {
+                        LazyVStack(spacing: BaseViewLayout.spacing) {
                             ForEach(history) { order in
                                 OrderHistoryRow(order: order)
                             }
                         }
-                        .padding(AppLayout.spacing)
+                        .padding(BaseViewLayout.spacing)
                     }
                 }
             }
@@ -99,27 +99,27 @@ struct OrderHistoryRow: View {
             HStack {
                 VStack(alignment: .leading, spacing: 4) {
                     Text(order.createdAt.formatted(.dateTime.day().month().year()))
-                        .font(AppFont.uiCaption)
-                        .foregroundStyle(Color.textSecondary)
+                        .font(BaseViewFont.uiCaption)
+                        .foregroundStyle(BaseViewColor.textSecondary)
                     
                     Text(order.storeId) // Ideally fetch store name
-                        .font(AppFont.headline)
-                        .foregroundStyle(Color.textPrimary)
+                        .font(BaseViewFont.headline)
+                        .foregroundStyle(BaseViewColor.textPrimary)
                     
                     Text("\(order.items.count) items")
-                        .font(AppFont.body)
-                        .foregroundStyle(Color.textPrimary)
+                        .font(BaseViewFont.body)
+                        .foregroundStyle(BaseViewColor.textPrimary)
                 }
                 
                 Spacer()
                 
                 VStack(alignment: .trailing, spacing: 4) {
                     Text(order.totalAmount.formattedVND)
-                        .font(AppFont.monoBody)
-                        .foregroundStyle(Color.accentPrimary)
+                        .font(BaseViewFont.monoBody)
+                        .foregroundStyle(BaseViewColor.accent)
                     
                     Text(order.status.displayName)
-                        .font(AppFont.uiMicro)
+                        .font(BaseViewFont.uiMicro)
                         .padding(.horizontal, 6)
                         .padding(.vertical, 2)
                         .background(statusColor.opacity(0.1))
@@ -129,15 +129,15 @@ struct OrderHistoryRow: View {
                 
                 Image(systemName: "chevron.right")
                     .font(.system(size: 12))
-                    .foregroundStyle(Color.textSecondary)
+                    .foregroundStyle(BaseViewColor.textSecondary)
                     .padding(.leading, 8)
             }
-            .padding(AppLayout.spacing)
-            .background(Color.bgPrimary)
-            .clipShape(RoundedRectangle(cornerRadius: AppRadius.medium, style: .continuous))
+            .padding(BaseViewLayout.spacing)
+            .background(BaseViewColor.background)
+            .clipShape(RoundedRectangle(cornerRadius: BaseViewLayout.radiusMedium, style: .continuous))
             .overlay(
-                RoundedRectangle(cornerRadius: AppRadius.medium, style: .continuous)
-                    .strokeBorder(Color.border, lineWidth: 1)
+                RoundedRectangle(cornerRadius: BaseViewLayout.radiusMedium, style: .continuous)
+                    .strokeBorder(BaseViewColor.border, lineWidth: 1)
             )
             
             // Hit testing for potential navigation
@@ -151,9 +151,9 @@ struct OrderHistoryRow: View {
     
     private var statusColor: Color {
         switch order.status {
-        case .completed: return Color.textSecondary
-        case .cancelled: return Color.stateError
-        default: return Color.stateSuccess
+        case .completed: return BaseViewColor.textSecondary
+        case .cancelled: return BaseViewColor.semanticError
+        default: return BaseViewColor.semanticSuccess
         }
     }
 }

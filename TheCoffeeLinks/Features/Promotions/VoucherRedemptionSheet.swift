@@ -41,13 +41,13 @@ struct VoucherRedemptionSheet: View {
                             .clipShape(Circle())
                     }
                 }
-                .padding(AppLayout.spacing)
+                .padding(BaseViewLayout.spacing)
                 .overlay(alignment: .bottom) {
                     Color.secondary.frame(height: 1)
                 }
                 
                 ScrollView {
-                    VStack(spacing: AppLayout.spacingXL) {
+                    VStack(spacing: BaseViewLayout.spacingXL) {
                         
                         // 2. Discount Display
                         VStack(spacing: 4) {
@@ -62,7 +62,7 @@ struct VoucherRedemptionSheet: View {
                                 .multilineTextAlignment(.center)
                                 .padding(.horizontal)
                         }
-                        .padding(.top, AppLayout.spacingXL)
+                        .padding(.top, BaseViewLayout.spacingXL)
                         
                         // 3. Barcode (Centered, Large)
                         ZStack {
@@ -71,15 +71,15 @@ struct VoucherRedemptionSheet: View {
                                 .frame(width: 320, height: 80)
                         }
                         .background(Color.white)
-                        .clipShape(RoundedRectangle(cornerRadius: AppRadius.large, style: .continuous))
+                        .clipShape(RoundedRectangle(cornerRadius: BaseViewLayout.radiusLarge, style: .continuous))
                         .shadow(color: Color.black.opacity(0.1), radius: 12, x: 0, y: 6)
                         .overlay(
-                            RoundedRectangle(cornerRadius: AppRadius.large, style: .continuous)
+                            RoundedRectangle(cornerRadius: BaseViewLayout.radiusLarge, style: .continuous)
                                 .strokeBorder(BaseViewColor.border.opacity(0.5), lineWidth: 1)
                         )
                         
                         // 4. Voucher Code (Copyable)
-                        VStack(spacing: AppLayout.spacingSmall) {
+                        VStack(spacing: BaseViewLayout.spacingSmall) {
                             Text(String(localized: "voucher_code_label"))
                                 .font(BaseViewFont.label)
                                 .textCase(.uppercase)
@@ -123,7 +123,7 @@ struct VoucherRedemptionSheet: View {
                         }
                         
                         // 5. Metadata Grid
-                        VStack(spacing: AppLayout.spacing) {
+                        VStack(spacing: BaseViewLayout.spacing) {
                             LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 20) {
                                 if let validUntil = voucher.validUntil {
                                     metadataItem(label: "EXPIRES", value: validUntil.formatted(date: .abbreviated, time: .omitted))
@@ -147,11 +147,11 @@ struct VoucherRedemptionSheet: View {
                             }
                             .padding(.horizontal, 40)
                         }
-                        .padding(.top, AppLayout.spacing)
+                        .padding(.top, BaseViewLayout.spacing)
                         
                         Spacer(minLength: 50)
                     }
-                    .padding(AppLayout.spacing)
+                    .padding(BaseViewLayout.spacing)
                 }
             }
         }

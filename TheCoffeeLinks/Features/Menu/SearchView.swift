@@ -2,7 +2,7 @@
 //  SearchView.swift
 //  thecoffeelinks-client-ios
 //
-//  Receipt-Editorial Design
+//  BaseView Design
 //  Aligned with canonical CheckoutView.swift
 //
 
@@ -25,7 +25,7 @@ struct SearchView: View {
             BaseViewColor.background.ignoresSafeArea()
             
             // Fixed Navigation Header
-            HStack(alignment: .center, spacing: AppLayout.spacing) {
+            HStack(alignment: .center, spacing: BaseViewLayout.spacing) {
                 Button { dismiss() } label: {
                     Image(systemName: "xmark")
                         .font(.system(size: 17, weight: .medium))
@@ -50,8 +50,8 @@ struct SearchView: View {
                     .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
                     .hidden()
             }
-            .frame(minHeight: AppLayout.touchTarget)
-            .padding(.horizontal, AppLayout.spacing)
+            .frame(minHeight: BaseViewLayout.touchTarget)
+            .padding(.horizontal, BaseViewLayout.spacing)
             .padding(.top, 8)
             .zIndex(1)
             .fixedSize(horizontal: false, vertical: true)
@@ -59,11 +59,11 @@ struct SearchView: View {
             VStack(spacing: 0) {
                 ScrollView(.vertical) {
                     // Navigation Header (Scrollable)
-                    VStack(spacing: AppLayout.marginCompact) {
-                        HStack(alignment: .center, spacing: AppLayout.spacing) {
+                    VStack(spacing: BaseViewLayout.marginCompact) {
+                        HStack(alignment: .center, spacing: BaseViewLayout.spacing) {
                             Image(systemName: "xmark")
                                 .font(.system(size: 17, weight: .medium))
-                                .foregroundStyle(Color.textPrimary)
+                                .foregroundStyle(BaseViewColor.textPrimary)
                                 .padding(12)
                                 .hidden()
                             
@@ -75,11 +75,11 @@ struct SearchView: View {
                         }
                         
                         Divider()
-                            .background(Color.borderSecondary)
-                            .padding(.horizontal, -AppLayout.spacing)
+                            .background(BaseViewColor.borderSecondary)
+                            .padding(.horizontal, -BaseViewLayout.spacing)
                     }
-                    .padding(.horizontal, AppLayout.spacing)
-                    .padding(.top, AppLayout.spacingCompact)
+                    .padding(.horizontal, BaseViewLayout.spacing)
+                    .padding(.top, BaseViewLayout.spacingCompact)
                     .background(BaseViewColor.background)
                     .background(GeometryReader {
                         Color.clear.preference(key: ViewOffsetKey.self, value: -$0.frame(in: .named("scroll")).origin.y)
@@ -89,7 +89,7 @@ struct SearchView: View {
                     }
                     
                     // Search Bar
-                    HStack(spacing: AppLayout.spacingMedium) {
+                    HStack(spacing: BaseViewLayout.spacingMedium) {
                         Image("magnifyingglass")
                             .font(BaseViewFont.body)
                             .foregroundStyle(BaseViewColor.textSecondary)
@@ -112,16 +112,16 @@ struct SearchView: View {
                     .padding(.horizontal, BaseViewLayout.badgeInset)
                     .frame(height: 49)
                     .background(BaseViewColor.elevatedSurface)
-                    .padding(.horizontal, AppLayout.spacing)
+                    .padding(.horizontal, BaseViewLayout.spacing)
                     
                     Color.secondary.frame(height: 1)
-                        .padding(.top, AppLayout.spacing)
-                        .padding(.horizontal, AppLayout.spacing)
+                        .padding(.top, BaseViewLayout.spacing)
+                        .padding(.horizontal, BaseViewLayout.spacing)
                     
                     if viewModel.searchQuery.isEmpty {
                         // Recent Searches
                         if !viewModel.recentSearches.isEmpty {
-                            VStack(alignment: .leading, spacing: AppLayout.spacing) {
+                            VStack(alignment: .leading, spacing: BaseViewLayout.spacing) {
                                 Text(String(localized: "common_recent"))
                                     .textCase(.uppercase)
                                     .font(BaseViewFont.labelStrong)
@@ -144,7 +144,7 @@ struct SearchView: View {
                                                         .font(.system(size: 12))
                                                         .foregroundStyle(BaseViewColor.textSecondary)
                                                 }
-                                                .padding(AppLayout.spacing)
+                                                .padding(BaseViewLayout.spacing)
                                                 
                                                 if index < viewModel.recentSearches.count - 1 {
                                                     Color.secondary.frame(height: 1)
@@ -159,16 +159,16 @@ struct SearchView: View {
                                         .stroke(BaseViewColor.border, lineWidth: BaseViewLayout.cardBorderWidth)
                                 )
                             }
-                            .padding(.horizontal, AppLayout.spacing)
-                            .padding(.top, AppLayout.spacing)
+                            .padding(.horizontal, BaseViewLayout.spacing)
+                            .padding(.top, BaseViewLayout.spacing)
                         }
                     } else {
                         // Search Results
                         if viewModel.isSearching {
                             ReceiptLoadingLog()
-                                .padding(AppLayout.spacing)
+                                .padding(BaseViewLayout.spacing)
                         } else if viewModel.searchResults.isEmpty {
-                            VStack(spacing: AppLayout.spacing) {
+                            VStack(spacing: BaseViewLayout.spacing) {
                                 Text(String(localized: "search_empty_title"))
                                     .font(BaseViewFont.sectionTitle)
                                     .foregroundStyle(BaseViewColor.textPrimary)
@@ -183,7 +183,7 @@ struct SearchView: View {
                                 Rectangle()
                                     .stroke(BaseViewColor.border, lineWidth: BaseViewLayout.cardBorderWidth)
                             )
-                            .padding(AppLayout.spacing)
+                            .padding(BaseViewLayout.spacing)
                         } else {
                             LazyVStack(spacing: 0) {
                                 ForEach(Array(viewModel.searchResults.enumerated()), id: \.element.id) { index, product in
@@ -195,8 +195,8 @@ struct SearchView: View {
                                     }
                                 }
                             }
-                            .padding(.horizontal, AppLayout.spacing)
-                            .padding(.top, AppLayout.spacing)
+                            .padding(.horizontal, BaseViewLayout.spacing)
+                            .padding(.top, BaseViewLayout.spacing)
                         }
                     }
                     
@@ -223,16 +223,16 @@ struct SearchResultRow: View {
     var body: some View {
         Button(action: onTap) {
             VStack(spacing: 0) {
-                HStack(spacing: AppLayout.spacing) {
+                HStack(spacing: BaseViewLayout.spacing) {
                     // Product image
                     AppRemoteImage(
                         url: URL(string: product.displayImageUrl ?? ""),
                         source: .native,
                         width: 64,
                         height: 64,
-                        cornerRadius: AppRadius.medium,
-                        backgroundColor: Color.surfacePrimary,
-                        borderColor: Color.border,
+                        cornerRadius: BaseViewLayout.radiusMedium,
+                        backgroundColor: BaseViewColor.surface,
+                        borderColor: BaseViewColor.border,
                         placeholderIcon: nil,
                         placeholderText: String(product.name.prefix(1))
                     )
@@ -261,7 +261,7 @@ struct SearchResultRow: View {
                         .font(.system(size: 12))
                         .foregroundStyle(BaseViewColor.textSecondary)
                 }
-                .padding(.vertical, AppLayout.spacing)
+                .padding(.vertical, BaseViewLayout.spacing)
                 
                 if showDivider {
                     Color.secondary.frame(height: 1)

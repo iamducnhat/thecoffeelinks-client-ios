@@ -9,7 +9,6 @@ struct ProfileView: View {
     @State private var showEditProfile = false
 
     private let rowSpacing: CGFloat = 5
-    private let membershipCardHeight: CGFloat = 98
     
     var body: some View {
         ZStack {
@@ -35,7 +34,6 @@ struct ProfileView: View {
                 }
             } else {
                 guestPrompt
-                    .padding(.horizontal, BaseViewLayout.screenInset)
                     .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
             }
         }
@@ -190,11 +188,10 @@ struct ProfileView: View {
                 .tracking(2)
                 .foregroundStyle(BaseViewColor.textPrimary)
                 .padding(.horizontal, BaseViewLayout.badgeInset)
+                .padding(.bottom, BaseViewLayout.badgeInset)
 
-            Spacer(minLength: 0)
         }
         .frame(maxWidth: .infinity)
-        .frame(height: membershipCardHeight)
         .background(BaseViewColor.elevatedSurface)
         .overlay(Rectangle().stroke(BaseViewColor.border, lineWidth: BaseViewLayout.cardBorderWidth))
     }

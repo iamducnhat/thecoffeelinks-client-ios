@@ -2,7 +2,7 @@
 //  MainTabView.swift
 //  thecoffeelinks-client-ios
 //
-//  Receipt-Editorial Design
+//  BaseView Design
 //  Aligned with canonical CheckoutView.swift
 //
 
@@ -12,6 +12,7 @@ struct MainTabView: View {
     @EnvironmentObject var appState: AppState
     @EnvironmentObject var cartViewModel: CartViewModel // Injected from parent
     @EnvironmentObject var authViewModel: AuthViewModel // Injected from parent
+    @EnvironmentObject var appFlowController: AppFlowController
     
     // Use factory methods for consistent DI
     @StateObject private var menuViewModel: MenuViewModel
@@ -19,6 +20,7 @@ struct MainTabView: View {
     @StateObject private var profileViewModel: ProfileViewModel
     @StateObject private var storesViewModel: StoresViewModel
     @StateObject private var trackingViewModel: OrderTrackingViewModel
+    @State private var hasRefreshedAuthenticatedContent = false
     
     init() {
         let container = DependencyContainer.shared
@@ -62,6 +64,9 @@ struct MainTabView: View {
                     // Vouchers are already fetched by HomeViewModel.load() → loadVouchers()
                     // No need to duplicate those calls here.
                 }
+                .onChange(of: appFlowController.currentState) { state in
+                    Task { await handleAppFlowStateChange(state) }
+                }
         } else {
             ZStack(alignment: .bottom) {
                 tabContent
@@ -86,6 +91,33 @@ struct MainTabView: View {
                 // NOTE: getCurrentUser() is already called by AppFlowController.validateAuthState()
                 // Vouchers are already fetched by HomeViewModel.load() → loadVouchers()
             }
+            .onChange(of: appFlowController.currentState) { state in
+                Task { await handleAppFlowStateChange(state) }
+            }
+        }
+    }
+
+    private var selectedMenuStoreId: String? {
+        storesViewModel.selectedStore?.id ?? DependencyContainer.shared.userPreferences.selectedStoreId
+    }
+
+    @MainActor
+    private func handleAppFlowStateChange(_ state: AppFlowState) async {
+        switch state {
+        case .ready:
+            guard !hasRefreshedAuthenticatedContent else { return }
+            hasRefreshedAuthenticatedContent = true
+
+            async let cartRefresh: Void = cartViewModel.fetchCart()
+            async let menuRefresh: Void = menuViewModel.refresh(storeId: selectedMenuStoreId)
+            async let homeRefresh: Void = homeViewModel.refresh()
+            _ = await (cartRefresh, menuRefresh, homeRefresh)
+
+        case .guestReady, .loggedOut:
+            hasRefreshedAuthenticatedContent = false
+
+        default:
+            break
         }
     }
 
@@ -93,10 +125,10 @@ struct MainTabView: View {
     static func configureTabBarAppearance() {
         let appearance = UITabBarAppearance()
         appearance.configureWithOpaqueBackground()
-        appearance.backgroundColor = UIColor(Color.bgPrimary)
-        appearance.stackedLayoutAppearance.normal.iconColor = UIColor(Color.textSecondary)
+        appearance.backgroundColor = UIColor(BaseViewColor.background)
+        appearance.stackedLayoutAppearance.normal.iconColor = UIColor(BaseViewColor.textSecondary)
         appearance.stackedLayoutAppearance.normal.titleTextAttributes = [:]
-        appearance.stackedLayoutAppearance.selected.iconColor = UIColor(Color.accentPrimary)
+        appearance.stackedLayoutAppearance.selected.iconColor = UIColor(BaseViewColor.accent)
         appearance.stackedLayoutAppearance.selected.titleTextAttributes = [:]
         UITabBar.appearance().standardAppearance = appearance
         UITabBar.appearance().scrollEdgeAppearance = appearance
@@ -154,7 +186,7 @@ struct MainTabView: View {
             }
             .tag(4)
         }
-        .tint(Color.accentPrimary)
+        .tint(BaseViewColor.accent)
         .fullScreenCover(isPresented: $appState.showCheckout) {
             CheckoutView()
                 .environmentObject(menuViewModel)

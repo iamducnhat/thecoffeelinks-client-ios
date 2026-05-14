@@ -85,7 +85,12 @@ final class MenuViewModel: ObservableObject {
         }
     }
     
-    func refresh() async { await load(storeId: currentStoreId) }
+    func refresh(storeId: String? = nil) async {
+        let resolvedStoreId = normalizedStoreId(storeId) ?? currentStoreId
+        currentStoreId = resolvedStoreId
+        await refreshCoordinator.cancel(id: "menu_refresh_\(resolvedStoreId ?? "global")")
+        await performRefresh(storeId: resolvedStoreId)
+    }
     func selectCategory(_ category: Category?) { selectedCategory = category }
     
     private func setupSearchDebounce() {

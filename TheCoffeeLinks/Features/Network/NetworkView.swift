@@ -2,7 +2,7 @@
 //  NetworkView.swift
 //  thecoffeelinks-client-ios
 //
-//  Receipt-Editorial Design
+//  BaseView Design
 //  Aligned with canonical CheckoutView.swift
 //
 
@@ -16,24 +16,24 @@ struct NetworkView: View {
     
     var body: some View {
         ZStack(alignment: .top) {
-            Color.bgPrimary.ignoresSafeArea()
+            BaseViewColor.background.ignoresSafeArea()
             
             VStack(spacing: 0) {
                 ScrollView(.vertical) {
                     // Header
-                    VStack(alignment: .leading, spacing: AppLayout.spacing) {
+                    VStack(alignment: .leading, spacing: BaseViewLayout.spacing) {
                         Text(String(localized: "space_title"))
-                            .font(AppFont.displayTitle)
-                            .foregroundColor(Color.textPrimary)
-                            .padding(.top, AppLayout.spacing)
+                            .font(BaseViewFont.displayTitle)
+                            .foregroundColor(BaseViewColor.textPrimary)
+                            .padding(.top, BaseViewLayout.spacing)
                         
                         Text("Connect with friends at your favorite coffee spot")
-                            .font(AppFont.body)
-                            .foregroundStyle(Color.textSecondary)
+                            .font(BaseViewFont.body)
+                            .foregroundStyle(BaseViewColor.textSecondary)
                         
                         Color.secondary.frame(height: 1)
                     }
-                    .padding(.horizontal, AppLayout.spacing)
+                    .padding(.horizontal, BaseViewLayout.spacing)
                     .background(GeometryReader {
                         Color.clear.preference(key: ViewOffsetKey.self, value: -$0.frame(in: .named("scroll")).origin.y)
                     })
@@ -64,15 +64,15 @@ struct IntentSelectorContent: View {
     @Binding var showingCheckInSheet: Bool
     
     var body: some View {
-        LazyVStack(spacing: AppLayout.spacingXL) {
+        LazyVStack(spacing: BaseViewLayout.spacingXL) {
             // Intent Section
-            VStack(alignment: .leading, spacing: AppLayout.spacing) {
+            VStack(alignment: .leading, spacing: BaseViewLayout.spacing) {
                 Text(String(localized: "network_intent_prompt"))
                     .textCase(.uppercase)
-                    .font(AppFont.sectionHeader)
-                    .foregroundStyle(Color.textPrimary)
+                    .font(BaseViewFont.sectionHeader)
+                    .foregroundStyle(BaseViewColor.textPrimary)
                 
-                LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: AppLayout.spacing) {
+                LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: BaseViewLayout.spacing) {
                     ForEach(NetworkViewModel.NetworkIntent.allCases, id: \.self) { intent in
                         IntentCard(intent: intent) {
                             networkViewModel.currentIntent = intent
@@ -81,8 +81,8 @@ struct IntentSelectorContent: View {
                     }
                 }
             }
-            .padding(.horizontal, AppLayout.spacing)
-            .padding(.top, AppLayout.spacing)
+            .padding(.horizontal, BaseViewLayout.spacing)
+            .padding(.top, BaseViewLayout.spacing)
         }
         .padding(.bottom, 100)
     }
@@ -94,22 +94,22 @@ struct IntentCard: View {
     
     var body: some View {
         Button(action: action) {
-            VStack(spacing: AppLayout.spacingMedium) {
+            VStack(spacing: BaseViewLayout.spacingMedium) {
                 Image(intent.icon)
                     .font(.system(size: 24))
-                    .foregroundColor(Color.accentPrimary)
+                    .foregroundColor(BaseViewColor.accent)
                 
                 Text(intent.title)
-                    .font(AppFont.monoBody)
-                    .foregroundColor(Color.textPrimary)
+                    .font(BaseViewFont.monoBody)
+                    .foregroundColor(BaseViewColor.textPrimary)
                     .multilineTextAlignment(.center)
             }
             .frame(maxWidth: .infinity)
             .padding(.vertical, 24)
-            .background(Color.surfacePrimary)
+            .background(BaseViewColor.surface)
             .overlay(
                 Capsule()
-                    .strokeBorder(Color.border, lineWidth: 1)
+                    .strokeBorder(BaseViewColor.border, lineWidth: 1)
             )
         }
         .buttonStyle(.plain)
@@ -122,22 +122,22 @@ struct ActiveNetworkingContent: View {
     @EnvironmentObject var networkViewModel: NetworkViewModel
     
     var body: some View {
-        LazyVStack(spacing: AppLayout.spacingXL) {
+        LazyVStack(spacing: BaseViewLayout.spacingXL) {
             // Active Status Banner
-            VStack(alignment: .leading, spacing: AppLayout.spacing) {
+            VStack(alignment: .leading, spacing: BaseViewLayout.spacing) {
                 Text(String(localized: "home_active_checkin"))
                     .textCase(.uppercase)
-                    .font(AppFont.sectionHeader)
-                    .foregroundStyle(Color.textPrimary)
+                    .font(BaseViewFont.sectionHeader)
+                    .foregroundStyle(BaseViewColor.textPrimary)
                 
                 HStack {
                     VStack(alignment: .leading, spacing: 4) {
                         Text(networkViewModel.currentIntent.title)
-                            .font(AppFont.headline)
-                            .foregroundStyle(Color.textPrimary)
+                            .font(BaseViewFont.headline)
+                            .foregroundStyle(BaseViewColor.textPrimary)
                         Text("Auto-ends in \(networkViewModel.remainingTimeDisplay)")
-                            .font(AppFont.uiMicro)
-                            .foregroundStyle(Color.textSecondary)
+                            .font(BaseViewFont.uiMicro)
+                            .foregroundStyle(BaseViewColor.textSecondary)
                     }
                     
                     Spacer()
@@ -146,56 +146,56 @@ struct ActiveNetworkingContent: View {
                         networkViewModel.checkOut()
                     } label: {
                         Text(String(localized: "common_end"))
-                            .font(AppFont.monoBody)
-                            .foregroundStyle(Color.stateError)
+                            .font(BaseViewFont.monoBody)
+                            .foregroundStyle(BaseViewColor.semanticError)
                             .padding(.horizontal, 12)
                             .padding(.vertical, 6)
                             .overlay(
                                 Capsule()
-                                    .strokeBorder(Color.stateError, lineWidth: 1)
+                                    .strokeBorder(BaseViewColor.semanticError, lineWidth: 1)
                             )
                     }
                 }
-                .padding(AppLayout.spacing)
-                .background(Color.surfacePrimary)
+                .padding(BaseViewLayout.spacing)
+                .background(BaseViewColor.surface)
                 .overlay(
                     Capsule()
-                        .strokeBorder(Color.accentPrimary, lineWidth: 1)
+                        .strokeBorder(BaseViewColor.accent, lineWidth: 1)
                 )
             }
-            .padding(.horizontal, AppLayout.spacing)
-            .padding(.top, AppLayout.spacing)
+            .padding(.horizontal, BaseViewLayout.spacing)
+            .padding(.top, BaseViewLayout.spacing)
             
             // Nearby People Section
-            VStack(alignment: .leading, spacing: AppLayout.spacing) {
+            VStack(alignment: .leading, spacing: BaseViewLayout.spacing) {
                 HStack {
                     Text(String(localized: "network_nearby_title"))
                         .textCase(.uppercase)
-                        .font(AppFont.sectionHeader)
-                        .foregroundStyle(Color.textPrimary)
+                        .font(BaseViewFont.sectionHeader)
+                        .foregroundStyle(BaseViewColor.textPrimary)
                     
                     Spacer()
                     
                     Text("\(networkViewModel.nearbyPeople.count)")
-                        .font(AppFont.monoBody)
-                        .foregroundStyle(Color.textSecondary)
+                        .font(BaseViewFont.monoBody)
+                        .foregroundStyle(BaseViewColor.textSecondary)
                 }
                 
                 if networkViewModel.nearbyPeople.isEmpty {
-                    VStack(spacing: AppLayout.spacing) {
+                    VStack(spacing: BaseViewLayout.spacing) {
                         Text(String(localized: "network_nearby_empty"))
-                            .font(AppFont.sectionHeader)
-                            .foregroundStyle(Color.textPrimary)
+                            .font(BaseViewFont.sectionHeader)
+                            .foregroundStyle(BaseViewColor.textPrimary)
                         
                         Text(String(localized: "network_nearby_prompt"))
-                            .font(AppFont.body)
-                            .foregroundStyle(Color.textSecondary)
+                            .font(BaseViewFont.body)
+                            .foregroundStyle(BaseViewColor.textSecondary)
                     }
                     .frame(maxWidth: .infinity)
                     .padding(60)
                     .overlay(
                         Capsule()
-                            .strokeBorder(Color.border, style: StrokeStyle(lineWidth: 1, dash: AppLayout.dashedPattern))
+                            .strokeBorder(BaseViewColor.border, style: StrokeStyle(lineWidth: 1, dash: BaseViewLayout.dashedPattern))
                     )
                 } else {
                     VStack(spacing: 0) {
@@ -209,14 +209,14 @@ struct ActiveNetworkingContent: View {
                             }
                         }
                     }
-                    .background(Color.bgPrimary)
+                    .background(BaseViewColor.background)
                     .overlay(
                         Capsule()
-                            .strokeBorder(Color.border, lineWidth: 1)
+                            .strokeBorder(BaseViewColor.border, lineWidth: 1)
                     )
                 }
             }
-            .padding(.horizontal, AppLayout.spacing)
+            .padding(.horizontal, BaseViewLayout.spacing)
         }
         .padding(.bottom, 100)
     }
@@ -228,31 +228,31 @@ struct PersonRow: View {
     @State private var isConnecting = false
     
     var body: some View {
-        HStack(spacing: AppLayout.spacing) {
+        HStack(spacing: BaseViewLayout.spacing) {
             // Avatar
             ZStack {
                 Rectangle()
-                    .fill(Color.surfacePrimary)
+                    .fill(BaseViewColor.surface)
                     .frame(width: 44, height: 44)
                 
                 Text(user.fullName.prefix(1).uppercased())
-                    .font(AppFont.monoBody.bold())
-                    .foregroundStyle(Color.accentPrimary)
+                    .font(BaseViewFont.monoBody.bold())
+                    .foregroundStyle(BaseViewColor.accent)
             }
-            .clipShape(RoundedRectangle(cornerRadius: AppRadius.medium, style: .continuous))
+            .clipShape(RoundedRectangle(cornerRadius: BaseViewLayout.radiusMedium, style: .continuous))
         .overlay(
                 Capsule()
-                    .strokeBorder(Color.border, lineWidth: 1)
+                    .strokeBorder(BaseViewColor.border, lineWidth: 1)
             )
             
             VStack(alignment: .leading, spacing: 2) {
                 Text(user.fullName)
-                    .font(AppFont.body)
-                    .foregroundStyle(Color.textPrimary)
+                    .font(BaseViewFont.body)
+                    .foregroundStyle(BaseViewColor.textPrimary)
                 
                 Text(user.jobTitle ?? "Coffee Enthusiast")
-                    .font(AppFont.uiMicro)
-                    .foregroundStyle(Color.textSecondary)
+                    .font(BaseViewFont.uiMicro)
+                    .foregroundStyle(BaseViewColor.textSecondary)
             }
             
             Spacer()
@@ -267,16 +267,16 @@ struct PersonRow: View {
                 if isConnecting {
                     ProgressView()
                         .scaleEffect(0.8)
-                        .tint(Color.accentPrimary)
+                        .tint(BaseViewColor.accent)
                 } else {
                     Text(String(localized: "network_connect_action"))
-                        .font(AppFont.monoBody)
-                        .foregroundStyle(Color.accentPrimary)
+                        .font(BaseViewFont.monoBody)
+                        .foregroundStyle(BaseViewColor.accent)
                 }
             }
             .disabled(isConnecting)
         }
-        .padding(AppLayout.spacing)
+        .padding(BaseViewLayout.spacing)
     }
 }
 
@@ -289,100 +289,100 @@ struct NetworkCheckInSheet: View {
     
     var body: some View {
         ZStack(alignment: .top) {
-            Color.bgPrimary.ignoresSafeArea()
+            BaseViewColor.background.ignoresSafeArea()
             
             VStack(spacing: 0) {
                 // Header
                 HStack {
                     Text(String(localized: "network_check_in_action"))
-                        .font(AppFont.displayTitle)
-                        .foregroundStyle(Color.textPrimary)
+                        .font(BaseViewFont.displayTitle)
+                        .foregroundStyle(BaseViewColor.textPrimary)
                     
                     Spacer()
                     
                     Button { isPresented = false } label: {
                         Image(systemName: "xmark")
-                            .font(AppFont.navIcon)
-                            .foregroundStyle(Color.textPrimary)
+                            .font(BaseViewFont.navIcon)
+                            .foregroundStyle(BaseViewColor.textPrimary)
                     }
                 }
-                .padding(AppLayout.spacing)
+                .padding(BaseViewLayout.spacing)
                 
                 Color.secondary.frame(height: 1)
                 
                 ScrollView {
-                    LazyVStack(alignment: .leading, spacing: AppLayout.spacingXL) {
+                    LazyVStack(alignment: .leading, spacing: BaseViewLayout.spacingXL) {
                         // Intent Info
-                        VStack(alignment: .leading, spacing: AppLayout.spacing) {
+                        VStack(alignment: .leading, spacing: BaseViewLayout.spacing) {
                             Text("Your intent")
                                 .textCase(.uppercase)
-                                .font(AppFont.sectionHeader)
-                                .foregroundStyle(Color.textPrimary)
+                                .font(BaseViewFont.sectionHeader)
+                                .foregroundStyle(BaseViewColor.textPrimary)
                             
-                            HStack(spacing: AppLayout.spacing) {
+                            HStack(spacing: BaseViewLayout.spacing) {
                                 Image(networkViewModel.currentIntent.icon)
                                     .font(.system(size: 20))
-                                    .foregroundStyle(Color.accentPrimary)
+                                    .foregroundStyle(BaseViewColor.accent)
                                 
                                 Text(networkViewModel.currentIntent.title)
-                                    .font(AppFont.headline)
-                                    .foregroundStyle(Color.textPrimary)
+                                    .font(BaseViewFont.headline)
+                                    .foregroundStyle(BaseViewColor.textPrimary)
                             }
-                            .padding(AppLayout.spacing)
+                            .padding(BaseViewLayout.spacing)
                             .frame(maxWidth: .infinity, alignment: .leading)
-                            .background(Color.surfacePrimary)
+                            .background(BaseViewColor.surface)
                             .overlay(
                                 Capsule()
-                                    .strokeBorder(Color.border, lineWidth: 1)
+                                    .strokeBorder(BaseViewColor.border, lineWidth: 1)
                             )
                         }
                         
                         // Location
-                        VStack(alignment: .leading, spacing: AppLayout.spacing) {
+                        VStack(alignment: .leading, spacing: BaseViewLayout.spacing) {
                             Text(String(localized: "common_location"))
                                 .textCase(.uppercase)
-                                .font(AppFont.sectionHeader)
-                                .foregroundStyle(Color.textPrimary)
+                                .font(BaseViewFont.sectionHeader)
+                                .foregroundStyle(BaseViewColor.textPrimary)
                             
                             if let store = storeViewModel.nearestStore {
                                 VStack(alignment: .leading, spacing: 4) {
                                     Text(store.name)
-                                        .font(AppFont.headline)
-                                        .foregroundStyle(Color.textPrimary)
+                                        .font(BaseViewFont.headline)
+                                        .foregroundStyle(BaseViewColor.textPrimary)
                                     Text(store.address)
-                                        .font(AppFont.uiCaption)
-                                        .foregroundStyle(Color.textSecondary)
+                                        .font(BaseViewFont.uiCaption)
+                                        .foregroundStyle(BaseViewColor.textSecondary)
                                 }
-                                .padding(AppLayout.spacing)
+                                .padding(BaseViewLayout.spacing)
                                 .frame(maxWidth: .infinity, alignment: .leading)
-                                .background(Color.surfacePrimary)
+                                .background(BaseViewColor.surface)
                                 .overlay(
                                     Capsule()
-                                        .strokeBorder(Color.accentPrimary, lineWidth: 1)
+                                        .strokeBorder(BaseViewColor.accent, lineWidth: 1)
                                 )
                             } else {
                                 HStack {
-                                    ProgressView().tint(Color.accentPrimary)
+                                    ProgressView().tint(BaseViewColor.accent)
                                     Text(String(localized: "network_finding_location"))
-                                        .font(AppFont.body)
-                                        .foregroundStyle(Color.textSecondary)
+                                        .font(BaseViewFont.body)
+                                        .foregroundStyle(BaseViewColor.textSecondary)
                                 }
                             }
                         }
                         
                         // Duration
-                        VStack(alignment: .leading, spacing: AppLayout.spacing) {
+                        VStack(alignment: .leading, spacing: BaseViewLayout.spacing) {
                             Text(String(localized: "common_duration"))
                                 .textCase(.uppercase)
-                                .font(AppFont.sectionHeader)
-                                .foregroundStyle(Color.textPrimary)
+                                .font(BaseViewFont.sectionHeader)
+                                .foregroundStyle(BaseViewColor.textPrimary)
                             
                             Slider(value: $networkViewModel.checkInDuration, in: 1800...7200, step: 1800)
-                                .tint(Color.accentPrimary)
+                                .tint(BaseViewColor.accent)
                             
                             Text("\(Int(networkViewModel.checkInDuration / 60)) minutes")
-                                .font(AppFont.monoBody)
-                                .foregroundStyle(Color.textPrimary)
+                                .font(BaseViewFont.monoBody)
+                                .foregroundStyle(BaseViewColor.textPrimary)
                         }
                         
                         Spacer(minLength: 40)
@@ -395,15 +395,15 @@ struct NetworkCheckInSheet: View {
                             }
                         } label: {
                             Text(String(localized: "network_check_in_action"))
-                                .font(AppFont.monoCTA)
-                                .foregroundStyle(Color.bgPrimary)
+                                .font(BaseViewFont.monoCTA)
+                                .foregroundStyle(BaseViewColor.background)
                                 .padding(.vertical, 12)
                                 .frame(maxWidth: .infinity, alignment: .center)
-                                .background(Color.accentPrimary)
+                                .background(BaseViewColor.accent)
                                 .clipShape(Capsule())
                         }
                     }
-                    .padding(AppLayout.spacing)
+                    .padding(BaseViewLayout.spacing)
                 }
             }
         }

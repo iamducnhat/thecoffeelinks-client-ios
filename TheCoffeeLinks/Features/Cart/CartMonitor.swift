@@ -18,18 +18,18 @@ struct CartMonitor: View {
         Button {
             appState.showCheckout = true
         } label: {
-            HStack(spacing: AppLayout.spacingSmall) {
+            HStack(spacing: BaseViewLayout.spacingSmall) {
                 Text("common_item_count_format \(cartViewModel.itemCount)")
-                    .font(AppFont.body)
+                    .font(BaseViewFont.body)
                 
                 Spacer()
                 
                 Text(cartViewModel.total.formattedVND)
-                    .font(AppFont.monoBody.bold())
+                    .font(BaseViewFont.monoBody.bold())
             }
-            .foregroundColor(Color.textPrimary)
+            .foregroundColor(BaseViewColor.textPrimary)
             //.padding(.vertical, 8)
-            .padding(.horizontal, AppLayout.spacing)
+            .padding(.horizontal, BaseViewLayout.spacing)
         }
     }
 }

@@ -2,7 +2,7 @@
 //  StoreDetailView.swift
 //  thecoffeelinks-client-ios
 //
-//  Receipt-Editorial Design
+//  BaseView Design
 //  Aligned with canonical CheckoutView.swift
 //
 
@@ -32,7 +32,7 @@ struct StoreDetailView: View {
             BaseViewColor.background.ignoresSafeArea()
             
             // Fixed Navigation Header
-            HStack(alignment: .center, spacing: AppLayout.spacing) {
+            HStack(alignment: .center, spacing: BaseViewLayout.spacing) {
                 Button { dismiss() } label: {
                     Image(systemName: "xmark")
                         .font(.system(size: 17, weight: .medium))
@@ -57,8 +57,8 @@ struct StoreDetailView: View {
                     .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
                     .hidden()
             }
-            .frame(minHeight: AppLayout.touchTarget)
-            .padding(.horizontal, AppLayout.spacing)
+            .frame(minHeight: BaseViewLayout.touchTarget)
+            .padding(.horizontal, BaseViewLayout.spacing)
             .padding(.top, 8)
             .zIndex(1)
             .fixedSize(horizontal: false, vertical: true)
@@ -66,11 +66,11 @@ struct StoreDetailView: View {
             VStack(spacing: 0) {
                 ScrollView(.vertical) {
                     // Navigation Header (Scrollable)
-                    VStack(spacing: AppLayout.marginCompact) {
-                        HStack(alignment: .center, spacing: AppLayout.spacing) {
+                    VStack(spacing: BaseViewLayout.marginCompact) {
+                        HStack(alignment: .center, spacing: BaseViewLayout.spacing) {
                             Image(systemName: "xmark")
                                 .font(.system(size: 17, weight: .medium))
-                                .foregroundStyle(Color.textPrimary)
+                                .foregroundStyle(BaseViewColor.textPrimary)
                                 .padding(12)
                                 .hidden()
                             
@@ -82,11 +82,11 @@ struct StoreDetailView: View {
                         }
                         
                         Divider()
-                            .background(Color.borderSecondary)
-                            .padding(.horizontal, -AppLayout.spacing)
+                            .background(BaseViewColor.borderSecondary)
+                            .padding(.horizontal, -BaseViewLayout.spacing)
                     }
-                    .padding(.horizontal, AppLayout.spacing)
-                    .padding(.top, AppLayout.spacingCompact)
+                    .padding(.horizontal, BaseViewLayout.spacing)
+                    .padding(.top, BaseViewLayout.spacingCompact)
                     .background(BaseViewColor.background)
                     .background(GeometryReader {
                         Color.clear.preference(key: ViewOffsetKey.self, value: -$0.frame(in: .named("scroll")).origin.y)
@@ -95,14 +95,14 @@ struct StoreDetailView: View {
                         self.scrollOffset = $0
                     }
                     
-                    LazyVStack(spacing: AppLayout.spacingXL) {
+                    LazyVStack(spacing: BaseViewLayout.spacingXL) {
                         // Store Header
-                        VStack(spacing: AppLayout.spacing) {
+                        VStack(spacing: BaseViewLayout.spacing) {
                             AppRemoteImage(
                                 url: URL(string: store.imageUrl ?? ""),
                                 width: nil,
                                 height: 200,
-                                backgroundColor: Color.surfacePrimary,
+                                backgroundColor: BaseViewColor.surface,
                                 showsProgress: true,
                                 placeholderIcon: nil,
                                 placeholderText: String(store.name.prefix(1))
@@ -118,7 +118,7 @@ struct StoreDetailView: View {
                                 .stroke(BaseViewColor.border, lineWidth: BaseViewLayout.cardBorderWidth)
                         )
                         .background(BaseViewColor.elevatedSurface)
-                        .padding(.horizontal, AppLayout.spacing)
+                        .padding(.horizontal, BaseViewLayout.spacing)
                         
                         // Map
                         Map(coordinateRegion: .constant(region), annotationItems: [store]) { store in
@@ -138,8 +138,8 @@ struct StoreDetailView: View {
                             Rectangle()
                                 .stroke(BaseViewColor.border, lineWidth: BaseViewLayout.cardBorderWidth)
                         )
-                        .clipShape(RoundedRectangle(cornerRadius: AppRadius.medium, style: .continuous))
-                        .padding(.horizontal, AppLayout.spacing)
+                        .clipShape(RoundedRectangle(cornerRadius: BaseViewLayout.radiusMedium, style: .continuous))
+                        .padding(.horizontal, BaseViewLayout.spacing)
                         
                         // Store Info
                         VStack(spacing: 0) {
@@ -160,7 +160,7 @@ struct StoreDetailView: View {
                                         BaseCTAButton(title: String(localized: "store_call"), style: .outlined, action: {})
                                     }
                                 }
-                                .padding(AppLayout.spacing)
+                                .padding(BaseViewLayout.spacing)
                                 
                                 Color.secondary.frame(height: 1)
                             }
@@ -172,7 +172,7 @@ struct StoreDetailView: View {
                                 VStack(alignment: .leading, spacing: 2) {
                                     Text(store.isCurrentlyOpen ? String(localized: "store_open_now") : String(localized: "store_closed"))
                                         .font(BaseViewFont.body)
-                                        .foregroundStyle(store.isCurrentlyOpen ? Color.stateSuccess : Color.stateError)
+                                        .foregroundStyle(store.isCurrentlyOpen ? BaseViewColor.semanticSuccess : BaseViewColor.semanticError)
                                     
                                     if let hours = store.openingHours?.first(where: { $0.dayOfWeek == Calendar.current.component(.weekday, from: Date()) }) {
                                         Text("\(hours.openTime) - \(hours.closeTime)")
@@ -182,24 +182,24 @@ struct StoreDetailView: View {
                                 }
                                 Spacer()
                             }
-                            .padding(AppLayout.spacing)
+                            .padding(BaseViewLayout.spacing)
                         }
                         .background(BaseViewColor.elevatedSurface)
                         .overlay(
                             Rectangle()
                                 .stroke(BaseViewColor.border, lineWidth: BaseViewLayout.cardBorderWidth)
                         )
-                        .padding(.horizontal, AppLayout.spacing)
+                        .padding(.horizontal, BaseViewLayout.spacing)
                         
                         // Amenities
                         if let amenities = store.amenities, !amenities.isEmpty {
-                            VStack(alignment: .leading, spacing: AppLayout.spacing) {
+                            VStack(alignment: .leading, spacing: BaseViewLayout.spacing) {
                                 Text("store_amenities_section")
                                     .textCase(.uppercase)
                                     .font(BaseViewFont.labelStrong)
                                     .foregroundStyle(BaseViewColor.textPrimary)
                                 
-                                LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: AppLayout.spacingMedium) {
+                                LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: BaseViewLayout.spacingMedium) {
                                     ForEach(amenities, id: \.self) { amenity in
                                         HStack(spacing: 4) {
                                             IconView(name: amenity.iconName)
@@ -210,23 +210,23 @@ struct StoreDetailView: View {
                                                 .foregroundStyle(BaseViewColor.textPrimary)
                                             Spacer()
                                         }
-                                        .padding(AppLayout.spacingMedium)
+                                        .padding(BaseViewLayout.spacingMedium)
                                         .background(BaseViewColor.elevatedSurface)
                                     }
                                 }
                             }
-                            .padding(.horizontal, AppLayout.spacing)
+                            .padding(.horizontal, BaseViewLayout.spacing)
                         }
                         
                         // Action Buttons
-                        VStack(spacing: AppLayout.spacing) {
+                        VStack(spacing: BaseViewLayout.spacing) {
                             Text("store_order_options_section")
                                 .textCase(.uppercase)
                                 .font(BaseViewFont.labelStrong)
                                 .foregroundStyle(BaseViewColor.textPrimary)
                                 .frame(maxWidth: .infinity, alignment: .leading)
                             
-                            HStack(spacing: AppLayout.spacing) {
+                            HStack(spacing: BaseViewLayout.spacing) {
                                 // Dine-In
                                 if store.dineInAvailable ?? true {
                                     Button {
@@ -298,13 +298,13 @@ struct StoreDetailView: View {
                                 .frame(maxWidth: .infinity)
                                 .overlay(
                                     Capsule()
-                                        .strokeBorder(Color.accentPrimary, lineWidth: 1)
+                                        .strokeBorder(BaseViewColor.accent, lineWidth: 1)
                                 )
                             }
                         }
-                        .padding(.horizontal, AppLayout.spacing)
+                        .padding(.horizontal, BaseViewLayout.spacing)
                     }
-                    .padding(.top, AppLayout.spacing)
+                    .padding(.top, BaseViewLayout.spacing)
                     .padding(.bottom, 100)
                 }
                 .coordinateSpace(name: "scroll")

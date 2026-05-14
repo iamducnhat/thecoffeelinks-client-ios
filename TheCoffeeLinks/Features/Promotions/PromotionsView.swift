@@ -19,7 +19,7 @@ struct PromotionsView: View {
 
     var body: some View {
         ZStack {
-            Color.bgPrimary.ignoresSafeArea()
+            BaseViewColor.background.ignoresSafeArea()
 
             if authViewModel.isAuthenticated {
                 GeometryReader { proxy in
@@ -33,7 +33,6 @@ struct PromotionsView: View {
                 }
             } else {
                 guestContent
-                    .padding(.horizontal, BaseViewLayout.screenInset)
                     .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
             }
         }

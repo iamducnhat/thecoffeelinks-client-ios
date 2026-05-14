@@ -1,7 +1,7 @@
 import SwiftUI
 
 // MARK: - Liquid Glass Components (iOS 26)
-// Adapted for Editorial Design System
+// Adapted for BaseView Design System
 
 // MARK: - Liquid Glass Card
 
@@ -38,8 +38,8 @@ struct LiquidGlassCard<Content: View>: View {
                         )
                 }
             )
-            .shadow(color: Editorial.Colors.primaryEspresso.opacity(0.1), radius: 16, x: 0, y: 8)
-            .shadow(color: Editorial.Colors.primaryEspresso.opacity(0.05), radius: 4, x: 0, y: 2)
+            .shadow(color: BaseViewColor.accent.opacity(0.1), radius: 16, x: 0, y: 8)
+            .shadow(color: BaseViewColor.accent.opacity(0.05), radius: 4, x: 0, y: 2)
     }
 }
 
@@ -100,7 +100,7 @@ struct LiquidGlassButton: View {
         case .primary:
             ZStack {
                 RoundedRectangle(cornerRadius: 12)
-                    .fill(Editorial.Colors.primaryEspresso)
+                    .fill(BaseViewColor.accent)
                 
                 RoundedRectangle(cornerRadius: 12)
                     .fill(
@@ -111,7 +111,7 @@ struct LiquidGlassButton: View {
                         )
                     )
             }
-            .shadow(color: Editorial.Colors.primaryEspresso.opacity(0.4), radius: 12, x: 0, y: 4)
+            .shadow(color: BaseViewColor.accent.opacity(0.4), radius: 12, x: 0, y: 4)
             
         case .secondary:
             ZStack {
@@ -121,7 +121,7 @@ struct LiquidGlassButton: View {
                 RoundedRectangle(cornerRadius: 12)
                     .strokeBorder(
                         LinearGradient(
-                            colors: [Editorial.Colors.primaryEspresso.opacity(0.4), Editorial.Colors.primaryEspresso.opacity(0.1)],
+                            colors: [BaseViewColor.accent.opacity(0.4), BaseViewColor.accent.opacity(0.1)],
                             startPoint: .topLeading,
                             endPoint: .bottomTrailing
                         ),
@@ -141,9 +141,9 @@ struct LiquidGlassButton: View {
         case .primary:
             return .white
         case .secondary:
-            return Editorial.Colors.primaryEspresso
+            return BaseViewColor.accent
         case .ghost:
-            return Editorial.Colors.primaryEspresso
+            return BaseViewColor.accent
         }
     }
 }

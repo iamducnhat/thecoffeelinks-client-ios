@@ -2,7 +2,7 @@
 //  ValuePropositionCarousel.swift
 //  thecoffeelinks-client-ios
 //
-//  Receipt-Editorial Design
+//  BaseView Design
 //  Aligned with canonical CheckoutView.swift
 //
 
@@ -38,14 +38,14 @@ struct ValuePropositionCarousel: View {
     
     var body: some View {
         ZStack {
-            Color.bgPrimary.ignoresSafeArea()
+            BaseViewColor.background.ignoresSafeArea()
             
             VStack(spacing: 0) {
                 // Progress Indicator
                 HStack(spacing: 8) {
                     ForEach(0..<slides.count, id: \.self) { index in
                         RoundedRectangle(cornerRadius: 2)
-                            .fill(currentPage >= index ? Color.accentPrimary : Color.border)
+                            .fill(currentPage >= index ? BaseViewColor.accent : BaseViewColor.border)
                             .frame(height: 2)
                     }
                 }
@@ -55,29 +55,29 @@ struct ValuePropositionCarousel: View {
                 Spacer()
                 
                 // Content
-                VStack(alignment: .leading, spacing: AppLayout.spacingXL) {
+                VStack(alignment: .leading, spacing: BaseViewLayout.spacingXL) {
                     // Image Placeholder (Icon)
                     Circle()
-                        .fill(Color.bgPrimary)
+                        .fill(BaseViewColor.background)
                         .frame(width: 80, height: 80)
                         .overlay(
                             Image(slides[currentPage].image)
                                 .font(.system(size: 32))
-                                .foregroundStyle(Color.accentPrimary)
+                                .foregroundStyle(BaseViewColor.accent)
                         )
                         .overlay(
-                            Circle().strokeBorder(Color.border, lineWidth: 1)
+                            Circle().strokeBorder(BaseViewColor.border, lineWidth: 1)
                         )
                     
-                    VStack(alignment: .leading, spacing: AppLayout.spacing) {
+                    VStack(alignment: .leading, spacing: BaseViewLayout.spacing) {
                         Text(slides[currentPage].title)
-                            .font(AppFont.displayTitle)
-                            .foregroundStyle(Color.textPrimary)
+                            .font(BaseViewFont.displayTitle)
+                            .foregroundStyle(BaseViewColor.textPrimary)
                             .lineLimit(2)
                         
                         Text(slides[currentPage].subtitle)
-                            .font(AppFont.body)
-                            .foregroundStyle(Color.textSecondary)
+                            .font(BaseViewFont.body)
+                            .foregroundStyle(BaseViewColor.textSecondary)
                             .lineSpacing(4)
                     }
                 }
@@ -91,8 +91,8 @@ struct ValuePropositionCarousel: View {
                     Button(String(localized: "common_skip")) {
                         onFinished()
                     }
-                    .font(AppFont.monoBody)
-                    .foregroundColor(Color.textSecondary)
+                    .font(BaseViewFont.monoBody)
+                    .foregroundColor(BaseViewColor.textSecondary)
                     
                     Spacer()
                     
@@ -103,19 +103,19 @@ struct ValuePropositionCarousel: View {
                             }
                         } label: {
                             Text(String(localized: "common_next"))
-                                .font(AppFont.monoCTA)
-                                .foregroundColor(Color.accentPrimary)
+                                .font(BaseViewFont.monoCTA)
+                                .foregroundColor(BaseViewColor.accent)
                         }
                     } else {
                         Button {
                             onFinished()
                         } label: {
                             Text(String(localized: "common_get_started"))
-                                .font(AppFont.monoCTA)
-                                .foregroundColor(Color.bgPrimary)
+                                .font(BaseViewFont.monoCTA)
+                                .foregroundColor(BaseViewColor.background)
                                 .padding(.horizontal, 32)
                                 .padding(.vertical, 14)
-                                .background(Color.accentPrimary)
+                                .background(BaseViewColor.accent)
                                 .clipShape(Capsule())
                         }
                     }

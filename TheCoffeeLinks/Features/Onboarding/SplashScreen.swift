@@ -2,7 +2,7 @@
 //  SplashScreen.swift
 //  thecoffeelinks-client-ios
 //
-//  Receipt-Editorial Design
+//  BaseView Design
 //  Aligned with canonical CheckoutView.swift
 //
 
@@ -17,9 +17,8 @@ struct SplashScreen: View {
         ZStack {
             Color(red: 0.7215686275, green: 0.6039215686, blue: 0.3450980392).ignoresSafeArea()
             
-            VStack(spacing: AppLayout.spacingXL) {
-                // Brand Mark — use full-color logo (use `logo` asset)
-                Image("logo")
+            VStack(spacing: BaseViewLayout.spacingXL) {
+                Image("LogoCompact")
                     .resizable()
                     .scaledToFit()
                     .frame(width: 160, height: 160)

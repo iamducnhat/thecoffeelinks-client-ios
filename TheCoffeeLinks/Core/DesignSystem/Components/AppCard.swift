@@ -2,18 +2,18 @@ import SwiftUI
 
 struct AppCard<Content: View>: View {
     let content: Content
-    var padding: CGFloat = AppLayout.spacing
+    var padding: CGFloat = BaseViewLayout.spacing
     var backgroundColor: Color = BaseViewColor.elevatedSurface
     var borderColor: Color = BaseViewColor.border
-    var borderWidth: CGFloat = AppLayout.borderWidth
-    var cornerRadius: CGFloat = AppLayout.cornerRadius
+    var borderWidth: CGFloat = BaseViewLayout.borderWidth
+    var cornerRadius: CGFloat = BaseViewLayout.cornerRadius
 
     init(
-        padding: CGFloat = AppLayout.spacing,
+        padding: CGFloat = BaseViewLayout.spacing,
         backgroundColor: Color = BaseViewColor.elevatedSurface,
         borderColor: Color = BaseViewColor.border,
-        borderWidth: CGFloat = AppLayout.borderWidth,
-        cornerRadius: CGFloat = AppLayout.cornerRadius,
+        borderWidth: CGFloat = BaseViewLayout.borderWidth,
+        cornerRadius: CGFloat = BaseViewLayout.cornerRadius,
         @ViewBuilder content: () -> Content
     ) {
         self.content = content()
@@ -28,9 +28,9 @@ struct AppCard<Content: View>: View {
         content
             .padding(padding)
             .background(backgroundColor)
-            .clipShape(RoundedRectangle(cornerRadius: cornerRadius, style: AppLayout.cornerStyle))
+            .clipShape(RoundedRectangle(cornerRadius: cornerRadius, style: BaseViewLayout.cornerStyle))
             .overlay(
-                RoundedRectangle(cornerRadius: cornerRadius, style: AppLayout.cornerStyle)
+                RoundedRectangle(cornerRadius: cornerRadius, style: BaseViewLayout.cornerStyle)
                     .strokeBorder(borderColor, lineWidth: borderWidth)
             )
     }
@@ -65,11 +65,11 @@ struct AppBadge: View {
         case .neutral:
             return BaseViewColor.elevatedSurface
         case .success:
-            return Color.semanticSuccess
+            return BaseViewColor.semanticSuccess
         case .warning:
-            return Color.semanticWarning
+            return BaseViewColor.semanticWarning
         case .destructive:
-            return Color.semanticError
+            return BaseViewColor.semanticError
         }
     }
 
@@ -105,7 +105,7 @@ struct AppRow<Leading: View, Trailing: View>: View {
     }
 
     var body: some View {
-        HStack(spacing: AppLayout.spacing) {
+        HStack(spacing: BaseViewLayout.spacing) {
             leading
             Spacer(minLength: 12)
             trailing
@@ -204,7 +204,7 @@ struct AppSectionHeader<Trailing: View>: View {
     }
 
     var body: some View {
-        HStack(alignment: .bottom, spacing: AppLayout.spacing) {
+        HStack(alignment: .bottom, spacing: BaseViewLayout.spacing) {
             VStack(alignment: .leading, spacing: subtitle == nil ? 0 : 4) {
                 Text(title)
                     .font(BaseViewFont.sectionTitle)
@@ -261,7 +261,7 @@ struct AppNavigationHeader<Trailing: View>: View {
                 trailing
             }
         }
-        .frame(height: BaseViewLayout.navButtonSize)
+        .frame(minHeight: BaseViewLayout.navButtonSize)
         .padding(.horizontal, BaseViewLayout.screenInset)
         .padding(.top, BaseViewLayout.screenTopInset)
         .padding(.bottom, BaseViewLayout.screenTopInset)
@@ -314,7 +314,7 @@ struct AppEmptyState: View {
     }
 
     var body: some View {
-        VStack(spacing: AppLayout.spacing) {
+        VStack(spacing: BaseViewLayout.spacing) {
             IconView(name: icon)
                 .font(.system(size: 40))
                 .foregroundStyle(BaseViewColor.textSecondary)
@@ -333,7 +333,7 @@ struct AppEmptyState: View {
                 AppButton(actionTitle, style: .secondary, fillsWidth: false, action: action)
             }
         }
-        .padding(AppLayout.spacingXL)
+        .padding(BaseViewLayout.spacingXL)
         .frame(maxWidth: .infinity)
     }
 }
@@ -366,10 +366,13 @@ struct AppAuthPromptCard: View {
                 Text(actionTitle)
                     .font(BaseViewFont.cta)
                     .tracking(2)
-                    .foregroundStyle(.white)
+                    .foregroundStyle(BaseViewColor.accentForeground)
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal, AppAuthPromptCardMetric.buttonHorizontalPadding)
+                    .padding(.vertical, AppAuthPromptCardMetric.buttonVerticalPadding)
                     .frame(maxWidth: .infinity)
-                    .frame(height: AppAuthPromptCardMetric.buttonHeight)
-                    .background(Color.black)
+                    .frame(minHeight: AppAuthPromptCardMetric.buttonMinHeight)
+                    .background(BaseViewColor.accent)
             }
             .buttonStyle(.plain)
             .padding(.top, AppAuthPromptCardMetric.buttonTopSpacing)
@@ -384,7 +387,9 @@ struct AppAuthPromptCard: View {
 private enum AppAuthPromptCardMetric {
     static let messageTopSpacing: CGFloat = 14
     static let buttonTopSpacing: CGFloat = 27
-    static let buttonHeight: CGFloat = 38
+    static let buttonMinHeight: CGFloat = 38
+    static let buttonHorizontalPadding: CGFloat = 18
+    static let buttonVerticalPadding: CGFloat = 10
     static let bottomInset: CGFloat = 23
 }
 
@@ -400,7 +405,7 @@ struct AppLoadingState: View {
     }
 
     var body: some View {
-        VStack(spacing: AppLayout.spacing) {
+        VStack(spacing: BaseViewLayout.spacing) {
             ProgressView()
                 .tint(BaseViewColor.accent)
 
@@ -411,14 +416,14 @@ struct AppLoadingState: View {
             }
         }
         .frame(maxWidth: .infinity)
-        .padding(AppLayout.spacingXL)
+        .padding(BaseViewLayout.spacingXL)
     }
 }
 
 struct AppCard_Previews: PreviewProvider {
     static var previews: some View {
         ZStack {
-            Color.backgroundPaper.ignoresSafeArea()
+            BaseViewColor.background.ignoresSafeArea()
             
             AppCard {
                 VStack(alignment: .leading, spacing: 8) {

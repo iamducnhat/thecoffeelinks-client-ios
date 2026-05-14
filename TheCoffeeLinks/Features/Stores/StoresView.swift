@@ -45,10 +45,10 @@ struct StoresView: View {
                 .focused($isSearchFocused)
                 .submitLabel(.search)
                 .onSubmit { isSearchFocused = false }
-                .frame(height: BaseViewLayout.accentBadgeHeight)
-                .frame(maxHeight: .infinity, alignment: .center)
                 .padding(.horizontal, 13)
-                .background(Color.textPrimary.opacity(0.08))
+                .padding(.vertical, 5)
+                .frame(minHeight: BaseViewLayout.accentBadgeHeight)
+                .background(BaseViewColor.textPrimary.opacity(0.08))
                 .toolbar {
                     ToolbarItemGroup(placement: .keyboard) {
                         Spacer()
@@ -79,7 +79,8 @@ struct StoresView: View {
                     .foregroundStyle(Color(.systemGray))
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .padding(.horizontal, 13)
-                    .frame(height: 26)
+                    .padding(.vertical, 5)
+                    .frame(minHeight: 26)
                     .overlay(Rectangle().stroke(Color(.systemGray3), lineWidth: 1))
 
                 Spacer().frame(width: 8)
@@ -89,7 +90,8 @@ struct StoresView: View {
                     .foregroundStyle(Color(.systemGray))
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .padding(.horizontal, 13)
-                    .frame(height: 26)
+                    .padding(.vertical, 5)
+                    .frame(minHeight: 26)
                     .overlay(Rectangle().stroke(Color(.systemGray3), lineWidth: 1))
             }
             .padding(.horizontal, 23)
@@ -97,7 +99,7 @@ struct StoresView: View {
 
             // Separator
             Rectangle()
-                .fill(Color.textPrimary.opacity(0.15))
+                .fill(BaseViewColor.textPrimary.opacity(0.15))
                 .frame(height: 0.5)
                 .padding(.top, 13)
         }
@@ -228,7 +230,8 @@ private struct StoreListCard: View {
                         .tracking(2)
                         .foregroundStyle(BaseViewColor.accent)
                         .frame(maxWidth: .infinity)
-                        .frame(height: buttonRowHeight)
+                        .padding(.vertical, 12)
+                        .frame(minHeight: buttonRowHeight)
                 }
 
                 Rectangle()
@@ -241,7 +244,8 @@ private struct StoreListCard: View {
                         .tracking(2)
                         .foregroundStyle(isSelected ? BaseViewColor.accent : BaseViewColor.accentForeground)
                         .frame(maxWidth: .infinity)
-                        .frame(height: buttonRowHeight)
+                        .padding(.vertical, 12)
+                        .frame(minHeight: buttonRowHeight)
                         .background(isSelected ? Color.clear : BaseViewColor.accent)
                 }
                 .buttonStyle(.plain)

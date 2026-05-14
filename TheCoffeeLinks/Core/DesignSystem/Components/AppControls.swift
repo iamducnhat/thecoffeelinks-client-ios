@@ -67,13 +67,13 @@ struct AppStepper: View {
     let onIncrement: () -> Void
 
     var body: some View {
-        HStack(spacing: AppLayout.spacingSmall) {
+        HStack(spacing: BaseViewLayout.spacingSmall) {
             AppButton(icon: decrementIcon, isDisabled: isDecrementDisabled, action: onDecrement)
 
             Text(value)
-                .font(AppFont.monoHeadline)
+                .font(BaseViewFont.monoHeadline)
                 .foregroundStyle(BaseViewColor.textPrimary)
-                .frame(minWidth: AppLayout.quantityMinWidth)
+                .frame(minWidth: BaseViewLayout.quantityMinWidth)
 
             AppButton(icon: incrementIcon, isDisabled: isIncrementDisabled, action: onIncrement)
         }

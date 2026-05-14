@@ -17,7 +17,7 @@ struct FavoritesManagementView: View {
                     Spacer()
                     Button(action: { /* Quick Order Logic */ }) {
                         Image("cart.badge.plus")
-                            .foregroundColor(Editorial.Colors.primaryEspresso)
+                            .foregroundColor(BaseViewColor.accent)
                     }
                 }
             }
@@ -41,7 +41,7 @@ struct FavoritesSection: View {
     var body: some View {
         VStack(alignment: .leading) {
             Text("Favorites")
-                .font(Editorial.uiBody())
+                .font(BaseViewFont.body)
                 .fontWeight(.semibold)
                 .padding(.horizontal)
             
@@ -73,7 +73,7 @@ struct FavoriteCard: View {
         }
         .padding()
         .frame(width: 140, height: 140)
-        .background(Editorial.Colors.secondaryBackground)
+        .background(BaseViewColor.surface)
         .cornerRadius(12)
         .shadow(radius: 2)
     }

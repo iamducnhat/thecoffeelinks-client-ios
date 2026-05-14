@@ -7,16 +7,16 @@
 
 import SwiftUI
 
-// MARK: - Spacing (Re-export from Editorial)
+// MARK: - Spacing (Shared spacing)
 
 enum Spacing {
-    static let xxs: CGFloat = Editorial.Spacing.xxs
-    static let xs: CGFloat = Editorial.Spacing.xs
-    static let sm: CGFloat = Editorial.Spacing.sm
-    static let md: CGFloat = Editorial.Spacing.md
-    static let lg: CGFloat = Editorial.Spacing.lg
-    static let xl: CGFloat = Editorial.Spacing.xl
-    static let xxl: CGFloat = Editorial.Spacing.xxl
+    static let xxs: CGFloat = BaseViewLayout.spacingMicro
+    static let xs: CGFloat = BaseViewLayout.spacingSmall
+    static let sm: CGFloat = BaseViewLayout.spacingCompact
+    static let md: CGFloat = BaseViewLayout.spacingMedium
+    static let lg: CGFloat = BaseViewLayout.spacing
+    static let xl: CGFloat = BaseViewLayout.spacingLarge
+    static let xxl: CGFloat = BaseViewLayout.majorSectionGap
 }
 
 // MARK: - Radius
@@ -29,7 +29,7 @@ enum Radius {
     static let full: CGFloat = 9999
 }
 
-// MARK: - Glass Card (Legacy - now Editorial Card)
+// MARK: - Glass Card (Legacy - now AppCard)
 
 struct GlassCard<Content: View>: View {
     let content: Content
@@ -45,7 +45,7 @@ struct GlassCard<Content: View>: View {
     }
 }
 
-// MARK: - Glass Primary Button (Legacy - now Editorial Button)
+// MARK: - Glass Primary Button (Legacy - now AppButton)
 
 struct GlassPrimaryButton: View {
     let title: String
@@ -60,7 +60,7 @@ struct GlassPrimaryButton: View {
         icon: String? = nil,
         isLoading: Bool = false,
         isDisabled: Bool = false,
-        tint: Color = Editorial.Colors.accent,
+        tint: Color = BaseViewColor.accent,
         action: @escaping () -> Void
     ) {
         self.title = title
@@ -72,7 +72,7 @@ struct GlassPrimaryButton: View {
     }
     
     var body: some View {
-        EditorialButton(title: title, isLoading: isLoading, isDisabled: isDisabled, action: action)
+        AppButton(title, icon: icon, style: .primary, isLoading: isLoading, isDisabled: isDisabled, action: action)
     }
 }
 
@@ -90,7 +90,7 @@ struct GlassSecondaryButton: View {
     }
     
     var body: some View {
-        EditorialSecondaryButton(title: title, action: action)
+        AppButton(title, icon: icon, style: .secondary, action: action)
     }
 }
 
@@ -144,7 +144,7 @@ struct EmptyStateView: View {
     }
 }
 
-struct EditorialEmptyState: View {
+struct BaseViewEmptyState: View {
     let title: String
     let message: String
     var actionTitle: String? = nil
@@ -185,7 +185,7 @@ struct Badge: View {
         
         var backgroundColor: Color {
             switch self {
-            case .primary: return Editorial.Colors.primaryEspresso
+            case .primary: return BaseViewColor.accent
             case .success: return .green
             case .warning: return .orange
             case .danger: return .red

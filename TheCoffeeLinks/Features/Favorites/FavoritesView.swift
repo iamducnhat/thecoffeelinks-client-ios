@@ -2,7 +2,7 @@
 //  FavoritesView.swift
 //  thecoffeelinks-client-ios
 //
-//  Receipt-Editorial Design
+//  BaseView Design
 //  Aligned with canonical CheckoutView.swift
 //
 
@@ -23,58 +23,58 @@ struct FavoritesView: View {
     
     var body: some View {
         ZStack(alignment: .top) {
-            Color.bgPrimary.ignoresSafeArea()
+            BaseViewColor.background.ignoresSafeArea()
             
             // Fixed Navigation Header
-            HStack(alignment: .center, spacing: AppLayout.spacing) {
+            HStack(alignment: .center, spacing: BaseViewLayout.spacing) {
                 Button { dismiss() } label: {
                     Image(systemName: "xmark")
-                        .font(AppFont.navIcon)
-                        .foregroundStyle(Color.textPrimary)
-                        .frame(minWidth: AppLayout.touchTarget, minHeight: AppLayout.touchTarget)
+                        .font(BaseViewFont.navIcon)
+                        .foregroundStyle(BaseViewColor.textPrimary)
+                        .frame(minWidth: BaseViewLayout.touchTarget, minHeight: BaseViewLayout.touchTarget)
                         .background {
                             Circle()
-                                .fill(Color.bgPrimary)
+                                .fill(BaseViewColor.background)
                         }
                         .overlay {
                             Circle()
-                                .strokeBorder(Color.textPrimary, lineWidth: 1)
+                                .strokeBorder(BaseViewColor.textPrimary, lineWidth: 1)
                                 .opacity(min(88.8, max(scrollOffset, 0.0)) / 99.9)
                         }
                 }
                 
                 Text("favorites_title")
-                    .font(AppFont.displayTitle)
+                    .font(BaseViewFont.displayTitle)
                     .lineLimit(1)
-                    .foregroundStyle(Color.textPrimary)
+                    .foregroundStyle(BaseViewColor.textPrimary)
                     .padding(.vertical, 24)
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .hidden()
             }
-            .frame(minHeight: AppLayout.touchTarget)
+            .frame(minHeight: BaseViewLayout.touchTarget)
             .frame(maxWidth: .infinity, alignment: .center)
-            .padding(.horizontal, AppLayout.spacing)
+            .padding(.horizontal, BaseViewLayout.spacing)
             
             VStack(spacing: 0) {
                 ScrollView(.vertical) {
                     // Navigation Header (Scrollable)
-                    HStack(alignment: .center, spacing: AppLayout.spacing) {
+                    HStack(alignment: .center, spacing: BaseViewLayout.spacing) {
                         Image(systemName: "xmark")
-                            .font(AppFont.navIcon)
-                            .foregroundStyle(Color.textPrimary)
-                            .frame(minWidth: AppLayout.touchTarget, minHeight: AppLayout.touchTarget)
+                            .font(BaseViewFont.navIcon)
+                            .foregroundStyle(BaseViewColor.textPrimary)
+                            .frame(minWidth: BaseViewLayout.touchTarget, minHeight: BaseViewLayout.touchTarget)
                             .hidden()
                         
                         Text("favorites_title")
-                            .font(AppFont.displayTitle)
+                            .font(BaseViewFont.displayTitle)
                             .lineLimit(1)
-                            .foregroundStyle(Color.textPrimary)
+                            .foregroundStyle(BaseViewColor.textPrimary)
                             .padding(.vertical, 24)
                             .frame(maxWidth: .infinity, alignment: .leading)
                     }
-                    .frame(minHeight: AppLayout.touchTarget)
+                    .frame(minHeight: BaseViewLayout.touchTarget)
                     .frame(maxWidth: .infinity, alignment: .center)
-                    .padding(.horizontal, AppLayout.spacing)
+                    .padding(.horizontal, BaseViewLayout.spacing)
                     .overlay(alignment: .bottom) {
                         Color.secondary.frame(height: 1, alignment: .top)
                     }
@@ -87,25 +87,25 @@ struct FavoritesView: View {
                     
                     if viewModel.isLoading {
                         ReceiptLoadingLog()
-                            .padding(AppLayout.spacing)
+                            .padding(BaseViewLayout.spacing)
                     } else if viewModel.favorites.isEmpty {
-                        VStack(spacing: AppLayout.spacing) {
+                        VStack(spacing: BaseViewLayout.spacing) {
                             Text("favorites_empty_title")
-                                .font(AppFont.sectionHeader)
-                                .foregroundStyle(Color.textPrimary)
+                                .font(BaseViewFont.sectionHeader)
+                                .foregroundStyle(BaseViewColor.textPrimary)
                             
                             Text("favorites_empty_message")
-                                .font(AppFont.body)
-                                .foregroundStyle(Color.textSecondary)
+                                .font(BaseViewFont.body)
+                                .foregroundStyle(BaseViewColor.textSecondary)
                                 .multilineTextAlignment(.center)
                         }
                         .frame(maxWidth: .infinity)
                         .padding(60)
                         .overlay(
                             Capsule()
-                                .strokeBorder(Color.border, style: StrokeStyle(lineWidth: 1, dash: AppLayout.dashedPattern))
+                                .strokeBorder(BaseViewColor.border, style: StrokeStyle(lineWidth: 1, dash: BaseViewLayout.dashedPattern))
                         )
-                        .padding(AppLayout.spacing)
+                        .padding(BaseViewLayout.spacing)
                     } else {
                         LazyVStack(spacing: 0) {
                             ForEach(Array(viewModel.favorites.enumerated()), id: \.element.id) { index, favorite in
@@ -125,7 +125,7 @@ struct FavoritesView: View {
                                 }
                             }
                         }
-                        .padding(.horizontal, AppLayout.spacing)
+                        .padding(.horizontal, BaseViewLayout.spacing)
                         .padding(.bottom, 40)
                     }
                 }
@@ -152,14 +152,14 @@ struct FavoriteItemRow: View {
     var body: some View {
         Button(action: action) {
             VStack(spacing: 0) {
-                HStack(spacing: AppLayout.spacing) {
+                HStack(spacing: BaseViewLayout.spacing) {
                     AppRemoteImage(
                         url: URL(string: favorite.product.displayImageUrl ?? ""),
                         width: 70,
                         height: 70,
-                        cornerRadius: AppRadius.medium,
-                        backgroundColor: Color.surfacePrimary,
-                        borderColor: Color.border,
+                        cornerRadius: BaseViewLayout.radiusMedium,
+                        backgroundColor: BaseViewColor.surface,
+                        borderColor: BaseViewColor.border,
                         showsProgress: true,
                         placeholderIcon: nil,
                         placeholderText: String(favorite.product.name.prefix(1))
@@ -167,23 +167,23 @@ struct FavoriteItemRow: View {
                     
                     VStack(alignment: .leading, spacing: 4) {
                         Text(favorite.displayName)
-                            .font(AppFont.body)
+                            .font(BaseViewFont.body)
                             .lineLimit(2)
-                            .foregroundStyle(Color.textPrimary)
+                            .foregroundStyle(BaseViewColor.textPrimary)
                         
                         Text(favorite.customization.displayText)
-                            .font(AppFont.uiCaption)
-                            .foregroundStyle(Color.textSecondary)
+                            .font(BaseViewFont.uiCaption)
+                            .foregroundStyle(BaseViewColor.textSecondary)
                         
                         HStack(spacing: 4) {
                             Text(favorite.product.priceRange)
-                                .font(AppFont.monoBody)
-                                .foregroundStyle(Color.accentPrimary)
+                                .font(BaseViewFont.monoBody)
+                                .foregroundStyle(BaseViewColor.accent)
                             
                             if favorite.orderCount > 0 {
                                 Text(String(localized: "favorite_ordered_count_format \(favorite.orderCount)"))
-                                    .font(AppFont.uiMicro)
-                                    .foregroundStyle(Color.textSecondary)
+                                    .font(BaseViewFont.uiMicro)
+                                    .foregroundStyle(BaseViewColor.textSecondary)
                             }
                         }
                     }
@@ -192,9 +192,9 @@ struct FavoriteItemRow: View {
                     
                     Image(systemName: "chevron.right")
                         .font(.system(size: 12))
-                        .foregroundStyle(Color.textSecondary)
+                        .foregroundStyle(BaseViewColor.textSecondary)
                 }
-                .padding(.vertical, AppLayout.spacing)
+                .padding(.vertical, BaseViewLayout.spacing)
                 
                 if showDivider {
                     Color.secondary.frame(height: 1)

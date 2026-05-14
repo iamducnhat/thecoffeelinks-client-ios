@@ -59,15 +59,15 @@ Onboarding is tracked in `UserDefaults`; secure auth state is tracked in Keychai
 
 ## Design System
 
-- Prefer semantic tokens from `Core/DesignSystem`.
+- Prefer semantic tokens from `Core/DesignSystem`: `BaseViewColor`, `BaseViewFont`, and `BaseViewLayout`.
 - Read `UI.md` before creating or changing reusable UI.
-- Reuse an existing shared component when it fits; if none fits, add a new shared component under `TheCoffeeLinks/Core/DesignSystem/Components` first, then update `UI.md`.
-- Use `DesignSystemV2.swift` and existing app components before creating new primitives.
+- Reuse an existing shared `App*` component when it fits; if none fits, add a shared component under `TheCoffeeLinks/Core/DesignSystem/Components` first, then update `UI.md`.
+- Do not reintroduce `DesignSystemV2`, `Editorial`, `AppLayout`, `AppFont`, `AppSpacing`, `AppTypography`, or `AppRadius`.
 - Avoid hardcoded colors, spacing, and repeated button styles.
 - Use `BaseViewColor.placeholder` for remote-image fallback.
 - Use `strokeBorder` for shape borders.
-- Keep cards and controls touch-friendly and consistent with the current SwiftUI style.
-- The old docs identified design-system drift across receipt/editorial/liquid-glass styles. New UI work should reduce duplication, not add another visual dialect.
+- Keep cards and controls touch-friendly; text-bearing controls should use padding plus `minHeight`, not fixed heights.
+- New UI work should reduce duplication and stay within the `BaseView* + App*` visual language.
 
 ## Testing Expectations
 

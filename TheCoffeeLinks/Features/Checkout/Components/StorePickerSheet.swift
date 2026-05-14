@@ -18,44 +18,44 @@ struct StorePickerSheet: View {
     
     var body: some View {
         ZStack(alignment: .top) {
-            Color.bgPrimary.ignoresSafeArea()
+            BaseViewColor.background.ignoresSafeArea()
             
             VStack(spacing: 0) {
                 // Header (aligned with product detail pattern)
-                VStack(spacing: AppLayout.marginCompact) {
-                    HStack(alignment: .center, spacing: AppLayout.spacing) {
+                VStack(spacing: BaseViewLayout.marginCompact) {
+                    HStack(alignment: .center, spacing: BaseViewLayout.spacing) {
                         Text(String(localized: "store_selection_title"))
-                            .font(AppTypography.displayMedium)
-                            .foregroundStyle(Color.textPrimary)
+                            .font(BaseViewFont.displayMedium)
+                            .foregroundStyle(BaseViewColor.textPrimary)
                             .lineLimit(1)
                             .frame(maxWidth: .infinity, alignment: .leading)
 
                         Button { dismiss() } label: {
                             Image(systemName: "xmark")
                                 .font(.system(size: 17, weight: .medium))
-                                .foregroundStyle(Color.textPrimary)
+                                .foregroundStyle(BaseViewColor.textPrimary)
                                 .padding(12)
-                                .background { Circle().fill(Color.bgPrimary) }
-                                .overlay { Circle().strokeBorder(Color.borderSecondary, lineWidth: 1) }
+                                .background { Circle().fill(BaseViewColor.background) }
+                                .overlay { Circle().strokeBorder(BaseViewColor.borderSecondary, lineWidth: 1) }
                         }
                     }
-                    .frame(minHeight: AppLayout.touchTarget)
+                    .frame(minHeight: BaseViewLayout.touchTarget)
 
                     Divider()
-                        .background(Color.borderSecondary)
-                        .padding(.horizontal, -AppLayout.spacing)
+                        .background(BaseViewColor.borderSecondary)
+                        .padding(.horizontal, -BaseViewLayout.spacing)
                 }
-                .padding(.horizontal, AppLayout.spacing)
-                .padding(.top, AppLayout.spacing)
-                .background(Color.bgPrimary)
+                .padding(.horizontal, BaseViewLayout.spacing)
+                .padding(.top, BaseViewLayout.spacing)
+                .background(BaseViewColor.background)
                 
                 // Embedded StoresView logic/content
                 ScrollView {
-                    LazyVStack(spacing: AppLayout.spacing) {
+                    LazyVStack(spacing: BaseViewLayout.spacing) {
                         if storeViewModel.stores.isEmpty {
                             Text("Loading stores...")
-                                .font(AppFont.body)
-                                .foregroundStyle(Color.textSecondary)
+                                .font(BaseViewFont.body)
+                                .foregroundStyle(BaseViewColor.textSecondary)
                                 .padding(.top, 40)
                         } else {
                             ForEach(storeViewModel.stores) { store in
@@ -70,7 +70,7 @@ struct StorePickerSheet: View {
                             }
                         }
                     }
-                    .padding(AppLayout.spacing)
+                    .padding(BaseViewLayout.spacing)
                 }
             }
         }

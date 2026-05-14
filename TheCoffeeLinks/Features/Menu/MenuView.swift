@@ -85,10 +85,10 @@ struct MenuView: View {
             text: $menuViewModel.searchQuery,
             prompt: Text("Tìm kiếm")
                 .font(BaseViewFont.body)
-                .foregroundColor(Color.textSecondary.opacity(0.8))
+                .foregroundColor(BaseViewColor.textSecondary.opacity(0.8))
         )
         .font(BaseViewFont.body)
-        .foregroundStyle(Color.textPrimary)
+        .foregroundStyle(BaseViewColor.textPrimary)
         .focused($isSearchFocused)
         .submitLabel(.search)
         .onSubmit { isSearchFocused = false }
@@ -115,7 +115,7 @@ struct MenuView: View {
     private var content: some View {
         if menuViewModel.isLoading && displaySections.isEmpty {
             ProgressView()
-                .tint(Color.textSecondary)
+                .tint(BaseViewColor.textSecondary)
                 .frame(maxWidth: .infinity)
                 .padding(.top, MenuSvgMetric.loadingTopPadding)
         } else if displaySections.isEmpty {
@@ -160,14 +160,14 @@ struct MenuView: View {
 
     private var separator: some View {
         Rectangle()
-            .fill(Color.borderPrimary.opacity(0.75))
+            .fill(BaseViewColor.border.opacity(0.75))
             .frame(height: MenuSvgMetric.separatorThickness)
     }
 
     private var searchFieldBackground: Color {
         colorScheme == .dark
-            ? Color.textPrimary.opacity(0.12)
-            : Color.textPrimary.opacity(0.08)
+            ? BaseViewColor.textPrimary.opacity(0.12)
+            : BaseViewColor.textPrimary.opacity(0.08)
     }
 
     private var searchQuery: String {
@@ -431,8 +431,8 @@ private struct MenuProductCard: View {
 
     private var placeholderFill: Color {
         colorScheme == .dark
-            ? Color.textPrimary.opacity(0.16)
-            : Color.textPrimary.opacity(0.14)
+            ? BaseViewColor.textPrimary.opacity(0.16)
+            : BaseViewColor.textPrimary.opacity(0.14)
     }
 
     private var displayPrice: String {
@@ -575,6 +575,10 @@ private struct CategoryScrollBar: View {
                     Color.clear
                         .onAppear { recompute(height: geo.size.height, count: count) }
                         .onChange(of: geo.size.height) { recompute(height: $0, count: count) }
+                        .onChange(of: triggerIndex) { newIndex in
+                            guard !sections.isEmpty else { return }
+                            activeIndex = min(newIndex, sections.count - 1)
+                        }
                         .onChange(of: triggerCount) { _ in
                             guard !sections.isEmpty else { return }
                             let idx = min(triggerIndex, sections.count - 1)

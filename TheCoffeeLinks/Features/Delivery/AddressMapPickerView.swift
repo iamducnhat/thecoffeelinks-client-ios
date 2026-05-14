@@ -2,7 +2,7 @@
 //  AddressMapPickerView.swift
 //  thecoffeelinks-client-ios
 //
-//  Receipt-Editorial Design
+//  BaseView Design
 //  Aligned with canonical CheckoutView.swift
 //
 
@@ -30,7 +30,7 @@ struct AddressMapPickerView: View {
             // Center Pin
             Image("mappin")
                 .font(.system(size: 40))
-                .foregroundStyle(Color.accentPrimary)
+                .foregroundStyle(BaseViewColor.accent)
                 .shadow(radius: 4)
                 .padding(.bottom, 40)
             
@@ -42,12 +42,12 @@ struct AddressMapPickerView: View {
                     } label: {
                         Image("circle_x")
                             .font(.system(size: 32))
-                            .foregroundStyle(Color.bgPrimary)
+                            .foregroundStyle(BaseViewColor.background)
                             .shadow(radius: 4)
                     }
                     Spacer()
                 }
-                .padding(.horizontal, AppLayout.spacing)
+                .padding(.horizontal, BaseViewLayout.spacing)
                 .padding(.top, 60)
                 
                 Spacer()
@@ -89,20 +89,20 @@ struct AddressMapPickerView: View {
                     Group {
                         if isGeocoding {
                             ProgressView()
-                                .progressViewStyle(CircularProgressViewStyle(tint: Color.bgPrimary))
+                                .progressViewStyle(CircularProgressViewStyle(tint: BaseViewColor.background))
                         } else {
                             Text("Confirm Location")
-                                .font(AppFont.monoCTA)
+                                .font(BaseViewFont.monoCTA)
                         }
                     }
-                    .foregroundStyle(Color.bgPrimary)
+                    .foregroundStyle(BaseViewColor.background)
                     .padding(.vertical, 14)
                     .frame(maxWidth: .infinity)
-                    .background(Color.accentPrimary)
+                    .background(BaseViewColor.accent)
                     .clipShape(Capsule())
                     .shadow(radius: 4)
                 }
-                .padding(AppLayout.spacing)
+                .padding(BaseViewLayout.spacing)
                 .padding(.bottom, 20)
                 .disabled(isGeocoding)
             }

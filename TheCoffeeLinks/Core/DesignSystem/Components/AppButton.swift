@@ -74,7 +74,7 @@ struct AppButton: View {
                         .tint(foregroundColor)
                 }
 
-                HStack(spacing: AppLayout.spacingCompact) {
+                HStack(spacing: BaseViewLayout.spacingCompact) {
                     if let icon = icon {
                         IconView(name: icon)
                             .font(iconFont)
@@ -90,9 +90,10 @@ struct AppButton: View {
                 .opacity(isLoading ? 0 : 1)
             }
             .padding(.horizontal, horizontalPadding)
+            .padding(.vertical, verticalPadding)
             .frame(maxWidth: fillsWidth ? .infinity : nil)
-            .frame(minWidth: style == .icon ? AppLayout.touchTarget : nil)
-            .frame(minHeight: style == .icon ? AppLayout.touchTarget : 44)
+            .frame(minWidth: style == .icon ? BaseViewLayout.touchTarget : nil)
+            .frame(minHeight: style == .icon ? BaseViewLayout.touchTarget : 44)
             .background(background)
             .foregroundStyle(foregroundColor)
             .overlay(
@@ -113,12 +114,12 @@ struct AppButton: View {
         case .ghost, .underlined:
             return BaseViewFont.cta
         case .icon:
-            return AppFont.body
+            return BaseViewFont.body
         }
     }
 
     private var iconFont: Font {
-        style == .icon ? AppFont.navIcon : AppFont.body
+        style == .icon ? BaseViewFont.navIcon : BaseViewFont.body
     }
 
     private var horizontalPadding: CGFloat {
@@ -132,14 +133,23 @@ struct AppButton: View {
         }
     }
 
+    private var verticalPadding: CGFloat {
+        switch style {
+        case .icon, .ghost, .underlined:
+            return 0
+        default:
+            return 10
+        }
+    }
+
     @ViewBuilder
     private var background: some View {
         switch style {
         case .primary:
-            RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle)
+            RoundedRectangle(cornerRadius: BaseViewLayout.cornerRadius, style: BaseViewLayout.cornerStyle)
                 .fill(backgroundColor)
         case .secondary, .destructive, .icon:
-            RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle)
+            RoundedRectangle(cornerRadius: BaseViewLayout.cornerRadius, style: BaseViewLayout.cornerStyle)
                 .fill(backgroundColor)
         case .ghost, .underlined:
             Color.clear
@@ -150,8 +160,8 @@ struct AppButton: View {
     private var border: some View {
         switch style {
         case .secondary, .destructive, .icon:
-            RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle)
-                .strokeBorder(borderColor, lineWidth: AppLayout.borderWidth)
+            RoundedRectangle(cornerRadius: BaseViewLayout.cornerRadius, style: BaseViewLayout.cornerStyle)
+                .strokeBorder(borderColor, lineWidth: BaseViewLayout.borderWidth)
         case .primary, .ghost, .underlined:
             EmptyView()
         }
@@ -164,7 +174,7 @@ struct AppButton: View {
         case .secondary, .ghost, .underlined:
             return .clear
         case .destructive:
-            return Color.semanticError.opacity(0.08)
+            return BaseViewColor.semanticError.opacity(0.08)
         case .icon:
             return BaseViewColor.elevatedSurface
         }
@@ -181,7 +191,7 @@ struct AppButton: View {
         case .underlined:
             return BaseViewColor.textPrimary
         case .destructive:
-            return Color.semanticError
+            return BaseViewColor.semanticError
         case .icon:
             return BaseViewColor.textPrimary
         }
@@ -194,7 +204,7 @@ struct AppButton: View {
         case .secondary:
             return BaseViewColor.accent
         case .destructive:
-            return Color.semanticError.opacity(0.24)
+            return BaseViewColor.semanticError.opacity(0.24)
         case .icon:
             return BaseViewColor.border
         }

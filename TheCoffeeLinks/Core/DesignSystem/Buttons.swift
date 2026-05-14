@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// Receipt-Editorial Design System: Button Components
+/// BaseView Design System: Button Components
 /// Derived from canonical CheckoutView.swift
 ///
 /// BUTTON HIERARCHY:
@@ -84,20 +84,20 @@ struct ReceiptIconButton: View {
     var body: some View {
         Button(action: action) {
             IconView(name: icon)
-                .font(AppFont.navIcon)
-                .foregroundStyle(Color.textInk)
-                .frame(minWidth: AppLayout.touchTarget, minHeight: AppLayout.touchTarget)
+                .font(BaseViewFont.navIcon)
+                .foregroundStyle(BaseViewColor.textPrimary)
+                .frame(minWidth: BaseViewLayout.touchTarget, minHeight: BaseViewLayout.touchTarget)
                 .background {
                     if showBorder {
-                        RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle)
-                            .fill(Color.backgroundPaper)
+                        RoundedRectangle(cornerRadius: BaseViewLayout.cornerRadius, style: BaseViewLayout.cornerStyle)
+                            .fill(BaseViewColor.background)
                             .opacity(borderOpacity)
                     }
                 }
                 .overlay {
                     if showBorder {
-                        RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle)
-                            .strokeBorder(Color.textInk, lineWidth: AppLayout.borderWidth)
+                        RoundedRectangle(cornerRadius: BaseViewLayout.cornerRadius, style: BaseViewLayout.cornerStyle)
+                            .strokeBorder(BaseViewColor.textPrimary, lineWidth: BaseViewLayout.borderWidth)
                             .opacity(borderOpacity)
                     }
                 }
@@ -143,17 +143,17 @@ struct SecondaryButton: View {
                     Image(icon)
                 }
                 Text(title)
-                    .font(AppFont.uiBody)
+                    .font(BaseViewFont.uiBody)
                     .fontWeight(.medium)
             }
             .frame(maxWidth: .infinity)
             .padding(.vertical, 16)
-            .background(Color.backgroundPaper)
-            .foregroundColor(Color.primaryEspresso)
-            .cornerRadius(AppLayout.cornerRadius)
+            .background(BaseViewColor.background)
+            .foregroundColor(BaseViewColor.accent)
+            .cornerRadius(BaseViewLayout.cornerRadius)
             .overlay(
-                RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle)
-                    .strokeBorder(Color.primaryEspresso, lineWidth: 1)
+                RoundedRectangle(cornerRadius: BaseViewLayout.cornerRadius, style: BaseViewLayout.cornerStyle)
+                    .strokeBorder(BaseViewColor.accent, lineWidth: 1)
             )
         }
     }
@@ -166,9 +166,9 @@ struct GhostButton: View {
     var body: some View {
         Button(action: action) {
             Text(title)
-                .font(AppFont.uiCaption)
+                .font(BaseViewFont.uiCaption)
                 .fontWeight(.medium)
-                .foregroundColor(Color.textMuted)
+                .foregroundColor(BaseViewColor.textSecondary)
                 .padding(.vertical, 8)
         }
     }

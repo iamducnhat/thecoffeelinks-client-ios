@@ -2,7 +2,7 @@
 //  OrderSuccessView.swift
 //  thecoffeelinks-client-ios
 //
-//  Receipt-Editorial Design — H2 FIX: Show order details, items, total, ETA
+//  BaseView Design — H2 FIX: Show order details, items, total, ETA
 //
 
 import SwiftUI
@@ -34,54 +34,54 @@ struct OrderSuccessView: View {
     
     var body: some View {
         ZStack {
-            Color.bgPrimary.ignoresSafeArea()
+            BaseViewColor.background.ignoresSafeArea()
             
             ScrollView {
-                VStack(alignment: .leading, spacing: AppLayout.spacing) {
+                VStack(alignment: .leading, spacing: BaseViewLayout.spacing) {
                     Spacer()
                     
                     // Terminal output simulation
                     ForEach(lines, id: \.self) { line in
                         Text(line)
-                            .font(AppFont.monoBody)
-                            .foregroundStyle(line.contains("successfully") || line.contains("✓") ? Color.accentPrimary : Color.textPrimary)
+                            .font(BaseViewFont.monoBody)
+                            .foregroundStyle(line.contains("successfully") || line.contains("✓") ? BaseViewColor.accent : BaseViewColor.textPrimary)
                     }
                     
                     if showDone {
-                        VStack(alignment: .leading, spacing: AppLayout.spacingXL) {
-                            VStack(alignment: .leading, spacing: AppLayout.spacing) {
+                        VStack(alignment: .leading, spacing: BaseViewLayout.spacingXL) {
+                            VStack(alignment: .leading, spacing: BaseViewLayout.spacing) {
                                 Text(String(localized: "order_success_title"))
-                                    .font(AppFont.displayTitle)
-                                    .foregroundStyle(Color.textPrimary)
+                                    .font(BaseViewFont.displayTitle)
+                                    .foregroundStyle(BaseViewColor.textPrimary)
                                 
                                 Text(String(localized: "order_success_message"))
-                                    .font(AppFont.body)
-                                    .foregroundStyle(Color.textSecondary)
+                                    .font(BaseViewFont.body)
+                                    .foregroundStyle(BaseViewColor.textSecondary)
                             }
-                            .padding(.top, AppLayout.spacingXL)
+                            .padding(.top, BaseViewLayout.spacingXL)
                             
                             // H2 FIX: Order details section with full price breakdown
                             if let order = order {
-                                VStack(alignment: .leading, spacing: AppLayout.spacingMedium) {
+                                VStack(alignment: .leading, spacing: BaseViewLayout.spacingMedium) {
                                     // Order ID
                                     HStack {
                                         Text(String(localized: "order_id_label"))
-                                            .font(AppFont.body)
-                                            .foregroundStyle(Color.textSecondary)
+                                            .font(BaseViewFont.body)
+                                            .foregroundStyle(BaseViewColor.textSecondary)
                                         Spacer()
                                         Text("#\(String(order.id.prefix(8)).uppercased())")
-                                            .font(AppFont.monoBody)
-                                            .foregroundStyle(Color.textPrimary)
+                                            .font(BaseViewFont.monoBody)
+                                            .foregroundStyle(BaseViewColor.textPrimary)
                                     }
                                     
                                     // Store name (H2 FIX)
                                     if let storeName = order.storeSnapshot?.name {
                                         HStack {
                                             Image(systemName: "storefront")
-                                                .foregroundStyle(Color.textSecondary)
+                                                .foregroundStyle(BaseViewColor.textSecondary)
                                             Text(storeName)
-                                                .font(AppFont.body)
-                                                .foregroundStyle(Color.textPrimary)
+                                                .font(BaseViewFont.body)
+                                                .foregroundStyle(BaseViewColor.textPrimary)
                                         }
                                     }
                                     
@@ -91,13 +91,13 @@ struct OrderSuccessView: View {
                                     ForEach(order.items) { item in
                                         HStack {
                                             Text("\(item.quantity)x \(item.productName)")
-                                                .font(AppFont.body)
-                                                .foregroundStyle(Color.textPrimary)
+                                                .font(BaseViewFont.body)
+                                                .foregroundStyle(BaseViewColor.textPrimary)
                                                 .lineLimit(1)
                                             Spacer()
                                             Text(item.totalPrice.formattedVND)
-                                                .font(AppFont.monoBody)
-                                                .foregroundStyle(Color.textSecondary)
+                                                .font(BaseViewFont.monoBody)
+                                                .foregroundStyle(BaseViewColor.textSecondary)
                                         }
                                     }
                                     
@@ -108,29 +108,29 @@ struct OrderSuccessView: View {
                                         // Subtotal line
                                         HStack {
                                             Text(String(localized: "subtotal_label"))
-                                                .font(AppFont.body)
-                                                .foregroundStyle(Color.textSecondary)
+                                                .font(BaseViewFont.body)
+                                                .foregroundStyle(BaseViewColor.textSecondary)
                                             Spacer()
                                             Text(order.subtotal.formattedVND)
-                                                .font(AppFont.monoBody)
-                                                .foregroundStyle(Color.textSecondary)
+                                                .font(BaseViewFont.monoBody)
+                                                .foregroundStyle(BaseViewColor.textSecondary)
                                         }
                                         
                                         // Voucher discount
                                         if let voucherDiscount = order.voucherSnapshot?.appliedDiscount, voucherDiscount > 0 {
                                             HStack {
                                                 Text(String(localized: "voucher_discount_label"))
-                                                    .font(AppFont.body)
-                                                    .foregroundStyle(Color.accentPrimary)
+                                                    .font(BaseViewFont.body)
+                                                    .foregroundStyle(BaseViewColor.accent)
                                                 if let code = order.voucherSnapshot?.code {
                                                     Text("(\(code))")
-                                                        .font(AppFont.uiMicro)
-                                                        .foregroundStyle(Color.accentPrimary)
+                                                        .font(BaseViewFont.uiMicro)
+                                                        .foregroundStyle(BaseViewColor.accent)
                                                 }
                                                 Spacer()
                                                 Text("-\(voucherDiscount.formattedVND)")
-                                                    .font(AppFont.monoBody)
-                                                    .foregroundStyle(Color.accentPrimary)
+                                                    .font(BaseViewFont.monoBody)
+                                                    .foregroundStyle(BaseViewColor.accent)
                                             }
                                         }
                                         
@@ -139,15 +139,15 @@ struct OrderSuccessView: View {
                                             let pointsDiscount = Double(pointsUsed) * 1000.0
                                             HStack {
                                                 Text(String(localized: "points_discount_label"))
-                                                    .font(AppFont.body)
-                                                    .foregroundStyle(Color.accentPrimary)
+                                                    .font(BaseViewFont.body)
+                                                    .foregroundStyle(BaseViewColor.accent)
                                                 Text("(\(pointsUsed) pts)")
-                                                    .font(AppFont.uiMicro)
-                                                    .foregroundStyle(Color.accentPrimary)
+                                                    .font(BaseViewFont.uiMicro)
+                                                    .foregroundStyle(BaseViewColor.accent)
                                                 Spacer()
                                                 Text("-\(pointsDiscount.formattedVND)")
-                                                    .font(AppFont.monoBody)
-                                                    .foregroundStyle(Color.accentPrimary)
+                                                    .font(BaseViewFont.monoBody)
+                                                    .foregroundStyle(BaseViewColor.accent)
                                             }
                                         }
                                         
@@ -156,15 +156,15 @@ struct OrderSuccessView: View {
                                             let rateText = order.taxRate.map { "\(Int($0 * 100))%" } ?? "8%"
                                             HStack {
                                                 Text(String(localized: "tax_label"))
-                                                    .font(AppFont.body)
-                                                    .foregroundStyle(Color.textSecondary)
+                                                    .font(BaseViewFont.body)
+                                                    .foregroundStyle(BaseViewColor.textSecondary)
                                                 Text("(\(rateText))")
-                                                    .font(AppFont.uiMicro)
-                                                    .foregroundStyle(Color.textSecondary)
+                                                    .font(BaseViewFont.uiMicro)
+                                                    .foregroundStyle(BaseViewColor.textSecondary)
                                                 Spacer()
                                                 Text(tax.formattedVND)
-                                                    .font(AppFont.monoBody)
-                                                    .foregroundStyle(Color.textSecondary)
+                                                    .font(BaseViewFont.monoBody)
+                                                    .foregroundStyle(BaseViewColor.textSecondary)
                                             }
                                         }
                                         
@@ -172,12 +172,12 @@ struct OrderSuccessView: View {
                                         if order.deliveryFee > 0 {
                                             HStack {
                                                 Text(String(localized: "delivery_fee_label"))
-                                                    .font(AppFont.body)
-                                                    .foregroundStyle(Color.textSecondary)
+                                                    .font(BaseViewFont.body)
+                                                    .foregroundStyle(BaseViewColor.textSecondary)
                                                 Spacer()
                                                 Text(order.deliveryFee.formattedVND)
-                                                    .font(AppFont.monoBody)
-                                                    .foregroundStyle(Color.textSecondary)
+                                                    .font(BaseViewFont.monoBody)
+                                                    .foregroundStyle(BaseViewColor.textSecondary)
                                             }
                                         }
                                     }
@@ -187,45 +187,45 @@ struct OrderSuccessView: View {
                                     // Total
                                     HStack {
                                         Text(String(localized: "total_label"))
-                                            .font(AppFont.sectionHeader)
-                                            .foregroundStyle(Color.textPrimary)
+                                            .font(BaseViewFont.sectionHeader)
+                                            .foregroundStyle(BaseViewColor.textPrimary)
                                         Spacer()
                                         Text(order.totalAmount.formattedVND)
-                                            .font(AppFont.monoTitle)
-                                            .foregroundStyle(Color.accentPrimary)
+                                            .font(BaseViewFont.monoTitle)
+                                            .foregroundStyle(BaseViewColor.accent)
                                     }
                                     
                                     // ETA
                                     if let eta = order.estimatedReadyAt {
                                         HStack {
                                             Image(systemName: "clock")
-                                                .foregroundStyle(Color.textSecondary)
+                                                .foregroundStyle(BaseViewColor.textSecondary)
                                             Text(String(localized: "estimated_ready_label"))
-                                                .font(AppFont.body)
-                                                .foregroundStyle(Color.textSecondary)
+                                                .font(BaseViewFont.body)
+                                                .foregroundStyle(BaseViewColor.textSecondary)
                                             Spacer()
                                             Text(eta, style: .time)
-                                                .font(AppFont.monoBody)
-                                                .foregroundStyle(Color.textPrimary)
+                                                .font(BaseViewFont.monoBody)
+                                                .foregroundStyle(BaseViewColor.textPrimary)
                                         }
                                     }
                                     
                                     // Order type & payment
                                     HStack {
                                         Image(systemName: order.mode.iconName)
-                                            .foregroundStyle(Color.textSecondary)
+                                            .foregroundStyle(BaseViewColor.textSecondary)
                                         Text(order.mode.displayName)
-                                            .font(AppFont.body)
-                                            .foregroundStyle(Color.textSecondary)
+                                            .font(BaseViewFont.body)
+                                            .foregroundStyle(BaseViewColor.textSecondary)
                                         Spacer()
                                         Text(order.paymentMethod.displayName)
-                                            .font(AppFont.body)
-                                            .foregroundStyle(Color.textSecondary)
+                                            .font(BaseViewFont.body)
+                                            .foregroundStyle(BaseViewColor.textSecondary)
                                     }
                                 }
                                 .padding()
-                                .background(Color.bgSecondary)
-                                .clipShape(RoundedRectangle(cornerRadius: AppRadius.medium))
+                                .background(BaseViewColor.surface)
+                                .clipShape(RoundedRectangle(cornerRadius: BaseViewLayout.radiusMedium))
                                 
                                 // H2 FIX: Share/Receipt button
                                 Button {
@@ -235,11 +235,11 @@ struct OrderSuccessView: View {
                                         Image(systemName: "square.and.arrow.up")
                                         Text(String(localized: "share_receipt_button"))
                                     }
-                                    .font(AppFont.body)
-                                    .foregroundStyle(Color.textSecondary)
+                                    .font(BaseViewFont.body)
+                                    .foregroundStyle(BaseViewColor.textSecondary)
                                     .padding(.vertical, 8)
                                     .frame(maxWidth: .infinity)
-                                    .background(Color.bgSecondary)
+                                    .background(BaseViewColor.surface)
                                     .clipShape(Capsule())
                                 }
                             }
@@ -253,11 +253,11 @@ struct OrderSuccessView: View {
                                         Image(systemName: "location.circle")
                                         Text(String(localized: "track_order_button"))
                                     }
-                                    .font(AppFont.monoCTA)
-                                    .foregroundStyle(Color.accentPrimary)
+                                    .font(BaseViewFont.monoCTA)
+                                    .foregroundStyle(BaseViewColor.accent)
                                     .padding(.vertical, 12)
                                     .frame(maxWidth: .infinity)
-                                    .background(Color.accentPrimary.opacity(0.1))
+                                    .background(BaseViewColor.accent.opacity(0.1))
                                     .clipShape(Capsule())
                                 }
                             }
@@ -266,11 +266,11 @@ struct OrderSuccessView: View {
                                 onDismiss()
                             } label: {
                                 Text(String(localized: "common_done"))
-                                    .font(AppFont.monoCTA)
-                                    .foregroundStyle(Color.bgPrimary)
+                                    .font(BaseViewFont.monoCTA)
+                                    .foregroundStyle(BaseViewColor.background)
                                     .padding(.vertical, 12)
                                     .frame(maxWidth: .infinity)
-                                    .background(Color.accentPrimary)
+                                    .background(BaseViewColor.accent)
                                     .clipShape(Capsule())
                             }
                         }

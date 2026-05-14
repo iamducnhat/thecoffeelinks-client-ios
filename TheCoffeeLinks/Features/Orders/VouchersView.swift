@@ -2,7 +2,7 @@
 //  VouchersView.swift
 //  thecoffeelinks-client-ios
 //
-//  Receipt-Editorial Design
+//  BaseView Design
 //  Tab-based voucher interface with image support
 //
 
@@ -38,66 +38,66 @@ struct VouchersView: View {
     
     var body: some View {
         ZStack {
-            Color.bgPrimary.ignoresSafeArea()
+            BaseViewColor.background.ignoresSafeArea()
             
             VStack(spacing: 0) {
                 // Header
-                VStack(spacing: AppSpacing.lg) {
-                    HStack(alignment: .center, spacing: AppSpacing.md) {
+                VStack(spacing: BaseViewLayout.lg) {
+                    HStack(alignment: .center, spacing: BaseViewLayout.md) {
                         Text(String(localized: "vouchers_title"))
-                            .font(AppTypography.displayMedium)
-                            .foregroundStyle(Color.textPrimary)
+                            .font(BaseViewFont.displayMedium)
+                            .foregroundStyle(BaseViewColor.textPrimary)
                             .lineLimit(1)
                             .frame(maxWidth: .infinity, alignment: .leading)
                         
                         Button { dismiss() } label: {
                             Image(systemName: "xmark")
                                 .font(.system(size: 17, weight: .medium))
-                                .foregroundStyle(Color.textPrimary)
+                                .foregroundStyle(BaseViewColor.textPrimary)
                                 .padding(12)
-                                .background { Circle().fill(Color.bgPrimary) }
-                                .overlay { Circle().strokeBorder(Color.borderSecondary, lineWidth: 1) }
+                                .background { Circle().fill(BaseViewColor.background) }
+                                .overlay { Circle().strokeBorder(BaseViewColor.borderSecondary, lineWidth: 1) }
                         }
                     }
-                    .frame(minHeight: AppLayout.touchTarget)
-                    .padding(.horizontal, AppSpacing.screenPadding)
+                    .frame(minHeight: BaseViewLayout.touchTarget)
+                    .padding(.horizontal, BaseViewLayout.screenPadding)
                     
                     Divider()
-                        .background(Color.borderSecondary)
-                        .padding(.horizontal, -AppSpacing.screenPadding)
+                        .background(BaseViewColor.borderSecondary)
+                        .padding(.horizontal, -BaseViewLayout.screenPadding)
                     
                     // Tab Picker - aligned with Stores segmented style
-                    CapsuleSegmentedPicker(
+                    AppSegmentedPicker(
                         selection: $selectedTab,
                         options: VoucherTab.allCases.map { ($0, $0.rawValue) }
                     )
-                    .padding(.horizontal, AppSpacing.screenPadding)
+                    .padding(.horizontal, BaseViewLayout.screenPadding)
                 }
-                .padding(.top, AppLayout.spacing)
-                .background(Color.bgPrimary)
+                .padding(.top, BaseViewLayout.spacing)
+                .background(BaseViewColor.background)
                 
                 ScrollView {
-                    LazyVStack(spacing: AppLayout.spacing) {
+                    LazyVStack(spacing: BaseViewLayout.spacing) {
                         if viewModel.isLoading {
                             ReceiptLoadingLog()
                         } else if filteredVouchers.isEmpty {
-                            VStack(spacing: AppLayout.spacing) {
+                            VStack(spacing: BaseViewLayout.spacing) {
                                 Text(String(localized: "vouchers_empty"))
-                                    .font(AppFont.sectionHeader)
-                                    .foregroundStyle(Color.textPrimary)
+                                    .font(BaseViewFont.sectionHeader)
+                                    .foregroundStyle(BaseViewColor.textPrimary)
                                 
                                 Text(selectedTab == .available 
                                      ? "No vouchers available at this time." 
                                      : "You haven't used any vouchers yet.")
-                                    .font(AppFont.body)
-                                    .foregroundStyle(Color.textSecondary)
+                                    .font(BaseViewFont.body)
+                                    .foregroundStyle(BaseViewColor.textSecondary)
                                     .multilineTextAlignment(.center)
                             }
                             .frame(maxWidth: .infinity)
                             .padding(60)
                             .overlay(
                                 Capsule()
-                                    .strokeBorder(Color.border, style: StrokeStyle(lineWidth: 1, dash: AppLayout.dashedPattern))
+                                    .strokeBorder(BaseViewColor.border, style: StrokeStyle(lineWidth: 1, dash: BaseViewLayout.dashedPattern))
                             )
                         } else {
                             ForEach(filteredVouchers) { voucher in
@@ -108,8 +108,8 @@ struct VouchersView: View {
                             }
                         }
                     }
-                    .padding(.horizontal, AppLayout.spacing)
-                    .padding(.bottom, AppLayout.spacingXL)
+                    .padding(.horizontal, BaseViewLayout.spacing)
+                    .padding(.bottom, BaseViewLayout.spacingXL)
                 }
             }
         }

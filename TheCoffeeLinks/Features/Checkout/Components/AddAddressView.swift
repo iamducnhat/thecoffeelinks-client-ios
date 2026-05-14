@@ -18,24 +18,24 @@ struct AddAddressView: View {
     
     var body: some View {
         ZStack(alignment: .top) {
-            Color.bgPrimary.ignoresSafeArea()
+            BaseViewColor.background.ignoresSafeArea()
             
             VStack(spacing: 0) {
                 // Header (centered title, balanced actions)
-                VStack(spacing: AppLayout.marginCompact) {
-                    HStack(alignment: .center, spacing: AppLayout.spacing) {
+                VStack(spacing: BaseViewLayout.marginCompact) {
+                    HStack(alignment: .center, spacing: BaseViewLayout.spacing) {
                         Text("Add Address")
-                            .font(AppTypography.displayMedium)
-                            .foregroundStyle(Color.textPrimary)
+                            .font(BaseViewFont.displayMedium)
+                            .foregroundStyle(BaseViewColor.textPrimary)
                             .lineLimit(1)
                             .frame(maxWidth: .infinity, alignment: .leading)
                         
                         Button { dismiss() } label: {
                             Text(String(localized: "common_cancel"))
-                                .font(AppFont.body)
-                                .foregroundStyle(Color.textSecondary)
-                                .padding(.vertical, AppLayout.spacingMicro)
-                                .padding(.horizontal, AppLayout.spacingSmall)
+                                .font(BaseViewFont.body)
+                                .foregroundStyle(BaseViewColor.textSecondary)
+                                .padding(.vertical, BaseViewLayout.spacingMicro)
+                                .padding(.horizontal, BaseViewLayout.spacingSmall)
                         }
                         
                         Button {
@@ -46,41 +46,41 @@ struct AddAddressView: View {
                             }
                         } label: {
                             if deliveryViewModel.isLoading {
-                                ProgressView().tint(Color.accentPrimary)
-                                    .frame(height: AppLayout.touchTarget / 2)
+                                ProgressView().tint(BaseViewColor.accent)
+                                    .frame(height: BaseViewLayout.touchTarget / 2)
                             } else {
                                 Text(String(localized: "common_save"))
-                                    .font(AppFont.headline)
-                                    .foregroundStyle(deliveryViewModel.canSaveAddress ? Color.accentPrimary : Color.textSecondary)
-                                    .padding(.vertical, AppLayout.spacingMicro)
-                                    .padding(.horizontal, AppLayout.spacingSmall)
+                                    .font(BaseViewFont.headline)
+                                    .foregroundStyle(deliveryViewModel.canSaveAddress ? BaseViewColor.accent : BaseViewColor.textSecondary)
+                                    .padding(.vertical, BaseViewLayout.spacingMicro)
+                                    .padding(.horizontal, BaseViewLayout.spacingSmall)
                             }
                         }
                         .disabled(!deliveryViewModel.canSaveAddress || deliveryViewModel.isLoading)
                     }
-                    .frame(minHeight: AppLayout.touchTarget)
+                    .frame(minHeight: BaseViewLayout.touchTarget)
                     
                     Divider()
-                        .background(Color.borderSecondary)
-                        .padding(.horizontal, -AppLayout.spacing)
+                        .background(BaseViewColor.borderSecondary)
+                        .padding(.horizontal, -BaseViewLayout.spacing)
                 }
-                .padding(.horizontal, AppLayout.spacing)
-                .padding(.top, AppLayout.spacing)
-                .background(Color.bgPrimary)
+                .padding(.horizontal, BaseViewLayout.spacing)
+                .padding(.top, BaseViewLayout.spacing)
+                .background(BaseViewColor.background)
                 
                 ScrollView {
-                    VStack(spacing: AppLayout.spacingXL) {
+                    VStack(spacing: BaseViewLayout.spacingXL) {
                         
                         // Map / Location Section
-                        VStack(alignment: .leading, spacing: AppLayout.spacing) {
+                        VStack(alignment: .leading, spacing: BaseViewLayout.spacing) {
                             Text(String(localized: "common_location"))
-                                .font(AppFont.sectionHeader)
-                                .foregroundStyle(Color.textPrimary)
+                                .font(BaseViewFont.sectionHeader)
+                                .foregroundStyle(BaseViewColor.textPrimary)
                             
                             // Map Preview (Placeholder or Actual Map)
                             ZStack {
                                 Capsule()
-                                    .fill(Color.surfacePrimary)
+                                    .fill(BaseViewColor.surface)
                                     .frame(height: 200)
                                 
                                 if let location = deliveryViewModel.selectedLocation {
@@ -93,7 +93,7 @@ struct AddAddressView: View {
                                     
                                     Image("map_pin")
                                         .font(.system(size: 32))
-                                        .foregroundStyle(Color.accentPrimary)
+                                        .foregroundStyle(BaseViewColor.accent)
                                         .shadow(radius: 2)
                                 } else {
                                     Button {
@@ -103,9 +103,9 @@ struct AddAddressView: View {
                                             Image("map_pin")
                                                 .font(.system(size: 24))
                                             Text("Use Current Location")
-                                                .font(AppFont.headline)
+                                                .font(BaseViewFont.headline)
                                         }
-                                        .foregroundStyle(Color.accentPrimary)
+                                        .foregroundStyle(BaseViewColor.accent)
                                     }
                                 }
                             }
@@ -113,30 +113,30 @@ struct AddAddressView: View {
                              // Search Field
                              HStack {
                                  Image("magnifyingglass")
-                                     .foregroundStyle(Color.textSecondary)
+                                     .foregroundStyle(BaseViewColor.textSecondary)
                                  TextField("Search for address...", text: $deliveryViewModel.streetAddress)
                                      .textFieldStyle(PlainTextFieldStyle())
-                                     .font(AppFont.body)
-                                     .foregroundStyle(Color.textPrimary)
+                                     .font(BaseViewFont.body)
+                                     .foregroundStyle(BaseViewColor.textPrimary)
                                      .onSubmit {
                                          Task { await deliveryViewModel.searchAddress(deliveryViewModel.streetAddress) }
                                      }
                              }
                              .padding(12)
-                             .background(Color.bgPrimary)
+                             .background(BaseViewColor.background)
                              .overlay(
                                  Capsule()
-                                     .strokeBorder(Color.border, lineWidth: 1)
+                                     .strokeBorder(BaseViewColor.border, lineWidth: 1)
                              )
                         }
                         
                         // Details Form
-                        VStack(alignment: .leading, spacing: AppLayout.spacing) {
+                        VStack(alignment: .leading, spacing: BaseViewLayout.spacing) {
                             Text(String(localized: "order_detail_details"))
-                                .font(AppFont.sectionHeader)
-                                .foregroundStyle(Color.textPrimary)
+                                .font(BaseViewFont.sectionHeader)
+                                .foregroundStyle(BaseViewColor.textPrimary)
                             
-                            VStack(spacing: AppLayout.spacing) {
+                            VStack(spacing: BaseViewLayout.spacing) {
                                 CustomTextField(title: "Label (e.g., Home, Office)", text: $deliveryViewModel.addressLabel)
                                 CustomTextField(title: "Building / Floor / Unit (Optional)", text: $deliveryViewModel.buildingInfo)
                                 CustomTextField(title: "Note for driver (Optional)", text: $deliveryViewModel.district) // Using district field as general note for now based on VM or create new field if needed. VM models district separately. Let's stick to VM fields.
@@ -145,15 +145,15 @@ struct AddAddressView: View {
                         
                         if let error = deliveryViewModel.error {
                             Text(error.localizedDescription)
-                                .font(AppFont.uiCaption)
-                                .foregroundStyle(Color.stateError)
+                                .font(BaseViewFont.uiCaption)
+                                .foregroundStyle(BaseViewColor.semanticError)
                                 .padding()
                                 .frame(maxWidth: .infinity, alignment: .leading)
-                                .background(Color.stateError.opacity(0.1))
-                                .cornerRadius(AppLayout.cornerRadius)
+                                .background(BaseViewColor.semanticError.opacity(0.1))
+                                .cornerRadius(BaseViewLayout.cornerRadius)
                         }
                     }
-                    .padding(AppLayout.spacing)
+                    .padding(BaseViewLayout.spacing)
                 }
             }
         }
@@ -173,17 +173,17 @@ struct CustomTextField: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {
             Text(title)
-                .font(AppFont.uiCaption)
-                .foregroundStyle(Color.textSecondary)
+                .font(BaseViewFont.uiCaption)
+                .foregroundStyle(BaseViewColor.textSecondary)
             
             TextField("", text: $text)
-                .font(AppFont.body)
-                .foregroundStyle(Color.textPrimary)
+                .font(BaseViewFont.body)
+                .foregroundStyle(BaseViewColor.textPrimary)
                 .padding(12)
-                .background(Color.bgPrimary)
+                .background(BaseViewColor.background)
                 .overlay(
                     Capsule()
-                        .strokeBorder(Color.border, lineWidth: 1)
+                        .strokeBorder(BaseViewColor.border, lineWidth: 1)
                 )
         }
     }

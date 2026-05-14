@@ -2,7 +2,7 @@
 //  DeliveryModeView.swift
 //  thecoffeelinks-client-ios
 //
-//  Receipt-Editorial Design
+//  BaseView Design
 //  Aligned with canonical CheckoutView.swift
 //
 
@@ -18,33 +18,33 @@ struct DeliveryModeBanner: View {
     let onChangeAddress: () -> Void
     
     var body: some View {
-        VStack(spacing: AppLayout.spacing) {
+        VStack(spacing: BaseViewLayout.spacing) {
             Button(action: onChangeMode) {
-                HStack(spacing: AppLayout.spacing) {
+                HStack(spacing: BaseViewLayout.spacing) {
                     IconView(name: currentMode.iconName)
                         .font(.system(size: 20))
-                        .foregroundStyle(Color.accentPrimary)
+                        .foregroundStyle(BaseViewColor.accent)
                         .frame(width: 24)
                     
                     VStack(alignment: .leading, spacing: 2) {
                         Text(currentMode.displayName)
-                            .font(AppFont.headline)
-                            .foregroundStyle(Color.textPrimary)
+                            .font(BaseViewFont.headline)
+                            .foregroundStyle(BaseViewColor.textPrimary)
                         
                         if currentMode == .delivery {
                             if let address = currentAddress {
                                 Text(address.shortAddress)
-                                    .font(AppFont.uiCaption)
-                                    .foregroundStyle(Color.textSecondary)
+                                    .font(BaseViewFont.uiCaption)
+                                    .foregroundStyle(BaseViewColor.textSecondary)
                             } else {
                                 Text(String(localized: "delivery_select_address"))
-                                    .font(AppFont.uiCaption)
-                                    .foregroundStyle(Color.stateError)
+                                    .font(BaseViewFont.uiCaption)
+                                    .foregroundStyle(BaseViewColor.semanticError)
                             }
                         } else {
                             Text(String(localized: "delivery_pickup_option"))
-                                .font(AppFont.uiCaption)
-                                .foregroundStyle(Color.textSecondary)
+                                .font(BaseViewFont.uiCaption)
+                                .foregroundStyle(BaseViewColor.textSecondary)
                         }
                     }
                     
@@ -52,13 +52,13 @@ struct DeliveryModeBanner: View {
                     
                     Image("chevron.down")
                         .font(.system(size: 12))
-                        .foregroundStyle(Color.textSecondary)
+                        .foregroundStyle(BaseViewColor.textSecondary)
                 }
-                .padding(AppLayout.spacing)
-                .background(Color.surfacePrimary)
+                .padding(BaseViewLayout.spacing)
+                .background(BaseViewColor.surface)
                 .overlay(
                     Capsule()
-                        .strokeBorder(Color.border, lineWidth: 1)
+                        .strokeBorder(BaseViewColor.border, lineWidth: 1)
                 )
                 .clipShape(Capsule())
             }
@@ -73,17 +73,17 @@ struct DeliveryModeBanner: View {
                     HStack(spacing: 8) {
                         ProgressView()
                             .controlSize(.small)
-                            .tint(Color.accentPrimary)
+                            .tint(BaseViewColor.accent)
                         Text(String(localized: "delivery_checking_status"))
-                            .font(AppFont.uiMicro)
-                            .foregroundStyle(Color.textSecondary)
+                            .font(BaseViewFont.uiMicro)
+                            .foregroundStyle(BaseViewColor.textSecondary)
                     }
                     .padding(8)
                     .frame(maxWidth: .infinity, alignment: .leading)
-                    .background(Color.bgPrimary)
+                    .background(BaseViewColor.background)
                     .overlay(
                         Capsule()
-                            .strokeBorder(Color.border, style: StrokeStyle(lineWidth: 1, dash: AppLayout.dashedPattern))
+                            .strokeBorder(BaseViewColor.border, style: StrokeStyle(lineWidth: 1, dash: BaseViewLayout.dashedPattern))
                     )
                 } else if let availability = deliveryAvailability, availability.available {
                     DeliveryInfoCard(availability: availability)
@@ -99,19 +99,19 @@ struct DeliveryUnavailableWarning: View {
     let reason: DeliveryAvailability.UnavailableReason?
     
     var body: some View {
-        HStack(spacing: AppLayout.spacing) {
+        HStack(spacing: BaseViewLayout.spacing) {
             Image("triangle_alert")
-                .foregroundStyle(Color.stateError)
+                .foregroundStyle(BaseViewColor.semanticError)
             Text(reason?.message ?? "Delivery unavailable")
-                .font(AppFont.uiCaption)
-                .foregroundStyle(Color.textPrimary)
+                .font(BaseViewFont.uiCaption)
+                .foregroundStyle(BaseViewColor.textPrimary)
             Spacer()
         }
-        .padding(AppLayout.spacing)
-        .background(Color.stateError.opacity(0.1))
+        .padding(BaseViewLayout.spacing)
+        .background(BaseViewColor.semanticError.opacity(0.1))
         .overlay(
             Capsule()
-                .strokeBorder(Color.stateError.opacity(0.3), lineWidth: 1)
+                .strokeBorder(BaseViewColor.semanticError.opacity(0.3), lineWidth: 1)
         )
         .clipShape(Capsule())
     }
@@ -127,48 +127,48 @@ struct DeliveryInfoCard: View {
             HStack {
                 HStack(spacing: 4) {
                     Image("bicycle")
-                        .foregroundStyle(Color.stateSuccess)
+                        .foregroundStyle(BaseViewColor.semanticSuccess)
                     Text(String(localized: "delivery_available_label"))
-                        .font(AppFont.uiCaption)
-                        .foregroundStyle(Color.stateSuccess)
+                        .font(BaseViewFont.uiCaption)
+                        .foregroundStyle(BaseViewColor.semanticSuccess)
                 }
                 Spacer()
                 if let eta = availability.eta {
                     Text(eta.displayRange)
-                        .font(AppFont.monoBody)
-                        .foregroundStyle(Color.textPrimary)
+                        .font(BaseViewFont.monoBody)
+                        .foregroundStyle(BaseViewColor.textPrimary)
                 }
             }
             
             if let fee = availability.fee {
                 HStack {
                     Text(String(localized: "delivery_fee_label"))
-                        .font(AppFont.uiMicro)
-                        .foregroundStyle(Color.textSecondary)
+                        .font(BaseViewFont.uiMicro)
+                        .foregroundStyle(BaseViewColor.textSecondary)
                     Spacer()
                     Text(fee.displayAmount)
-                        .font(AppFont.uiMicro)
-                        .foregroundStyle(Color.textPrimary)
+                        .font(BaseViewFont.uiMicro)
+                        .foregroundStyle(BaseViewColor.textPrimary)
                 }
             }
             
             if let minOrder = availability.minOrderAmount {
                 HStack {
                     Text(String(localized: "delivery_min_order_label"))
-                        .font(AppFont.uiMicro)
-                        .foregroundStyle(Color.textSecondary)
+                        .font(BaseViewFont.uiMicro)
+                        .foregroundStyle(BaseViewColor.textSecondary)
                     Spacer()
                     Text(minOrder.formattedVND)
-                        .font(AppFont.uiMicro)
-                        .foregroundStyle(Color.textPrimary)
+                        .font(BaseViewFont.uiMicro)
+                        .foregroundStyle(BaseViewColor.textPrimary)
                 }
             }
         }
-        .padding(AppLayout.spacing)
-        .background(Color.bgPrimary)
+        .padding(BaseViewLayout.spacing)
+        .background(BaseViewColor.background)
         .overlay(
             Capsule()
-                .strokeBorder(Color.stateSuccess, lineWidth: 1)
+                .strokeBorder(BaseViewColor.semanticSuccess, lineWidth: 1)
         )
         .clipShape(Capsule())
     }
@@ -183,42 +183,42 @@ struct OrderingModeSheet: View {
     
     var body: some View {
         ZStack(alignment: .top) {
-            Color.bgPrimary.ignoresSafeArea()
+            BaseViewColor.background.ignoresSafeArea()
             
             VStack(spacing: 0) {
                 // Header
-                VStack(spacing: AppSpacing.lg) {
+                VStack(spacing: BaseViewLayout.lg) {
                     HStack {
                         Button { dismiss() } label: {
                             Text(String(localized: "common_cancel"))
-                                .font(AppTypography.bodyMedium)
-                                .foregroundStyle(Color.textSecondary)
+                                .font(BaseViewFont.bodyMedium)
+                                .foregroundStyle(BaseViewColor.textSecondary)
                         }
                         
                         Text(String(localized: "delivery_order_type_label"))
-                            .font(AppTypography.displayMedium)
-                            .foregroundStyle(Color.textPrimary)
+                            .font(BaseViewFont.displayMedium)
+                            .foregroundStyle(BaseViewColor.textPrimary)
                             .fixedSize()
                             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
                         
                         Color.clear.frame(width: 50)
                     }
-                    .padding(.horizontal, AppSpacing.screenPadding)
+                    .padding(.horizontal, BaseViewLayout.screenPadding)
                     
                     Divider()
-                        .background(Color.borderSecondary)
-                        .padding(.horizontal, -AppSpacing.screenPadding)
+                        .background(BaseViewColor.borderSecondary)
+                        .padding(.horizontal, -BaseViewLayout.screenPadding)
                 }
-                .background(Color.bgPrimary)
+                .background(BaseViewColor.background)
                 
                 ScrollView {
-                    VStack(spacing: AppLayout.spacing) {
+                    VStack(spacing: BaseViewLayout.spacing) {
                         Text(String(localized: "delivery_mode_prompt"))
-                            .font(AppFont.sectionHeader)
-                            .foregroundStyle(Color.textPrimary)
-                            .padding(.top, AppLayout.spacing)
+                            .font(BaseViewFont.sectionHeader)
+                            .foregroundStyle(BaseViewColor.textPrimary)
+                            .padding(.top, BaseViewLayout.spacing)
                         
-                        VStack(spacing: AppLayout.spacing) {
+                        VStack(spacing: BaseViewLayout.spacing) {
                             ForEach(OrderingMode.allCases, id: \.self) { mode in
                                 ModeOptionCard(
                                     mode: mode,
@@ -231,7 +231,7 @@ struct OrderingModeSheet: View {
                             }
                         }
                     }
-                    .padding(AppLayout.spacing)
+                    .padding(BaseViewLayout.spacing)
                 }
             }
         }
@@ -247,19 +247,19 @@ struct ModeOptionCard: View {
     
     var body: some View {
         Button(action: onTap) {
-            HStack(spacing: AppLayout.spacing) {
+            HStack(spacing: BaseViewLayout.spacing) {
                 IconView(name: mode.iconName)
                     .font(.system(size: 24))
-                    .foregroundStyle(isSelected ? Color.accentPrimary : Color.textSecondary)
+                    .foregroundStyle(isSelected ? BaseViewColor.accent : BaseViewColor.textSecondary)
                     .frame(width: 40)
                 
                 VStack(alignment: .leading, spacing: 4) {
                     Text(mode.displayName)
-                        .font(AppFont.headline)
-                        .foregroundStyle(Color.textPrimary)
+                        .font(BaseViewFont.headline)
+                        .foregroundStyle(BaseViewColor.textPrimary)
                     Text(modeDescription)
-                        .font(AppFont.uiCaption)
-                        .foregroundStyle(Color.textSecondary)
+                        .font(BaseViewFont.uiCaption)
+                        .foregroundStyle(BaseViewColor.textSecondary)
                 }
                 
                 Spacer()
@@ -267,18 +267,18 @@ struct ModeOptionCard: View {
                 if isSelected {
                     Image("circle_check")
                         .font(.system(size: 20))
-                        .foregroundStyle(Color.accentPrimary)
+                        .foregroundStyle(BaseViewColor.accent)
                 } else {
                     Image("circle")
                         .font(.system(size: 20))
-                        .foregroundStyle(Color.border)
+                        .foregroundStyle(BaseViewColor.border)
                 }
             }
-            .padding(AppLayout.spacing)
-            .background(isSelected ? Color.surfacePrimary : Color.bgPrimary)
+            .padding(BaseViewLayout.spacing)
+            .background(isSelected ? BaseViewColor.surface : BaseViewColor.background)
             .overlay(
                 Capsule()
-                    .strokeBorder(isSelected ? Color.accentPrimary : Color.border, lineWidth: 1)
+                    .strokeBorder(isSelected ? BaseViewColor.accent : BaseViewColor.border, lineWidth: 1)
             )
             .clipShape(Capsule())
         }

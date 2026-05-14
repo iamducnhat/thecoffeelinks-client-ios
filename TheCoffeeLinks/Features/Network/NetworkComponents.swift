@@ -1,7 +1,7 @@
 import SwiftUI
 
-// MARK: - Editorial Community Board
-struct EditorialCommunityBoardView: View {
+// MARK: - BaseView Community Board
+struct BaseViewCommunityBoardView: View {
     @State private var selectedFilter: String = "ALL"
     // Mock posts
     let posts = [
@@ -49,12 +49,12 @@ struct TerminalFilterButton: View {
         Button(action: action) {
             Text(title)
                 .font(.system(size: 10, weight: .bold, design: .monospaced))
-                .foregroundColor(isSelected ? .black : Editorial.Colors.textInk)
+                .foregroundColor(isSelected ? .black : BaseViewColor.textPrimary)
                 .padding(.horizontal, 12)
                 .padding(.vertical, 8)
-                .background(isSelected ? Editorial.Colors.primaryEspresso : Color.black)
+                .background(isSelected ? BaseViewColor.accent : Color.black)
                 .overlay(
-                RoundedRectangle(cornerRadius: AppRadius.medium, style: .continuous).strokeBorder(Editorial.Colors.textInk, lineWidth: 1))
+                RoundedRectangle(cornerRadius: BaseViewLayout.radiusMedium, style: .continuous).strokeBorder(BaseViewColor.textPrimary, lineWidth: 1))
         }
     }
 }
@@ -68,7 +68,7 @@ struct Post: Identifiable {
         case "LEARNING": return .orange
         case "COLLAB": return .purple
         case "EVENT": return .green
-        default: return Editorial.Colors.primaryEspresso
+        default: return BaseViewColor.accent
         }
     }
 }
@@ -87,49 +87,49 @@ struct TerminalPostCard: View {
                  
                  Text("TS :: \(post.time.uppercased())")
                      .font(.system(size: 10, design: .monospaced))
-                     .foregroundStyle(Editorial.Colors.textMuted)
+                     .foregroundStyle(BaseViewColor.textSecondary)
              }
             
             Text(post.content.uppercased())
                 .font(.system(size: 16, design: .monospaced))
-                .foregroundStyle(Editorial.Colors.textInk)
+                .foregroundStyle(BaseViewColor.textPrimary)
                 .lineSpacing(4)
             
             Rectangle()
-                .fill(Editorial.Colors.separator)
+                .fill(BaseViewColor.border)
                 .frame(height: 1)
             
             HStack(spacing: 12) {
                 Rectangle()
-                    .fill(Editorial.Colors.surfaceTerminal)
+                    .fill(BaseViewColor.surface)
                     .frame(width: 24, height: 24)
                     .overlay(
                         Text(post.author.prefix(1).uppercased())
                             .font(.system(size: 10, weight: .bold, design: .monospaced))
-                            .foregroundStyle(Editorial.Colors.primaryEspresso)
+                            .foregroundStyle(BaseViewColor.accent)
                     )
                     .overlay(
-                RoundedRectangle(cornerRadius: AppRadius.medium, style: .continuous).strokeBorder(Editorial.Colors.separator, lineWidth: 1))
+                RoundedRectangle(cornerRadius: BaseViewLayout.radiusMedium, style: .continuous).strokeBorder(BaseViewColor.border, lineWidth: 1))
                 
                 Text(post.author.uppercased())
                     .font(.system(size: 10, weight: .medium, design: .monospaced))
-                    .foregroundStyle(Editorial.Colors.textInk)
+                    .foregroundStyle(BaseViewColor.textPrimary)
                 
                 Spacer()
                 
                 Button("[ REPLY ]") {}
                     .font(.system(size: 10, weight: .bold, design: .monospaced))
-                    .foregroundStyle(Editorial.Colors.primaryEspresso)
+                    .foregroundStyle(BaseViewColor.accent)
             }
         }
         .padding(20)
         .background(Color.black)
         .overlay(
-                RoundedRectangle(cornerRadius: AppRadius.medium, style: .continuous).strokeBorder(Editorial.Colors.separator, lineWidth: 1))
+                RoundedRectangle(cornerRadius: BaseViewLayout.radiusMedium, style: .continuous).strokeBorder(BaseViewColor.border, lineWidth: 1))
     }
 }
 
 
 // MARK: - Legacy Aliases
-typealias CommunityBoardView = EditorialCommunityBoardView
+typealias CommunityBoardView = BaseViewCommunityBoardView
 typealias PostCard = TerminalPostCard

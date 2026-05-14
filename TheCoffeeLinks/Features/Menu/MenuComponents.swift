@@ -311,7 +311,7 @@ struct ProductDetailSheet: View {
 
                     Text((unitPrice * Double(quantity)).formattedVND)
                         .font(BaseViewFont.sectionTitle)
-                        .foregroundStyle(Color.textPrimary)
+                        .foregroundStyle(BaseViewColor.textPrimary)
 
                     Text("Số lượng")
                         .font(BaseViewFont.labelStrong)
@@ -337,7 +337,7 @@ struct ProductDetailSheet: View {
 
                     Text((unitPrice * Double(quantity)).formattedVND)
                         .font(BaseViewFont.sectionTitle)
-                        .foregroundStyle(Color.textPrimary)
+                        .foregroundStyle(BaseViewColor.textPrimary)
                         .padding(.top, SVG.ctaPriceTopInset - SVG.ctaTopInset)
 
                     quantityPicker
@@ -360,16 +360,29 @@ struct ProductDetailSheet: View {
         .background(sheetBackground)
         .overlay(alignment: .top) {
             Rectangle()
-                .fill(Color.textPrimary)
+                .fill(BaseViewColor.textPrimary)
                 .frame(height: 1)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
     }
 
     private var ctaButton: some View {
-        BaseCTAButton(title: "THÊM VÀO GIỎ HÀNG", fillsWidth: true) {
+        Button {
             addOrUpdateCartItem()
+        } label: {
+            Text("THÊM VÀO GIỎ HÀNG")
+                .font(BaseViewFont.cta)
+                .tracking(2)
+                .foregroundStyle(BaseViewColor.accentForeground)
+                .frame(maxWidth: .infinity)
+                .padding(.horizontal, ctaButtonHorizontalPadding)
+                .padding(.vertical, ctaButtonVerticalPadding)
+                .background(
+                    Rectangle()
+                        .fill(BaseViewColor.accent)
+                )
         }
+        .buttonStyle(.plain)
     }
 
     private var quantityPicker: some View {
@@ -391,7 +404,7 @@ struct ProductDetailSheet: View {
                     .hidden()
                 Text("\(quantity)")
                     .font(BaseViewFont.body)
-                    .foregroundStyle(Color.textPrimary)
+                    .foregroundStyle(BaseViewColor.textPrimary)
             }
             .frame(minWidth: SVG.qtyValueWidth)
             .frame(height: SVG.qtyControlHeight)

@@ -2,7 +2,7 @@
 //  CartView.swift
 //  thecoffeelinks-client-ios
 //
-//  Receipt-Editorial Design
+//  BaseView Design
 //  Aligned with canonical CheckoutView.swift
 //
 
@@ -18,39 +18,39 @@ struct CartView: View {
     
     var body: some View {
         ZStack(alignment: .top) {
-            Color.bgPrimary.ignoresSafeArea()
+            BaseViewColor.background.ignoresSafeArea()
             
             if cartViewModel.isEmpty {
                 EmptyCartView(onBrowse: { dismiss() })
             } else {
                 // Fixed Navigation Header
-                HStack(alignment: .center, spacing: AppLayout.spacing) {
+                HStack(alignment: .center, spacing: BaseViewLayout.spacing) {
                     Button { dismiss() } label: {
                         Image(systemName: "xmark")
                             .font(.system(size: 17, weight: .medium))
-                            .foregroundStyle(Color.textPrimary)
+                            .foregroundStyle(BaseViewColor.textPrimary)
                             .padding(12)
                             .background {
                                 Circle()
-                                    .fill(Color.bgPrimary)
+                                    .fill(BaseViewColor.background)
                             }
                             .overlay {
                                 Circle()
-                                    .strokeBorder(Color.textPrimary, lineWidth: 1)
+                                    .strokeBorder(BaseViewColor.textPrimary, lineWidth: 1)
                                     .opacity(min(88.8, max(scrollOffset, 0.0)) / 99.9)
                             }
                     }
 
                     Text("cart_header_count \(cartViewModel.itemCount)")
-                        .font(AppTypography.displayMedium)
+                        .font(BaseViewFont.displayMedium)
                         .lineLimit(1)
-                        .foregroundStyle(Color.textPrimary)
+                        .foregroundStyle(BaseViewColor.textPrimary)
                         .fixedSize()
                         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
                         .hidden()
                 }
-                .frame(minHeight: AppLayout.touchTarget)
-                .padding(.horizontal, AppLayout.spacing)
+                .frame(minHeight: BaseViewLayout.touchTarget)
+                .padding(.horizontal, BaseViewLayout.spacing)
                 .padding(.top, 8)
                 .zIndex(1)
                 .fixedSize(horizontal: false, vertical: true)
@@ -58,28 +58,28 @@ struct CartView: View {
                 VStack(spacing: 0) {
                     ScrollView(.vertical) {
                         // Navigation Header (Scrollable)
-                        VStack(spacing: AppLayout.marginCompact) {
-                            HStack(alignment: .center, spacing: AppLayout.spacing) {
+                        VStack(spacing: BaseViewLayout.marginCompact) {
+                            HStack(alignment: .center, spacing: BaseViewLayout.spacing) {
                                 Image(systemName: "xmark")
                                     .font(.system(size: 17, weight: .medium))
-                                    .foregroundStyle(Color.textPrimary)
+                                    .foregroundStyle(BaseViewColor.textPrimary)
                                     .padding(12)
                                     .hidden()
                                 
                                 Text("cart_header_count \(cartViewModel.itemCount)")
-                                    .font(AppTypography.displayMedium)
+                                    .font(BaseViewFont.displayMedium)
                                     .lineLimit(1)
-                                    .foregroundColor(Color.textPrimary)
+                                    .foregroundColor(BaseViewColor.textPrimary)
                                     .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
                             }
                             
                             Divider()
-                                .background(Color.borderSecondary)
-                                .padding(.horizontal, -AppLayout.spacing)
+                                .background(BaseViewColor.borderSecondary)
+                                .padding(.horizontal, -BaseViewLayout.spacing)
                         }
-                        .padding(.horizontal, AppLayout.spacing)
-                        .padding(.top, AppLayout.spacingCompact)
-                        .background(Color.bgPrimary)
+                        .padding(.horizontal, BaseViewLayout.spacing)
+                        .padding(.top, BaseViewLayout.spacingCompact)
+                        .background(BaseViewColor.background)
                         .background(GeometryReader {
                             Color.clear.preference(key: ViewOffsetKey.self, value: -$0.frame(in: .named("scroll")).origin.y)
                         })
@@ -87,7 +87,7 @@ struct CartView: View {
                             self.scrollOffset = $0
                         }
                         
-                        LazyVStack(spacing: AppLayout.spacing) {
+                        LazyVStack(spacing: BaseViewLayout.spacing) {
                             // MARK: Cart Items
                             ForEach(cartViewModel.cart.items) { item in
                                 CartItemRow(
@@ -119,104 +119,104 @@ struct CartView: View {
                             Divider().hidden()
                             
                             // MARK: Order Summary
-                            VStack(alignment: .leading, spacing: AppLayout.spacing) {
+                            VStack(alignment: .leading, spacing: BaseViewLayout.spacing) {
                                 Text("summary_section_title")
                                     .textCase(.uppercase)
-                                    .font(AppFont.sectionHeader)
-                                    .foregroundStyle(Color.textPrimary)
+                                    .font(BaseViewFont.sectionHeader)
+                                    .foregroundStyle(BaseViewColor.textPrimary)
                                 
                                 VStack(spacing: 8) {
                                     HStack {
                                         Text("subtotal_label")
-                                            .font(AppFont.body)
-                                            .foregroundStyle(Color.textSecondary)
+                                            .font(BaseViewFont.body)
+                                            .foregroundStyle(BaseViewColor.textSecondary)
                                         Spacer()
                                         Text(cartViewModel.subtotal.formattedVND)
-                                            .font(AppFont.monoBody)
-                                            .foregroundStyle(Color.textPrimary)
+                                            .font(BaseViewFont.monoBody)
+                                            .foregroundStyle(BaseViewColor.textPrimary)
                                     }
                                     
                                     if cartViewModel.deliveryFee > 0 {
                                         HStack {
                                             Text("delivery_fee_label")
-                                                .font(AppFont.body)
-                                                .foregroundStyle(Color.textSecondary)
+                                                .font(BaseViewFont.body)
+                                                .foregroundStyle(BaseViewColor.textSecondary)
                                             Spacer()
                                             Text(cartViewModel.deliveryFee.formattedVND)
-                                                .font(AppFont.monoBody)
-                                                .foregroundStyle(Color.textPrimary)
+                                                .font(BaseViewFont.monoBody)
+                                                .foregroundStyle(BaseViewColor.textPrimary)
                                         }
                                     }
                                     
                                     if cartViewModel.summary.discount > 0 {
                                         HStack {
                                             Text("discount_label")
-                                                .font(AppFont.body)
-                                                .foregroundStyle(Color.stateSuccess)
+                                                .font(BaseViewFont.body)
+                                                .foregroundStyle(BaseViewColor.semanticSuccess)
                                             Spacer()
                                             Text("-\(cartViewModel.summary.discount.formattedVND)")
-                                                .font(AppFont.monoBody)
-                                                .foregroundStyle(Color.stateSuccess)
+                                                .font(BaseViewFont.monoBody)
+                                                .foregroundStyle(BaseViewColor.semanticSuccess)
                                         }
                                     }
                                 }
-                                .padding(AppLayout.spacing)
-                                .background(Color.surfacePrimary)
+                                .padding(BaseViewLayout.spacing)
+                                .background(BaseViewColor.surface)
                                 .overlay(
                                     Capsule()
-                                        .strokeBorder(Color.border, lineWidth: 1)
+                                        .strokeBorder(BaseViewColor.border, lineWidth: 1)
                                 )
                             }
                             .frame(maxWidth: .infinity, alignment: .leading)
                         }
                         .frame(maxWidth: .infinity, alignment: .leading)
-                        .padding(AppLayout.spacing)
+                        .padding(BaseViewLayout.spacing)
                         .padding(.bottom, 72)
                     }
                     .coordinateSpace(name: "scroll")
                     .scrollIndicators(.hidden)
                     
                     // MARK: Total & Checkout
-                    VStack(alignment: .leading, spacing: AppLayout.spacing) {
+                    VStack(alignment: .leading, spacing: BaseViewLayout.spacing) {
                         HStack(spacing: 0) {
                             Text("total_label")
-                                .font(AppFont.totalLabel)
+                                .font(BaseViewFont.totalLabel)
                                 .lineLimit(1)
-                                .foregroundStyle(Color.textPrimary)
+                                .foregroundStyle(BaseViewColor.textPrimary)
                             
-                            Spacer(minLength: AppLayout.spacing)
+                            Spacer(minLength: BaseViewLayout.spacing)
                             
                             Text(cartViewModel.total.formattedVND)
-                                .font(AppFont.monoTitle)
-                                .foregroundStyle(Color.textPrimary)
+                                .font(BaseViewFont.monoTitle)
+                                .foregroundStyle(BaseViewColor.textPrimary)
                         }
                         
                         Button {
                             showingCheckout = true
                         } label: {
                             Text("checkout_button")
-                                .font(AppFont.monoCTA)
-                                .foregroundStyle(Color.bgPrimary)
+                                .font(BaseViewFont.monoCTA)
+                                .foregroundStyle(BaseViewColor.background)
                                 .padding(.vertical, 12)
                                 .frame(maxWidth: .infinity, alignment: .center)
-                                .background(Color.accentPrimary)
+                                .background(BaseViewColor.accent)
                                 .clipShape(Capsule())
                         }
                         .disabled(!cartViewModel.summary.meetsMinimum)
                         .opacity(cartViewModel.summary.meetsMinimum ? 1.0 : 0.666)
                     }
                     .padding(.vertical, 24)
-                    .frame(minHeight: AppLayout.touchTarget)
+                    .frame(minHeight: BaseViewLayout.touchTarget)
                     .frame(maxWidth: .infinity, alignment: .leading)
-                    .padding(.horizontal, AppLayout.spacing)
+                    .padding(.horizontal, BaseViewLayout.spacing)
                     .background(ignoresSafeAreaEdges: .all)
                     .background {
-                        WaveRect(stepWidth: AppLayout.waveStepWidth, waveEdge: .top)
-                            .fill(Color.bgPrimary)
+                        WaveRect(stepWidth: BaseViewLayout.waveStepWidth, waveEdge: .top)
+                            .fill(BaseViewColor.background)
                             .offset(x: 0, y: -9)
                     }
                     .overlay(alignment: .top) {
-                        WaveSeparator(stepWidth: AppLayout.waveStepWidth)
+                        WaveSeparator(stepWidth: BaseViewLayout.waveStepWidth)
     .stroke(Color.secondary, lineWidth: 1)
                             .frame(height: 1)
                             .offset(x: 0, y: -9)
@@ -255,20 +255,20 @@ struct CartItemRow: View {
     }
     
     var body: some View {
-        HStack(spacing: AppLayout.spacingMedium) {
+        HStack(spacing: BaseViewLayout.spacingMedium) {
             AppRemoteImage(
                 url: URL(string: item.product.displayImageUrl ?? ""),
-                width: AppLayout.productImageSize,
-                height: AppLayout.productImageSize,
-                backgroundColor: Color.surfacePrimary,
+                width: BaseViewLayout.productImageSize,
+                height: BaseViewLayout.productImageSize,
+                backgroundColor: BaseViewColor.surface,
                 showsProgress: true
             )
             
             VStack(alignment: .leading, spacing: 0) {
                 Text(item.product.name)
-                    .font(AppFont.headline)
+                    .font(BaseViewFont.headline)
                     .lineLimit(3)
-                    .foregroundStyle(isAvailable ? Color.textPrimary : Color.textSecondary)
+                    .foregroundStyle(isAvailable ? BaseViewColor.textPrimary : BaseViewColor.textSecondary)
                 
                 // Unavailable badge
                 if !isAvailable {
@@ -276,7 +276,7 @@ struct CartItemRow: View {
                         Image(systemName: "exclamationmark.triangle.fill")
                             .font(.caption2)
                         Text("Not available at this store")
-                            .font(AppFont.uiMicro)
+                            .font(BaseViewFont.uiMicro)
                     }
                     .foregroundStyle(Color.orange)
                     .padding(.top, 2)
@@ -284,33 +284,33 @@ struct CartItemRow: View {
                 
                 if !item.displayCustomization.isEmpty {
                     Text(item.displayCustomization)
-                        .font(AppFont.uiCaption)
-                        .foregroundStyle(Color.textSecondary)
+                        .font(BaseViewFont.uiCaption)
+                        .foregroundStyle(BaseViewColor.textSecondary)
                         .lineLimit(2)
                 }
                 
                 if let notes = item.customization.notes, !notes.isEmpty {
                     Text("note_prefix \(notes)")
-                        .font(AppFont.uiMicro)
+                        .font(BaseViewFont.uiMicro)
                         .italic()
-                        .foregroundStyle(Color.textSecondary)
+                        .foregroundStyle(BaseViewColor.textSecondary)
                 }
                 
                 Button { onEdit() } label: {
                     Text("edit_button")
-                        .font(AppFont.uiMicro)
-                        .foregroundStyle(Color.accentPrimary)
+                        .font(BaseViewFont.uiMicro)
+                        .foregroundStyle(BaseViewColor.accent)
                 }
                 .padding(.top, 4)
                 
-                Spacer(minLength: AppLayout.spacing)
+                Spacer(minLength: BaseViewLayout.spacing)
                 
                 HStack(spacing: 0) {
                     Text(item.totalPrice.formattedVND)
-                        .font(AppFont.monoBody)
+                        .font(BaseViewFont.monoBody)
                         .lineLimit(1)
                         .minimumScaleFactor(0.5)
-                        .foregroundStyle(Color.textSecondary)
+                        .foregroundStyle(BaseViewColor.textSecondary)
                     
                     Spacer(minLength: 0)
                     
@@ -342,16 +342,16 @@ struct EmptyCartView: View {
     let onBrowse: () -> Void
     
     var body: some View {
-        VStack(spacing: AppLayout.spacingXL) {
+        VStack(spacing: BaseViewLayout.spacingXL) {
             Spacer()
             
             Text("cart_empty_title")
-                .font(AppFont.displayTitle)
-                .foregroundColor(Color.textPrimary)
+                .font(BaseViewFont.displayTitle)
+                .foregroundColor(BaseViewColor.textPrimary)
             
             Text("cart_empty_message")
-                .font(AppFont.body)
-                .foregroundColor(Color.textSecondary)
+                .font(BaseViewFont.body)
+                .foregroundColor(BaseViewColor.textSecondary)
             
             AppButton("browse_menu_button", style: .primary, fillsWidth: false, action: onBrowse)
             
@@ -368,21 +368,21 @@ struct VoucherSection: View {
     @State private var code = ""
     
     var body: some View {
-        VStack(alignment: .leading, spacing: AppLayout.spacing) {
+        VStack(alignment: .leading, spacing: BaseViewLayout.spacing) {
             Text("voucher_section_title")
                 .textCase(.uppercase)
-                .font(AppFont.sectionHeader)
-                .foregroundStyle(Color.textPrimary)
+                .font(BaseViewFont.sectionHeader)
+                .foregroundStyle(BaseViewColor.textPrimary)
             
-            HStack(spacing: AppLayout.spacingMedium) {
+            HStack(spacing: BaseViewLayout.spacingMedium) {
                 TextField("promotion_code_placeholder", text: $code)
                     .textFieldStyle(PlainTextFieldStyle())
-                    .font(AppFont.monoBody)
+                    .font(BaseViewFont.monoBody)
                     .padding(.horizontal, 8)
                     .padding(.vertical, 6)
                     .overlay {
                         Capsule()
-                            .strokeBorder(Color.borderSecondary, style: StrokeStyle(lineWidth: 1, dash: AppLayout.dashedPattern))
+                            .strokeBorder(BaseViewColor.borderSecondary, style: StrokeStyle(lineWidth: 1, dash: BaseViewLayout.dashedPattern))
                     }
                 
                 AppButton("apply_button", style: .primary, fillsWidth: false) {
@@ -416,22 +416,22 @@ struct EditCartItemSheet: View {
     
     var body: some View {
         ZStack(alignment: .top) {
-            Color.bgPrimary.ignoresSafeArea()
+            BaseViewColor.background.ignoresSafeArea()
             
             VStack(spacing: 0) {
                 // Header
                 HStack {
                     Button { dismiss() } label: {
                         Text("cancel_button")
-                            .font(AppFont.body)
-                            .foregroundStyle(Color.textSecondary)
+                            .font(BaseViewFont.body)
+                            .foregroundStyle(BaseViewColor.textSecondary)
                     }
                     
                     Spacer()
                     
                     Text("item_update_title")
-                        .font(AppFont.sectionHeader)
-                        .foregroundStyle(Color.textPrimary)
+                        .font(BaseViewFont.sectionHeader)
+                        .foregroundStyle(BaseViewColor.textPrimary)
                     
                     Spacer()
                     
@@ -443,41 +443,41 @@ struct EditCartItemSheet: View {
                         dismiss()
                     } label: {
                         Text("save_button")
-                            .font(AppFont.body)
-                            .foregroundStyle(Color.accentPrimary)
+                            .font(BaseViewFont.body)
+                            .foregroundStyle(BaseViewColor.accent)
                     }
                 }
-                .padding(AppLayout.spacing)
+                .padding(BaseViewLayout.spacing)
                 
                 Color.secondary.frame(height: 1)
                 
                 ScrollView {
-                    VStack(spacing: AppLayout.spacingXL) {
+                    VStack(spacing: BaseViewLayout.spacingXL) {
                         // Product Header
-                        HStack(spacing: AppLayout.spacing) {
+                        HStack(spacing: BaseViewLayout.spacing) {
                         // CHANGED: Using CachedAsyncImage
                             AppRemoteImage(
                                 url: URL(string: item.product.displayImageUrl ?? ""),
                                 width: 60,
                                 height: 60,
-                                backgroundColor: Color.surfacePrimary,
+                                backgroundColor: BaseViewColor.surface,
                                 showsProgress: true,
                                 placeholderIcon: nil
                             )
                             
                             Text(item.product.name)
-                                .font(AppFont.sectionHeader)
-                                .foregroundColor(Color.textPrimary)
+                                .font(BaseViewFont.sectionHeader)
+                                .foregroundColor(BaseViewColor.textPrimary)
                             
                             Spacer()
                         }
                         
                         // Size Option
-                        VStack(alignment: .leading, spacing: AppLayout.spacingMedium) {
+                        VStack(alignment: .leading, spacing: BaseViewLayout.spacingMedium) {
                             Text("size_section_title")
                                 .textCase(.uppercase)
-                                .font(AppFont.sectionHeader)
-                                .foregroundStyle(Color.textPrimary)
+                                .font(BaseViewFont.sectionHeader)
+                                .foregroundStyle(BaseViewColor.textPrimary)
                             
                             HStack(spacing: 0) {
                                 ForEach(item.product.sizeOptions.filter { $0.isEnabled }, id: \.size) { option in
@@ -485,40 +485,40 @@ struct EditCartItemSheet: View {
                                         selectedSize = option.size
                                     } label: {
                                         Text(option.size.rawValue)
-                                            .font(AppFont.monoBody)
+                                            .font(BaseViewFont.monoBody)
                                             .frame(maxWidth: .infinity)
                                             .padding(.vertical, 12)
-                                            .background(selectedSize == option.size ? Color.accentPrimary : Color.bgPrimary)
-                                            .foregroundColor(selectedSize == option.size ? .white : Color.textPrimary)
+                                            .background(selectedSize == option.size ? BaseViewColor.accent : BaseViewColor.background)
+                                            .foregroundColor(selectedSize == option.size ? .white : BaseViewColor.textPrimary)
                                     }
                                 }
                             }
                             .clipShape(Capsule())
                             .overlay(
                                 Capsule()
-                                    .strokeBorder(Color.borderPrimary, lineWidth: 1)
+                                    .strokeBorder(BaseViewColor.border, lineWidth: 1)
                             )
                         }
                         
                         // Notes
-                        VStack(alignment: .leading, spacing: AppLayout.spacingMedium) {
+                        VStack(alignment: .leading, spacing: BaseViewLayout.spacingMedium) {
                             Text("notes_section_title")
                                 .textCase(.uppercase)
-                                .font(AppFont.sectionHeader)
-                                .foregroundStyle(Color.textPrimary)
+                                .font(BaseViewFont.sectionHeader)
+                                .foregroundStyle(BaseViewColor.textPrimary)
                             
                             TextField("notes_placeholder", text: $notes)
                                 .textFieldStyle(PlainTextFieldStyle())
-                                .font(AppFont.body)
+                                .font(BaseViewFont.body)
                                 .padding(.horizontal, 8)
                                 .padding(.vertical, 6)
                                 .overlay {
                                     Capsule()
-                                        .strokeBorder(Color.borderSecondary, style: StrokeStyle(lineWidth: 1, dash: AppLayout.dashedPattern))
+                                        .strokeBorder(BaseViewColor.borderSecondary, style: StrokeStyle(lineWidth: 1, dash: BaseViewLayout.dashedPattern))
                                 }
                         }
                     }
-                    .padding(AppLayout.spacing)
+                    .padding(BaseViewLayout.spacing)
                 }
             }
         }

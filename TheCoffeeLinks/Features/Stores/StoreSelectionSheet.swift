@@ -2,7 +2,7 @@
 //  StoreSelectionSheet.swift
 //  thecoffeelinks-client-ios
 //
-//  Receipt-Editorial Design
+//  BaseView Design
 //  Aligned with canonical CheckoutView.swift
 //
 
@@ -24,7 +24,7 @@ struct StoreSelectionSheet: View {
             
             VStack(spacing: 0) {
                 VStack(spacing: 0) {
-                    HStack(alignment: .top, spacing: AppLayout.spacing) {
+                    HStack(alignment: .top, spacing: BaseViewLayout.spacing) {
                         Text(String(localized: "store_selection_title"))
                             .font(BaseViewFont.sectionTitle)
                             .foregroundStyle(BaseViewColor.textPrimary)
@@ -35,10 +35,10 @@ struct StoreSelectionSheet: View {
                             Image(systemName: "xmark")
                                 .font(.system(size: 17, weight: .medium))
                                 .foregroundStyle(BaseViewColor.textPrimary)
-                                .frame(width: AppLayout.touchTarget, height: AppLayout.touchTarget)
+                                .frame(width: BaseViewLayout.touchTarget, height: BaseViewLayout.touchTarget)
                         }
                     }
-                    .frame(minHeight: AppLayout.touchTarget)
+                    .frame(minHeight: BaseViewLayout.touchTarget)
                     .padding(.horizontal, BaseViewLayout.screenInset)
                     .padding(.top, BaseViewLayout.screenTopInset)
                     .padding(.bottom, BaseViewLayout.screenInset)
@@ -50,7 +50,7 @@ struct StoreSelectionSheet: View {
                 .background(BaseViewColor.background)
                 
                 VStack {
-                    HStack(spacing: AppLayout.spacingMedium) {
+                    HStack(spacing: BaseViewLayout.spacingMedium) {
                         Image("magnifyingglass")
                             .font(BaseViewFont.body)
                             .foregroundStyle(BaseViewColor.textSecondary)
@@ -62,7 +62,7 @@ struct StoreSelectionSheet: View {
                     }
                     .padding(.horizontal, BaseViewLayout.badgeInset)
                     .frame(height: BaseViewLayout.rowHeight)
-                    .background(Color.textPrimary.opacity(0.08))
+                    .background(BaseViewColor.textPrimary.opacity(0.08))
                 }
                 .padding(.horizontal, BaseViewLayout.screenInset)
                 .padding(.top, BaseViewLayout.sectionGap)
@@ -72,7 +72,7 @@ struct StoreSelectionSheet: View {
                     ReceiptLoadingLog()
                         .padding(.horizontal, BaseViewLayout.screenInset)
                 } else if viewModel.filteredStores.isEmpty {
-                    VStack(spacing: AppLayout.spacing) {
+                    VStack(spacing: BaseViewLayout.spacing) {
                         Image("mappin.slash")
                             .font(.system(size: 32))
                             .foregroundStyle(BaseViewColor.textSecondary)

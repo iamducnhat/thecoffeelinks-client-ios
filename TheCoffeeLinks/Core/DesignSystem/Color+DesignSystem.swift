@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// Receipt-Editorial Design System: Color Palette
+/// BaseView Design System: Color Palette
 /// 
 /// Warm coffee-inspired palette with full Light/Dark mode support.
 /// Uses SwiftUI semantic colors where possible for automatic adaptation.

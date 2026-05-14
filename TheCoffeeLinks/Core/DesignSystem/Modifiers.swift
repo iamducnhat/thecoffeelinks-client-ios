@@ -28,9 +28,9 @@ extension View {
     
     func deepForestCard() -> some View {
         self
-            .background(Editorial.Colors.primaryEspresso)
+            .background(BaseViewColor.accent)
             .cornerRadius(16)
-            .shadow(color: Editorial.Colors.primaryEspresso.opacity(0.3), radius: 15, x: 0, y: 8)
+            .shadow(color: BaseViewColor.accent.opacity(0.3), radius: 15, x: 0, y: 8)
     }
     
     func neomorphicEffect() -> some View {

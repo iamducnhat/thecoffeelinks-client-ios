@@ -2,7 +2,7 @@
 //  EditProfileView.swift
 //  thecoffeelinks-client-ios
 //
-//  Created for Editorial Design System
+//  Created for BaseView Design System
 //
 
 import SwiftUI

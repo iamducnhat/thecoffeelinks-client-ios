@@ -2,7 +2,7 @@
 //  OrdersView.swift
 //  thecoffeelinks-client-ios
 //
-//  Receipt-Editorial Design
+//  BaseView Design
 //  Aligned with canonical CheckoutView.swift
 //
 
@@ -17,7 +17,7 @@ struct OrdersView: View {
 
     var body: some View {
         ZStack {
-            Color.bgPrimary.ignoresSafeArea()
+            BaseViewColor.background.ignoresSafeArea()
 
             ScrollView(.vertical) {
                 VStack(alignment: .leading, spacing: OrderViewMetrics.sectionGap) {
@@ -26,7 +26,7 @@ struct OrdersView: View {
                     VStack(alignment: .leading, spacing: OrderViewMetrics.cardTopGap) {
                         Text("Đơn hàng hiện tại")
                             .font(OrderViewFonts.sectionTitle)
-                            .foregroundStyle(Color.textPrimary)
+                            .foregroundStyle(BaseViewColor.textPrimary)
 
                         activeOrdersContent
                     }
@@ -34,7 +34,7 @@ struct OrdersView: View {
                     VStack(alignment: .leading, spacing: OrderViewMetrics.cardTopGap) {
                         Text("Lịch sử đơn hàng")
                             .font(OrderViewFonts.sectionTitle)
-                            .foregroundStyle(Color.textPrimary)
+                            .foregroundStyle(BaseViewColor.textPrimary)
 
                         historyOrdersContent
                     }
@@ -67,7 +67,7 @@ struct OrdersView: View {
         ZStack {
             Text("Đơn hàng")
                 .font(OrderViewFonts.title)
-                .foregroundStyle(Color.textPrimary)
+                .foregroundStyle(BaseViewColor.textPrimary)
                 .frame(maxWidth: .infinity)
 
             HStack {
@@ -83,7 +83,7 @@ struct OrdersView: View {
                 Spacer()
             }
         }
-        .frame(height: OrderViewMetrics.navButtonSize)
+        .frame(minHeight: OrderViewMetrics.navButtonSize)
     }
 
     @ViewBuilder
@@ -161,7 +161,7 @@ private struct ActiveOrderReceiptCard: View {
 
             Text("Tổng: \(order.totalAmount.formattedVND)")
                 .font(OrderViewFonts.total)
-                .foregroundStyle(Color.textPrimary)
+                .foregroundStyle(BaseViewColor.textPrimary)
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(.horizontal, OrderViewMetrics.contentInset)
                 .padding(.vertical, OrderViewMetrics.contentInset)
@@ -171,19 +171,19 @@ private struct ActiveOrderReceiptCard: View {
                     Text("HUỶ ĐƠN")
                         .font(OrderViewFonts.cta)
                         .tracking(2)
-                        .foregroundStyle(Color.bgPrimary)
+                        .foregroundStyle(BaseViewColor.background)
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, OrderViewMetrics.contentInset)
                         .frame(minHeight: OrderViewMetrics.cancelButtonMinHeight)
-                        .background(Color.stateError)
+                        .background(BaseViewColor.semanticError)
                 }
                 .buttonStyle(.plain)
             }
         }
-        .background(Color.bgPrimary)
+        .background(BaseViewColor.background)
         .overlay {
             Rectangle()
-                .strokeBorder(Color.borderPrimary, lineWidth: OrderViewMetrics.borderWidth)
+                .strokeBorder(BaseViewColor.border, lineWidth: OrderViewMetrics.borderWidth)
         }
     }
 
@@ -194,15 +194,16 @@ private struct ActiveOrderReceiptCard: View {
                 .tracking(2)
                 .lineLimit(1)
                 .minimumScaleFactor(0.75)
-                .foregroundStyle(Color.bgPrimary)
+                .foregroundStyle(BaseViewColor.background)
                 .padding(.horizontal, OrderViewMetrics.tiny)
-                .frame(height: OrderViewMetrics.statusHeight)
-                .background(Color.accentPrimary)
+                .padding(.vertical, 5)
+                .frame(minHeight: OrderViewMetrics.statusHeight)
+                .background(BaseViewColor.accent)
 
             GeometryReader { geometry in
                 ZStack(alignment: .leading) {
-                    Color.borderSecondary.opacity(0.35)
-                    Color.accentPrimary
+                    BaseViewColor.borderSecondary.opacity(0.35)
+                    BaseViewColor.accent
                         .frame(width: max(OrderViewMetrics.borderWidth, geometry.size.width * progress))
                 }
             }
@@ -211,7 +212,7 @@ private struct ActiveOrderReceiptCard: View {
             Text("DỰ KIẾN: \(estimatedMinutes) PHÚT")
                 .font(OrderViewFonts.mono)
                 .tracking(2)
-                .foregroundStyle(Color.textPrimary)
+                .foregroundStyle(BaseViewColor.textPrimary)
         }
         .padding(.horizontal, OrderViewMetrics.contentInset)
         .padding(.top, OrderViewMetrics.contentInset)
@@ -261,13 +262,13 @@ private struct OrderReceiptItemRow: View {
             VStack(alignment: .leading, spacing: 0) {
                 Text(item.productName)
                     .font(OrderViewFonts.itemTitle)
-                    .foregroundStyle(Color.textPrimary)
+                    .foregroundStyle(BaseViewColor.textPrimary)
                     .lineLimit(1)
                     .minimumScaleFactor(0.75)
 
                 Text(item.customization.displayText)
                     .font(OrderViewFonts.body)
-                    .foregroundStyle(Color.textSecondary)
+                    .foregroundStyle(BaseViewColor.textSecondary)
                     .lineLimit(2)
             }
 
@@ -284,12 +285,12 @@ private struct OrderReceiptItemRow: View {
                     .lineLimit(1)
                     .minimumScaleFactor(0.75)
             }
-            .foregroundStyle(Color.textPrimary)
+            .foregroundStyle(BaseViewColor.textPrimary)
         }
         .padding(.horizontal, OrderViewMetrics.contentInset)
         .padding(.vertical, OrderViewMetrics.contentInset)
         .frame(maxWidth: .infinity, minHeight: OrderViewMetrics.itemMinHeight, alignment: .topLeading)
-        .background(isTinted ? Color.accentPrimary.opacity(0.12) : Color.bgPrimary)
+        .background(isTinted ? BaseViewColor.accent.opacity(0.12) : BaseViewColor.background)
     }
 }
 
@@ -300,13 +301,13 @@ private struct OrderReceiptHistoryRow: View {
         VStack(alignment: .leading, spacing: OrderViewMetrics.contentInset) {
             Text(order.totalAmount.formattedVND)
                 .font(OrderViewFonts.total)
-                .foregroundStyle(Color.textPrimary)
+                .foregroundStyle(BaseViewColor.textPrimary)
 
             HStack(alignment: .firstTextBaseline) {
                 Text(order.createdAt.orderReceiptTimestamp)
                     .font(OrderViewFonts.mono)
                     .tracking(2)
-                    .foregroundStyle(Color.textPrimary)
+                    .foregroundStyle(BaseViewColor.textPrimary)
                     .lineLimit(1)
                     .minimumScaleFactor(0.75)
 
@@ -319,7 +320,7 @@ private struct OrderReceiptHistoryRow: View {
                         .font(OrderViewFonts.mono)
                         .tracking(2)
                         .underline()
-                        .foregroundStyle(Color.textPrimary)
+                        .foregroundStyle(BaseViewColor.textPrimary)
                         .lineLimit(1)
                 }
                 .buttonStyle(.plain)
@@ -327,10 +328,10 @@ private struct OrderReceiptHistoryRow: View {
         }
         .padding(OrderViewMetrics.contentInset)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(Color.bgPrimary)
+        .background(BaseViewColor.background)
         .overlay {
             Rectangle()
-                .strokeBorder(Color.borderPrimary, lineWidth: OrderViewMetrics.borderWidth)
+                .strokeBorder(BaseViewColor.border, lineWidth: OrderViewMetrics.borderWidth)
         }
     }
 }
@@ -346,18 +347,18 @@ private struct OrderCancellationSheet: View {
     var body: some View {
         VStack(alignment: .leading, spacing: OrderViewMetrics.cardTopGap) {
             Capsule()
-                .fill(Color.borderPrimary)
+                .fill(BaseViewColor.border)
                 .frame(width: 40, height: 5)
                 .frame(maxWidth: .infinity)
                 .padding(.top, OrderViewMetrics.contentInset)
 
             Text("Xác nhận huỷ đơn")
                 .font(OrderViewFonts.title)
-                .foregroundStyle(Color.textPrimary)
+                .foregroundStyle(BaseViewColor.textPrimary)
 
             Text("Chúng tôi sẽ hoàn tiền cho các món trong đơn hàng này theo phương thức thanh toán ban đầu.")
                 .font(OrderViewFonts.sectionTitle)
-                .foregroundStyle(Color.textPrimary)
+                .foregroundStyle(BaseViewColor.textPrimary)
                 .fixedSize(horizontal: false, vertical: true)
 
             VStack(spacing: 0) {
@@ -366,18 +367,18 @@ private struct OrderCancellationSheet: View {
                         Text("\(item.quantity)x")
                             .font(OrderViewFonts.mono)
                             .tracking(1)
-                            .foregroundStyle(Color.textPrimary)
+                            .foregroundStyle(BaseViewColor.textPrimary)
                             .frame(width: 40, alignment: .leading)
 
                         VStack(alignment: .leading, spacing: OrderViewMetrics.tiny) {
                             Text(item.productName)
                                 .font(OrderViewFonts.itemTitle)
-                                .foregroundStyle(Color.textPrimary)
+                                .foregroundStyle(BaseViewColor.textPrimary)
 
                             if !item.customization.displayText.isEmpty {
                                 Text(item.customization.displayText)
                                     .font(OrderViewFonts.body)
-                                    .foregroundStyle(Color.textSecondary)
+                                    .foregroundStyle(BaseViewColor.textSecondary)
                             }
                         }
 
@@ -386,7 +387,7 @@ private struct OrderCancellationSheet: View {
                         Text(item.totalPrice.formattedVND)
                             .font(OrderViewFonts.mono)
                             .tracking(1)
-                            .foregroundStyle(Color.textPrimary)
+                            .foregroundStyle(BaseViewColor.textPrimary)
                             .lineLimit(1)
                             .minimumScaleFactor(0.75)
                     }
@@ -394,7 +395,7 @@ private struct OrderCancellationSheet: View {
 
                     if item.id != order.items.last?.id {
                         Rectangle()
-                            .fill(Color.borderPrimary)
+                            .fill(BaseViewColor.border)
                             .frame(height: OrderViewMetrics.borderWidth)
                     }
                 }
@@ -402,36 +403,36 @@ private struct OrderCancellationSheet: View {
             .padding(.horizontal, OrderViewMetrics.contentInset)
             .overlay {
                 Rectangle()
-                    .strokeBorder(Color.borderPrimary, lineWidth: OrderViewMetrics.borderWidth)
+                    .strokeBorder(BaseViewColor.border, lineWidth: OrderViewMetrics.borderWidth)
             }
 
             if let errorMessage {
                 Text(errorMessage)
                     .font(OrderViewFonts.body)
-                    .foregroundStyle(Color.stateError)
+                    .foregroundStyle(BaseViewColor.semanticError)
             }
 
             Spacer(minLength: OrderViewMetrics.cardTopGap)
         }
         .padding(.horizontal, OrderViewMetrics.pagePadding)
-        .background(Color.bgPrimary)
+        .background(BaseViewColor.background)
         .safeAreaInset(edge: .bottom) {
             VStack(spacing: OrderViewMetrics.contentInset) {
                 Button(action: onConfirm) {
                     HStack(spacing: OrderViewMetrics.contentInset) {
                         if isLoading {
                             ProgressView()
-                                .tint(Color.bgPrimary)
+                                .tint(BaseViewColor.background)
                         }
 
                         Text(isLoading ? "ĐANG HUỶ" : "XÁC NHẬN HUỶ ĐƠN")
                             .font(OrderViewFonts.cta)
                             .tracking(2)
                     }
-                    .foregroundStyle(Color.bgPrimary)
+                    .foregroundStyle(BaseViewColor.background)
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, OrderViewMetrics.contentInset)
-                    .background(Color.stateError)
+                    .background(BaseViewColor.semanticError)
                 }
                 .buttonStyle(.plain)
                 .disabled(isLoading)
@@ -440,13 +441,13 @@ private struct OrderCancellationSheet: View {
                     dismiss()
                 }
                 .font(OrderViewFonts.cta)
-                .foregroundStyle(Color.textPrimary)
+                .foregroundStyle(BaseViewColor.textPrimary)
                 .disabled(isLoading)
             }
             .padding(.horizontal, OrderViewMetrics.pagePadding)
             .padding(.top, OrderViewMetrics.contentInset)
             .padding(.bottom, OrderViewMetrics.contentInset)
-            .background(Color.bgPrimary)
+            .background(BaseViewColor.background)
         }
         .presentationDetents([.medium, .large])
         .presentationDragIndicator(.hidden)
@@ -457,12 +458,12 @@ private struct OrderLoadingCard: View {
     var body: some View {
         Text("Đang xử lí...")
             .font(OrderViewFonts.sectionTitle)
-            .foregroundStyle(Color.textSecondary)
+            .foregroundStyle(BaseViewColor.textSecondary)
             .frame(maxWidth: .infinity, alignment: .leading)
         .padding(OrderViewMetrics.contentInset)
         .overlay {
             Rectangle()
-                .strokeBorder(Color.borderPrimary, lineWidth: OrderViewMetrics.borderWidth)
+                .strokeBorder(BaseViewColor.border, lineWidth: OrderViewMetrics.borderWidth)
         }
     }
 }
@@ -473,12 +474,12 @@ private struct OrderEmptyCard: View {
     var body: some View {
         Text(title)
             .font(OrderViewFonts.sectionTitle)
-            .foregroundStyle(Color.textSecondary)
+            .foregroundStyle(BaseViewColor.textSecondary)
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(OrderViewMetrics.contentInset)
             .overlay {
                 Rectangle()
-                    .strokeBorder(Color.borderPrimary, lineWidth: OrderViewMetrics.borderWidth)
+                    .strokeBorder(BaseViewColor.border, lineWidth: OrderViewMetrics.borderWidth)
             }
     }
 }

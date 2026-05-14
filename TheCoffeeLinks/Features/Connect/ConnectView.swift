@@ -2,7 +2,7 @@
 //  ConnectView.swift
 //  thecoffeelinks-client-ios
 //
-//  Receipt-Editorial Design
+//  BaseView Design
 //  Aligned with canonical CheckoutView.swift
 //
 
@@ -26,21 +26,21 @@ struct ConnectView: View {
     
     var body: some View {
         ZStack(alignment: .top) {
-            Color.bgPrimary.ignoresSafeArea()
+            BaseViewColor.background.ignoresSafeArea()
             
             VStack(spacing: 0) {
                 ScrollView(.vertical) {
-                    VStack(spacing: AppSpacing.lg) {
-                        SectionHeader(
+                    VStack(spacing: BaseViewLayout.lg) {
+                        AppSectionHeader(
                             title: String(localized: "network_connect_action"),
                             subtitle: "Find friends at your local coffee shop"
                         )
-                        .padding(.horizontal, AppSpacing.screenPadding)
+                        .padding(.horizontal, BaseViewLayout.screenPadding)
                         
-                        Divider().background(Color.borderSecondary)
+                        Divider().background(BaseViewColor.borderSecondary)
                     }
-                    .padding(.top, AppSpacing.sm)
-                    .background(Color.bgPrimary)
+                    .padding(.top, BaseViewLayout.sm)
+                    .background(BaseViewColor.background)
                     .background(GeometryReader {
                         Color.clear.preference(key: ViewOffsetKey.self, value: -$0.frame(in: .named("scroll")).origin.y)
                     })
@@ -48,22 +48,22 @@ struct ConnectView: View {
                         self.scrollOffset = $0
                     }
                     
-                    LazyVStack(spacing: AppLayout.spacingXL) {
+                    LazyVStack(spacing: BaseViewLayout.spacingXL) {
                         if viewModel.isCheckedIn {
-                            VStack(alignment: .leading, spacing: AppLayout.spacing) {
+                            VStack(alignment: .leading, spacing: BaseViewLayout.spacing) {
                                 Text("Currently at")
                                     .textCase(.uppercase)
-                                    .font(AppFont.sectionHeader)
-                                    .foregroundStyle(Color.textPrimary)
+                                    .font(BaseViewFont.sectionHeader)
+                                    .foregroundStyle(BaseViewColor.textPrimary)
                                 
                                 HStack {
                                     VStack(alignment: .leading, spacing: 4) {
                                         Text(storesViewModel.selectedStore?.name ?? "Unknown")
-                                            .font(AppFont.headline)
-                                            .foregroundStyle(Color.textPrimary)
+                                            .font(BaseViewFont.headline)
+                                            .foregroundStyle(BaseViewColor.textPrimary)
                                         Text(viewModel.currentMode.displayName)
-                                            .font(AppFont.uiCaption)
-                                            .foregroundStyle(Color.textSecondary)
+                                            .font(BaseViewFont.uiCaption)
+                                            .foregroundStyle(BaseViewColor.textSecondary)
                                     }
                                     
                                     Spacer()
@@ -72,39 +72,39 @@ struct ConnectView: View {
                                         Task { await viewModel.checkOut() }
                                     } label: {
                                         Text("Leave")
-                                            .font(AppFont.monoBody)
-                                            .foregroundStyle(Color.stateError)
+                                            .font(BaseViewFont.monoBody)
+                                            .foregroundStyle(BaseViewColor.semanticError)
                                             .padding(.horizontal, 12)
                                             .padding(.vertical, 6)
                                             .overlay(
                                                 Capsule()
-                                                    .strokeBorder(Color.stateError, lineWidth: 1)
+                                                    .strokeBorder(BaseViewColor.semanticError, lineWidth: 1)
                                             )
                                     }
                                 }
-                                .padding(AppLayout.spacing)
-                                .background(Color.surfacePrimary)
-                                .clipShape(RoundedRectangle(cornerRadius: AppRadius.medium, style: .continuous))
+                                .padding(BaseViewLayout.spacing)
+                                .background(BaseViewColor.surface)
+                                .clipShape(RoundedRectangle(cornerRadius: BaseViewLayout.radiusMedium, style: .continuous))
                                 .overlay(
-                                    RoundedRectangle(cornerRadius: AppRadius.medium, style: .continuous)
-                                        .strokeBorder(Color.accentPrimary, lineWidth: 1)
+                                    RoundedRectangle(cornerRadius: BaseViewLayout.radiusMedium, style: .continuous)
+                                        .strokeBorder(BaseViewColor.accent, lineWidth: 1)
                                 )
                                 
                                 Button {
                                     showingModeSelector = true
                                 } label: {
                                     Text("Change status")
-                                        .font(AppFont.body)
-                                        .foregroundStyle(Color.accentPrimary)
+                                        .font(BaseViewFont.body)
+                                        .foregroundStyle(BaseViewColor.accent)
                                 }
                             }
-                            .padding(.horizontal, AppLayout.spacing)
+                            .padding(.horizontal, BaseViewLayout.spacing)
                             
-                            VStack(alignment: .leading, spacing: AppLayout.spacing) {
+                            VStack(alignment: .leading, spacing: BaseViewLayout.spacing) {
                                 Text("People here")
                                     .textCase(.uppercase)
-                                    .font(AppFont.sectionHeader)
-                                    .foregroundStyle(Color.textPrimary)
+                                    .font(BaseViewFont.sectionHeader)
+                                    .foregroundStyle(BaseViewColor.textPrimary)
                                 
                                 if !viewModel.nearbyUsers.isEmpty {
                                     VStack(spacing: 0) {
@@ -118,41 +118,41 @@ struct ConnectView: View {
                                             }
                                         }
                                     }
-                                    .background(Color.bgPrimary)
-                                    .clipShape(RoundedRectangle(cornerRadius: AppRadius.medium, style: .continuous))
+                                    .background(BaseViewColor.background)
+                                    .clipShape(RoundedRectangle(cornerRadius: BaseViewLayout.radiusMedium, style: .continuous))
                                     .overlay(
-                                        RoundedRectangle(cornerRadius: AppRadius.medium, style: .continuous)
-                                            .strokeBorder(Color.border, lineWidth: 1)
+                                        RoundedRectangle(cornerRadius: BaseViewLayout.radiusMedium, style: .continuous)
+                                            .strokeBorder(BaseViewColor.border, lineWidth: 1)
                                     )
                                 } else {
-                                    VStack(spacing: AppLayout.spacing) {
+                                    VStack(spacing: BaseViewLayout.spacing) {
                                         Text(String(localized: "network_nearby_empty"))
-                                            .font(AppFont.sectionHeader)
-                                            .foregroundStyle(Color.textPrimary)
+                                            .font(BaseViewFont.sectionHeader)
+                                            .foregroundStyle(BaseViewColor.textPrimary)
                                         
                                         Text(String(localized: "network_nearby_prompt"))
-                                            .font(AppFont.body)
-                                            .foregroundStyle(Color.textSecondary)
+                                            .font(BaseViewFont.body)
+                                            .foregroundStyle(BaseViewColor.textSecondary)
                                     }
                                     .frame(maxWidth: .infinity)
                                     .padding(60)
-                                    .clipShape(RoundedRectangle(cornerRadius: AppRadius.medium, style: .continuous))
+                                    .clipShape(RoundedRectangle(cornerRadius: BaseViewLayout.radiusMedium, style: .continuous))
                                     .overlay(
-                                        RoundedRectangle(cornerRadius: AppRadius.medium, style: .continuous)
-                                            .strokeBorder(Color.border, style: StrokeStyle(lineWidth: 1, dash: AppLayout.dashedPattern))
+                                        RoundedRectangle(cornerRadius: BaseViewLayout.radiusMedium, style: .continuous)
+                                            .strokeBorder(BaseViewColor.border, style: StrokeStyle(lineWidth: 1, dash: BaseViewLayout.dashedPattern))
                                     )
                                 }
                             }
-                            .padding(.horizontal, AppLayout.spacing)
+                            .padding(.horizontal, BaseViewLayout.spacing)
                         } else {
-                            VStack(spacing: AppLayout.spacingXL) {
+                            VStack(spacing: BaseViewLayout.spacingXL) {
                                 Text("Connect with people")
-                                    .font(AppFont.displayTitle)
-                                    .foregroundStyle(Color.textPrimary)
+                                    .font(BaseViewFont.displayTitle)
+                                    .foregroundStyle(BaseViewColor.textPrimary)
                                 
                                 Text("Check in to a coffee shop to see who else is there and start a conversation.")
-                                    .font(AppFont.body)
-                                    .foregroundStyle(Color.textSecondary)
+                                    .font(BaseViewFont.body)
+                                    .foregroundStyle(BaseViewColor.textSecondary)
                                     .multilineTextAlignment(.center)
                                     .padding(.horizontal, 40)
                                 
@@ -160,37 +160,37 @@ struct ConnectView: View {
                                     showingStoreSelector = true
                                 } label: {
                                     Text(String(localized: "network_check_in_action"))
-                                        .font(AppFont.monoCTA)
-                                        .foregroundStyle(Color.bgPrimary)
+                                        .font(BaseViewFont.monoCTA)
+                                        .foregroundStyle(BaseViewColor.background)
                                         .padding(.horizontal, 48)
                                         .padding(.vertical, 12)
-                                        .background(Color.accentPrimary)
+                                        .background(BaseViewColor.accent)
                                         .clipShape(Capsule())
                                 }
                             }
                             .padding(.vertical, 60)
                         }
                         
-                        VStack(alignment: .leading, spacing: AppLayout.spacing) {
+                        VStack(alignment: .leading, spacing: BaseViewLayout.spacing) {
                             Text("Privacy & Safety")
                                 .textCase(.uppercase)
-                                .font(AppFont.sectionHeader)
-                                .foregroundStyle(Color.textPrimary)
+                                .font(BaseViewFont.sectionHeader)
+                                .foregroundStyle(BaseViewColor.textPrimary)
                             
                             VStack(spacing: 0) {
                                 ProfileRow(title: "Block users", icon: "circle_x") { }
                                 ProfileRow(title: "Report a concern", icon: "triangle_alert") { showingReport = true }
                             }
-                            .background(Color.surfacePrimary)
-                            .clipShape(RoundedRectangle(cornerRadius: AppRadius.medium, style: .continuous))
+                            .background(BaseViewColor.surface)
+                            .clipShape(RoundedRectangle(cornerRadius: BaseViewLayout.radiusMedium, style: .continuous))
                             .overlay(
-                                RoundedRectangle(cornerRadius: AppRadius.medium, style: .continuous)
-                                    .strokeBorder(Color.border, lineWidth: 1)
+                                RoundedRectangle(cornerRadius: BaseViewLayout.radiusMedium, style: .continuous)
+                                    .strokeBorder(BaseViewColor.border, lineWidth: 1)
                             )
                         }
-                        .padding(.horizontal, AppLayout.spacing)
+                        .padding(.horizontal, BaseViewLayout.spacing)
                     }
-                    .padding(.top, AppLayout.spacing)
+                    .padding(.top, BaseViewLayout.spacing)
                     .padding(.bottom, 100)
                 }
                 .coordinateSpace(name: "scroll")
@@ -250,14 +250,14 @@ struct PresenceRow: View {
     
     var body: some View {
         Button(action: onTap) {
-            HStack(spacing: AppLayout.spacing) {
+            HStack(spacing: BaseViewLayout.spacing) {
                 AppRemoteImage(
                     url: URL(string: user.avatarUrl ?? ""),
                     width: 44,
                     height: 44,
-                    cornerRadius: AppRadius.medium,
-                    backgroundColor: Color.surfacePrimary,
-                    borderColor: Color.border,
+                    cornerRadius: BaseViewLayout.radiusMedium,
+                    backgroundColor: BaseViewColor.surface,
+                    borderColor: BaseViewColor.border,
                     showsProgress: true,
                     placeholderIcon: nil,
                     placeholderText: String(user.displayName.prefix(1))
@@ -265,11 +265,11 @@ struct PresenceRow: View {
                 
                 VStack(alignment: .leading, spacing: 2) {
                     Text(user.displayName)
-                        .font(AppFont.body)
-                        .foregroundStyle(Color.textPrimary)
+                        .font(BaseViewFont.body)
+                        .foregroundStyle(BaseViewColor.textPrimary)
                     Text(user.status.displayName)
-                        .font(AppFont.uiMicro)
-                        .foregroundStyle(Color.textSecondary)
+                        .font(BaseViewFont.uiMicro)
+                        .foregroundStyle(BaseViewColor.textSecondary)
                 }
                 
                 Spacer()
@@ -277,10 +277,10 @@ struct PresenceRow: View {
                 if user.mode == .open {
                     Image("message_circle")
                         .font(.system(size: 12))
-                        .foregroundStyle(Color.accentPrimary)
+                        .foregroundStyle(BaseViewColor.accent)
                 }
             }
-            .padding(AppLayout.spacing)
+            .padding(BaseViewLayout.spacing)
         }
         .buttonStyle(.plain)
     }
@@ -296,55 +296,55 @@ struct CheckInSheet: View {
     
     var body: some View {
         ZStack(alignment: .top) {
-            Color.bgPrimary.ignoresSafeArea()
+            BaseViewColor.background.ignoresSafeArea()
             
             VStack(spacing: 0) {
                 // Header
                 HStack {
                     Text(String(localized: "network_check_in_action"))
-                        .font(AppFont.displayTitle)
-                        .foregroundStyle(Color.textPrimary)
+                        .font(BaseViewFont.displayTitle)
+                        .foregroundStyle(BaseViewColor.textPrimary)
                     
                     Spacer()
                     
                     Button { dismiss() } label: {
                         Image(systemName: "xmark")
-                            .font(AppFont.navIcon)
-                            .foregroundStyle(Color.textPrimary)
+                            .font(BaseViewFont.navIcon)
+                            .foregroundStyle(BaseViewColor.textPrimary)
                     }
                 }
-                .padding(AppLayout.spacing)
+                .padding(BaseViewLayout.spacing)
                 
                 Color.secondary.frame(height: 1)
                 
                 ScrollView {
-                    LazyVStack(alignment: .leading, spacing: AppLayout.spacingXL) {
+                    LazyVStack(alignment: .leading, spacing: BaseViewLayout.spacingXL) {
                         // Location
-                        VStack(alignment: .leading, spacing: AppLayout.spacing) {
+                        VStack(alignment: .leading, spacing: BaseViewLayout.spacing) {
                             Text(String(localized: "common_location"))
                                 .textCase(.uppercase)
-                                .font(AppFont.sectionHeader)
-                                .foregroundStyle(Color.textPrimary)
+                                .font(BaseViewFont.sectionHeader)
+                                .foregroundStyle(BaseViewColor.textPrimary)
                             
                             Text(storeName ?? "Unknown")
-                                .font(AppFont.headline)
-                                .foregroundStyle(Color.textPrimary)
-                                .padding(AppLayout.spacing)
+                                .font(BaseViewFont.headline)
+                                .foregroundStyle(BaseViewColor.textPrimary)
+                                .padding(BaseViewLayout.spacing)
                                 .frame(maxWidth: .infinity, alignment: .leading)
-                                .background(Color.surfacePrimary)
-                                .clipShape(RoundedRectangle(cornerRadius: AppRadius.medium, style: .continuous))
+                                .background(BaseViewColor.surface)
+                                .clipShape(RoundedRectangle(cornerRadius: BaseViewLayout.radiusMedium, style: .continuous))
                                 .overlay(
-                                    RoundedRectangle(cornerRadius: AppRadius.medium, style: .continuous)
-                                        .strokeBorder(Color.border, lineWidth: 1)
+                                    RoundedRectangle(cornerRadius: BaseViewLayout.radiusMedium, style: .continuous)
+                                        .strokeBorder(BaseViewColor.border, lineWidth: 1)
                                 )
                         }
                         
                         // Visibility Mode
-                        VStack(alignment: .leading, spacing: AppLayout.spacing) {
+                        VStack(alignment: .leading, spacing: BaseViewLayout.spacing) {
                             Text("Visibility")
                                 .textCase(.uppercase)
-                                .font(AppFont.sectionHeader)
-                                .foregroundStyle(Color.textPrimary)
+                                .font(BaseViewFont.sectionHeader)
+                                .foregroundStyle(BaseViewColor.textPrimary)
                             
                             ForEach(ConnectionMode.allCases, id: \.self) { mode in
                                 Button {
@@ -353,11 +353,11 @@ struct CheckInSheet: View {
                                     HStack {
                                         VStack(alignment: .leading, spacing: 4) {
                                             Text(mode.displayName)
-                                                .font(AppFont.body)
-                                                .foregroundStyle(selectedMode == mode ? .white : Color.textPrimary)
+                                                .font(BaseViewFont.body)
+                                                .foregroundStyle(selectedMode == mode ? .white : BaseViewColor.textPrimary)
                                             Text(mode.description)
-                                                .font(AppFont.uiMicro)
-                                                .foregroundStyle(selectedMode == mode ? .white : Color.textSecondary)
+                                                .font(BaseViewFont.uiMicro)
+                                                .foregroundStyle(selectedMode == mode ? .white : BaseViewColor.textSecondary)
                                         }
                                         Spacer()
                                         if selectedMode == mode {
@@ -365,11 +365,11 @@ struct CheckInSheet: View {
                                                 .foregroundStyle(.white)
                                         }
                                     }
-                                    .padding(AppLayout.spacing)
-                                    .background(selectedMode == mode ? Color.accentPrimary : Color.bgPrimary)
-                                    .clipShape(RoundedRectangle(cornerRadius: AppRadius.medium, style: .continuous))
+                                    .padding(BaseViewLayout.spacing)
+                                    .background(selectedMode == mode ? BaseViewColor.accent : BaseViewColor.background)
+                                    .clipShape(RoundedRectangle(cornerRadius: BaseViewLayout.radiusMedium, style: .continuous))
         .overlay(
-                                        RoundedRectangle(cornerRadius: AppRadius.medium, style: .continuous).strokeBorder(selectedMode == mode ? Color.accentPrimary : Color.borderPrimary, lineWidth: 1)
+                                        RoundedRectangle(cornerRadius: BaseViewLayout.radiusMedium, style: .continuous).strokeBorder(selectedMode == mode ? BaseViewColor.accent : BaseViewColor.border, lineWidth: 1)
                                     )
                                 }
                             }
@@ -383,15 +383,15 @@ struct CheckInSheet: View {
                             dismiss()
                         } label: {
                             Text("Confirm Check-In")
-                                .font(AppFont.monoCTA)
-                                .foregroundStyle(Color.bgPrimary)
+                                .font(BaseViewFont.monoCTA)
+                                .foregroundStyle(BaseViewColor.background)
                                 .padding(.vertical, 12)
                                 .frame(maxWidth: .infinity, alignment: .center)
-                                .background(Color.accentPrimary)
+                                .background(BaseViewColor.accent)
                                 .clipShape(Capsule())
                         }
                     }
-                    .padding(AppLayout.spacing)
+                    .padding(BaseViewLayout.spacing)
                 }
             }
         }
@@ -407,29 +407,29 @@ struct ModeSheet: View {
     
     var body: some View {
         ZStack(alignment: .top) {
-            Color.bgPrimary.ignoresSafeArea()
+            BaseViewColor.background.ignoresSafeArea()
             
             VStack(spacing: 0) {
                 // Header
                 HStack {
                     Text("Change Status")
-                        .font(AppFont.displayTitle)
-                        .foregroundStyle(Color.textPrimary)
+                        .font(BaseViewFont.displayTitle)
+                        .foregroundStyle(BaseViewColor.textPrimary)
                     
                     Spacer()
                     
                     Button { dismiss() } label: {
                         Image(systemName: "xmark")
-                            .font(AppFont.navIcon)
-                            .foregroundStyle(Color.textPrimary)
+                            .font(BaseViewFont.navIcon)
+                            .foregroundStyle(BaseViewColor.textPrimary)
                     }
                 }
-                .padding(AppLayout.spacing)
+                .padding(BaseViewLayout.spacing)
                 
                 Color.secondary.frame(height: 1)
                 
                 ScrollView {
-                    LazyVStack(spacing: AppLayout.spacing) {
+                    LazyVStack(spacing: BaseViewLayout.spacing) {
                         ForEach(ConnectionMode.allCases, id: \.self) { mode in
                             Button {
                                 onSelect(mode)
@@ -437,24 +437,24 @@ struct ModeSheet: View {
                             } label: {
                                 HStack {
                                     Text(mode.displayName)
-                                        .font(AppFont.body)
-                                        .foregroundStyle(currentMode == mode ? .white : Color.textPrimary)
+                                        .font(BaseViewFont.body)
+                                        .foregroundStyle(currentMode == mode ? .white : BaseViewColor.textPrimary)
                                     Spacer()
                                     if currentMode == mode {
                                         Image("checkmark")
                                             .foregroundStyle(.white)
                                     }
                                 }
-                                .padding(AppLayout.spacing)
-                                .background(currentMode == mode ? Color.accentPrimary : Color.bgPrimary)
-                                .clipShape(RoundedRectangle(cornerRadius: AppRadius.medium, style: .continuous))
+                                .padding(BaseViewLayout.spacing)
+                                .background(currentMode == mode ? BaseViewColor.accent : BaseViewColor.background)
+                                .clipShape(RoundedRectangle(cornerRadius: BaseViewLayout.radiusMedium, style: .continuous))
         .overlay(
-                                    RoundedRectangle(cornerRadius: AppRadius.medium, style: .continuous).strokeBorder(currentMode == mode ? Color.accentPrimary : Color.borderPrimary, lineWidth: 1)
+                                    RoundedRectangle(cornerRadius: BaseViewLayout.radiusMedium, style: .continuous).strokeBorder(currentMode == mode ? BaseViewColor.accent : BaseViewColor.border, lineWidth: 1)
                                 )
                             }
                         }
                     }
-                    .padding(AppLayout.spacing)
+                    .padding(BaseViewLayout.spacing)
                 }
             }
         }
@@ -472,7 +472,7 @@ struct UserProfileSheet: View {
     
     var body: some View {
         ZStack(alignment: .top) {
-            Color.bgPrimary.ignoresSafeArea()
+            BaseViewColor.background.ignoresSafeArea()
             
             VStack(spacing: 0) {
                 // Header
@@ -480,65 +480,65 @@ struct UserProfileSheet: View {
                     Spacer()
                     Button { dismiss() } label: {
                         Image(systemName: "xmark")
-                            .font(AppFont.navIcon)
-                            .foregroundStyle(Color.textPrimary)
+                            .font(BaseViewFont.navIcon)
+                            .foregroundStyle(BaseViewColor.textPrimary)
                     }
                 }
-                .padding(AppLayout.spacing)
+                .padding(BaseViewLayout.spacing)
                 
                 ScrollView {
-                    VStack(spacing: AppLayout.spacingXL) {
+                    VStack(spacing: BaseViewLayout.spacingXL) {
                         // Avatar & Info
-                        VStack(spacing: AppLayout.spacing) {
+                        VStack(spacing: BaseViewLayout.spacing) {
                             AppRemoteImage(
                                 url: URL(string: user.avatarUrl ?? ""),
                                 width: 100,
                                 height: 100,
-                                cornerRadius: AppRadius.medium,
-                                backgroundColor: Color.surfacePrimary,
-                                borderColor: Color.border,
+                                cornerRadius: BaseViewLayout.radiusMedium,
+                                backgroundColor: BaseViewColor.surface,
+                                borderColor: BaseViewColor.border,
                                 showsProgress: true,
                                 placeholderIcon: nil,
                                 placeholderText: String(user.displayName.prefix(1))
                             )
                             
                             Text(user.displayName)
-                                .font(AppFont.sectionHeader)
-                                .foregroundStyle(Color.textPrimary)
+                                .font(BaseViewFont.sectionHeader)
+                                .foregroundStyle(BaseViewColor.textPrimary)
                             
                             Text(user.status.displayName)
-                                .font(AppFont.uiCaption)
-                                .foregroundStyle(Color.accentPrimary)
+                                .font(BaseViewFont.uiCaption)
+                                .foregroundStyle(BaseViewColor.accent)
                         }
                         
                         if showingMessageInput {
-                            VStack(alignment: .leading, spacing: AppLayout.spacing) {
+                            VStack(alignment: .leading, spacing: BaseViewLayout.spacing) {
                                 Text("Message")
                                     .textCase(.uppercase)
-                                    .font(AppFont.sectionHeader)
-                                    .foregroundStyle(Color.textPrimary)
+                                    .font(BaseViewFont.sectionHeader)
+                                    .foregroundStyle(BaseViewColor.textPrimary)
                                 
                                 TextField("Write a friendly message...", text: $message, axis: .vertical)
                                     .textFieldStyle(PlainTextFieldStyle())
-                                    .font(AppFont.body)
-                                    .padding(AppLayout.spacing)
+                                    .font(BaseViewFont.body)
+                                    .padding(BaseViewLayout.spacing)
                                     .overlay(
                                         Capsule()
-                                            .strokeBorder(Color.borderSecondary, style: StrokeStyle(lineWidth: 1, dash: AppLayout.dashedPattern))
+                                            .strokeBorder(BaseViewColor.borderSecondary, style: StrokeStyle(lineWidth: 1, dash: BaseViewLayout.dashedPattern))
                                     )
                                     .lineLimit(4...8)
                                 
-                                HStack(spacing: AppLayout.spacing) {
+                                HStack(spacing: BaseViewLayout.spacing) {
                                     Button {
                                         onSendRequest(message.isEmpty ? nil : message)
                                         dismiss()
                                     } label: {
                                         Text("Send")
-                                            .font(AppFont.monoCTA)
-                                            .foregroundStyle(Color.bgPrimary)
+                                            .font(BaseViewFont.monoCTA)
+                                            .foregroundStyle(BaseViewColor.background)
                                             .padding(.vertical, 12)
                                             .frame(maxWidth: .infinity)
-                                            .background(Color.accentPrimary)
+                                            .background(BaseViewColor.accent)
                                             .clipShape(Capsule())
                                     }
                                     
@@ -546,13 +546,13 @@ struct UserProfileSheet: View {
                                         showingMessageInput = false
                                     } label: {
                                         Text(String(localized: "common_cancel"))
-                                            .font(AppFont.monoBody)
-                                            .foregroundStyle(Color.textSecondary)
+                                            .font(BaseViewFont.monoBody)
+                                            .foregroundStyle(BaseViewColor.textSecondary)
                                             .padding(.vertical, 12)
                                             .frame(maxWidth: .infinity)
                                             .overlay(
                                                 Capsule()
-                                                    .strokeBorder(Color.border, lineWidth: 1)
+                                                    .strokeBorder(BaseViewColor.border, lineWidth: 1)
                                             )
                                     }
                                 }
@@ -562,16 +562,16 @@ struct UserProfileSheet: View {
                                 showingMessageInput = true
                             } label: {
                                 Text("Say Hello")
-                                    .font(AppFont.monoCTA)
-                                    .foregroundStyle(Color.bgPrimary)
+                                    .font(BaseViewFont.monoCTA)
+                                    .foregroundStyle(BaseViewColor.background)
                                     .padding(.vertical, 12)
                                     .frame(width: 200)
-                                    .background(Color.accentPrimary)
+                                    .background(BaseViewColor.accent)
                                     .clipShape(Capsule())
                             }
                         }
                     }
-                    .padding(AppLayout.spacing)
+                    .padding(BaseViewLayout.spacing)
                 }
             }
         }
@@ -588,35 +588,35 @@ struct ReportSheet: View {
     
     var body: some View {
         ZStack(alignment: .top) {
-            Color.bgPrimary.ignoresSafeArea()
+            BaseViewColor.background.ignoresSafeArea()
             
             VStack(spacing: 0) {
                 // Header
                 HStack {
                     Text("Report")
-                        .font(AppFont.displayTitle)
-                        .foregroundStyle(Color.textPrimary)
+                        .font(BaseViewFont.displayTitle)
+                        .foregroundStyle(BaseViewColor.textPrimary)
                     
                     Spacer()
                     
                     Button { dismiss() } label: {
                         Image(systemName: "xmark")
-                            .font(AppFont.navIcon)
-                            .foregroundStyle(Color.textPrimary)
+                            .font(BaseViewFont.navIcon)
+                            .foregroundStyle(BaseViewColor.textPrimary)
                     }
                 }
-                .padding(AppLayout.spacing)
+                .padding(BaseViewLayout.spacing)
                 
                 Color.secondary.frame(height: 1)
                 
                 ScrollView {
-                    LazyVStack(alignment: .leading, spacing: AppLayout.spacingXL) {
+                    LazyVStack(alignment: .leading, spacing: BaseViewLayout.spacingXL) {
                         // Reason Selection
-                        VStack(alignment: .leading, spacing: AppLayout.spacing) {
+                        VStack(alignment: .leading, spacing: BaseViewLayout.spacing) {
                             Text("What's the issue?")
                                 .textCase(.uppercase)
-                                .font(AppFont.sectionHeader)
-                                .foregroundStyle(Color.textPrimary)
+                                .font(BaseViewFont.sectionHeader)
+                                .foregroundStyle(BaseViewColor.textPrimary)
                             
                             ForEach(ReportReason.allCases, id: \.self) { reason in
                                 Button {
@@ -624,38 +624,38 @@ struct ReportSheet: View {
                                 } label: {
                                     HStack {
                                         Text(reason.displayName)
-                                            .font(AppFont.body)
-                                            .foregroundStyle(selectedReason == reason ? .white : Color.textPrimary)
+                                            .font(BaseViewFont.body)
+                                            .foregroundStyle(selectedReason == reason ? .white : BaseViewColor.textPrimary)
                                         Spacer()
                                         if selectedReason == reason {
                                             Image("checkmark")
                                                 .foregroundStyle(.white)
                                         }
                                     }
-                                    .padding(AppLayout.spacing)
-                                    .background(selectedReason == reason ? Color.accentPrimary : Color.bgPrimary)
-                                    .clipShape(RoundedRectangle(cornerRadius: AppRadius.medium, style: .continuous))
+                                    .padding(BaseViewLayout.spacing)
+                                    .background(selectedReason == reason ? BaseViewColor.accent : BaseViewColor.background)
+                                    .clipShape(RoundedRectangle(cornerRadius: BaseViewLayout.radiusMedium, style: .continuous))
         .overlay(
-                                        RoundedRectangle(cornerRadius: AppRadius.medium, style: .continuous).strokeBorder(selectedReason == reason ? Color.accentPrimary : Color.borderPrimary, lineWidth: 1)
+                                        RoundedRectangle(cornerRadius: BaseViewLayout.radiusMedium, style: .continuous).strokeBorder(selectedReason == reason ? BaseViewColor.accent : BaseViewColor.border, lineWidth: 1)
                                     )
                                 }
                             }
                         }
                         
                         // Details
-                        VStack(alignment: .leading, spacing: AppLayout.spacing) {
+                        VStack(alignment: .leading, spacing: BaseViewLayout.spacing) {
                             Text("More details")
                                 .textCase(.uppercase)
-                                .font(AppFont.sectionHeader)
-                                .foregroundStyle(Color.textPrimary)
+                                .font(BaseViewFont.sectionHeader)
+                                .foregroundStyle(BaseViewColor.textPrimary)
                             
                             TextField("Tell us more...", text: $details, axis: .vertical)
                                 .textFieldStyle(PlainTextFieldStyle())
-                                .font(AppFont.body)
-                                .padding(AppLayout.spacing)
+                                .font(BaseViewFont.body)
+                                .padding(BaseViewLayout.spacing)
                                 .overlay(
                                     Capsule()
-                                        .strokeBorder(Color.borderSecondary, style: StrokeStyle(lineWidth: 1, dash: AppLayout.dashedPattern))
+                                        .strokeBorder(BaseViewColor.borderSecondary, style: StrokeStyle(lineWidth: 1, dash: BaseViewLayout.dashedPattern))
                                 )
                                 .lineLimit(4...6)
                         }
@@ -666,15 +666,15 @@ struct ReportSheet: View {
                             dismiss()
                         } label: {
                             Text("Submit Report")
-                                .font(AppFont.monoCTA)
-                                .foregroundStyle(Color.bgPrimary)
+                                .font(BaseViewFont.monoCTA)
+                                .foregroundStyle(BaseViewColor.background)
                                 .padding(.vertical, 12)
                                 .frame(maxWidth: .infinity, alignment: .center)
-                                .background(Color.stateError)
+                                .background(BaseViewColor.semanticError)
                                 .clipShape(Capsule())
                         }
                     }
-                    .padding(AppLayout.spacing)
+                    .padding(BaseViewLayout.spacing)
                 }
             }
         }

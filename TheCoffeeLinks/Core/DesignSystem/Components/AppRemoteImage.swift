@@ -29,10 +29,10 @@ struct AppRemoteImage<Overlay: View>: View {
         width: CGFloat? = nil,
         height: CGFloat? = nil,
         aspectRatio: CGFloat? = nil,
-        cornerRadius: CGFloat = AppLayout.cornerRadius,
+        cornerRadius: CGFloat = BaseViewLayout.cornerRadius,
         backgroundColor: Color = BaseViewColor.placeholder,
         borderColor: Color? = nil,
-        borderWidth: CGFloat = AppLayout.borderWidth,
+        borderWidth: CGFloat = BaseViewLayout.borderWidth,
         showsProgress: Bool = false,
         placeholderIcon: String? = "photo",
         placeholderText: String? = nil,
@@ -59,11 +59,11 @@ struct AppRemoteImage<Overlay: View>: View {
             .frame(width: width, height: height)
             .modifier(AppRemoteImageAspectRatioModifier(aspectRatio: aspectRatio))
             .clipShape(
-                RoundedRectangle(cornerRadius: cornerRadius, style: AppLayout.cornerStyle)
+                RoundedRectangle(cornerRadius: cornerRadius, style: BaseViewLayout.cornerStyle)
             )
             .overlay {
                 if let borderColor {
-                    RoundedRectangle(cornerRadius: cornerRadius, style: AppLayout.cornerStyle)
+                    RoundedRectangle(cornerRadius: cornerRadius, style: BaseViewLayout.cornerStyle)
                         .strokeBorder(borderColor, lineWidth: borderWidth)
                 }
             }
@@ -84,7 +84,7 @@ struct AppRemoteImage<Overlay: View>: View {
                                 placeholder
                                     .overlay {
                                         ProgressView()
-                                            .tint(Color.accentPrimary)
+                                            .tint(BaseViewColor.accent)
                                     }
                             }
                         case .success(let image):
@@ -116,7 +116,7 @@ struct AppRemoteImage<Overlay: View>: View {
                 placeholder
                     .overlay {
                         ProgressView()
-                            .tint(Color.accentPrimary)
+                            .tint(BaseViewColor.accent)
                     }
             }
         case .success(let image):
@@ -138,12 +138,12 @@ struct AppRemoteImage<Overlay: View>: View {
 
             if let placeholderText, !placeholderText.isEmpty {
                 Text(placeholderText)
-                    .font(AppFont.body)
-                    .foregroundStyle(Color.accentPrimary)
+                    .font(BaseViewFont.body)
+                    .foregroundStyle(BaseViewColor.accent)
             } else if let placeholderIcon {
                 Image(placeholderIcon)
-                    .font(AppFont.productTitle)
-                    .foregroundStyle(Color.textPrimary.opacity(0.72))
+                    .font(BaseViewFont.productTitle)
+                    .foregroundStyle(BaseViewColor.textPrimary.opacity(0.72))
             }
         }
     }
@@ -157,10 +157,10 @@ extension AppRemoteImage where Overlay == EmptyView {
         width: CGFloat? = nil,
         height: CGFloat? = nil,
         aspectRatio: CGFloat? = nil,
-        cornerRadius: CGFloat = AppLayout.cornerRadius,
+        cornerRadius: CGFloat = BaseViewLayout.cornerRadius,
         backgroundColor: Color = BaseViewColor.placeholder,
         borderColor: Color? = nil,
-        borderWidth: CGFloat = AppLayout.borderWidth,
+        borderWidth: CGFloat = BaseViewLayout.borderWidth,
         showsProgress: Bool = false,
         placeholderIcon: String? = "photo",
         placeholderText: String? = nil
@@ -200,7 +200,7 @@ private struct AppRemoteImageAspectRatioModifier: ViewModifier {
 
 struct AppRemoteImage_Previews: PreviewProvider {
     static var previews: some View {
-        VStack(spacing: AppLayout.spacing) {
+        VStack(spacing: BaseViewLayout.spacing) {
             AppRemoteImage(
                 url: nil,
                 width: 120,
@@ -215,16 +215,16 @@ struct AppRemoteImage_Previews: PreviewProvider {
                 placeholderText: "A"
             ) {
                 Text("LIVE")
-                    .font(AppFont.uiMicro)
+                    .font(BaseViewFont.uiMicro)
                     .padding(.horizontal, 6)
                     .padding(.vertical, 4)
-                    .background(Color.backgroundPaper.opacity(0.92))
+                    .background(BaseViewColor.background.opacity(0.92))
                     .padding(6)
                     .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomLeading)
             }
         }
         .padding()
-        .background(Color.backgroundPaper)
+        .background(BaseViewColor.background)
         .previewLayout(.sizeThatFits)
     }
 }

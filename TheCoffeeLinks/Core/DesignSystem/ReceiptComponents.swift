@@ -2,7 +2,7 @@
 //  ReceiptComponents.swift
 //  thecoffeelinks-client-ios
 //
-//  Receipt-Editorial Design System: Shared UI Components
+//  BaseView Design System: Shared UI Components
 //  Derived from canonical CheckoutView.swift
 //
 
@@ -141,7 +141,7 @@ struct ReceiptHeader: View {
     var onBack: (() -> Void)? = nil
     
     var body: some View {
-        HStack(alignment: .center, spacing: AppLayout.spacing) {
+        HStack(alignment: .center, spacing: BaseViewLayout.spacing) {
             if showBackButton {
                 ReceiptIconButton(
                     icon: "arrow_left",
@@ -153,15 +153,15 @@ struct ReceiptHeader: View {
             }
             
             Text(title)
-                .font(AppFont.displayTitle)
+                .font(BaseViewFont.displayTitle)
                 .lineLimit(1)
-                .foregroundStyle(Color.textInk)
+                .foregroundStyle(BaseViewColor.textPrimary)
                 .padding(.vertical, 24)
                 .frame(maxWidth: .infinity, alignment: .leading)
         }
-        .frame(minHeight: AppLayout.touchTarget)
+        .frame(minHeight: BaseViewLayout.touchTarget)
         .frame(maxWidth: .infinity, alignment: .center)
-        .padding(.horizontal, AppLayout.spacing)
+        .padding(.horizontal, BaseViewLayout.spacing)
     }
 }
 
@@ -174,8 +174,8 @@ struct ReceiptSectionHeader: View {
     var body: some View {
         Text(title)
             .textCase(.uppercase)
-            .font(AppFont.sectionHeader)
-            .foregroundStyle(Color.textInk)
+            .font(BaseViewFont.sectionHeader)
+            .foregroundStyle(BaseViewColor.textPrimary)
             .frame(maxWidth: .infinity, alignment: .leading)
     }
 }
@@ -191,12 +191,12 @@ struct ReceiptTextField: View {
     var body: some View {
         TextField(placeholder, text: $text)
             .textFieldStyle(PlainTextFieldStyle())
-            .font(AppFont.monoBody)
+            .font(BaseViewFont.monoBody)
             .padding(.horizontal, 8)
             .padding(.vertical, 6)
             .overlay {
-                RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle)
-                    .strokeBorder(Color.borderTertiary, style: StrokeStyle(lineWidth: 1, dash: AppLayout.dashedPattern))
+                RoundedRectangle(cornerRadius: BaseViewLayout.cornerRadius, style: BaseViewLayout.cornerStyle)
+                    .strokeBorder(BaseViewColor.borderSecondary, style: StrokeStyle(lineWidth: 1, dash: BaseViewLayout.dashedPattern))
             }
             .keyboardType(keyboardType)
     }
@@ -210,14 +210,14 @@ struct ReceiptPlaceholderButton: View {
     var body: some View {
         Button(action: action) {
             Text(placeholder)
-                .font(AppFont.body)
-                .foregroundStyle(Color.textTertiary)
+                .font(BaseViewFont.body)
+                .foregroundStyle(BaseViewColor.textTertiary)
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(.horizontal, 8)
                 .padding(.vertical, 6)
                 .overlay {
-                    RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle)
-                        .strokeBorder(Color.borderTertiary, style: StrokeStyle(lineWidth: 1, dash: AppLayout.dashedPattern))
+                    RoundedRectangle(cornerRadius: BaseViewLayout.cornerRadius, style: BaseViewLayout.cornerStyle)
+                        .strokeBorder(BaseViewColor.borderSecondary, style: StrokeStyle(lineWidth: 1, dash: BaseViewLayout.dashedPattern))
                 }
         }
     }
@@ -235,29 +235,29 @@ struct ReceiptItemRow: View {
     var onDecrease: (() -> Void)? = nil
     
     var body: some View {
-        HStack(spacing: AppLayout.spacingMedium) {
+        HStack(spacing: BaseViewLayout.spacingMedium) {
             AppRemoteImage(
                 url: URL(string: imageUrl ?? ""),
                 source: .native,
                 contentMode: .fill,
-                width: AppLayout.productImageSize,
-                height: AppLayout.productImageSize
+                width: BaseViewLayout.productImageSize,
+                height: BaseViewLayout.productImageSize
             )
             
             VStack(alignment: .leading, spacing: 0) {
                 Text(name)
-                    .font(AppFont.productTitle)
+                    .font(BaseViewFont.productTitle)
                     .lineLimit(3)
-                    .foregroundStyle(Color.textInk)
+                    .foregroundStyle(BaseViewColor.textPrimary)
                 
-                Spacer(minLength: AppLayout.spacing)
+                Spacer(minLength: BaseViewLayout.spacing)
                 
                 HStack(spacing: 0) {
                     Text(price)
-                        .font(AppFont.monoBody)
+                        .font(BaseViewFont.monoBody)
                         .lineLimit(1)
                         .minimumScaleFactor(0.5)
-                        .foregroundStyle(Color.primaryEspresso)
+                        .foregroundStyle(BaseViewColor.accent)
                     
                     Spacer(minLength: 0)
                     
@@ -303,18 +303,18 @@ struct ReceiptTotalBar: View {
     let action: () -> Void
     
     var body: some View {
-        VStack(alignment: .leading, spacing: AppLayout.spacing) {
+        VStack(alignment: .leading, spacing: BaseViewLayout.spacing) {
             HStack(spacing: 0) {
                 Text(totalLabel)
-                    .font(AppFont.totalLabel)
+                    .font(BaseViewFont.totalLabel)
                     .lineLimit(1)
-                    .foregroundStyle(Color.textInk)
+                    .foregroundStyle(BaseViewColor.textPrimary)
                 
-                Spacer(minLength: AppLayout.spacing)
+                Spacer(minLength: BaseViewLayout.spacing)
                 
                 Text(totalValue)
-                    .font(AppFont.monoTitle)
-                    .foregroundStyle(Color.textInk)
+                    .font(BaseViewFont.monoTitle)
+                    .foregroundStyle(BaseViewColor.textPrimary)
             }
             
             ReceiptPrimaryButton(
@@ -325,20 +325,20 @@ struct ReceiptTotalBar: View {
             )
         }
         .padding(.vertical, 24)
-        .frame(minHeight: AppLayout.touchTarget)
+        .frame(minHeight: BaseViewLayout.touchTarget)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(.horizontal, AppLayout.spacing)
-        .background(Color.backgroundPaper, ignoresSafeAreaEdges: .all)
+        .padding(.horizontal, BaseViewLayout.spacing)
+        .background(BaseViewColor.background, ignoresSafeAreaEdges: .all)
         .background {
-            WaveRect(stepWidth: AppLayout.waveStepWidth, waveEdge: .top)
-                .fill(Color.backgroundPaper)
-                .offset(y: -AppLayout.halfUnit)
+            WaveRect(stepWidth: BaseViewLayout.waveStepWidth, waveEdge: .top)
+                .fill(BaseViewColor.background)
+                .offset(y: -BaseViewLayout.halfUnit)
         }
         .overlay(alignment: .top) {
-            WaveSeparator(stepWidth: AppLayout.waveStepWidth)
+            WaveSeparator(stepWidth: BaseViewLayout.waveStepWidth)
                 .stroke(Color.secondary, lineWidth: 1)
                 .frame(height: 1)
-                .offset(y: -AppLayout.halfUnit)
+                .offset(y: -BaseViewLayout.halfUnit)
         }
     }
 }
@@ -346,17 +346,17 @@ struct ReceiptTotalBar: View {
 // MARK: - Image Placeholder
 
 struct ReceiptImagePlaceholder: View {
-    var size: CGFloat = AppLayout.productImageSize
+    var size: CGFloat = BaseViewLayout.productImageSize
     
     var body: some View {
         Rectangle()
             .fill(BaseViewColor.placeholder)
             .frame(width: size, height: size)
-            .cornerRadius(AppLayout.cornerRadius)
+            .cornerRadius(BaseViewLayout.cornerRadius)
             .overlay {
                 Image("photo")
-                    .font(AppFont.productTitle)
-                    .foregroundStyle(Color.textPrimary.opacity(0.72))
+                    .font(BaseViewFont.productTitle)
+                    .foregroundStyle(BaseViewColor.textPrimary.opacity(0.72))
             }
     }
 }
@@ -369,16 +369,16 @@ struct ReceiptLoadingLog: View {
         VStack(alignment: .leading, spacing: 8) {
             ForEach(0..<5, id: \.self) { i in
                 Text("> Loading \(i + 1)...")
-                    .font(AppFont.uiMicro)
-                    .foregroundStyle(Color.primaryEspresso)
+                    .font(BaseViewFont.uiMicro)
+                    .foregroundStyle(BaseViewColor.accent)
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(AppLayout.spacing)
-        .background(Color.backgroundPaper)
+        .padding(BaseViewLayout.spacing)
+        .background(BaseViewColor.background)
         .overlay(
-            RoundedRectangle(cornerRadius: AppLayout.cornerRadius, style: AppLayout.cornerStyle)
-                .strokeBorder(Color.primaryEspresso, lineWidth: 1)
+            RoundedRectangle(cornerRadius: BaseViewLayout.cornerRadius, style: BaseViewLayout.cornerStyle)
+                .strokeBorder(BaseViewColor.accent, lineWidth: 1)
         )
     }
 }
@@ -410,7 +410,7 @@ struct VoucherCardGhost: View {
             VStack(alignment: .leading, spacing: 0) {
                 Text("VOUCHER")
                     .font(.custom("GeologicaThinRoman-Medium", size: 18))
-                    .foregroundStyle(Color.textPrimary)
+                    .foregroundStyle(BaseViewColor.textPrimary)
                 RoundedRectangle(cornerRadius: 3)
                     .fill(Color.gray.opacity(0.3))
                     .frame(width: 80, height: 12)
@@ -424,11 +424,11 @@ struct VoucherCardGhost: View {
                     }
                     Spacer()
                     Text("DÙNG")
-                        .font(AppFont.uiMicro)
+                        .font(BaseViewFont.uiMicro)
                         .fontWeight(.semibold)
                         .kerning(2)
                         .underline()
-                        .foregroundStyle(Color.textPrimary)
+                        .foregroundStyle(BaseViewColor.textPrimary)
                 }
             }
             .padding(.leading, 13)

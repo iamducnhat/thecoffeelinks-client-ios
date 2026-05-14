@@ -2,7 +2,7 @@
 //  OrderDetailViews.swift
 //  thecoffeelinks-client-ios
 //
-//  Receipt-Editorial Design
+//  BaseView Design
 //  Aligned with canonical CheckoutView.swift
 //
 
@@ -19,58 +19,58 @@ struct OrderDetailView: View {
     
     var body: some View {
         ZStack(alignment: .top) {
-            Color.bgPrimary.ignoresSafeArea()
+            BaseViewColor.background.ignoresSafeArea()
             
             // Fixed Navigation Header
-            HStack(alignment: .center, spacing: AppLayout.spacing) {
+            HStack(alignment: .center, spacing: BaseViewLayout.spacing) {
                 Button { dismiss() } label: {
                     Image(systemName: "xmark")
-                        .font(AppFont.navIcon)
-                        .foregroundStyle(Color.textPrimary)
-                        .frame(minWidth: AppLayout.touchTarget, minHeight: AppLayout.touchTarget)
+                        .font(BaseViewFont.navIcon)
+                        .foregroundStyle(BaseViewColor.textPrimary)
+                        .frame(minWidth: BaseViewLayout.touchTarget, minHeight: BaseViewLayout.touchTarget)
                         .background {
                             Circle()
-                                .fill(Color.bgPrimary)
+                                .fill(BaseViewColor.background)
                         }
                         .overlay {
                             Circle()
-                                .strokeBorder(Color.textPrimary, lineWidth: 1)
+                                .strokeBorder(BaseViewColor.textPrimary, lineWidth: 1)
                                 .opacity(min(88.8, max(scrollOffset, 0.0)) / 99.9)
                         }
                 }
                 
                 Text("Order #\(order.id.prefix(8).uppercased())")
-                    .font(AppFont.displayTitle)
+                    .font(BaseViewFont.displayTitle)
                     .lineLimit(1)
-                    .foregroundStyle(Color.textPrimary)
+                    .foregroundStyle(BaseViewColor.textPrimary)
                     .padding(.vertical, 24)
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .hidden()
             }
-            .frame(minHeight: AppLayout.touchTarget)
+            .frame(minHeight: BaseViewLayout.touchTarget)
             .frame(maxWidth: .infinity, alignment: .center)
-            .padding(.horizontal, AppLayout.spacing)
+            .padding(.horizontal, BaseViewLayout.spacing)
             
             VStack(spacing: 0) {
                 ScrollView(.vertical) {
                     // Navigation Header (Scrollable)
-                    HStack(alignment: .center, spacing: AppLayout.spacing) {
+                    HStack(alignment: .center, spacing: BaseViewLayout.spacing) {
                         Image(systemName: "xmark")
-                            .font(AppFont.navIcon)
-                            .foregroundStyle(Color.textPrimary)
-                            .frame(minWidth: AppLayout.touchTarget, minHeight: AppLayout.touchTarget)
+                            .font(BaseViewFont.navIcon)
+                            .foregroundStyle(BaseViewColor.textPrimary)
+                            .frame(minWidth: BaseViewLayout.touchTarget, minHeight: BaseViewLayout.touchTarget)
                             .hidden()
                         
                         Text("Order #\(order.id.prefix(8).uppercased())")
-                            .font(AppFont.displayTitle)
+                            .font(BaseViewFont.displayTitle)
                             .lineLimit(1)
-                            .foregroundStyle(Color.textPrimary)
+                            .foregroundStyle(BaseViewColor.textPrimary)
                             .padding(.vertical, 24)
                             .frame(maxWidth: .infinity, alignment: .leading)
                     }
-                    .frame(minHeight: AppLayout.touchTarget)
+                    .frame(minHeight: BaseViewLayout.touchTarget)
                     .frame(maxWidth: .infinity, alignment: .center)
-                    .padding(.horizontal, AppLayout.spacing)
+                    .padding(.horizontal, BaseViewLayout.spacing)
                     .overlay(alignment: .bottom) {
                         Color.secondary.frame(height: 1, alignment: .top)
                     }
@@ -81,70 +81,70 @@ struct OrderDetailView: View {
                         self.scrollOffset = $0
                     }
                     
-                    LazyVStack(spacing: AppLayout.spacingXL) {
+                    LazyVStack(spacing: BaseViewLayout.spacingXL) {
                         // Status Section
-                        VStack(alignment: .leading, spacing: AppLayout.spacing) {
+                        VStack(alignment: .leading, spacing: BaseViewLayout.spacing) {
                             Text(String(localized: "order_detail_status"))
                                 .textCase(.uppercase)
-                                .font(AppFont.sectionHeader)
-                                .foregroundStyle(Color.textPrimary)
+                                .font(BaseViewFont.sectionHeader)
+                                .foregroundStyle(BaseViewColor.textPrimary)
                             
                             HStack {
                                 VStack(alignment: .leading, spacing: 4) {
                                     Text(order.status.displayName)
-                                        .font(AppFont.headline)
-                                        .foregroundStyle(Color.textPrimary)
+                                        .font(BaseViewFont.headline)
+                                        .foregroundStyle(BaseViewColor.textPrimary)
                                     Text(statusMessage)
-                                        .font(AppFont.uiCaption)
-                                        .foregroundStyle(Color.textSecondary)
+                                        .font(BaseViewFont.uiCaption)
+                                        .foregroundStyle(BaseViewColor.textSecondary)
                                 }
                                 
                                 Spacer()
                                 
                                 Text(order.status.isActive ? "ACTIVE" : "CLOSED")
-                                    .font(AppFont.monoBody)
-                                    .foregroundStyle(order.status.isActive ? Color.accentPrimary : Color.textSecondary)
+                                    .font(BaseViewFont.monoBody)
+                                    .foregroundStyle(order.status.isActive ? BaseViewColor.accent : BaseViewColor.textSecondary)
                                     .padding(.horizontal, 8)
                                     .padding(.vertical, 4)
                                     .overlay(
                                         Capsule()
-                                            .strokeBorder(order.status.isActive ? Color.accentPrimary : Color.border, lineWidth: 1)
+                                            .strokeBorder(order.status.isActive ? BaseViewColor.accent : BaseViewColor.border, lineWidth: 1)
                                     )
                             }
-                            .padding(AppLayout.spacing)
-                            .background(Color.surfacePrimary)
+                            .padding(BaseViewLayout.spacing)
+                            .background(BaseViewColor.surface)
                             .overlay(
                                 Capsule()
-                                    .strokeBorder(Color.border, lineWidth: 1)
+                                    .strokeBorder(BaseViewColor.border, lineWidth: 1)
                             )
                         }
-                        .padding(.horizontal, AppLayout.spacing)
+                        .padding(.horizontal, BaseViewLayout.spacing)
                         
                         // Progress Bar (if active)
                         if order.status != .completed && order.status != .cancelled {
-                            VStack(alignment: .leading, spacing: AppLayout.spacing) {
+                            VStack(alignment: .leading, spacing: BaseViewLayout.spacing) {
                                 Text(String(localized: "order_detail_progress"))
                                     .textCase(.uppercase)
-                                    .font(AppFont.sectionHeader)
-                                    .foregroundStyle(Color.textPrimary)
+                                    .font(BaseViewFont.sectionHeader)
+                                    .foregroundStyle(BaseViewColor.textPrimary)
                                 
                                 OrderProgressBar(progress: progressValue)
                             }
-                            .padding(.horizontal, AppLayout.spacing)
+                            .padding(.horizontal, BaseViewLayout.spacing)
                         }
                         
                         // Divider
-                        WaveSeparator(stepWidth: AppLayout.waveStepWidth)
+                        WaveSeparator(stepWidth: BaseViewLayout.waveStepWidth)
     .stroke(Color.secondary, lineWidth: 1)
                             .frame(height: 1)
-                            .padding(.horizontal, AppLayout.spacing)
+                            .padding(.horizontal, BaseViewLayout.spacing)
                         
                         // Items Section
-                        VStack(alignment: .leading, spacing: AppLayout.spacing) {
+                        VStack(alignment: .leading, spacing: BaseViewLayout.spacing) {
                             Text(String(localized: "order_detail_items"))
                                 .textCase(.uppercase)
-                                .font(AppFont.sectionHeader)
-                                .foregroundStyle(Color.textPrimary)
+                                .font(BaseViewFont.sectionHeader)
+                                .foregroundStyle(BaseViewColor.textPrimary)
                             
                             VStack(spacing: 0) {
                                 ForEach(order.items) { item in
@@ -155,13 +155,13 @@ struct OrderDetailView: View {
                                     }
                                 }
                             }
-                            .background(Color.bgPrimary)
+                            .background(BaseViewColor.background)
                             .overlay(
                                 Capsule()
-                                    .strokeBorder(Color.border, lineWidth: 1)
+                                    .strokeBorder(BaseViewColor.border, lineWidth: 1)
                             )
                         }
-                        .padding(.horizontal, AppLayout.spacing)
+                        .padding(.horizontal, BaseViewLayout.spacing)
                         
                         // Total Section
                         VStack(spacing: 0) {
@@ -169,44 +169,44 @@ struct OrderDetailView: View {
                             ReceiptSummaryRow(label: "Tax & fees", value: (0.0).formattedVND)
                             ReceiptSummaryRow(label: "Total", value: order.totalAmount.formattedVND, isTotal: true)
                         }
-                        .background(Color.bgPrimary)
+                        .background(BaseViewColor.background)
                         .overlay(
                             Capsule()
-                                .strokeBorder(Color.textPrimary, lineWidth: 1)
+                                .strokeBorder(BaseViewColor.textPrimary, lineWidth: 1)
                         )
-                        .padding(.horizontal, AppLayout.spacing)
+                        .padding(.horizontal, BaseViewLayout.spacing)
                         
                         // Order Details
-                        VStack(alignment: .leading, spacing: AppLayout.spacing) {
+                        VStack(alignment: .leading, spacing: BaseViewLayout.spacing) {
                             Text(String(localized: "order_detail_details"))
                                 .textCase(.uppercase)
-                                .font(AppFont.sectionHeader)
-                                .foregroundStyle(Color.textPrimary)
+                                .font(BaseViewFont.sectionHeader)
+                                .foregroundStyle(BaseViewColor.textPrimary)
                             
                             VStack(spacing: 0) {
                                 DetailRow(label: "Order ID", value: String(order.id.prefix(8)).uppercased())
                                 DetailRow(label: "Placed", value: order.createdAt.formatted(.dateTime.month().day().hour().minute()))
                                 DetailRow(label: "Payment", value: order.paymentMethod.displayName)
                             }
-                            .background(Color.bgPrimary)
+                            .background(BaseViewColor.background)
                             .overlay(
                                 Capsule()
-                                    .strokeBorder(Color.border, lineWidth: 1)
+                                    .strokeBorder(BaseViewColor.border, lineWidth: 1)
                             )
                         }
-                        .padding(.horizontal, AppLayout.spacing)
+                        .padding(.horizontal, BaseViewLayout.spacing)
 
                         // Support / Recovery
-                        VStack(alignment: .leading, spacing: AppLayout.spacing) {
+                        VStack(alignment: .leading, spacing: BaseViewLayout.spacing) {
                             Text("Need help?")
                                 .textCase(.uppercase)
-                                .font(AppFont.sectionHeader)
-                                .foregroundStyle(Color.textPrimary)
+                                .font(BaseViewFont.sectionHeader)
+                                .foregroundStyle(BaseViewColor.textPrimary)
 
                             VStack(alignment: .leading, spacing: 12) {
                                 Text("Report a payment, pickup, delivery, or quality issue tied to this order.")
-                                    .font(AppFont.uiCaption)
-                                    .foregroundStyle(Color.textSecondary)
+                                    .font(BaseViewFont.uiCaption)
+                                    .foregroundStyle(BaseViewColor.textSecondary)
 
                                 Button {
                                     showingIssueSheet = true
@@ -217,28 +217,28 @@ struct OrderDetailView: View {
                                         Spacer()
                                         Image(systemName: "chevron.right")
                                     }
-                                    .font(AppFont.uiButton)
-                                    .foregroundStyle(Color.bgPrimary)
-                                    .padding(AppLayout.spacing)
-                                    .background(Color.textPrimary)
+                                    .font(BaseViewFont.uiButton)
+                                    .foregroundStyle(BaseViewColor.background)
+                                    .padding(BaseViewLayout.spacing)
+                                    .background(BaseViewColor.textPrimary)
                                 }
 
                                 if let issueMessage {
                                     Text(issueMessage)
-                                        .font(AppFont.uiCaption)
-                                        .foregroundStyle(Color.textSecondary)
+                                        .font(BaseViewFont.uiCaption)
+                                        .foregroundStyle(BaseViewColor.textSecondary)
                                 }
                             }
-                            .padding(AppLayout.spacing)
-                            .background(Color.surfacePrimary)
+                            .padding(BaseViewLayout.spacing)
+                            .background(BaseViewColor.surface)
                             .overlay(
                                 Capsule()
-                                    .strokeBorder(Color.border, lineWidth: 1)
+                                    .strokeBorder(BaseViewColor.border, lineWidth: 1)
                             )
                         }
-                        .padding(.horizontal, AppLayout.spacing)
+                        .padding(.horizontal, BaseViewLayout.spacing)
                     }
-                    .padding(.top, AppLayout.spacing)
+                    .padding(.top, BaseViewLayout.spacing)
                     .padding(.bottom, 100)
                 }
                 .coordinateSpace(name: "scroll")
@@ -247,21 +247,21 @@ struct OrderDetailView: View {
             .zIndex(-Double.infinity)
         }
         .sheet(isPresented: $showingIssueSheet) {
-            VStack(alignment: .leading, spacing: AppLayout.spacing) {
+            VStack(alignment: .leading, spacing: BaseViewLayout.spacing) {
                 Text("Order support")
-                    .font(AppFont.displayTitle)
-                    .foregroundStyle(Color.textPrimary)
+                    .font(BaseViewFont.displayTitle)
+                    .foregroundStyle(BaseViewColor.textPrimary)
 
                 Text("Tell us what happened. Support will see this with your order receipt.")
-                    .font(AppFont.uiCaption)
-                    .foregroundStyle(Color.textSecondary)
+                    .font(BaseViewFont.uiCaption)
+                    .foregroundStyle(BaseViewColor.textSecondary)
 
                 TextEditor(text: $issueText)
                     .frame(minHeight: 160)
                     .padding(8)
                     .overlay(
                         RoundedRectangle(cornerRadius: 8)
-                            .strokeBorder(Color.border, lineWidth: 1)
+                            .strokeBorder(BaseViewColor.border, lineWidth: 1)
                     )
 
                 Button {
@@ -274,9 +274,9 @@ struct OrderDetailView: View {
                         Text(isSubmittingIssue ? "Sending..." : "Send to support")
                     }
                     .frame(maxWidth: .infinity)
-                    .padding(AppLayout.spacing)
-                    .background(Color.textPrimary)
-                    .foregroundStyle(Color.bgPrimary)
+                    .padding(BaseViewLayout.spacing)
+                    .background(BaseViewColor.textPrimary)
+                    .foregroundStyle(BaseViewColor.background)
                 }
                 .disabled(isSubmittingIssue || issueText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
 
@@ -285,7 +285,7 @@ struct OrderDetailView: View {
                 }
                 .frame(maxWidth: .infinity)
             }
-            .padding(AppLayout.spacingXL)
+            .padding(BaseViewLayout.spacingXL)
             .presentationDetents([.medium])
         }
     }
@@ -353,27 +353,27 @@ struct OrderProgressBar: View {
     var body: some View {
         HStack(spacing: 4) {
             Text("[")
-                .font(AppFont.monoBody)
+                .font(BaseViewFont.monoBody)
             
             Text(barString)
-                .font(AppFont.monoBody)
-                .foregroundStyle(Color.accentPrimary)
+                .font(BaseViewFont.monoBody)
+                .foregroundStyle(BaseViewColor.accent)
             
             Text("]")
-                .font(AppFont.monoBody)
+                .font(BaseViewFont.monoBody)
             
             Spacer()
             
             Text("\(Int(progress * 100))%")
-                .font(AppFont.monoBody)
-                .foregroundStyle(Color.accentPrimary)
+                .font(BaseViewFont.monoBody)
+                .foregroundStyle(BaseViewColor.accent)
         }
-        .foregroundStyle(Color.textPrimary)
-        .padding(AppLayout.spacing)
-        .background(Color.surfacePrimary)
+        .foregroundStyle(BaseViewColor.textPrimary)
+        .padding(BaseViewLayout.spacing)
+        .background(BaseViewColor.surface)
         .overlay(
             Capsule()
-                .strokeBorder(Color.border, lineWidth: 1)
+                .strokeBorder(BaseViewColor.border, lineWidth: 1)
         )
     }
     
@@ -390,35 +390,35 @@ struct OrderItemRow: View {
     let item: OrderItem
     
     var body: some View {
-        HStack(alignment: .top, spacing: AppLayout.spacing) {
+        HStack(alignment: .top, spacing: BaseViewLayout.spacing) {
             Text("\(item.quantity)×")
-                .font(AppFont.monoBody.bold())
-                .foregroundStyle(Color.accentPrimary)
+                .font(BaseViewFont.monoBody.bold())
+                .foregroundStyle(BaseViewColor.accent)
                 .frame(width: 30, alignment: .leading)
             
             VStack(alignment: .leading, spacing: 4) {
                 Text(item.productName)
-                    .font(AppFont.body)
-                    .foregroundStyle(Color.textPrimary)
+                    .font(BaseViewFont.body)
+                    .foregroundStyle(BaseViewColor.textPrimary)
                 
                 Text(item.customization.displayText)
-                    .font(AppFont.uiMicro)
-                    .foregroundStyle(Color.textSecondary)
+                    .font(BaseViewFont.uiMicro)
+                    .foregroundStyle(BaseViewColor.textSecondary)
                 
                 if let notes = item.customization.notes {
                     Text("Note: \(notes)")
-                        .font(AppFont.uiMicro)
-                        .foregroundStyle(Color.accentPrimary)
+                        .font(BaseViewFont.uiMicro)
+                        .foregroundStyle(BaseViewColor.accent)
                 }
             }
             
             Spacer()
             
             Text(item.totalPrice.formattedVND)
-                .font(AppFont.monoBody)
-                .foregroundStyle(Color.textPrimary)
+                .font(BaseViewFont.monoBody)
+                .foregroundStyle(BaseViewColor.textPrimary)
         }
-        .padding(AppLayout.spacing)
+        .padding(BaseViewLayout.spacing)
     }
 }
 
@@ -431,14 +431,14 @@ struct DetailRow: View {
     var body: some View {
         HStack {
             Text(label)
-                .font(AppFont.uiCaption)
-                .foregroundStyle(Color.textSecondary)
+                .font(BaseViewFont.uiCaption)
+                .foregroundStyle(BaseViewColor.textSecondary)
             Spacer()
             Text(value)
-                .font(AppFont.monoBody)
-                .foregroundStyle(Color.textPrimary)
+                .font(BaseViewFont.monoBody)
+                .foregroundStyle(BaseViewColor.textPrimary)
         }
-        .padding(AppLayout.spacing)
+        .padding(BaseViewLayout.spacing)
     }
 }
 
@@ -452,14 +452,14 @@ struct ReceiptSummaryRow: View {
     var body: some View {
         HStack {
             Text(label)
-                .font(isTotal ? AppFont.totalLabel : AppFont.body)
-                .foregroundStyle(Color.textPrimary)
+                .font(isTotal ? BaseViewFont.totalLabel : BaseViewFont.body)
+                .foregroundStyle(BaseViewColor.textPrimary)
             Spacer()
             Text(value)
-                .font(isTotal ? AppFont.monoTitle : AppFont.monoBody)
-                .foregroundStyle(isTotal ? Color.textPrimary : Color.textSecondary)
+                .font(isTotal ? BaseViewFont.monoTitle : BaseViewFont.monoBody)
+                .foregroundStyle(isTotal ? BaseViewColor.textPrimary : BaseViewColor.textSecondary)
         }
-        .padding(AppLayout.spacing)
-        .background(isTotal ? Color.surfacePrimary : Color.bgPrimary)
+        .padding(BaseViewLayout.spacing)
+        .background(isTotal ? BaseViewColor.surface : BaseViewColor.background)
     }
 }

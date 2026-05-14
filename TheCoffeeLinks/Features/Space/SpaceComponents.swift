@@ -1,7 +1,7 @@
 import SwiftUI
 
-// MARK: - Editorial Booking Sheet
-struct EditorialBookingSheet: View {
+// MARK: - BaseView Booking Sheet
+struct BaseViewBookingSheet: View {
     let store: Store
     @Binding var isPresented: Bool
 
@@ -13,26 +13,26 @@ struct EditorialBookingSheet: View {
     var body: some View {
         NavigationView {
             ScrollView {
-                VStack(alignment: .leading, spacing: AppLayout.spacingXL) {
+                VStack(alignment: .leading, spacing: BaseViewLayout.spacingXL) {
                     // Date & Time
-                    VStack(alignment: .leading, spacing: AppLayout.spacing) {
+                    VStack(alignment: .leading, spacing: BaseViewLayout.spacing) {
                         Text(String(localized: "space_date_time_label"))
-                            .font(AppFont.sectionHeader)
-                            .foregroundStyle(Color.textPrimary)
+                            .font(BaseViewFont.sectionHeader)
+                            .foregroundStyle(BaseViewColor.textPrimary)
 
                         DatePicker("", selection: $selectedDate, in: Date()...)
                             .datePickerStyle(.graphical)
-                            .background(Color.bgPrimary)
-                            .clipShape(RoundedRectangle(cornerRadius: AppRadius.medium, style: .continuous))
+                            .background(BaseViewColor.background)
+                            .clipShape(RoundedRectangle(cornerRadius: BaseViewLayout.radiusMedium, style: .continuous))
                             .overlay(
-                                RoundedRectangle(cornerRadius: AppRadius.medium, style: .continuous)
-                                    .strokeBorder(Color.border, lineWidth: 1)
+                                RoundedRectangle(cornerRadius: BaseViewLayout.radiusMedium, style: .continuous)
+                                    .strokeBorder(BaseViewColor.border, lineWidth: 1)
                             )
                     }
 
                     // Duration & People
-                    VStack(spacing: AppLayout.spacing) {
-                        EditorialStepperRow(
+                    VStack(spacing: BaseViewLayout.spacing) {
+                        BaseViewStepperRow(
                             title: "Duration",
                             value: "\(Int(selectedDuration)) min",
                             onDecrement: {
@@ -43,7 +43,7 @@ struct EditorialBookingSheet: View {
                             }
                         )
 
-                        EditorialStepperRow(
+                        BaseViewStepperRow(
                             title: "People",
                             value: "\(numberOfPeople)",
                             onDecrement: {
@@ -56,15 +56,15 @@ struct EditorialBookingSheet: View {
                     }
 
                     // Preferences
-                    VStack(alignment: .leading, spacing: AppLayout.spacing) {
+                    VStack(alignment: .leading, spacing: BaseViewLayout.spacing) {
                         Text(String(localized: "space_preferences_label"))
-                            .font(AppFont.sectionHeader)
-                            .foregroundStyle(Color.textPrimary)
+                            .font(BaseViewFont.sectionHeader)
+                            .foregroundStyle(BaseViewColor.textPrimary)
 
-                        EditorialToggleRow(title: "Need Power Outlet", isOn: $needsPower)
+                        BaseViewToggleRow(title: "Need Power Outlet", isOn: $needsPower)
                     }
 
-                    Spacer(minLength: AppLayout.spacingXL)
+                    Spacer(minLength: BaseViewLayout.spacingXL)
 
                     // Confirm Button
                     Button {
@@ -72,39 +72,39 @@ struct EditorialBookingSheet: View {
                         isPresented = false
                     } label: {
                         Text(String(localized: "space_confirm_booking"))
-                            .font(AppFont.monoCTA)
-                            .foregroundStyle(Color.bgPrimary)
+                            .font(BaseViewFont.monoCTA)
+                            .foregroundStyle(BaseViewColor.background)
                             .padding(.vertical, 12)
                             .frame(maxWidth: .infinity)
-                            .background(Color.accentPrimary)
+                            .background(BaseViewColor.accent)
                             .clipShape(Capsule())
                     }
                 }
-                .padding(AppLayout.spacing)
+                .padding(BaseViewLayout.spacing)
                 .padding(.vertical, 24)
             }
-            .background(Color.bgPrimary.ignoresSafeArea())
+            .background(BaseViewColor.background.ignoresSafeArea())
             .navigationTitle(String(localized: "space_book_space"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button(String(localized: "common_cancel")) { isPresented = false }
-                        .foregroundColor(Color.textPrimary)
+                        .foregroundColor(BaseViewColor.textPrimary)
                 }
             }
         }
     }
 }
 
-// MARK: - Editorial Barcode Check-In View
-struct EditorialQRCheckInView: View {
+// MARK: - BaseView Barcode Check-In View
+struct BaseViewQRCheckInView: View {
     @Environment(\.dismiss) var dismiss
 
     var body: some View {
         ZStack {
             Color.black.ignoresSafeArea()
 
-            VStack(spacing: AppLayout.spacingXL) {
+            VStack(spacing: BaseViewLayout.spacingXL) {
                 // Header
                 HStack {
                     Spacer()
@@ -122,7 +122,7 @@ struct EditorialQRCheckInView: View {
                 .padding()
 
                 Text(String(localized: "space_scan_barcode"))
-                    .font(AppFont.displayTitle)
+                    .font(BaseViewFont.displayTitle)
                     .foregroundStyle(.white)
 
                 Spacer()
@@ -132,12 +132,12 @@ struct EditorialQRCheckInView: View {
                     .strokeBorder(Color.white, style: StrokeStyle(lineWidth: 1, dash: [20]))
                     .frame(width: 280, height: 280)
                     .overlay(
-                        VStack(spacing: AppLayout.spacing) {
+                        VStack(spacing: BaseViewLayout.spacing) {
                             Image("qrcode.viewfinder")
                                 .font(.system(size: 48))
                                 .foregroundStyle(.white.opacity(0.5))
                             Text(String(localized: "space_camera_preview"))
-                                .font(AppFont.body)
+                                .font(BaseViewFont.body)
                                 .foregroundStyle(.white.opacity(0.8))
                         }
                     )
@@ -145,7 +145,7 @@ struct EditorialQRCheckInView: View {
                 Spacer()
 
                 Text(String(localized: "barcode_scan_instruction"))
-                    .font(AppFont.body)
+                    .font(BaseViewFont.body)
                     .foregroundStyle(.white.opacity(0.8))
                     .multilineTextAlignment(.center)
                     .padding(.bottom, 40)
@@ -154,6 +154,32 @@ struct EditorialQRCheckInView: View {
     }
 }
 
-// Legacy aliases (removed duplications as they are in EditorialLayout now or self-contained)
-typealias BookingSheet = EditorialBookingSheet
-typealias QRCheckInView = EditorialQRCheckInView
+private struct BaseViewStepperRow: View {
+    let title: String
+    let value: String
+    let onDecrement: () -> Void
+    let onIncrement: () -> Void
+
+    var body: some View {
+        AppRow {
+            Text(title)
+                .font(BaseViewFont.body)
+                .foregroundStyle(BaseViewColor.textPrimary)
+        } trailing: {
+            AppStepper(value: value, onDecrement: onDecrement, onIncrement: onIncrement)
+        }
+    }
+}
+
+private struct BaseViewToggleRow: View {
+    let title: String
+    @Binding var isOn: Bool
+
+    var body: some View {
+        AppToggleRow(title: title, isOn: $isOn)
+    }
+}
+
+// Legacy aliases (removed duplications as they are in BaseViewLayout now or self-contained)
+typealias BookingSheet = BaseViewBookingSheet
+typealias QRCheckInView = BaseViewQRCheckInView

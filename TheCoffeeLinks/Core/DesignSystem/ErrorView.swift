@@ -13,39 +13,39 @@ struct ErrorView: View {
     let retryAction: (() -> Void)?
     
     var body: some View {
-        VStack(spacing: Editorial.Spacing.md) {
+        VStack(spacing: BaseViewLayout.spacingMedium) {
             Image("exclamationmark.triangle")
                 .font(.system(size: 40))
                 .foregroundStyle(.red)
             
-            VStack(spacing: Editorial.Spacing.xs) {
+            VStack(spacing: BaseViewLayout.spacingSmall) {
                 Text(title)
-                    .font(Editorial.heading())
+                    .font(BaseViewFont.sectionHeader)
                     .multilineTextAlignment(.center)
-                    .foregroundStyle(Editorial.Colors.textPrimary)
+                    .foregroundStyle(BaseViewColor.textPrimary)
                 
                 Text(message)
-                    .font(Editorial.body())
+                    .font(BaseViewFont.body)
                     .multilineTextAlignment(.center)
-                    .foregroundStyle(Editorial.Colors.textSecondary)
+                    .foregroundStyle(BaseViewColor.textSecondary)
             }
             
             if let retry = retryAction {
                 Button(action: retry) {
                     Text("Try Again")
-                        .font(Editorial.body())
+                        .font(BaseViewFont.body)
                         .fontWeight(.medium)
                         .foregroundStyle(.white)
-                        .padding(.horizontal, Editorial.Spacing.lg)
-                        .padding(.vertical, Editorial.Spacing.sm)
-                        .background(Editorial.Colors.accent)
+                        .padding(.horizontal, BaseViewLayout.spacing)
+                        .padding(.vertical, BaseViewLayout.spacingCompact)
+                        .background(BaseViewColor.accent)
                         .clipShape(Capsule())
                 }
             }
         }
-        .padding(Editorial.Spacing.lg)
+        .padding(BaseViewLayout.spacing)
         .background(Color(UIColor.secondarySystemBackground))
         .clipShape(RoundedRectangle(cornerRadius: 12))
-        .padding(Editorial.Spacing.md)
+        .padding(BaseViewLayout.spacingMedium)
     }
 }

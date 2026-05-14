@@ -236,6 +236,7 @@ private struct EventPager: View {
     @State private var currentIndex: Int = 0
     @State private var dragOffset: CGFloat = 0
     @State private var isHorizontalDrag = false
+    @ScaledMetric(relativeTo: .body) private var inlineCTAReserve: CGFloat = 52
     private let itemSpacing: CGFloat = 0
 
     private var pagerEvents: [Event?] {
@@ -249,7 +250,7 @@ private struct EventPager: View {
         GeometryReader { geometry in
             let cardWidth = max(0, geometry.size.width - (horizontalPadding * 2))
             let cardHeight = cardWidth * 4 / 3
-            let totalCardHeight = cardHeight + (BaseViewLayout.inlineCTAHeight / 2)
+            let totalCardHeight = cardHeight + (inlineCTAReserve / 2)
             let pageStride = cardWidth + itemSpacing
 
             HStack(spacing: itemSpacing) {
@@ -302,7 +303,7 @@ private struct EventPager: View {
         .onChange(of: events.count) { _ in
             currentIndex = min(currentIndex, max(0, pagerEvents.count - 1))
         }
-        .frame(height: (UIScreen.main.bounds.width - (horizontalPadding * 2)) * 4 / 3 + (BaseViewLayout.inlineCTAHeight / 2))
+        .frame(height: (UIScreen.main.bounds.width - (horizontalPadding * 2)) * 4 / 3 + (inlineCTAReserve / 2))
     }
 }
 
@@ -310,6 +311,7 @@ private struct EventCard: View {
     let event: Event?
     let cardWidth: CGFloat
     let cardHeight: CGFloat
+    @ScaledMetric(relativeTo: .body) private var inlineCTAReserve: CGFloat = 52
 
     var body: some View {
         ZStack(alignment: .topLeading) {
@@ -356,12 +358,12 @@ private struct EventCard: View {
             .frame(width: max(0, cardWidth - (BaseViewLayout.badgeInset * 2)))
             .offset(
                 x: BaseViewLayout.badgeInset,
-                y: cardHeight - (BaseViewLayout.inlineCTAHeight / 2)
+                y: cardHeight - (inlineCTAReserve / 2)
             )
         }
         .frame(
             width: cardWidth,
-            height: cardHeight + (BaseViewLayout.inlineCTAHeight / 2),
+            height: cardHeight + (inlineCTAReserve / 2),
             alignment: .topLeading
         )
     }
@@ -379,4 +381,3 @@ private enum HomeDateFormatter {
         return formatter
     }()
 }
-

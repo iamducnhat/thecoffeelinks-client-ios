@@ -2,7 +2,7 @@
 //  CheckoutView.swift
 //  thecoffeelinks-client-ios
 //
-//  Receipt-Editorial Design
+//  BaseView Design
 //  Aligned with canonical CheckoutView.swift
 //
 
@@ -89,7 +89,7 @@ struct CheckoutView: View {
     
     var body: some View {
         ZStack(alignment: .top) {
-            Color.bgPrimary.ignoresSafeArea()
+            BaseViewColor.background.ignoresSafeArea()
                 .zIndex(-Double.infinity)
             
             if cartViewModel.cart.items.isEmpty {
@@ -100,74 +100,74 @@ struct CheckoutView: View {
             } else {
                 orderPlacedObserver
                 // Fixed Navigation Header
-                HStack(alignment: .center, spacing: AppLayout.spacing) {
+                HStack(alignment: .center, spacing: BaseViewLayout.spacing) {
                     Button { dismiss() } label: {
                         Image(systemName: "arrow.left")
                             .font(.system(size: 17, weight: .medium))
-                            .foregroundStyle(Color.textPrimary)
+                            .foregroundStyle(BaseViewColor.textPrimary)
                             .padding(12)
                             .background {
                                 Circle()
-                                    .fill(Color.bgPrimary)
+                                    .fill(BaseViewColor.background)
                             }
                             .overlay {
                                 Circle()
-                                    .strokeBorder(Color.textPrimary, lineWidth: 1)
+                                    .strokeBorder(BaseViewColor.textPrimary, lineWidth: 1)
                                 .opacity(min(88.8, max(scrollOffset, 0.0)) / 99.9)
                             }
                     }
                     
                 Text("Checkout")
-                    .font(AppTypography.displayMedium)
+                    .font(BaseViewFont.displayMedium)
                     .lineLimit(1)
-                    .foregroundColor(Color.textPrimary)
+                    .foregroundColor(BaseViewColor.textPrimary)
                     .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
                     .hidden()
             }
-            .frame(minHeight: AppLayout.touchTarget)
-            .padding(.horizontal, AppLayout.spacing)
-            .padding(.top, AppLayout.spacingCompact)
+            .frame(minHeight: BaseViewLayout.touchTarget)
+            .padding(.horizontal, BaseViewLayout.spacing)
+            .padding(.top, BaseViewLayout.spacingCompact)
             .zIndex(1)
             .fixedSize(horizontal: false, vertical: true)
                 
                 VStack(spacing: 0) {
-                    ScrollView(.vertical) { LazyVStack(spacing: AppLayout.spacing) {
+                    ScrollView(.vertical) { LazyVStack(spacing: BaseViewLayout.spacing) {
                         // Navigation Header (Scrollable)
-                        VStack(spacing: AppLayout.marginCompact) {
-                            HStack(alignment: .center, spacing: AppLayout.spacing) {
+                        VStack(spacing: BaseViewLayout.marginCompact) {
+                            HStack(alignment: .center, spacing: BaseViewLayout.spacing) {
                                 Button { dismiss() } label: {
                                     Image(systemName: "arrow.left")
                                         .font(.system(size: 17, weight: .medium))
-                                        .foregroundStyle(Color.textPrimary)
+                                        .foregroundStyle(BaseViewColor.textPrimary)
                                         .padding(12)
                                         .background {
                                             Circle()
-                                                .fill(Color.bgPrimary)
+                                                .fill(BaseViewColor.background)
                                         }
                                         .overlay {
                                             Circle()
-                                                .strokeBorder(Color.textPrimary, lineWidth: 1)
+                                                .strokeBorder(BaseViewColor.textPrimary, lineWidth: 1)
                                                 .opacity(min(88.8, max(scrollOffset, 0.0)) / 99.9)
                                         }
                                 }
                                 .hidden()
                                 
                                 Text("Checkout")
-                                    .font(AppTypography.displayMedium)
+                                    .font(BaseViewFont.displayMedium)
                                     .lineLimit(1)
-                                    .foregroundColor(Color.textPrimary)
+                                    .foregroundColor(BaseViewColor.textPrimary)
                                     .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
                             }
-                            .frame(minHeight: AppLayout.touchTarget)
+                            .frame(minHeight: BaseViewLayout.touchTarget)
                             .fixedSize(horizontal: false, vertical: true)
                             
                             Divider()
-                                .background(Color.borderSecondary)
-                                .padding(.horizontal, -AppLayout.spacing*2)
+                                .background(BaseViewColor.borderSecondary)
+                                .padding(.horizontal, -BaseViewLayout.spacing*2)
                         }
-                        .padding(.horizontal, AppLayout.spacing)
-                        .padding(.top, AppLayout.spacingCompact)
-                        .background(Color.bgPrimary)
+                        .padding(.horizontal, BaseViewLayout.spacing)
+                        .padding(.top, BaseViewLayout.spacingCompact)
+                        .background(BaseViewColor.background)
                         .background(GeometryReader {
                             Color.clear.preference(key: ViewOffsetKey.self, value: -$0.frame(in: .named("scroll")).origin.y)
                         })
@@ -175,16 +175,16 @@ struct CheckoutView: View {
                             self.scrollOffset = $0
                         }
                         
-                        LazyVStack(spacing: AppLayout.spacing) {
+                        LazyVStack(spacing: BaseViewLayout.spacing) {
                             
                             // MARK: Order Type Section
                             
-                            VStack(alignment: .leading, spacing: AppLayout.spacing) {
+                            VStack(alignment: .leading, spacing: BaseViewLayout.spacing) {
                                 HStack {
                                     Text("order_type_section")
                                         .textCase(.uppercase)
-                                        .font(AppFont.sectionHeader)
-                                        .foregroundColor(Color.textPrimary)
+                                        .font(BaseViewFont.sectionHeader)
+                                        .foregroundColor(BaseViewColor.textPrimary)
                                     
                                     Spacer(minLength: 0)
                                     
@@ -201,14 +201,14 @@ struct CheckoutView: View {
                                         HStack(spacing: 8) {
                                             Text(cartViewModel.cart.mode.displayName)
                                                 .textCase(.uppercase)
-                                                .font(AppFont.monoBody)
+                                                .font(BaseViewFont.monoBody)
                                             Image(systemName: "arrow.left.arrow.right")
-                                                .font(AppFont.monoCaption)
+                                                .font(BaseViewFont.monoCaption)
                                         }
-                                        .padding(.vertical, AppLayout.spacingMicro)
-                                        .padding(.horizontal, AppLayout.spacing)
-                                        .foregroundStyle(Color.bgPrimary)
-                                        .background(Color.accentPrimary)
+                                        .padding(.vertical, BaseViewLayout.spacingMicro)
+                                        .padding(.horizontal, BaseViewLayout.spacing)
+                                        .foregroundStyle(BaseViewColor.background)
+                                        .background(BaseViewColor.accent)
                                         .clipShape(Capsule())
                                     }
                                 }
@@ -225,8 +225,8 @@ struct CheckoutView: View {
                                         VStack(alignment: .leading, spacing: 2) {
                                             HStack(spacing: 4) {
                                                 Text(cartViewModel.cart.mode == .delivery ? "delivery_address_header" : "store_location_header")
-                                                    .font(AppFont.uiMicro)
-                                                    .foregroundStyle(Color.textSecondary)
+                                                    .font(BaseViewFont.uiMicro)
+                                                    .foregroundStyle(BaseViewColor.textSecondary)
                                                 
                                                 // Show recommended badge if store matches recommendation
                                                 if let recommended = cartViewModel.recommendedStore,
@@ -243,8 +243,8 @@ struct CheckoutView: View {
                                             }
                                             
                                             Text(locationDisplayString)
-                                                .font(AppFont.body)
-                                                .foregroundStyle(isLocationSelected ? Color.textPrimary : Color.textTertiary)
+                                                .font(BaseViewFont.body)
+                                                .foregroundStyle(isLocationSelected ? BaseViewColor.textPrimary : BaseViewColor.textTertiary)
                                                 .lineLimit(1)
                                         }
                                         
@@ -252,12 +252,12 @@ struct CheckoutView: View {
                                         
                                         Image(systemName: "chevron.right")
                                             .font(.system(size: 14))
-                                            .foregroundStyle(Color.textSecondary)
+                                            .foregroundStyle(BaseViewColor.textSecondary)
                                     }
                                     .padding(12)
                                     .overlay {
-                                        RoundedRectangle(cornerRadius: AppRadius.medium, style: .continuous)
-                                            .strokeBorder(isLocationSelected ? Color.border : Color.borderSecondary, style: StrokeStyle(lineWidth: 1, dash: isLocationSelected ? [] : AppLayout.dashedPattern))
+                                        RoundedRectangle(cornerRadius: BaseViewLayout.radiusMedium, style: .continuous)
+                                            .strokeBorder(isLocationSelected ? BaseViewColor.border : BaseViewColor.borderSecondary, style: StrokeStyle(lineWidth: 1, dash: isLocationSelected ? [] : BaseViewLayout.dashedPattern))
                                     }
                                 }
                             }
@@ -267,8 +267,8 @@ struct CheckoutView: View {
                             if cartViewModel.cart.mode == .dineIn {
                                 VStack(alignment: .leading, spacing: 8) {
                                     Text("table_number_header")
-                                        .font(AppFont.uiMicro)
-                                        .foregroundStyle(Color.textSecondary)
+                                        .font(BaseViewFont.uiMicro)
+                                        .foregroundStyle(BaseViewColor.textSecondary)
                                     
                                     LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 8), count: 5), spacing: 8) {
                                         ForEach(1...20, id: \.self) { table in
@@ -281,15 +281,15 @@ struct CheckoutView: View {
                                                 }
                                             } label: {
                                                 Text("\(table)")
-                                                    .font(AppFont.monoBody)
+                                                    .font(BaseViewFont.monoBody)
                                                     .frame(maxWidth: .infinity)
                                                     .padding(.vertical, 10)
-                                                    .foregroundStyle(isSelected ? Color.bgPrimary : Color.textPrimary)
-                                                    .background(isSelected ? Color.accentPrimary : Color.bgSecondary)
-                                                    .clipShape(RoundedRectangle(cornerRadius: AppRadius.small))
+                                                    .foregroundStyle(isSelected ? BaseViewColor.background : BaseViewColor.textPrimary)
+                                                    .background(isSelected ? BaseViewColor.accent : BaseViewColor.surface)
+                                                    .clipShape(RoundedRectangle(cornerRadius: BaseViewLayout.radiusSmall))
                                                     .overlay {
-                                                        RoundedRectangle(cornerRadius: AppRadius.small)
-                                                            .strokeBorder(isSelected ? Color.accentPrimary : Color.border, lineWidth: 1)
+                                                        RoundedRectangle(cornerRadius: BaseViewLayout.radiusSmall)
+                                                            .strokeBorder(isSelected ? BaseViewColor.accent : BaseViewColor.border, lineWidth: 1)
                                                     }
                                             }
                                         }
@@ -297,43 +297,43 @@ struct CheckoutView: View {
                                 }
                                 .padding(12)
                                 .overlay {
-                                    RoundedRectangle(cornerRadius: AppRadius.medium, style: .continuous)
-                                        .strokeBorder(cartViewModel.cart.tableId != nil ? Color.border : Color.borderSecondary,
-                                                      style: StrokeStyle(lineWidth: 1, dash: cartViewModel.cart.tableId != nil ? [] : AppLayout.dashedPattern))
+                                    RoundedRectangle(cornerRadius: BaseViewLayout.radiusMedium, style: .continuous)
+                                        .strokeBorder(cartViewModel.cart.tableId != nil ? BaseViewColor.border : BaseViewColor.borderSecondary,
+                                                      style: StrokeStyle(lineWidth: 1, dash: cartViewModel.cart.tableId != nil ? [] : BaseViewLayout.dashedPattern))
                                 }
                             }
 
                             Divider().hidden()
 
                             // MARK: Price Breakdown
-                            VStack(alignment: .leading, spacing: AppLayout.spacingSmall) {
+                            VStack(alignment: .leading, spacing: BaseViewLayout.spacingSmall) {
                                 Text("order_summary")
-                                    .font(AppFont.sectionHeader)
-                                    .foregroundColor(Color.textPrimary)
+                                    .font(BaseViewFont.sectionHeader)
+                                    .foregroundColor(BaseViewColor.textPrimary)
 
                                 Divider()
 
                                 // Subtotal
                                 HStack {
                                     Text("subtotal_label")
-                                        .font(AppFont.body)
-                                        .foregroundColor(Color.textSecondary)
+                                        .font(BaseViewFont.body)
+                                        .foregroundColor(BaseViewColor.textSecondary)
                                     Spacer()
                                     Text(cartViewModel.subtotal.formattedVND)
-                                        .font(AppFont.monoBody)
-                                        .foregroundColor(Color.textPrimary)
+                                        .font(BaseViewFont.monoBody)
+                                        .foregroundColor(BaseViewColor.textPrimary)
                                 }
 
                                 // Discount (if any)
                                 if cartViewModel.discount > 0 {
                                     HStack {
                                         Text("discount_label")
-                                            .font(AppFont.body)
-                                            .foregroundColor(Color.accentPrimary)
+                                            .font(BaseViewFont.body)
+                                            .foregroundColor(BaseViewColor.accent)
                                         Spacer()
                                         Text("-\(cartViewModel.discount.formattedVND)")
-                                            .font(AppFont.monoBody)
-                                            .foregroundColor(Color.accentPrimary)
+                                            .font(BaseViewFont.monoBody)
+                                            .foregroundColor(BaseViewColor.accent)
                                     }
                                 }
 
@@ -341,12 +341,12 @@ struct CheckoutView: View {
                                 if cartViewModel.pointsDiscount > 0 {
                                     HStack {
                                         Text("points_discount_label")
-                                            .font(AppFont.body)
-                                            .foregroundColor(Color.accentPrimary)
+                                            .font(BaseViewFont.body)
+                                            .foregroundColor(BaseViewColor.accent)
                                         Spacer()
                                         Text("-\(cartViewModel.pointsDiscount.formattedVND)")
-                                            .font(AppFont.monoBody)
-                                            .foregroundColor(Color.accentPrimary)
+                                            .font(BaseViewFont.monoBody)
+                                            .foregroundColor(BaseViewColor.accent)
                                     }
                                 }
 
@@ -362,21 +362,21 @@ struct CheckoutView: View {
                                                 Image(systemName: "crown.fill")
                                                     .font(.system(size: 12))
                                                 Text("\(user.membershipTier.displayName) -\(Int(tierPct))%")
-                                                    .font(AppFont.body)
+                                                    .font(BaseViewFont.body)
                                             }
                                             Spacer()
                                             Text("-\(tierAmount.formattedVND)")
-                                                .font(AppFont.monoBody)
+                                                .font(BaseViewFont.monoBody)
                                         }
-                                        .foregroundColor(Color.accentPrimary)
+                                        .foregroundColor(BaseViewColor.accent)
                                         
                                         Text("You are saving with your \(user.membershipTier.displayName) benefits.")
-                                            .font(AppFont.uiMicro)
-                                            .foregroundColor(Color.textSecondary)
+                                            .font(BaseViewFont.uiMicro)
+                                            .foregroundColor(BaseViewColor.textSecondary)
                                     } else if cartViewModel.currentDiscountSource == .voucher && tierAmount > 0 {
                                         Text("Best available discount applied. Your \(user.membershipTier.displayName) benefit resumes when promo ends.")
-                                            .font(AppFont.uiMicro)
-                                            .foregroundColor(Color.textSecondary)
+                                            .font(BaseViewFont.uiMicro)
+                                            .foregroundColor(BaseViewColor.textSecondary)
                                     }
                                 }
 
@@ -386,23 +386,23 @@ struct CheckoutView: View {
                                 let taxAmount = taxable * 0.08
                                 HStack {
                                     Text("tax_label")
-                                        .font(AppFont.body)
-                                        .foregroundColor(Color.textSecondary)
+                                        .font(BaseViewFont.body)
+                                        .foregroundColor(BaseViewColor.textSecondary)
                                     Spacer()
                                     Text(taxAmount.formattedVND)
-                                        .font(AppFont.monoBody)
-                                        .foregroundColor(Color.textPrimary)
+                                        .font(BaseViewFont.monoBody)
+                                        .foregroundColor(BaseViewColor.textPrimary)
                                 }
 
                                 if cartViewModel.cart.mode == .delivery {
                                     HStack {
                                         Text("delivery_fee_label")
-                                            .font(AppFont.body)
-                                            .foregroundColor(Color.textSecondary)
+                                            .font(BaseViewFont.body)
+                                            .foregroundColor(BaseViewColor.textSecondary)
                                         Spacer()
                                         Text(cartViewModel.deliveryFee.formattedVND)
-                                            .font(AppFont.monoBody)
-                                            .foregroundColor(Color.textPrimary)
+                                            .font(BaseViewFont.monoBody)
+                                            .foregroundColor(BaseViewColor.textPrimary)
                                     }
                                 }
 
@@ -414,40 +414,40 @@ struct CheckoutView: View {
                             
                             // MARK: Cart Items
                             ForEach(cartViewModel.cart.items) { item in
-                                HStack(spacing: AppLayout.spacingMedium) {
+                                HStack(spacing: BaseViewLayout.spacingMedium) {
                                     AppRemoteImage(
                                         url: URL(string: item.product.displayImageUrl ?? ""),
-                                        width: AppLayout.productImageSize,
-                                        height: AppLayout.productImageSize,
-                                        backgroundColor: Color.surfacePrimary,
+                                        width: BaseViewLayout.productImageSize,
+                                        height: BaseViewLayout.productImageSize,
+                                        backgroundColor: BaseViewColor.surface,
                                         showsProgress: true
                                     )
                                     
                                     VStack(alignment: .leading, spacing: 0) {
                                         Text(item.product.name)
-                                            .font(AppFont.productTitle)
+                                            .font(BaseViewFont.productTitle)
                                             .lineLimit(3)
-                                            .foregroundColor(Color.textPrimary)
+                                            .foregroundColor(BaseViewColor.textPrimary)
                                         
                                         if !item.displayCustomization.isEmpty {
                                             Text(item.displayCustomization)
-                                                .font(AppFont.uiCaption)
-                                                .foregroundStyle(Color.textSecondary)
+                                                .font(BaseViewFont.uiCaption)
+                                                .foregroundStyle(BaseViewColor.textSecondary)
                                         }
                                         
-                                        Spacer(minLength: AppLayout.spacing)
+                                        Spacer(minLength: BaseViewLayout.spacing)
                                         
                                         HStack(spacing: 0) {
                                             Text(item.totalPrice.formattedVND)
-                                                .font(AppFont.monoBody)
+                                                .font(BaseViewFont.monoBody)
                                                 .lineLimit(1)
                                                 .minimumScaleFactor(0.5)
-                                                .foregroundColor(Color.accentPrimary)
+                                                .foregroundColor(BaseViewColor.accent)
                                             
                                             Spacer(minLength: 0)
                                             
                                             // Quantity Controls
-                                            HStack(spacing: AppLayout.spacingSmall) {
+                                            HStack(spacing: BaseViewLayout.spacingSmall) {
                                                 Button {
                                                     if item.quantity > 1 {
                                                         cartViewModel.updateQuantity(for: item.id, delta: -1)
@@ -456,27 +456,27 @@ struct CheckoutView: View {
                                                     }
                                                 } label: {
                                                     Text("\(Image(systemName: "minus"))")
-                                                        .font(AppFont.body)
-                                                        .padding(AppLayout.spacingMicro)
-                                                        .foregroundStyle(Color.bgPrimary)
-                                                        .background(Color.accentPrimary)
+                                                        .font(BaseViewFont.body)
+                                                        .padding(BaseViewLayout.spacingMicro)
+                                                        .foregroundStyle(BaseViewColor.background)
+                                                        .background(BaseViewColor.accent)
                                                         .clipShape(Capsule())
                                                 }
                                                 .disabled(item.quantity <= 1)
                                                 .opacity(item.quantity <= 1 ? 0.666 : 1.0)
                                                 
                                                 Text("\(item.quantity)")
-                                                    .font(AppFont.monoHeadline)
-                                                    .frame(minWidth: AppLayout.quantityMinWidth)
+                                                    .font(BaseViewFont.monoHeadline)
+                                                    .frame(minWidth: BaseViewLayout.quantityMinWidth)
                                                 
                                                 Button {
                                                     cartViewModel.updateQuantity(for: item.id, delta: 1)
                                                 } label: {
                                                     Text("\(Image(systemName: "plus"))")
-                                                        .font(AppFont.body)
-                                                        .padding(AppLayout.spacingMicro)
-                                                        .foregroundStyle(Color.bgPrimary)
-                                                        .background(Color.accentPrimary)
+                                                        .font(BaseViewFont.body)
+                                                        .padding(BaseViewLayout.spacingMicro)
+                                                        .foregroundStyle(BaseViewColor.background)
+                                                        .background(BaseViewColor.accent)
                                                         .clipShape(Capsule())
                                                 }
                                             }
@@ -499,11 +499,11 @@ struct CheckoutView: View {
                             Divider().hidden()
                             
                             // MARK: Voucher Section
-                            VStack(alignment: .leading, spacing: AppLayout.spacing) {
+                            VStack(alignment: .leading, spacing: BaseViewLayout.spacing) {
                                 Text("voucher_section_title")
                                     .textCase(.uppercase)
-                                    .font(AppFont.sectionHeader)
-                                    .foregroundColor(Color.textPrimary)
+                                    .font(BaseViewFont.sectionHeader)
+                                    .foregroundColor(BaseViewColor.textPrimary)
 
                                 Button {
                                     focusedField = nil
@@ -512,12 +512,12 @@ struct CheckoutView: View {
                                     HStack {
                                         VStack(alignment: .leading, spacing: 2) {
                                             Text("selected_voucher_header")
-                                                .font(AppFont.uiMicro)
-                                                .foregroundStyle(Color.textSecondary)
+                                                .font(BaseViewFont.uiMicro)
+                                                .foregroundStyle(BaseViewColor.textSecondary)
 
                                             Text(selectedVoucherDisplay)
-                                                .font(AppFont.body)
-                                                .foregroundStyle(checkoutViewModel.appliedVoucher == nil ? Color.textTertiary : Color.textPrimary)
+                                                .font(BaseViewFont.body)
+                                                .foregroundStyle(checkoutViewModel.appliedVoucher == nil ? BaseViewColor.textTertiary : BaseViewColor.textPrimary)
                                                 .lineLimit(1)
                                         }
 
@@ -525,12 +525,12 @@ struct CheckoutView: View {
 
                                         Image(systemName: "chevron.right")
                                             .font(.system(size: 14))
-                                            .foregroundStyle(Color.textSecondary)
+                                            .foregroundStyle(BaseViewColor.textSecondary)
                                     }
                                     .padding(12)
                                     .overlay {
-                                        RoundedRectangle(cornerRadius: AppRadius.medium, style: .continuous)
-                                            .strokeBorder(Color.border, lineWidth: 1)
+                                        RoundedRectangle(cornerRadius: BaseViewLayout.radiusMedium, style: .continuous)
+                                            .strokeBorder(BaseViewColor.border, lineWidth: 1)
                                     }
                                 }
                             }
@@ -539,28 +539,29 @@ struct CheckoutView: View {
                             Divider().hidden()
                             
                             // MARK: Redeem Points Section
-                            VStack(alignment: .leading, spacing: AppLayout.spacing) {
+                            VStack(alignment: .leading, spacing: BaseViewLayout.spacing) {
                                 Text("redeem_point_section")
                                     .textCase(.uppercase)
-                                    .font(AppFont.sectionHeader)
-                                    .foregroundColor(Color.textPrimary)
+                                    .font(BaseViewFont.sectionHeader)
+                                    .foregroundColor(BaseViewColor.textPrimary)
                                 
                                 let points = authViewModel.currentUser?.points ?? 0
                                 (
                                     Text("points_balance_info \(points)")
-                                        .foregroundColor(Color.textSecondary)
+                                        .foregroundColor(BaseViewColor.textSecondary)
                                     +
                                     Text("points_info_link")
                                         .underline(pattern: .dot)
-                                        .foregroundColor(Color.accentPrimary)
+                                        .foregroundColor(BaseViewColor.accent)
                                 )
-                                .font(AppFont.body)
+                                .font(BaseViewFont.body)
                                 
                                 HStack(spacing: 8) {
-                                    CapsuleTextField(
-                                        placeholder: String(localized: "redeem_points_placeholder"),
+                                    AppTextInput(
+                                        title: nil,
                                         text: $redeemPoints,
-                                        icon: nil,
+                                        placeholder: String(localized: "redeem_points_placeholder"),
+                                        leadingIcon: nil,
                                         keyboardType: .numberPad
                                     )
                                     .focused($focusedField, equals: .points)
@@ -574,11 +575,12 @@ struct CheckoutView: View {
                                         let isUnchanged = pointsInput == checkoutViewModel.appliedPoints
                                         
                                         Text("\(Image(systemName: "checkmark"))")
-                                            .font(AppFont.uiButton)
-                                            .foregroundColor(isUnchanged ? Color.textSecondary : Color.bgPrimary)
+                                            .font(BaseViewFont.uiButton)
+                                            .foregroundColor(isUnchanged ? BaseViewColor.textSecondary : BaseViewColor.background)
                                             .padding(.horizontal, 16)
-                                            .frame(height: 48)
-                                            .background(isUnchanged ? Color.surfacePrimary : Color.accentPrimary)
+                                            .padding(.vertical, 12)
+                                            .frame(minHeight: 48)
+                                            .background(isUnchanged ? BaseViewColor.surface : BaseViewColor.accent)
                                             .clipShape(Capsule())
                                     }
                                     //                                    .opacity(Int(redeemPoints.trimmingCharacters(in: .whitespacesAndNewlines)) == checkoutViewModel.appliedPoints ? 0.3 : 1)
@@ -588,16 +590,16 @@ struct CheckoutView: View {
                                 // Inline Validation Error
                                 if let warning = checkoutViewModel.warning {
                                     Text(warning)
-                                        .font(AppFont.uiCaption)
-                                        .foregroundColor(Color.stateError)
+                                        .font(BaseViewFont.uiCaption)
+                                        .foregroundColor(BaseViewColor.semanticError)
                                         .transition(.opacity)
                                 }
                                 
                                 // Applied Confirmation
                                 if checkoutViewModel.appliedPoints > 0 {
                                     Text("Points applied: -\(cartViewModel.pointsDiscount.formattedVND)")
-                                        .font(AppFont.monoBody)
-                                        .foregroundColor(Color.accentPrimary)
+                                        .font(BaseViewFont.monoBody)
+                                        .foregroundColor(BaseViewColor.accent)
                                 }
                             }
                             .frame(maxWidth: .infinity, alignment: .leading)
@@ -605,11 +607,11 @@ struct CheckoutView: View {
                             Divider().hidden()
                             
                             // MARK: Payment Method Section
-                            VStack(alignment: .leading, spacing: AppLayout.spacing) {
+                            VStack(alignment: .leading, spacing: BaseViewLayout.spacing) {
                                 Text("payment_method_section")
                                     .textCase(.uppercase)
-                                    .font(AppFont.sectionHeader)
-                                    .foregroundColor(Color.textPrimary)
+                                    .font(BaseViewFont.sectionHeader)
+                                    .foregroundColor(BaseViewColor.textPrimary)
 
                                 Button {
                                     focusedField = nil
@@ -618,22 +620,22 @@ struct CheckoutView: View {
                                     HStack {
                                         HStack(spacing: 10) {
                                             IconView(name: checkoutViewModel.paymentMethod.iconName)
-                                                .font(AppFont.navIcon)
+                                                .font(BaseViewFont.navIcon)
                                             Text(checkoutViewModel.paymentMethod.displayName)
-                                                .font(AppFont.body)
-                                                .foregroundStyle(Color.textPrimary)
+                                                .font(BaseViewFont.body)
+                                                .foregroundStyle(BaseViewColor.textPrimary)
                                         }
 
                                         Spacer()
 
                                         Image(systemName: "chevron.right")
                                             .font(.system(size: 14))
-                                            .foregroundStyle(Color.textSecondary)
+                                            .foregroundStyle(BaseViewColor.textSecondary)
                                     }
                                     .padding(12)
                                     .overlay {
-                                        RoundedRectangle(cornerRadius: AppRadius.medium, style: .continuous)
-                                            .strokeBorder(Color.border, lineWidth: 1)
+                                        RoundedRectangle(cornerRadius: BaseViewLayout.radiusMedium, style: .continuous)
+                                            .strokeBorder(BaseViewColor.border, lineWidth: 1)
                                     }
                                 }
                             }
@@ -645,17 +647,17 @@ struct CheckoutView: View {
                             //                            if let error = orderError {
                             //                                HStack {
                             //                                    Image("triangle_alert")
-                            //                                        .foregroundColor(Color.stateError)
+                            //                                        .foregroundColor(BaseViewColor.semanticError)
                             //                                    Text(error)
-                            //                                        .font(AppFont.uiMicro)
-                            //                                        .foregroundColor(Color.stateError)
+                            //                                        .font(BaseViewFont.uiMicro)
+                            //                                        .foregroundColor(BaseViewColor.semanticError)
                             //                                }
                             //                                .padding(12)
                             //                                .frame(maxWidth: .infinity, alignment: .leading)
-                            //                                .background(Color.stateError.opacity(0.1))
+                            //                                .background(BaseViewColor.semanticError.opacity(0.1))
                             //                                .overlay(
                             //                                    Capsule()
-                            //                                        .strokeBorder(Color.stateError, lineWidth: 1)
+                            //                                        .strokeBorder(BaseViewColor.semanticError, lineWidth: 1)
                             //                                )
                             //                            }
                             
@@ -664,22 +666,22 @@ struct CheckoutView: View {
                             //                                VStack(alignment: .leading, spacing: 4) {
                             //                                    ForEach(orderLog, id: \.self) { log in
                             //                                        Text("> \(log)")
-                            //                                            .font(AppFont.uiMicro)
-                            //                                            .foregroundColor(Color.accentPrimary)
+                            //                                            .font(BaseViewFont.uiMicro)
+                            //                                            .foregroundColor(BaseViewColor.accent)
                             //                                    }
                             //                                }
                             //                                .padding(16)
                             //                                .frame(maxWidth: .infinity, alignment: .leading)
-                            //                                .background(Color.bgPrimary)
+                            //                                .background(BaseViewColor.background)
                             //                                .overlay(
                             //                                    Capsule()
-                            //                                        .strokeBorder(Color.accentPrimary, lineWidth: 1)
+                            //                                        .strokeBorder(BaseViewColor.accent, lineWidth: 1)
                             //                                )
                             //                            }
                         }
                     }
                     .padding(.bottom, 72)
-                    .padding(.horizontal, AppLayout.spacing)
+                    .padding(.horizontal, BaseViewLayout.spacing)
                     }
                     .coordinateSpace(name: "scroll")
                     .scrollIndicators(.hidden)
@@ -691,18 +693,18 @@ struct CheckoutView: View {
                         ctaTitle: checkoutViewModel.isPlacingOrder ? "placing_order_state" : "place_order_button",
                         action: placeOrder
                     )
-//                    VStack(alignment: .leading, spacing: AppLayout.spacing) {
+//                    VStack(alignment: .leading, spacing: BaseViewLayout.spacing) {
 //                        HStack(spacing: 0) {
 //                            Text("total_label")
-//                                .font(AppFont.totalLabel)
+//                                .font(BaseViewFont.totalLabel)
 //                                .lineLimit(1)
-//                                .foregroundColor(Color.textPrimary)
+//                                .foregroundColor(BaseViewColor.textPrimary)
 //                            
-//                            Spacer(minLength: AppLayout.spacing)
+//                            Spacer(minLength: BaseViewLayout.spacing)
 //                            
 //                            Text(cartViewModel.total.formattedVND)
-//                                .font(AppFont.monoTitle)
-//                                .foregroundColor(Color.textPrimary)
+//                                .font(BaseViewFont.monoTitle)
+//                                .foregroundColor(BaseViewColor.textPrimary)
 //                        }
 //                        if #available(iOS 26.0, *) {
 //                            Button {
@@ -710,43 +712,43 @@ struct CheckoutView: View {
 //                            } label: {
 //                                
 //                                Text(checkoutViewModel.isPlacingOrder ? "placing_order_state" : "place_order_button")
-//                                    .font(AppFont.monoCTA)
-//                                    .foregroundColor(Color.bgPrimary)
+//                                    .font(BaseViewFont.monoCTA)
+//                                    .foregroundColor(BaseViewColor.background)
 //                                    .padding(.vertical, 12)
 //                                    .frame(maxWidth: .infinity, alignment: .center)
-//                                    //.background(Color.accentPrimary)
+//                                    //.background(BaseViewColor.accent)
 //                                    .clipShape(Capsule())
 //                            }
 //                            .buttonStyle(.glassProminent)
 //                            .disabled(!cartViewModel.canCheckout || checkoutViewModel.isPlacingOrder)
-//                            .tint(Color.accentPrimary)
+//                            .tint(BaseViewColor.accent)
 //                        } else {
 //                            Button {
 //                                placeOrder()
 //                            } label: {
 //                                Text(checkoutViewModel.isPlacingOrder ? "placing_order_state" : "place_order_button")
-//                                    .font(AppFont.monoCTA)
-//                                    .foregroundColor(Color.bgPrimary)
+//                                    .font(BaseViewFont.monoCTA)
+//                                    .foregroundColor(BaseViewColor.background)
 //                                    .padding(.vertical, 12)
 //                                    .frame(maxWidth: .infinity, alignment: .center)
-//                                    .background(Color.accentPrimary)
+//                                    .background(BaseViewColor.accent)
 //                                    .clipShape(Capsule())
 //                            }
 //                            .disabled(!cartViewModel.canCheckout || checkoutViewModel.isPlacingOrder)
 //                        }
 //                    }
 //                    .padding(.vertical, 24)
-//                    .frame(minHeight: AppLayout.touchTarget)
+//                    .frame(minHeight: BaseViewLayout.touchTarget)
 //                    .frame(maxWidth: .infinity, alignment: .leading)
-//                    .padding(.horizontal, AppLayout.spacing)
-//                    .background(Color.bgPrimary, ignoresSafeAreaEdges: .all)
+//                    .padding(.horizontal, BaseViewLayout.spacing)
+//                    .background(BaseViewColor.background, ignoresSafeAreaEdges: .all)
 //                    .background {
-//                        WaveRect(stepWidth: AppLayout.waveStepWidth, waveEdge: .top)
-//                            .fill(Color.bgPrimary)
+//                        WaveRect(stepWidth: BaseViewLayout.waveStepWidth, waveEdge: .top)
+//                            .fill(BaseViewColor.background)
 //                            .offset(x: 0, y: -9)
 //                    }
 //                    .overlay(alignment: .top) {
-//                        WaveSeparator(stepWidth: AppLayout.waveStepWidth)
+//                        WaveSeparator(stepWidth: BaseViewLayout.waveStepWidth)
 //                            .stroke(Color.secondary, lineWidth: 1)
 //                            .frame(height: 1)
 //                            .offset(x: 0, y: -9)
@@ -980,38 +982,38 @@ struct PaymentMethodPickerSheet: View {
 
     var body: some View {
         ZStack(alignment: .top) {
-            Color.bgPrimary.ignoresSafeArea()
+            BaseViewColor.background.ignoresSafeArea()
 
             VStack(spacing: 0) {
-                VStack(spacing: AppLayout.marginCompact) {
-                    HStack(alignment: .center, spacing: AppLayout.spacing) {
+                VStack(spacing: BaseViewLayout.marginCompact) {
+                    HStack(alignment: .center, spacing: BaseViewLayout.spacing) {
                         Text("payment_method_section")
-                            .font(AppTypography.displayMedium)
-                            .foregroundStyle(Color.textPrimary)
+                            .font(BaseViewFont.displayMedium)
+                            .foregroundStyle(BaseViewColor.textPrimary)
                             .lineLimit(1)
                             .frame(maxWidth: .infinity, alignment: .leading)
 
                         Button { dismiss() } label: {
                             Image(systemName: "xmark")
                                 .font(.system(size: 17, weight: .medium))
-                                .foregroundStyle(Color.textPrimary)
+                                .foregroundStyle(BaseViewColor.textPrimary)
                                 .padding(12)
-                                .background { Circle().fill(Color.bgPrimary) }
-                                .overlay { Circle().strokeBorder(Color.borderSecondary, lineWidth: 1) }
+                                .background { Circle().fill(BaseViewColor.background) }
+                                .overlay { Circle().strokeBorder(BaseViewColor.borderSecondary, lineWidth: 1) }
                         }
                     }
-                    .frame(minHeight: AppLayout.touchTarget)
+                    .frame(minHeight: BaseViewLayout.touchTarget)
 
                     Divider()
-                        .background(Color.borderSecondary)
-                        .padding(.horizontal, -AppLayout.spacing)
+                        .background(BaseViewColor.borderSecondary)
+                        .padding(.horizontal, -BaseViewLayout.spacing)
                 }
-                .padding(.horizontal, AppLayout.spacing)
-                .padding(.top, AppLayout.spacing)
-                .background(Color.bgPrimary)
+                .padding(.horizontal, BaseViewLayout.spacing)
+                .padding(.top, BaseViewLayout.spacing)
+                .background(BaseViewColor.background)
 
                 ScrollView {
-                    LazyVStack(spacing: AppLayout.spacing) {
+                    LazyVStack(spacing: BaseViewLayout.spacing) {
                         ForEach(PaymentMethod.validForCheckout, id: \.self) { method in
                             Button {
                                 selectedMethod = method
@@ -1019,29 +1021,29 @@ struct PaymentMethodPickerSheet: View {
                             } label: {
                                 HStack(spacing: 12) {
                                     IconView(name: method.iconName)
-                                        .font(AppFont.navIcon)
-                                        .foregroundStyle(Color.textPrimary)
+                                        .font(BaseViewFont.navIcon)
+                                        .foregroundStyle(BaseViewColor.textPrimary)
 
                                     Text(method.displayName)
-                                        .font(AppFont.body)
-                                        .foregroundStyle(Color.textPrimary)
+                                        .font(BaseViewFont.body)
+                                        .foregroundStyle(BaseViewColor.textPrimary)
 
                                     Spacer()
 
                                     if method == selectedMethod {
                                         Image(systemName: "checkmark.circle.fill")
-                                            .foregroundStyle(Color.accentPrimary)
+                                            .foregroundStyle(BaseViewColor.accent)
                                     }
                                 }
                                 .padding(12)
                                 .overlay {
-                                    RoundedRectangle(cornerRadius: AppRadius.medium, style: .continuous)
-                                        .strokeBorder(method == selectedMethod ? Color.accentPrimary : Color.border, lineWidth: 1)
+                                    RoundedRectangle(cornerRadius: BaseViewLayout.radiusMedium, style: .continuous)
+                                        .strokeBorder(method == selectedMethod ? BaseViewColor.accent : BaseViewColor.border, lineWidth: 1)
                                 }
                             }
                         }
                     }
-                    .padding(AppLayout.spacing)
+                    .padding(BaseViewLayout.spacing)
                 }
             }
         }
@@ -1057,14 +1059,14 @@ struct CheckoutEmptyState: View {
     @Environment(\.dismiss) var dismiss
     
     var body: some View {
-        VStack(spacing: AppLayout.spacingXL) {
+        VStack(spacing: BaseViewLayout.spacingXL) {
             Text("cart_empty_title")
-                .font(AppFont.displayTitle)
-                .foregroundColor(Color.textPrimary)
+                .font(BaseViewFont.displayTitle)
+                .foregroundColor(BaseViewColor.textPrimary)
             
             Text("cart_empty_message_checkout")
-                .font(AppFont.body)
-                .foregroundColor(Color.textSecondary)
+                .font(BaseViewFont.body)
+                .foregroundColor(BaseViewColor.textSecondary)
                 .multilineTextAlignment(.center)
                 .padding(.horizontal, 40)
             
@@ -1072,11 +1074,11 @@ struct CheckoutEmptyState: View {
                 dismiss()
             } label: {
                 Text("return_to_menu_button")
-                    .font(AppFont.monoCTA)
-                    .foregroundColor(Color.bgPrimary)
+                    .font(BaseViewFont.monoCTA)
+                    .foregroundColor(BaseViewColor.background)
                     .padding(.vertical, 12)
                     .frame(width: 200)
-                    .background(Color.accentPrimary)
+                    .background(BaseViewColor.accent)
                     .clipShape(Capsule())
             }
         }
