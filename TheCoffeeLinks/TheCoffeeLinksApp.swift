@@ -19,6 +19,8 @@ struct TheCoffeeLinksApp: App {
     init() {
         // Use factory methods for consistent DI
         let container = DependencyContainer.shared
+        Self.prepareForUITestingIfNeeded(container: container)
+
         _authViewModel = StateObject(wrappedValue: container.makeAuthViewModel())
         _cartViewModel = StateObject(wrappedValue: container.makeCartViewModel())
         _storeViewModel = StateObject(wrappedValue: container.makeStoreViewModel())
@@ -84,6 +86,31 @@ struct TheCoffeeLinksApp: App {
             
             print("✅ Fresh install cleanup complete")
         }
+    }
+
+    private static func prepareForUITestingIfNeeded(container: DependencyContainer) {
+        #if DEBUG
+        guard ProcessInfo.processInfo.arguments.contains("--ui-testing-reset-state") else {
+            return
+        }
+
+        let defaults = UserDefaults.standard
+        if let bundleIdentifier = Bundle.main.bundleIdentifier {
+            defaults.removePersistentDomain(forName: bundleIdentifier)
+        }
+
+        defaults.set(true, forKey: "hasRunBefore_v1.0")
+        defaults.set(true, forKey: "isOnboardingCompleted")
+        defaults.set(true, forKey: "isInitialSetupCompleted")
+        defaults.set(true, forKey: "THECOFFEELINKS_UI_TESTING")
+
+        container.keychainManager.deleteAccessToken()
+        container.keychainManager.deleteRefreshToken()
+        container.keychainManager.deletePhoneNumber()
+        container.keychainManager.deleteUserId()
+        container.cartStorage.clearCart()
+        container.profileStorage.clearUser()
+        #endif
     }
 }
 
