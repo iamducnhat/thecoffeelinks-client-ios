@@ -14,6 +14,9 @@ protocol CartServiceProtocol {
     func fetchRemoteCart() async throws -> Cart
     func addToCart(productId: UUID, quantity: Int, modifiers: OrderCustomization) async throws -> Cart
     func addToCart(product: Product, quantity: Int, modifiers: OrderCustomization) async throws -> Cart
+    func updateQuantity(key: String, delta: Int) async throws -> Cart
+    func removeItem(key: String) async throws -> Cart
+    func replaceItem(oldKey: String, item: CartItem) async throws -> Cart
     func clearCart() async throws
     func getOperationQueueSize() -> Int
 }
@@ -29,17 +32,18 @@ final class CartService: CartServiceProtocol {
     private nonisolated(unsafe) var pendingOperations: [CartOperation] = []
     private nonisolated(unsafe) var isSyncing = false
     private nonisolated(unsafe) var syncTask: Task<Void, Never>?
-    private let syncDebounceInterval: TimeInterval = 0.5
+    private let syncDebounceInterval: TimeInterval?
     
     // Notification for sync failures
     static let syncFailedNotification = Notification.Name("CartSyncFailed")
     static let syncSuccessNotification = Notification.Name("CartSyncSuccess")
     
-    init(networkService: NetworkServiceProtocol, cartStorage: CartStorageProtocol, productRepository: ProductRepositoryProtocol, keychainManager: KeychainManager) {
+    init(networkService: NetworkServiceProtocol, cartStorage: CartStorageProtocol, productRepository: ProductRepositoryProtocol, keychainManager: KeychainManager, syncDebounceInterval: TimeInterval? = 0.5) {
         self.networkService = networkService
         self.cartStorage = cartStorage
         self.productRepository = productRepository
         self.keychainManager = keychainManager
+        self.syncDebounceInterval = syncDebounceInterval
     }
     
     // MARK: - Public API
@@ -115,7 +119,7 @@ final class CartService: CartServiceProtocol {
                     cart.isDirty = true
                     
                     // 6. Persist optimistically
-                    try? self.cartStorage.saveCart(cart)
+                    try self.cartStorage.saveCart(cart)
                     
                     // 7. Queue operation
                     let operation = CartOperation.add(
@@ -153,6 +157,18 @@ final class CartService: CartServiceProtocol {
         try? cartStorage.saveCart(mappedCart)
         return mappedCart
     }
+
+    func updateQuantity(key: String, delta: Int) async throws -> Cart {
+        try await mutateLocalCart(.updateQuantity(key: key, delta: delta))
+    }
+
+    func removeItem(key: String) async throws -> Cart {
+        try await mutateLocalCart(.remove(key: key))
+    }
+
+    func replaceItem(oldKey: String, item: CartItem) async throws -> Cart {
+        try await mutateLocalCart(.replaceItem(oldKey: oldKey, item: item))
+    }
     
     func clearCart() async throws {
         syncQueue.sync {
@@ -167,19 +183,39 @@ final class CartService: CartServiceProtocol {
     func getOperationQueueSize() -> Int {
         syncQueue.sync { pendingOperations.count }
     }
+
+    private func mutateLocalCart(_ operation: CartOperation) async throws -> Cart {
+        try await withCheckedThrowingContinuation { continuation in
+            syncQueue.async {
+                do {
+                    var cart = self.cartStorage.loadCart() ?? .empty
+                    cart.applyOperation(operation)
+                    cart.lastUpdated = Date()
+                    cart.isDirty = true
+                    try self.cartStorage.saveCart(cart)
+                    self.pendingOperations.append(operation)
+                    continuation.resume(returning: cart)
+                    self.scheduleSyncIfNeeded()
+                } catch {
+                    continuation.resume(throwing: error)
+                }
+            }
+        }
+    }
     
     // MARK: - Sync Logic
     
     private nonisolated func scheduleSyncIfNeeded() {
         syncQueue.async { [weak self] in
             guard let self else { return }
+            guard let syncDebounceInterval = self.syncDebounceInterval else { return }
             // Cancel existing task
             self.syncTask?.cancel()
             
             // Schedule new debounced sync
             self.syncTask = Task {
                 do {
-                    try await Task.sleep(nanoseconds: UInt64(self.syncDebounceInterval * 1_000_000_000))
+                    try await Task.sleep(nanoseconds: UInt64(syncDebounceInterval * 1_000_000_000))
                     await self.performSync()
                 } catch {
                     // Task cancelled - normal
@@ -220,12 +256,9 @@ final class CartService: CartServiceProtocol {
             // Check for new operations that arrived during sync
             let newOperations = syncQueue.sync { self.pendingOperations }
             
-            // Merge server state with new local operations
-            var finalCart = serverCart
-            for op in newOperations {
-                finalCart.applyOperation(op)
-            }
-            
+            // New local operations have already been persisted by local-first mutations.
+            // Do not replay them here or an add can be counted twice.
+            var finalCart = newOperations.isEmpty ? serverCart : (cartStorage.loadCart() ?? serverCart)
             finalCart.isDirty = !newOperations.isEmpty
             try? cartStorage.saveCart(finalCart)
             
@@ -246,28 +279,18 @@ final class CartService: CartServiceProtocol {
     }
     
     private func syncOperations(_ operations: [CartOperation]) async throws -> Cart {
-        // For now, implement simple strategy: send all items to server
-        // Server should handle upsert/merge logic
-        
-        var cart = cartStorage.loadCart() ?? .empty
-        
-        // Apply all operations locally first to get target state
-        for operation in operations {
-            cart.applyOperation(operation)
-        }
-        
-        // Sync with server by sending full cart state
-        // This is simpler than sending individual operations
-        // but less efficient - can be optimized later
-        
-        if operations.contains(where: { $0.operationType == "clear" }) {
-            // Clear on server
+        let targetCart = cartStorage.loadCart() ?? .empty
+        let requiresServerRebuild = operations.contains { $0.requiresServerRebuild }
+
+        if requiresServerRebuild {
             try await networkService.delete("/api/cart", queryItems: nil)
-            return .empty
+            if targetCart.items.isEmpty {
+                return .empty
+            }
         }
         
-        // For adds/updates, send items to server
-        for item in cart.items {
+        // The local persisted cart is the target state. Do not apply operations again here.
+        for item in targetCart.items {
             let payload = AddItemPayload(
                 product_id: item.product.id,
                 quantity: item.quantity,
@@ -425,4 +448,3 @@ struct SafeDecodable<T: Decodable>: Decodable {
         self.value = try? container.decode(T.self)
     }
 }
-

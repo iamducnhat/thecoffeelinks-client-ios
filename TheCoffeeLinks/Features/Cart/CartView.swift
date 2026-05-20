@@ -2,525 +2,679 @@
 //  CartView.swift
 //  thecoffeelinks-client-ios
 //
-//  BaseView Design
-//  Aligned with canonical CheckoutView.swift
+//  Cart checkout flow matching the SVG cart/info/checkout sequence.
 //
 
 import SwiftUI
-import CachedAsyncImage // CHANGED
 
 struct CartView: View {
     @EnvironmentObject private var cartViewModel: CartViewModel
     @Environment(\.dismiss) private var dismiss
-    @State private var showingCheckout = false
-    @State private var editingItem: CartItem?
-    @State private var scrollOffset = CGFloat.zero
-    
-    var body: some View {
-        ZStack(alignment: .top) {
-            BaseViewColor.background.ignoresSafeArea()
-            
-            if cartViewModel.isEmpty {
-                EmptyCartView(onBrowse: { dismiss() })
-            } else {
-                // Fixed Navigation Header
-                HStack(alignment: .center, spacing: BaseViewLayout.spacing) {
-                    Button { dismiss() } label: {
-                        Image(systemName: "xmark")
-                            .font(.system(size: 17, weight: .medium))
-                            .foregroundStyle(BaseViewColor.textPrimary)
-                            .padding(12)
-                            .background {
-                                Circle()
-                                    .fill(BaseViewColor.background)
-                            }
-                            .overlay {
-                                Circle()
-                                    .strokeBorder(BaseViewColor.textPrimary, lineWidth: 1)
-                                    .opacity(min(88.8, max(scrollOffset, 0.0)) / 99.9)
-                            }
-                    }
 
-                    Text("cart_header_count \(cartViewModel.itemCount)")
-                        .font(BaseViewFont.displayMedium)
-                        .lineLimit(1)
-                        .foregroundStyle(BaseViewColor.textPrimary)
-                        .fixedSize()
-                        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
-                        .hidden()
+    @State private var showingInfo = false
+    @State private var editingItem: CartItem?
+
+    var body: some View {
+        NavigationStack {
+            ZStack {
+                BaseViewColor.background.ignoresSafeArea()
+
+                if cartViewModel.isEmpty {
+                    EmptyCartView(onBrowse: { dismiss() })
+                } else {
+                    cartContent
                 }
-                .frame(minHeight: BaseViewLayout.touchTarget)
-                .padding(.horizontal, BaseViewLayout.spacing)
-                .padding(.top, 8)
-                .zIndex(1)
-                .fixedSize(horizontal: false, vertical: true)
-                
-                VStack(spacing: 0) {
-                    ScrollView(.vertical) {
-                        // Navigation Header (Scrollable)
-                        VStack(spacing: BaseViewLayout.marginCompact) {
-                            HStack(alignment: .center, spacing: BaseViewLayout.spacing) {
-                                Image(systemName: "xmark")
-                                    .font(.system(size: 17, weight: .medium))
-                                    .foregroundStyle(BaseViewColor.textPrimary)
-                                    .padding(12)
-                                    .hidden()
-                                
-                                Text("cart_header_count \(cartViewModel.itemCount)")
-                                    .font(BaseViewFont.displayMedium)
-                                    .lineLimit(1)
-                                    .foregroundColor(BaseViewColor.textPrimary)
-                                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
-                            }
-                            
-                            Divider()
-                                .background(BaseViewColor.borderSecondary)
-                                .padding(.horizontal, -BaseViewLayout.spacing)
-                        }
-                        .padding(.horizontal, BaseViewLayout.spacing)
-                        .padding(.top, BaseViewLayout.spacingCompact)
-                        .background(BaseViewColor.background)
-                        .background(GeometryReader {
-                            Color.clear.preference(key: ViewOffsetKey.self, value: -$0.frame(in: .named("scroll")).origin.y)
-                        })
-                        .onPreferenceChange(ViewOffsetKey.self) {
-                            self.scrollOffset = $0
-                        }
-                        
-                        LazyVStack(spacing: BaseViewLayout.spacing) {
-                            // MARK: Cart Items
-                            ForEach(cartViewModel.cart.items) { item in
-                                CartItemRow(
-                                    item: item,
-                                    onUpdateQuantity: { qty in
-                                        if qty > 0 {
-                                            cartViewModel.updateQuantity(for: item.id, delta: qty - item.quantity)
-                                        } else {
-                                            cartViewModel.removeItem(item.id)
-                                        }
-                                    },
-                                    onRemove: {
-                                        cartViewModel.removeItem(item.id)
-                                    },
-                                    onEdit: {
-                                        editingItem = item
-                                    },
-                                    storeId: cartViewModel.cart.storeId
-                                )
-                                
-                                Divider()
-                            }
-                            
-                            Divider().hidden()
-                            
-                            // MARK: Voucher Section
-                            VoucherSection()
-                            
-                            Divider().hidden()
-                            
-                            // MARK: Order Summary
-                            VStack(alignment: .leading, spacing: BaseViewLayout.spacing) {
-                                Text("summary_section_title")
-                                    .textCase(.uppercase)
-                                    .font(BaseViewFont.sectionHeader)
-                                    .foregroundStyle(BaseViewColor.textPrimary)
-                                
-                                VStack(spacing: 8) {
-                                    HStack {
-                                        Text("subtotal_label")
-                                            .font(BaseViewFont.body)
-                                            .foregroundStyle(BaseViewColor.textSecondary)
-                                        Spacer()
-                                        Text(cartViewModel.subtotal.formattedVND)
-                                            .font(BaseViewFont.monoBody)
-                                            .foregroundStyle(BaseViewColor.textPrimary)
-                                    }
-                                    
-                                    if cartViewModel.deliveryFee > 0 {
-                                        HStack {
-                                            Text("delivery_fee_label")
-                                                .font(BaseViewFont.body)
-                                                .foregroundStyle(BaseViewColor.textSecondary)
-                                            Spacer()
-                                            Text(cartViewModel.deliveryFee.formattedVND)
-                                                .font(BaseViewFont.monoBody)
-                                                .foregroundStyle(BaseViewColor.textPrimary)
-                                        }
-                                    }
-                                    
-                                    if cartViewModel.summary.discount > 0 {
-                                        HStack {
-                                            Text("discount_label")
-                                                .font(BaseViewFont.body)
-                                                .foregroundStyle(BaseViewColor.semanticSuccess)
-                                            Spacer()
-                                            Text("-\(cartViewModel.summary.discount.formattedVND)")
-                                                .font(BaseViewFont.monoBody)
-                                                .foregroundStyle(BaseViewColor.semanticSuccess)
-                                        }
-                                    }
-                                }
-                                .padding(BaseViewLayout.spacing)
-                                .background(BaseViewColor.surface)
-                                .overlay(
-                                    Capsule()
-                                        .strokeBorder(BaseViewColor.border, lineWidth: 1)
-                                )
-                            }
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                        }
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .padding(BaseViewLayout.spacing)
-                        .padding(.bottom, 72)
-                    }
-                    .coordinateSpace(name: "scroll")
-                    .scrollIndicators(.hidden)
-                    
-                    // MARK: Total & Checkout
-                    VStack(alignment: .leading, spacing: BaseViewLayout.spacing) {
-                        HStack(spacing: 0) {
-                            Text("total_label")
-                                .font(BaseViewFont.totalLabel)
-                                .lineLimit(1)
-                                .foregroundStyle(BaseViewColor.textPrimary)
-                            
-                            Spacer(minLength: BaseViewLayout.spacing)
-                            
-                            Text(cartViewModel.total.formattedVND)
-                                .font(BaseViewFont.monoTitle)
-                                .foregroundStyle(BaseViewColor.textPrimary)
-                        }
-                        
-                        Button {
-                            showingCheckout = true
-                        } label: {
-                            Text("checkout_button")
-                                .font(BaseViewFont.monoCTA)
-                                .foregroundStyle(BaseViewColor.background)
-                                .padding(.vertical, 12)
-                                .frame(maxWidth: .infinity, alignment: .center)
-                                .background(BaseViewColor.accent)
-                                .clipShape(Capsule())
-                        }
-                        .disabled(!cartViewModel.summary.meetsMinimum)
-                        .opacity(cartViewModel.summary.meetsMinimum ? 1.0 : 0.666)
-                    }
-                    .padding(.vertical, 24)
-                    .frame(minHeight: BaseViewLayout.touchTarget)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .padding(.horizontal, BaseViewLayout.spacing)
-                    .background(ignoresSafeAreaEdges: .all)
-                    .background {
-                        WaveRect(stepWidth: BaseViewLayout.waveStepWidth, waveEdge: .top)
-                            .fill(BaseViewColor.background)
-                            .offset(x: 0, y: -9)
-                    }
-                    .overlay(alignment: .top) {
-                        WaveSeparator(stepWidth: BaseViewLayout.waveStepWidth)
-    .stroke(Color.secondary, lineWidth: 1)
-                            .frame(height: 1)
-                            .offset(x: 0, y: -9)
-                    }
-                }
-                .zIndex(-Double.infinity)
+            }
+            .navigationBarHidden(true)
+            .toolbar(.hidden, for: .navigationBar)
+            .navigationDestination(isPresented: $showingInfo) {
+                CartInfoView()
             }
         }
-        .fullScreenCover(item: $editingItem) { item in
-            EditCartItemSheet(item: item, onSave: { updatedItem in
-                cartViewModel.removeItem(item.id)
-                cartViewModel.addItem(
-                    product: updatedItem.product,
-                    quantity: updatedItem.quantity,
-                    customization: updatedItem.customization
-                )
-            })
+        .sheet(item: $editingItem) { item in
+            ProductDetailSheet(product: item.product, cartItem: item)
         }
-        .fullScreenCover(isPresented: $showingCheckout) {
-            CheckoutView()
+    }
+
+    private var cartContent: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            CartFlowHeader(title: "Giỏ hàng", backSymbol: "chevron.left") {
+                dismiss()
+            }
+            .padding(.horizontal, CartFlowMetric.horizontalInset)
+            .padding(.top, CartFlowMetric.topInset)
+
+            ScrollView(.vertical, showsIndicators: false) {
+                LazyVStack(alignment: .leading, spacing: 0) {
+                    Text("Sản phẩm đã chọn")
+                        .font(BaseViewFont.bodyStrong)
+                        .foregroundStyle(BaseViewColor.textPrimary)
+                        .padding(.horizontal, CartFlowMetric.horizontalInset)
+                        .padding(.top, CartFlowMetric.headerToSectionGap)
+                        .padding(.bottom, CartFlowMetric.sectionToListGap)
+
+                    ForEach(cartViewModel.cart.items.sorted(by: { $0.addedAt < $1.addedAt })) { item in
+                        CartProductRow(
+                            item: item,
+                            storeId: cartViewModel.cart.storeId,
+                            onDecrease: { handleDecrease(item) },
+                            onIncrease: { cartViewModel.updateQuantity(for: item.id, delta: 1) },
+                            onDelete: { cartViewModel.removeItem(item.id) },
+                            onEdit: { editingItem = item }
+                        )
+                    }
+                }
+                .padding(.bottom, CartFlowMetric.contentBottomPadding)
+            }
+            .background(BaseViewColor.background)
+        }
+        .safeAreaInset(edge: .bottom, spacing: 0) {
+            CartCTAOverlay(
+                label: "\(cartViewModel.itemCount) sản phẩm",
+                amount: cartViewModel.subtotal.formattedVND,
+                title: "TIẾP TỤC",
+                isDisabled: cartViewModel.isEmpty
+            ) {
+                showingInfo = true
+            }
+        }
+    }
+
+    private func handleDecrease(_ item: CartItem) {
+        if item.quantity > 1 {
+            cartViewModel.updateQuantity(for: item.id, delta: -1)
         }
     }
 }
 
-// MARK: - Cart Item Row
+struct CartInfoView: View {
+    @EnvironmentObject private var cartViewModel: CartViewModel
+    @EnvironmentObject private var storeViewModel: StoreViewModel
+    @EnvironmentObject private var deliveryViewModel: DeliveryViewModel
+    @Environment(\.dismiss) private var dismiss
 
-struct CartItemRow: View {
+    @State private var showingStoreSheet = false
+    @State private var showingAddressSheet = false
+    @State private var showingCheckout = false
+
+    var body: some View {
+        ZStack {
+            BaseViewColor.background.ignoresSafeArea()
+
+            VStack(alignment: .leading, spacing: 0) {
+                CartFlowHeader(title: "Thông tin", backSymbol: "chevron.left") {
+                    dismiss()
+                }
+                .padding(.horizontal, CartFlowMetric.horizontalInset)
+                .padding(.top, CartFlowMetric.topInset)
+
+                ScrollView(.vertical, showsIndicators: false) {
+                    VStack(alignment: .leading, spacing: 0) {
+                        storeSection
+                        addressSection
+                    }
+                    .padding(.horizontal, CartFlowMetric.horizontalInset)
+                    .padding(.top, CartFlowMetric.headerToSectionGap)
+                    .padding(.bottom, CartFlowMetric.contentBottomPadding)
+                }
+            }
+        }
+        .safeAreaInset(edge: .bottom, spacing: 0) {
+            CartCTAOverlay(
+                label: deliveryFeeLabel,
+                amount: cartViewModel.deliveryFee.formattedVND,
+                title: "TIẾP TỤC",
+                isDisabled: !canContinue
+            ) {
+                syncCartSelection()
+                showingCheckout = true
+            }
+        }
+        .navigationBarHidden(true)
+        .toolbar(.hidden, for: .navigationBar)
+        .navigationDestination(isPresented: $showingCheckout) {
+            CheckoutView()
+        }
+        .sheet(isPresented: $showingStoreSheet) {
+            StorePickerSheet()
+                .environmentObject(storeViewModel)
+        }
+        .sheet(isPresented: $showingAddressSheet) {
+            DeliveryAddressSheet()
+                .environmentObject(deliveryViewModel)
+        }
+        .onAppear {
+            cartViewModel.setMode(.delivery)
+            if storeViewModel.stores.isEmpty {
+                storeViewModel.loadStores()
+            }
+            Task {
+                await deliveryViewModel.loadAddresses()
+                syncCartSelection()
+            }
+        }
+        .onChange(of: storeViewModel.selectedStore) { _ in syncCartSelection() }
+        .onChange(of: deliveryViewModel.selectedAddress) { _ in syncCartSelection() }
+    }
+
+    private var storeSection: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            Text("Cửa hàng")
+                .font(BaseViewFont.bodyStrong)
+                .foregroundStyle(BaseViewColor.textPrimary)
+
+            Text("Chọn cửa hàng phụ trách đơn hàng của bạn")
+                .font(BaseViewFont.label)
+                .foregroundStyle(BaseViewColor.textSecondary)
+
+            StoreInfoCard(
+                store: storeViewModel.selectedStore,
+                onEdit: { showingStoreSheet = true }
+            )
+            .padding(.top, CartFlowMetric.infoCardTopGap)
+        }
+    }
+
+    private var addressSection: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            Text("Địa chỉ giao hàng")
+                .font(BaseViewFont.bodyStrong)
+                .foregroundStyle(BaseViewColor.textPrimary)
+                .padding(.top, CartFlowMetric.infoSectionGap)
+
+            DeliveryAddressCard(address: deliveryViewModel.selectedAddress)
+                .padding(.top, CartFlowMetric.infoCardTopGap)
+
+            Button {
+                showingAddressSheet = true
+            } label: {
+                Text("ĐỔI ĐỊA CHỈ")
+                    .font(BaseViewFont.cta)
+                    .tracking(2)
+                    .foregroundStyle(BaseViewColor.textPrimary)
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, CartFlowMetric.outlineButtonVerticalPadding)
+                    .frame(minHeight: CartFlowMetric.outlineButtonMinHeight)
+                    .overlay {
+                        Rectangle().strokeBorder(BaseViewColor.border, lineWidth: 1)
+                    }
+            }
+            .buttonStyle(.plain)
+            .padding(.top, CartFlowMetric.addressButtonGap)
+        }
+    }
+
+    private var canContinue: Bool {
+        storeViewModel.selectedStore != nil && deliveryViewModel.selectedAddress != nil
+    }
+
+    private var deliveryFeeLabel: String {
+        if let eta = deliveryViewModel.estimatedETA {
+            return "Giờ cao điểm • \(eta)"
+        }
+        return "Phí giao hàng"
+    }
+
+    private func syncCartSelection() {
+        if let store = storeViewModel.selectedStore {
+            cartViewModel.setStore(store.id)
+        }
+        if let address = deliveryViewModel.selectedAddress {
+            cartViewModel.setDeliveryAddress(address.id, address: address)
+        }
+    }
+}
+
+private struct CartProductRow: View {
     let item: CartItem
-    let onUpdateQuantity: (Int) -> Void
-    let onRemove: () -> Void
+    let storeId: String?
+    let onDecrease: () -> Void
+    let onIncrease: () -> Void
+    let onDelete: () -> Void
     let onEdit: () -> Void
-    let storeId: String? // Store ID to check product availability
-    
+
+    @State private var showingDeleteConfirm = false
+    @State private var isDeleteRevealed = false
+    @State private var rowOffset: CGFloat = 0
+
     private var isAvailable: Bool {
         item.product.isAvailableAt(storeId: storeId)
     }
-    
+
     var body: some View {
-        HStack(spacing: BaseViewLayout.spacingMedium) {
+        ZStack(alignment: .trailing) {
+            deleteAction
+            rowContent
+                .background(BaseViewColor.background)
+                .offset(x: rowOffset)
+                .gesture(swipeGesture)
+        }
+        .clipped()
+        .alert("Xoá sản phẩm?", isPresented: $showingDeleteConfirm) {
+            Button("Huỷ", role: .cancel) {
+                closeDelete()
+            }
+            Button("Xoá", role: .destructive) {
+                closeDelete()
+                onDelete()
+            }
+        } message: {
+            Text("Sản phẩm này đang có số lượng 1. Bạn có muốn xoá khỏi giỏ hàng không?")
+        }
+        .overlay(alignment: .bottom) {
+            Rectangle()
+                .fill(BaseViewColor.border)
+                .frame(height: 0.5)
+        }
+    }
+
+    private var rowContent: some View {
+        HStack(alignment: .top, spacing: CartFlowMetric.productContentGap) {
             AppRemoteImage(
                 url: URL(string: item.product.displayImageUrl ?? ""),
-                width: BaseViewLayout.productImageSize,
-                height: BaseViewLayout.productImageSize,
-                backgroundColor: BaseViewColor.surface,
-                showsProgress: true
+                width: CartFlowMetric.productImageSize,
+                height: CartFlowMetric.productImageSize,
+                cornerRadius: 0,
+                backgroundColor: BaseViewColor.placeholder,
+                showsProgress: true,
+                placeholderIcon: nil
             )
-            
+            .contentShape(Rectangle())
+            .onTapGesture(perform: handleContentTap)
+
             VStack(alignment: .leading, spacing: 0) {
                 Text(item.product.name)
-                    .font(BaseViewFont.headline)
-                    .lineLimit(3)
+                    .font(BaseViewFont.bodyStrong)
                     .foregroundStyle(isAvailable ? BaseViewColor.textPrimary : BaseViewColor.textSecondary)
-                
-                // Unavailable badge
-                if !isAvailable {
-                    HStack(spacing: 4) {
-                        Image(systemName: "exclamationmark.triangle.fill")
-                            .font(.caption2)
-                        Text("Not available at this store")
-                            .font(BaseViewFont.uiMicro)
-                    }
-                    .foregroundStyle(Color.orange)
-                    .padding(.top, 2)
-                }
-                
-                if !item.displayCustomization.isEmpty {
-                    Text(item.displayCustomization)
-                        .font(BaseViewFont.uiCaption)
+                    .lineLimit(1)
+                    .contentShape(Rectangle())
+                    .onTapGesture(perform: handleContentTap)
+
+                if !visibleCustomizationText.isEmpty {
+                    Text(visibleCustomizationText)
+                        .font(BaseViewFont.label)
                         .foregroundStyle(BaseViewColor.textSecondary)
-                        .lineLimit(2)
+                        .lineLimit(3)
+                        .padding(.top, 2)
+                        .contentShape(Rectangle())
+                        .onTapGesture(perform: handleContentTap)
                 }
-                
-                if let notes = item.customization.notes, !notes.isEmpty {
-                    Text("note_prefix \(notes)")
-                        .font(BaseViewFont.uiMicro)
-                        .italic()
-                        .foregroundStyle(BaseViewColor.textSecondary)
-                }
-                
-                Button { onEdit() } label: {
-                    Text("edit_button")
-                        .font(BaseViewFont.uiMicro)
-                        .foregroundStyle(BaseViewColor.accent)
-                }
-                .padding(.top, 4)
-                
-                Spacer(minLength: BaseViewLayout.spacing)
-                
-                HStack(spacing: 0) {
-                    Text(item.totalPrice.formattedVND)
-                        .font(BaseViewFont.monoBody)
+
+                Spacer(minLength: 0)
+
+                HStack(alignment: .center, spacing: 0) {
+                    Text(item.totalPrice.formattedVND.uppercased())
+                        .font(BaseViewFont.labelStrong)
+                        .tracking(2)
+                        .foregroundStyle(BaseViewColor.textPrimary)
                         .lineLimit(1)
-                        .minimumScaleFactor(0.5)
-                        .foregroundStyle(BaseViewColor.textSecondary)
-                    
-                    Spacer(minLength: 0)
-                    
-                    AppQuantityStepper(
+                        .minimumScaleFactor(0.8)
+                        .contentShape(Rectangle())
+                        .onTapGesture(perform: handleContentTap)
+
+                    Spacer(minLength: CartFlowMetric.productContentGap)
+
+                    CartQuantityControl(
                         quantity: item.quantity,
                         onDecrease: {
-                            if item.quantity > 1 {
-                                onUpdateQuantity(item.quantity - 1)
+                            if item.quantity == 1 {
+                                showingDeleteConfirm = true
                             } else {
-                                onRemove()
+                                onDecrease()
                             }
                         },
-                        onIncrease: {
-                            onUpdateQuantity(item.quantity + 1)
-                        }
+                        onIncrease: onIncrease
                     )
                 }
+                .padding(.top, CartFlowMetric.priceTopGap)
             }
-            .padding(.vertical, 8)
-            .frame(maxWidth: .infinity, alignment: .leading)
+            .frame(maxWidth: .infinity, minHeight: CartFlowMetric.productImageSize, alignment: .topLeading)
         }
-        .fixedSize(horizontal: false, vertical: true)
+        .padding(.horizontal, CartFlowMetric.horizontalInset)
+        .padding(.vertical, CartFlowMetric.productRowVerticalPadding)
+    }
+
+    private var deleteAction: some View {
+        Button {
+            showingDeleteConfirm = true
+        } label: {
+            VStack(spacing: 4) {
+                Image(systemName: "trash")
+                    .font(.system(size: 15, weight: .regular))
+                Text("Xoá")
+                    .font(BaseViewFont.labelStrong)
+            }
+            .foregroundStyle(BaseViewColor.accentForeground)
+            .frame(width: CartFlowMetric.deleteRevealWidth)
+            .frame(minHeight: CartFlowMetric.productImageSize + CartFlowMetric.productRowVerticalPadding * 2)
+            .background(BaseViewColor.accent)
+        }
+        .buttonStyle(.plain)
+    }
+
+    private var swipeGesture: some Gesture {
+        DragGesture(minimumDistance: 8, coordinateSpace: .local)
+            .onChanged { value in
+                guard abs(value.translation.width) > abs(value.translation.height) else { return }
+                let baseOffset = isDeleteRevealed ? -CartFlowMetric.deleteRevealWidth : 0
+                rowOffset = min(0, max(-CartFlowMetric.deleteRevealWidth, baseOffset + value.translation.width))
+            }
+            .onEnded { value in
+                let shouldReveal = value.predictedEndTranslation.width < -CartFlowMetric.deleteRevealWidth / 2
+                    || rowOffset < -CartFlowMetric.deleteRevealWidth / 2
+                if shouldReveal {
+                    revealDelete()
+                } else {
+                    closeDelete()
+                }
+            }
+    }
+
+    private func handleContentTap() {
+        if isDeleteRevealed {
+            closeDelete()
+        } else {
+            onEdit()
+        }
+    }
+
+    private func revealDelete() {
+        withAnimation(.easeOut(duration: 0.18)) {
+            isDeleteRevealed = true
+            rowOffset = -CartFlowMetric.deleteRevealWidth
+        }
+    }
+
+    private func closeDelete() {
+        withAnimation(.easeOut(duration: 0.18)) {
+            isDeleteRevealed = false
+            rowOffset = 0
+        }
+    }
+
+    private var visibleCustomizationText: String {
+        var parts: [String] = []
+        if let sugar = item.customization.sugar {
+            parts.append(sugar.displayName)
+        }
+        if let ice = item.customization.ice {
+            parts.append(ice.displayName)
+        }
+        parts.append(contentsOf: item.customization.toppings.map(\.name))
+        return parts.joined(separator: " • ")
     }
 }
 
-// MARK: - Empty Cart
+private struct CartQuantityControl: View {
+    let quantity: Int
+    let onDecrease: () -> Void
+    let onIncrease: () -> Void
+
+    var body: some View {
+        HStack(spacing: CartFlowMetric.quantityGap) {
+            quantityButton(systemName: "minus", action: onDecrease)
+
+            Text("\(quantity)")
+                .font(BaseViewFont.label)
+                .foregroundStyle(BaseViewColor.textPrimary)
+                .frame(width: CartFlowMetric.quantityValueWidth, height: CartFlowMetric.quantityControlSize)
+                .overlay {
+                    Rectangle().strokeBorder(BaseViewColor.border, lineWidth: 1)
+                }
+
+            quantityButton(systemName: "plus", action: onIncrease)
+        }
+        .fixedSize()
+    }
+
+    private func quantityButton(systemName: String, action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            Image(systemName: systemName)
+                .font(.system(size: 12, weight: .regular))
+                .foregroundStyle(BaseViewColor.accentForeground)
+                .frame(width: CartFlowMetric.quantityControlSize, height: CartFlowMetric.quantityControlSize)
+                .background(BaseViewColor.accent)
+        }
+        .buttonStyle(.plain)
+    }
+}
+
+private struct StoreInfoCard: View {
+    let store: Store?
+    let onEdit: () -> Void
+
+    var body: some View {
+        VStack(spacing: 0) {
+            HStack(alignment: .top, spacing: 13) {
+                AppRemoteImage(
+                    url: URL(string: store?.imageUrl ?? ""),
+                    width: CartFlowMetric.storeImageSize,
+                    height: CartFlowMetric.storeImageSize,
+                    cornerRadius: 0,
+                    backgroundColor: BaseViewColor.placeholder,
+                    showsProgress: true,
+                    placeholderIcon: nil
+                )
+
+                VStack(alignment: .leading, spacing: 3) {
+                    Text((store?.name ?? "Chọn cửa hàng").uppercased())
+                        .font(BaseViewFont.bodyStrong)
+                        .foregroundStyle(BaseViewColor.textPrimary)
+                        .lineLimit(2)
+
+                    Text("-- km")
+                        .font(BaseViewFont.body)
+                        .foregroundStyle(BaseViewColor.textPrimary)
+
+                    Text(todayHoursText)
+                        .font(BaseViewFont.body)
+                        .foregroundStyle(BaseViewColor.textPrimary)
+                }
+                .padding(.top, 9)
+
+                Spacer(minLength: 0)
+            }
+
+            Rectangle()
+                .fill(BaseViewColor.border)
+                .frame(height: 0.5)
+
+            HStack(spacing: 0) {
+                Text(store == nil ? "CHƯA CHỌN" : "ĐÃ CHỌN")
+                    .font(BaseViewFont.cta)
+                    .tracking(2)
+                    .foregroundStyle(BaseViewColor.textPrimary)
+                    .frame(maxWidth: .infinity)
+                    .frame(minHeight: CartFlowMetric.storeActionHeight)
+
+                Button(action: onEdit) {
+                    Text("SỬA")
+                        .font(BaseViewFont.cta)
+                        .tracking(2)
+                        .foregroundStyle(BaseViewColor.accentForeground)
+                        .frame(maxWidth: .infinity)
+                        .frame(minHeight: CartFlowMetric.storeActionHeight)
+                        .background(BaseViewColor.accent)
+                }
+                .buttonStyle(.plain)
+            }
+        }
+        .frame(maxWidth: .infinity)
+        .overlay {
+            Rectangle().strokeBorder(BaseViewColor.border, lineWidth: 1)
+        }
+    }
+
+    private var todayHoursText: String {
+        guard let hours = store?.openingHours?.first(where: { $0.dayOfWeek == Calendar.current.component(.weekday, from: Date()) }) else {
+            return "--:-- - --:--"
+        }
+        return "\(hours.openTime) - \(hours.closeTime)"
+    }
+}
+
+private struct DeliveryAddressCard: View {
+    let address: DeliveryAddress?
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 13) {
+            Text(address?.shortAddress ?? "Chọn địa chỉ giao hàng")
+                .font(BaseViewFont.bodyStrong)
+                .foregroundStyle(BaseViewColor.textPrimary)
+                .lineLimit(1)
+
+            Text(address?.fullAddress ?? "Bạn cần chọn địa chỉ để tính phí giao hàng.")
+                .font(BaseViewFont.label)
+                .foregroundStyle(BaseViewColor.textSecondary)
+                .lineLimit(2)
+        }
+        .padding(.horizontal, 13)
+        .padding(.vertical, 13)
+        .frame(maxWidth: .infinity, minHeight: CartFlowMetric.addressCardMinHeight, alignment: .topLeading)
+        .overlay {
+            Rectangle().strokeBorder(BaseViewColor.border, lineWidth: 1)
+        }
+    }
+}
+
+struct CartCTAOverlay: View {
+    let label: String
+    let amount: String
+    let title: String
+    var isLoading = false
+    var isDisabled = false
+    let action: () -> Void
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            HStack(alignment: .firstTextBaseline) {
+                Text(label)
+                    .font(BaseViewFont.labelStrong)
+                    .foregroundStyle(BaseViewColor.textSecondary)
+                    .lineLimit(1)
+
+                Spacer(minLength: 16)
+
+                Text(amount)
+                    .font(BaseViewFont.sectionTitle)
+                    .foregroundStyle(BaseViewColor.textPrimary)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.8)
+            }
+
+            Button(action: action) {
+                ZStack {
+                    if isLoading {
+                        ProgressView()
+                            .tint(BaseViewColor.accentForeground)
+                    }
+
+                    Text(title)
+                        .font(BaseViewFont.cta)
+                        .tracking(2)
+                        .foregroundStyle(BaseViewColor.accentForeground)
+                        .opacity(isLoading ? 0 : 1)
+                }
+                .frame(maxWidth: .infinity)
+                .padding(.horizontal, 18)
+                .padding(.vertical, 10)
+                .frame(minHeight: CartFlowMetric.ctaButtonMinHeight)
+                .background(BaseViewColor.accent)
+            }
+            .buttonStyle(.plain)
+            .disabled(isDisabled || isLoading)
+            .opacity(isDisabled ? 0.55 : 1)
+            .padding(.top, CartFlowMetric.ctaButtonTopGap)
+        }
+        .padding(.horizontal, CartFlowMetric.horizontalInset)
+        .padding(.top, CartFlowMetric.ctaTopInset)
+        .padding(.bottom, CartFlowMetric.ctaBottomInset)
+        .background(BaseViewColor.background)
+        .overlay(alignment: .top) {
+            Rectangle()
+                .fill(BaseViewColor.border)
+                .frame(height: 0.5)
+        }
+    }
+}
+
+private struct CartFlowHeader: View {
+    let title: String
+    let backSymbol: String
+    let onBack: () -> Void
+
+    var body: some View {
+        ZStack {
+            Text(title)
+                .font(BaseViewFont.screenTitle)
+                .foregroundStyle(BaseViewColor.textPrimary)
+                .frame(maxWidth: .infinity)
+
+            HStack {
+                Button(action: onBack) {
+                    Image(systemName: backSymbol)
+                        .font(.system(size: 14, weight: .regular))
+                        .foregroundStyle(BaseViewColor.accentForeground)
+                        .frame(width: CartFlowMetric.navButtonSize, height: CartFlowMetric.navButtonSize)
+                        .background(BaseViewColor.accent)
+                }
+                .buttonStyle(.plain)
+
+                Spacer()
+            }
+        }
+        .frame(minHeight: CartFlowMetric.navButtonSize)
+    }
+}
 
 struct EmptyCartView: View {
     let onBrowse: () -> Void
-    
+
     var body: some View {
         VStack(spacing: BaseViewLayout.spacingXL) {
             Spacer()
-            
+
             Text("cart_empty_title")
                 .font(BaseViewFont.displayTitle)
-                .foregroundColor(BaseViewColor.textPrimary)
-            
+                .foregroundStyle(BaseViewColor.textPrimary)
+
             Text("cart_empty_message")
                 .font(BaseViewFont.body)
-                .foregroundColor(BaseViewColor.textSecondary)
-            
+                .foregroundStyle(BaseViewColor.textSecondary)
+
             AppButton("browse_menu_button", style: .primary, fillsWidth: false, action: onBrowse)
-            
+
             Spacer()
         }
         .padding(32)
     }
 }
 
-// MARK: - Voucher Section
-
-struct VoucherSection: View {
-    @EnvironmentObject var cartViewModel: CartViewModel
-    @State private var code = ""
-    
-    var body: some View {
-        VStack(alignment: .leading, spacing: BaseViewLayout.spacing) {
-            Text("voucher_section_title")
-                .textCase(.uppercase)
-                .font(BaseViewFont.sectionHeader)
-                .foregroundStyle(BaseViewColor.textPrimary)
-            
-            HStack(spacing: BaseViewLayout.spacingMedium) {
-                TextField("promotion_code_placeholder", text: $code)
-                    .textFieldStyle(PlainTextFieldStyle())
-                    .font(BaseViewFont.monoBody)
-                    .padding(.horizontal, 8)
-                    .padding(.vertical, 6)
-                    .overlay {
-                        Capsule()
-                            .strokeBorder(BaseViewColor.borderSecondary, style: StrokeStyle(lineWidth: 1, dash: BaseViewLayout.dashedPattern))
-                    }
-                
-                AppButton("apply_button", style: .primary, fillsWidth: false) {
-                    Task {
-                        await cartViewModel.applyVoucher(code: code)
-                        code = ""
-                    }
-                }
-            }
-        }
-        .frame(maxWidth: .infinity, alignment: .leading)
-    }
-}
-
-// MARK: - Edit Cart Item Sheet
-
-struct EditCartItemSheet: View {
-    let item: CartItem
-    let onSave: (CartItem) -> Void
-    @Environment(\.dismiss) private var dismiss
-    
-    @State private var selectedSize: ProductSize
-    @State private var notes: String
-    
-    init(item: CartItem, onSave: @escaping (CartItem) -> Void) {
-        self.item = item
-        self.onSave = onSave
-        _selectedSize = State(initialValue: item.customization.size)
-        _notes = State(initialValue: item.customization.notes ?? "")
-    }
-    
-    var body: some View {
-        ZStack(alignment: .top) {
-            BaseViewColor.background.ignoresSafeArea()
-            
-            VStack(spacing: 0) {
-                // Header
-                HStack {
-                    Button { dismiss() } label: {
-                        Text("cancel_button")
-                            .font(BaseViewFont.body)
-                            .foregroundStyle(BaseViewColor.textSecondary)
-                    }
-                    
-                    Spacer()
-                    
-                    Text("item_update_title")
-                        .font(BaseViewFont.sectionHeader)
-                        .foregroundStyle(BaseViewColor.textPrimary)
-                    
-                    Spacer()
-                    
-                    Button {
-                        var newItem = item
-                        newItem.customization.size = selectedSize
-                        newItem.customization.notes = notes
-                        onSave(newItem)
-                        dismiss()
-                    } label: {
-                        Text("save_button")
-                            .font(BaseViewFont.body)
-                            .foregroundStyle(BaseViewColor.accent)
-                    }
-                }
-                .padding(BaseViewLayout.spacing)
-                
-                Color.secondary.frame(height: 1)
-                
-                ScrollView {
-                    VStack(spacing: BaseViewLayout.spacingXL) {
-                        // Product Header
-                        HStack(spacing: BaseViewLayout.spacing) {
-                        // CHANGED: Using CachedAsyncImage
-                            AppRemoteImage(
-                                url: URL(string: item.product.displayImageUrl ?? ""),
-                                width: 60,
-                                height: 60,
-                                backgroundColor: BaseViewColor.surface,
-                                showsProgress: true,
-                                placeholderIcon: nil
-                            )
-                            
-                            Text(item.product.name)
-                                .font(BaseViewFont.sectionHeader)
-                                .foregroundColor(BaseViewColor.textPrimary)
-                            
-                            Spacer()
-                        }
-                        
-                        // Size Option
-                        VStack(alignment: .leading, spacing: BaseViewLayout.spacingMedium) {
-                            Text("size_section_title")
-                                .textCase(.uppercase)
-                                .font(BaseViewFont.sectionHeader)
-                                .foregroundStyle(BaseViewColor.textPrimary)
-                            
-                            HStack(spacing: 0) {
-                                ForEach(item.product.sizeOptions.filter { $0.isEnabled }, id: \.size) { option in
-                                    Button {
-                                        selectedSize = option.size
-                                    } label: {
-                                        Text(option.size.rawValue)
-                                            .font(BaseViewFont.monoBody)
-                                            .frame(maxWidth: .infinity)
-                                            .padding(.vertical, 12)
-                                            .background(selectedSize == option.size ? BaseViewColor.accent : BaseViewColor.background)
-                                            .foregroundColor(selectedSize == option.size ? .white : BaseViewColor.textPrimary)
-                                    }
-                                }
-                            }
-                            .clipShape(Capsule())
-                            .overlay(
-                                Capsule()
-                                    .strokeBorder(BaseViewColor.border, lineWidth: 1)
-                            )
-                        }
-                        
-                        // Notes
-                        VStack(alignment: .leading, spacing: BaseViewLayout.spacingMedium) {
-                            Text("notes_section_title")
-                                .textCase(.uppercase)
-                                .font(BaseViewFont.sectionHeader)
-                                .foregroundStyle(BaseViewColor.textPrimary)
-                            
-                            TextField("notes_placeholder", text: $notes)
-                                .textFieldStyle(PlainTextFieldStyle())
-                                .font(BaseViewFont.body)
-                                .padding(.horizontal, 8)
-                                .padding(.vertical, 6)
-                                .overlay {
-                                    Capsule()
-                                        .strokeBorder(BaseViewColor.borderSecondary, style: StrokeStyle(lineWidth: 1, dash: BaseViewLayout.dashedPattern))
-                                }
-                        }
-                    }
-                    .padding(BaseViewLayout.spacing)
-                }
-            }
-        }
-    }
+private enum CartFlowMetric {
+    static let horizontalInset: CGFloat = 23
+    static let topInset: CGFloat = 23
+    static let navButtonSize: CGFloat = 23
+    static let headerToSectionGap: CGFloat = 28
+    static let sectionToListGap: CGFloat = 20
+    static let productImageSize: CGFloat = 116
+    static let productContentGap: CGFloat = 13
+    static let productRowVerticalPadding: CGFloat = 13
+    static let priceTopGap: CGFloat = 13
+    static let quantityControlSize: CGFloat = 18
+    static let quantityValueWidth: CGFloat = 36
+    static let quantityGap: CGFloat = 8
+    static let deleteRevealWidth: CGFloat = 76
+    static let contentBottomPadding: CGFloat = 140
+    static let ctaTopInset: CGFloat = 23
+    static let ctaButtonTopGap: CGFloat = 13
+    static let ctaButtonMinHeight: CGFloat = 38
+    static let ctaBottomInset: CGFloat = 23
+    static let infoCardTopGap: CGFloat = 23
+    static let infoSectionGap: CGFloat = 40
+    static let storeImageSize: CGFloat = 116
+    static let storeActionHeight: CGFloat = 38
+    static let addressCardMinHeight: CGFloat = 98
+    static let addressButtonGap: CGFloat = 13
+    static let outlineButtonVerticalPadding: CGFloat = 10
+    static let outlineButtonMinHeight: CGFloat = 38
 }

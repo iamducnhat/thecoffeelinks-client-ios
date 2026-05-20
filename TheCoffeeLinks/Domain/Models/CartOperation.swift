@@ -11,6 +11,7 @@ enum CartOperation: Codable, Equatable {
     case add(productId: String, quantity: Int, customization: OrderCustomization, priceSnapshot: Double, storeId: String)
     case updateQuantity(key: String, delta: Int)
     case remove(key: String)
+    case replaceItem(oldKey: String, item: CartItem)
     case clear
     case setMode(OrderingMode)
     case setStore(storeId: String)
@@ -21,7 +22,16 @@ enum CartOperation: Codable, Equatable {
     var isIdempotent: Bool {
         switch self {
         case .add, .updateQuantity: return false
-        case .remove, .clear, .setMode, .setStore, .setAddress, .setVoucher, .setNotes: return true
+        case .remove, .replaceItem, .clear, .setMode, .setStore, .setAddress, .setVoucher, .setNotes: return true
+        }
+    }
+
+    var requiresServerRebuild: Bool {
+        switch self {
+        case .add:
+            return false
+        case .updateQuantity, .remove, .replaceItem, .clear, .setMode, .setStore, .setAddress, .setVoucher, .setNotes:
+            return true
         }
     }
     
@@ -31,6 +41,7 @@ enum CartOperation: Codable, Equatable {
         case .add: return "add"
         case .updateQuantity: return "updateQuantity"
         case .remove: return "remove"
+        case .replaceItem: return "replaceItem"
         case .clear: return "clear"
         case .setMode: return "setMode"
         case .setStore: return "setStore"
@@ -42,7 +53,7 @@ enum CartOperation: Codable, Equatable {
 }
 
 extension Cart {
-    mutating func applyOperation(_ operation: CartOperation) {
+    nonisolated mutating func applyOperation(_ operation: CartOperation) {
         switch operation {
         case .add(let productId, let quantity, let customization, let priceSnapshot, let storeId):
             // Generate key
@@ -72,55 +83,51 @@ extension Cart {
                 storeId: storeId
             )
             
-            if let existingIndex = items.firstIndex(where: { $0.key == key }) {
-                items[existingIndex].quantity += quantity
-            } else {
-                // Construct a placeholder item with available data so it's tracked in the cart
-                // rather than silently dropping it. The product details will be hydrated during sync.
-                let placeholderProduct = Product(
-                    id: productId,
-                    name: "",
-                    description: nil,
-                    categoryId: "",
-                    categoryName: nil,
-                    imageUrl: nil,
-                    basePrice: priceSnapshot,
-                    sizeOptions: [],
-                    availableToppings: [],
-                    isPopular: false,
-                    isNew: false,
-                    isActive: true,
-                    isHotSupported: false,
-                    isDeliverable: true,
-                    deliveryPrepMinutes: nil,
-                    tags: [],
-                    nutritionInfo: nil,
-                    allergens: []
-                )
-                let newItem = CartItem(
-                    key: key,
-                    product: placeholderProduct,
-                    quantity: quantity,
-                    customization: customization,
-                    addedAt: Date(),
-                    priceSnapshot: priceSnapshot,
-                    storeId: storeId
-                )
-                items.append(newItem)
+            // Construct a placeholder item with available data so it's tracked in the cart
+            // rather than silently dropping it. The product details will be hydrated during sync.
+            let placeholderProduct = Product(
+                id: productId,
+                name: "",
+                description: nil,
+                categoryId: "",
+                categoryName: nil,
+                imageUrl: nil,
+                basePrice: priceSnapshot,
+                sizeOptions: [],
+                availableToppings: [],
+                isPopular: false,
+                isNew: false,
+                isActive: true,
+                isHotSupported: false,
+                isDeliverable: true,
+                deliveryPrepMinutes: nil,
+                tags: [],
+                nutritionInfo: nil,
+                allergens: []
+            )
+            let newItem = CartItem(
+                key: key,
+                product: placeholderProduct,
+                quantity: quantity,
+                customization: customization,
+                addedAt: Date(),
+                priceSnapshot: priceSnapshot,
+                storeId: storeId
+            )
+            let previousCount = items.count
+            addItem(newItem)
+            if items.count > previousCount {
                 debugLog("⚠️ [Cart] Added item with placeholder product — will hydrate during sync")
             }
             
         case .updateQuantity(let key, let delta):
-            guard let index = items.firstIndex(where: { $0.key == key }) else { return }
-            let newQuantity = items[index].quantity + delta
-            if newQuantity <= 0 {
-                items.remove(at: index)
-            } else {
-                items[index].quantity = newQuantity
-            }
+            updateQuantity(for: key, delta: delta)
             
         case .remove(let key):
-            items.removeAll { $0.key == key }
+            removeItem(key)
+
+        case .replaceItem(let oldKey, let item):
+            replaceItem(oldKey: oldKey, with: item)
             
         case .clear:
             items.removeAll()

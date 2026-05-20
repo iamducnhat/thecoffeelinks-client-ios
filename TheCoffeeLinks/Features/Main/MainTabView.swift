@@ -188,7 +188,7 @@ struct MainTabView: View {
         }
         .tint(BaseViewColor.accent)
         .fullScreenCover(isPresented: $appState.showCheckout) {
-            CheckoutView()
+            CartView()
                 .environmentObject(menuViewModel)
         }
         .onAppear {

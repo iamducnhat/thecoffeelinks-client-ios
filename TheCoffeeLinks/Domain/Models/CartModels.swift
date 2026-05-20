@@ -189,10 +189,40 @@ struct Cart: Codable, Sendable {
     var itemCount: Int { items.reduce(0) { $0 + $1.quantity } }
     var uniqueItemCount: Int { items.count }
     var subtotal: Double { items.reduce(0) { $0 + $1.totalPrice } }
+
+    private nonisolated func indexOfItem(withKey itemKey: String) -> Int? {
+        for index in items.indices {
+            if items[index].key == itemKey {
+                return index
+            }
+        }
+
+        return nil
+    }
+
+    private nonisolated func indicesOfItems(withKey itemKey: String) -> [Int] {
+        var indices: [Int] = []
+
+        for index in items.indices {
+            if items[index].key == itemKey {
+                indices.append(index)
+            }
+        }
+
+        return indices
+    }
+
+    private nonisolated mutating func removeItems(withKey itemKey: String) {
+        let matchingIndices = indicesOfItems(withKey: itemKey)
+
+        for index in matchingIndices.reversed() {
+            items.remove(at: index)
+        }
+    }
     
     nonisolated mutating func addItem(_ item: CartItem) {
         // Check local state for existing key
-        if let existingIndex = items.firstIndex(where: { $0.key == item.key }) {
+        if let existingIndex = indexOfItem(withKey: item.key) {
             // Increment quantity
             items[existingIndex].quantity += item.quantity
             // Update updated_at implied by persistence
@@ -203,7 +233,7 @@ struct Cart: Codable, Sendable {
     }
     
     nonisolated mutating func updateQuantity(for itemKey: String, delta: Int) {
-        guard let index = items.firstIndex(where: { $0.key == itemKey }) else { return }
+        guard let index = indexOfItem(withKey: itemKey) else { return }
         let newQuantity = items[index].quantity + delta
         if newQuantity <= 0 { 
             items.remove(at: index) 
@@ -213,7 +243,12 @@ struct Cart: Codable, Sendable {
     }
     
     nonisolated mutating func removeItem(_ itemKey: String) {
-        items.removeAll { $0.key == itemKey }
+        removeItems(withKey: itemKey)
+    }
+
+    nonisolated mutating func replaceItem(oldKey: String, with item: CartItem) {
+        removeItems(withKey: oldKey)
+        addItem(item)
     }
     
     nonisolated mutating func clear() {

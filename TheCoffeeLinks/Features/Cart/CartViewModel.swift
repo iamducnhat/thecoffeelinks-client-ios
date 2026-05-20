@@ -173,24 +173,84 @@ final class CartViewModel: ObservableObject {
     }
     
     func updateItem(id: String, quantity: Int, customization: OrderCustomization) {
-        // Local update for responsive UI, ideally sync
+        guard quantity > 0 else {
+            removeItem(id)
+            return
+        }
+
+        // Re-key edited items so identical product/customization selections merge.
         if let index = cart.items.firstIndex(where: { $0.id == id }) {
-            var item = cart.items[index]
-            item.quantity = quantity
-            item.customization = customization
-            cart.items[index] = item
-            Task { await hapticService.selection() }
+            let existingItem = cart.items[index]
+            let priceSnapshot = existingItem.product.price(for: customization.size) + customization.toppingsTotal
+            let updatedKey = CartItem.generateKey(
+                product: existingItem.product,
+                modifiers: customization,
+                priceSnapshot: priceSnapshot,
+                storeId: existingItem.storeId
+            )
+            let updatedItem = CartItem(
+                key: updatedKey,
+                product: existingItem.product,
+                quantity: quantity,
+                customization: customization,
+                addedAt: existingItem.addedAt,
+                priceSnapshot: priceSnapshot,
+                storeId: existingItem.storeId
+            )
+
+            cart.items.remove(at: index)
+            cart.addItem(updatedItem)
+            clearCheckoutStateIfCartEmpty()
+
+            Task {
+                do {
+                    let updatedCart = try await cartService.replaceItem(oldKey: id, item: updatedItem)
+                    await MainActor.run {
+                        self.cart = updatedCart
+                        self.clearCheckoutStateIfCartEmpty()
+                    }
+                    await hapticService.selection()
+                } catch {
+                    await MainActor.run { self.error = error }
+                }
+            }
         }
     }
     
     func updateQuantity(for itemId: String, delta: Int) {
         cart.updateQuantity(for: itemId, delta: delta)
-        Task { await hapticService.selection() }
+        clearCheckoutStateIfCartEmpty()
+
+        Task {
+            do {
+                let updatedCart = try await cartService.updateQuantity(key: itemId, delta: delta)
+                await MainActor.run {
+                    self.cart = updatedCart
+                    self.clearCheckoutStateIfCartEmpty()
+                }
+                await hapticService.selection()
+            } catch {
+                await MainActor.run { self.error = error }
+            }
+        }
     }
     
     func removeItem(_ itemId: String) {
         cart.removeItem(itemId)
-        Task { await hapticService.notification(.warning) }
+        clearCheckoutStateIfCartEmpty()
+
+        Task {
+            do {
+                let updatedCart = try await cartService.removeItem(key: itemId)
+                await MainActor.run {
+                    self.cart = updatedCart
+                    self.clearCheckoutStateIfCartEmpty()
+                }
+                await hapticService.notification(.warning)
+            } catch {
+                await MainActor.run { self.error = error }
+            }
+        }
     }
     
     func clearCart() { 
@@ -221,6 +281,18 @@ final class CartViewModel: ObservableObject {
     }
     func setStaffNotes(_ notes: String) { cart.staffNotes = notes.isEmpty ? nil : notes }
     func setDeliveryNotes(_ notes: String) { cart.deliveryNotes = notes.isEmpty ? nil : notes }
+
+    private func clearCheckoutStateIfCartEmpty() {
+        guard cart.items.isEmpty else { return }
+        discount = 0
+        pointsDiscount = 0
+        voucherValidation = nil
+        deliveryFee = 0
+        deliveryAvailability = nil
+        selectedAddress = nil
+        cart.voucherCode = nil
+        cart.deliveryAddressId = nil
+    }
     
     func checkDeliveryAvailability() async {
         guard let storeId = cart.storeId else { return }

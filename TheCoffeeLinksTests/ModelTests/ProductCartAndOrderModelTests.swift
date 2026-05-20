@@ -52,6 +52,46 @@ final class ProductCartAndOrderModelTests: XCTestCase {
         XCTAssertEqual(firstKey, secondKey)
     }
 
+    func testCartReplaceItemMergesIntoExistingMatchingKey() {
+        let product = TestFactory.product()
+        let customization = TestFactory.customization()
+        let original = TestFactory.cartItem(product: product, quantity: 1, storeId: "store-d1", customization: customization)
+        let updated = CartItem(
+            key: original.key,
+            product: product,
+            quantity: 2,
+            customization: customization,
+            addedAt: original.addedAt,
+            priceSnapshot: original.priceSnapshot,
+            storeId: original.storeId
+        )
+        var cart = TestFactory.cart(items: [original], storeId: "store-d1")
+
+        cart.replaceItem(oldKey: original.key, with: updated)
+
+        XCTAssertEqual(cart.uniqueItemCount, 1)
+        XCTAssertEqual(cart.itemCount, 2)
+        XCTAssertEqual(cart.items.first?.key, original.key)
+    }
+
+    func testCartRemoveItemRemovesAllCorruptedDuplicatesForSameKey() {
+        let first = TestFactory.cartItem(quantity: 1)
+        let duplicate = CartItem(
+            key: first.key,
+            product: first.product,
+            quantity: 3,
+            customization: first.customization,
+            addedAt: first.addedAt.addingTimeInterval(1),
+            priceSnapshot: first.priceSnapshot,
+            storeId: first.storeId
+        )
+        var cart = TestFactory.cart(items: [first, duplicate], storeId: "store-d1")
+
+        cart.removeItem(first.key)
+
+        XCTAssertTrue(cart.items.isEmpty)
+    }
+
     func testCreateOrderRequestEncodesServerContract() throws {
         let request = CreateOrderRequest(
             storeId: "store-d1",
