@@ -1,6 +1,58 @@
+# macOS
+.DS_Store
+
+# Xcode
 build/
+DerivedData/
+*.xcarchive
+*.xcodeproj/project.xcworkspace/
+*.xcworkspace
+xcuserdata/
+*.xcuserstate
+*.pbxuser
+*.mode1v3
+*.mode2v3
+*.perspectivev3
+*.xcscmblueprint
+*.moved-aside
+
+# Swift Package Manager
+.build/
+Package.resolved
+/.build/
+
+# CocoaPods
+Pods/
+
+# Carthage
+Carthage/Build/
+
+# Fastlane
+fastlane/report.xml
+fastlane/Preview.html
+fastlane/screenshots
+fastlane/test_output
+
+# Playgrounds
+timeline.xctimeline
+playground.xcworkspace
+
+# Xcode indices and caches
+*.hmap
+ModuleCache/
+
+# Logs
 *.log
 build_*.log
-extract_icons.py
 
-thecoffeelinks-client-ios/Config.plist
+# Editor settings
+.vscode/
+.idea/
+
+# Keep this project-specific config file ignored (app-specific)
+TheCoffeeLinks/Config.plist
+
+# Other
+*.swp
+*.lock
+

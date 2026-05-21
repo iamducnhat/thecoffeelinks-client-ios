@@ -269,6 +269,11 @@ private struct PromotionBarcodePanel: View {
                             .frame(width: innerWidth, height: innerHeight)
                             .position(x: proxy.size.width / 2, y: proxy.size.height / 2)
                             .blur(radius: isFocused ? 0 : PromotionSvgMetric.inactiveBlurRadius)
+
+                        if !isFocused {
+                            backgroundColor
+                                .opacity(PromotionSvgMetric.inactiveOverlayOpacity)
+                        }
                     } else if isLoading {
                         ProgressView()
                             .tint(.black)
@@ -330,6 +335,7 @@ private enum PromotionSvgMetric {
     static let voucherBarcodeHorizontalInset: CGFloat = 13
     static let pointsBadgeStrokeWidth: CGFloat = 1
     static let inactiveBlurRadius: CGFloat = 8
+    static let inactiveOverlayOpacity: CGFloat = 0.5
     static let strokeWidth: CGFloat = 1
 }
 
