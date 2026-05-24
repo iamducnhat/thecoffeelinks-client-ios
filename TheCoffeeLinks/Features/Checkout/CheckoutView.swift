@@ -187,7 +187,7 @@ struct CheckoutView: View {
     private var orderDetailsSection: some View {
         VStack(alignment: .leading, spacing: 0) {
             Text("Chi tiết đơn hàng")
-                .font(BaseViewFont.bodyStrong)
+                .font(CheckoutFont.sectionTitle)
                 .foregroundStyle(BaseViewColor.textPrimary)
                 .padding(.bottom, CheckoutMetric.summaryTopGap)
 
@@ -207,7 +207,7 @@ struct CheckoutView: View {
     private var paymentSection: some View {
         VStack(alignment: .leading, spacing: CheckoutMetric.sectionTitleToRowGap) {
             Text("Phương thức thanh toán")
-                .font(BaseViewFont.bodyStrong)
+                .font(CheckoutFont.sectionTitle)
                 .foregroundStyle(BaseViewColor.textPrimary)
 
             CheckoutSelectionRow(
@@ -222,7 +222,7 @@ struct CheckoutView: View {
     private var voucherSection: some View {
         VStack(alignment: .leading, spacing: CheckoutMetric.sectionTitleToRowGap) {
             Text("Ưu đãi")
-                .font(BaseViewFont.bodyStrong)
+                .font(CheckoutFont.sectionTitle)
                 .foregroundStyle(BaseViewColor.textPrimary)
 
             CheckoutSelectionRow(
@@ -395,6 +395,10 @@ private enum CheckoutMetric {
     static let sectionTitleToRowGap: CGFloat = 23
     static let selectionRowMinHeight: CGFloat = 49
     static let contentBottomPadding: CGFloat = 140
+}
+
+private enum CheckoutFont {
+    static let sectionTitle = Font.custom("BeVietnamPro-Medium", size: 18)
 }
 
 extension CheckoutView {

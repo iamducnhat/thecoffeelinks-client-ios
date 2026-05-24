@@ -65,6 +65,52 @@ final class CartPersistenceTests: XCTestCase {
         XCTAssertEqual(cart.uniqueItemCount, 1)
     }
 
+    func testSwitchingAwayFromDeliveryClearsDeliveryStateAndFee() {
+        let address = DeliveryAddress(
+            id: "addr-1",
+            label: "Home",
+            streetAddress: "13 Alley 12",
+            buildingInfo: "Street A",
+            city: "Ha Noi",
+            district: "Cau Giay",
+            coordinates: DeliveryAddress.Coordinates(latitude: 21.0285, longitude: 105.8542),
+            isDefault: true,
+            usageCount: 1,
+            lastUsedAt: nil,
+            createdAt: Date(timeIntervalSince1970: 1_700_000_000)
+        )
+        let cart = Cart(
+            items: [TestFactory.cartItem()],
+            mode: .delivery,
+            storeId: "store-d1",
+            deliveryAddressId: address.id,
+            tableId: nil,
+            voucherCode: nil,
+            staffNotes: nil,
+            deliveryNotes: nil
+        )
+        let service = InMemoryCartService(cart: cart)
+        let viewModel = CartViewModel(
+            deliveryRepository: MockDeliveryRepository(),
+            voucherRepository: MockVoucherRepository(),
+            hapticService: MockHapticService(),
+            cartService: service
+        )
+
+        viewModel.deliveryFee = 15_000
+        viewModel.deliveryAvailability = TestFactory.deliveryAvailability()
+        viewModel.selectedAddress = address
+
+        viewModel.setMode(.pickup)
+
+        XCTAssertEqual(viewModel.cart.mode, .pickup)
+        XCTAssertNil(viewModel.cart.deliveryAddressId)
+        XCTAssertNil(viewModel.selectedAddress)
+        XCTAssertNil(viewModel.deliveryAvailability)
+        XCTAssertEqual(viewModel.deliveryFee, 0)
+        XCTAssertTrue(viewModel.canCheckout)
+    }
+
     private func waitUntil(
         timeout: TimeInterval = 1,
         condition: @escaping @MainActor () -> Bool,

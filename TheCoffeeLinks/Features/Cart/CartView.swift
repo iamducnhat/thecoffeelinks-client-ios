@@ -47,7 +47,7 @@ struct CartView: View {
             ScrollView(.vertical, showsIndicators: false) {
                 LazyVStack(alignment: .leading, spacing: 0) {
                     Text("Sản phẩm đã chọn")
-                        .font(BaseViewFont.bodyStrong)
+                        .font(CartFlowFont.sectionTitle)
                         .foregroundStyle(BaseViewColor.textPrimary)
                         .padding(.horizontal, CartFlowMetric.horizontalInset)
                         .padding(.top, CartFlowMetric.headerToSectionGap)
@@ -97,6 +97,8 @@ struct CartInfoView: View {
     @State private var showingAddressSheet = false
     @State private var showingCheckout = false
 
+    private let orderingModes: [OrderingMode] = [.delivery, .pickup, .dineIn]
+
     var body: some View {
         ZStack {
             BaseViewColor.background.ignoresSafeArea()
@@ -111,7 +113,11 @@ struct CartInfoView: View {
                 ScrollView(.vertical, showsIndicators: false) {
                     VStack(alignment: .leading, spacing: 0) {
                         storeSection
-                        addressSection
+                        orderingModeSection
+
+                        if cartViewModel.cart.mode == .delivery {
+                            addressSection
+                        }
                     }
                     .padding(.horizontal, CartFlowMetric.horizontalInset)
                     .padding(.top, CartFlowMetric.headerToSectionGap)
@@ -122,7 +128,7 @@ struct CartInfoView: View {
         .safeAreaInset(edge: .bottom, spacing: 0) {
             CartCTAOverlay(
                 label: deliveryFeeLabel,
-                amount: cartViewModel.deliveryFee.formattedVND,
+                amount: displayedDeliveryFee.formattedVND,
                 title: "TIẾP TỤC",
                 isDisabled: !canContinue
             ) {
@@ -144,7 +150,6 @@ struct CartInfoView: View {
                 .environmentObject(deliveryViewModel)
         }
         .onAppear {
-            cartViewModel.setMode(.delivery)
             if storeViewModel.stores.isEmpty {
                 storeViewModel.loadStores()
             }
@@ -160,7 +165,7 @@ struct CartInfoView: View {
     private var storeSection: some View {
         VStack(alignment: .leading, spacing: 0) {
             Text("Cửa hàng")
-                .font(BaseViewFont.bodyStrong)
+                .font(CartFlowFont.sectionTitle)
                 .foregroundStyle(BaseViewColor.textPrimary)
 
             Text("Chọn cửa hàng phụ trách đơn hàng của bạn")
@@ -175,10 +180,30 @@ struct CartInfoView: View {
         }
     }
 
+    private var orderingModeSection: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            Text("Nhận hàng")
+                .font(CartFlowFont.sectionTitle)
+                .foregroundStyle(BaseViewColor.textPrimary)
+                .padding(.top, CartFlowMetric.infoSectionGap)
+
+            VStack(alignment: .leading, spacing: CartFlowMetric.orderingModeOptionGap) {
+                ForEach(orderingModes, id: \.self) { mode in
+                    OrderingModeRow(
+                        title: orderingModeTitle(for: mode),
+                        isSelected: cartViewModel.cart.mode == mode,
+                        action: { selectOrderingMode(mode) }
+                    )
+                }
+            }
+            .padding(.top, CartFlowMetric.infoCardTopGap)
+        }
+    }
+
     private var addressSection: some View {
         VStack(alignment: .leading, spacing: 0) {
             Text("Địa chỉ giao hàng")
-                .font(BaseViewFont.bodyStrong)
+                .font(CartFlowFont.sectionTitle)
                 .foregroundStyle(BaseViewColor.textPrimary)
                 .padding(.top, CartFlowMetric.infoSectionGap)
 
@@ -205,20 +230,49 @@ struct CartInfoView: View {
     }
 
     private var canContinue: Bool {
-        storeViewModel.selectedStore != nil && deliveryViewModel.selectedAddress != nil
+        guard storeViewModel.selectedStore != nil else { return false }
+        guard cartViewModel.cart.mode == .delivery else { return true }
+        return deliveryViewModel.selectedAddress != nil
+    }
+
+    private var displayedDeliveryFee: Double {
+        cartViewModel.cart.mode == .delivery ? cartViewModel.deliveryFee : 0
     }
 
     private var deliveryFeeLabel: String {
+        guard cartViewModel.cart.mode == .delivery else {
+            return "Phí giao hàng"
+        }
+
         if let eta = deliveryViewModel.estimatedETA {
             return "Giờ cao điểm • \(eta)"
         }
         return "Phí giao hàng"
     }
 
+    private func orderingModeTitle(for mode: OrderingMode) -> String {
+        switch mode {
+        case .delivery:
+            return "Tại nhà"
+        case .pickup:
+            return "Lấy tại quán"
+        case .dineIn:
+            return "Dùng tại quán"
+        }
+    }
+
+    private func selectOrderingMode(_ mode: OrderingMode) {
+        cartViewModel.setMode(mode)
+        syncCartSelection()
+    }
+
     private func syncCartSelection() {
         if let store = storeViewModel.selectedStore {
             cartViewModel.setStore(store.id)
         }
+
+        guard cartViewModel.cart.mode == .delivery else { return }
+
         if let address = deliveryViewModel.selectedAddress {
             cartViewModel.setDeliveryAddress(address.id, address: address)
         }
@@ -537,6 +591,44 @@ private struct DeliveryAddressCard: View {
     }
 }
 
+private struct OrderingModeRow: View {
+    let title: String
+    let isSelected: Bool
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            HStack(spacing: 13) {
+                OrderingModeIndicator(isSelected: isSelected)
+
+                Text(title)
+                    .font(BaseViewFont.body)
+                    .foregroundStyle(isSelected ? BaseViewColor.textPrimary : BaseViewColor.textSecondary)
+
+                Spacer(minLength: 0)
+            }
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+    }
+}
+
+private struct OrderingModeIndicator: View {
+    let isSelected: Bool
+
+    var body: some View {
+        Rectangle()
+            .fill(isSelected ? BaseViewColor.textPrimary : Color.clear)
+            .frame(width: 10, height: 10)
+            .overlay {
+                Rectangle()
+                    .stroke(isSelected ? BaseViewColor.textPrimary : BaseViewColor.textSecondary, lineWidth: 1.5)
+            }
+            .rotationEffect(.degrees(45))
+            .padding(3)
+    }
+}
+
 struct CartCTAOverlay: View {
     let label: String
     let amount: String
@@ -671,10 +763,15 @@ private enum CartFlowMetric {
     static let ctaBottomInset: CGFloat = 23
     static let infoCardTopGap: CGFloat = 23
     static let infoSectionGap: CGFloat = 40
+    static let orderingModeOptionGap: CGFloat = 22
     static let storeImageSize: CGFloat = 116
     static let storeActionHeight: CGFloat = 38
     static let addressCardMinHeight: CGFloat = 98
     static let addressButtonGap: CGFloat = 13
     static let outlineButtonVerticalPadding: CGFloat = 10
     static let outlineButtonMinHeight: CGFloat = 38
+}
+
+private enum CartFlowFont {
+    static let sectionTitle = Font.custom("BeVietnamPro-Medium", size: 18)
 }
