@@ -2,20 +2,6 @@ import Foundation
 
 // MARK: - Safe Types
 
-// Wrapper to make NSCache Sendable since it is thread-safe
-private final class SendableNSCache<Key: AnyObject, Value: AnyObject>: @unchecked Sendable {
-    private let cache = NSCache<Key, Value>()
-    
-    init(countLimit: Int) {
-        cache.countLimit = countLimit
-    }
-    
-    func object(forKey key: Key) -> Value? { cache.object(forKey: key) }
-    func setObject(_ obj: Value, forKey key: Key) { cache.setObject(obj, forKey: key) }
-    func removeObject(forKey key: Key) { cache.removeObject(forKey: key) }
-    func removeAllObjects() { cache.removeAllObjects() }
-}
-
 private final class MemoryEntry: Sendable {
     let value: Sendable // Enforce Sendable on content
     let ttl: TimeInterval?
@@ -43,7 +29,7 @@ private struct DiskEntry<T: Codable & Sendable>: Codable, Sendable {
 // MARK: - Cache Service
 
 class CacheService: CacheServiceProtocol, @unchecked Sendable {
-    private let memoryCache: SendableNSCache<NSString, MemoryEntry>
+    private let memoryCache: NSCache<NSString, MemoryEntry>
     private let fileManager = FileManager.default
     
     // Computed property is safe
@@ -52,7 +38,9 @@ class CacheService: CacheServiceProtocol, @unchecked Sendable {
     }
     
     init() {
-        self.memoryCache = SendableNSCache(countLimit: 50)
+        let memoryCache = NSCache<NSString, MemoryEntry>()
+        memoryCache.countLimit = 50
+        self.memoryCache = memoryCache
         // Creating directory is safe on actor init (synchronous context)
     }
     
