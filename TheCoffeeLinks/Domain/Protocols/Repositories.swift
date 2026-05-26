@@ -14,6 +14,7 @@ protocol OrderRepositoryProtocol: Sendable {
     func getOrder(id: String) async throws -> Order
     func getOrders(status: OrderStatus?, limit: Int, offset: Int) async throws -> OrdersListResponse
     func getActiveOrders() async throws -> [Order]
+    func getOrderCount() async throws -> Int
     func cancelOrder(id: String, reason: String?) async throws -> Order
     func undoCancelOrder(id: String) async throws -> Order
     func reportOrderIssue(id: String, category: String, subject: String, description: String?) async throws

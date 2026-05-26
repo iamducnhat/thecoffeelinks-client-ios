@@ -247,6 +247,14 @@ final class RealtimeService: ObservableObject {
         isConnected = false
         eventSubject.send(.disconnected(nil))
     }
+
+    func resetSubscriptions() {
+        channels.removeAll()
+        if isConnected {
+            disconnect()
+            connect()
+        }
+    }
     
     func subscribe(to table: String, filter: String? = nil) {
         var topic = "realtime:public:\(table)"

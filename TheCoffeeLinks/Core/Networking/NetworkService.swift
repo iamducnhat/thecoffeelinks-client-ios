@@ -1,5 +1,6 @@
 import Foundation
 import Combine
+import CryptoKit
 
 enum NetworkError: Error, LocalizedError {
     case invalidURL
@@ -43,7 +44,7 @@ class NetworkService: ObservableObject {
     private var encoder: JSONEncoder
     private let keychainManager: KeychainManager
     
-    // ENHANCED: Persistent ETag cache with TTL
+    // ENHANCED: Persistent ETag + payload cache with TTL
     private struct CachedETag: Codable {
         let etag: String
         let timestamp: Date
@@ -53,13 +54,25 @@ class NetworkService: ObservableObject {
             Date().timeIntervalSince(timestamp) > ttl
         }
     }
+
+    private struct CachedResponse: Codable {
+        let data: Data
+        let timestamp: Date
+        let ttl: TimeInterval
+
+        var isExpired: Bool {
+            Date().timeIntervalSince(timestamp) > ttl
+        }
+    }
     
     private let etagCacheKey = "com.thecoffeelinks.etag-cache"
     private let responseCacheKey = "com.thecoffeelinks.response-cache"
     private var etagCache: [String: CachedETag] = [:]
-    private var responseCache: [String: Data] = [:]
+    private var responseCache: [String: CachedResponse] = [:]
     private let cacheQueue = DispatchQueue(label: "com.thecoffeelinks.etag-cache")
     private let maxResponseCacheEntries = 100 // LRU-style bound to prevent unbounded growth
+    private let maxResponseCacheBytes = 5 * 1024 * 1024
+    private let responseCacheTTL: TimeInterval = 86400
     
     @Published var authToken: String?
     private var refreshToken: String?
@@ -96,14 +109,15 @@ class NetworkService: ObservableObject {
         self.authToken = keychainManager.getAccessToken()
         self.refreshToken = keychainManager.getRefreshToken()
         
-        // Load persistent ETag cache
+        // Load persistent conditional cache
         loadETagCache()
+        loadResponseCache()
     }
     
     // MARK: - Persistent ETag Cache
     
     private func loadETagCache() {
-        cacheQueue.async { [weak self] in
+        cacheQueue.sync { [weak self] in
             guard let self = self,
                   let data = UserDefaults.standard.data(forKey: self.etagCacheKey),
                   let loaded = try? JSONDecoder().decode([String: CachedETag].self, from: data) else { return }
@@ -111,6 +125,17 @@ class NetworkService: ObservableObject {
             // Filter out expired entries
             let valid = loaded.filter { !$0.value.isExpired }
             self.etagCache = valid
+        }
+    }
+
+    private func loadResponseCache() {
+        cacheQueue.sync { [weak self] in
+            guard let self = self,
+                  let data = UserDefaults.standard.data(forKey: self.responseCacheKey),
+                  let loaded = try? JSONDecoder().decode([String: CachedResponse].self, from: data) else { return }
+
+            self.responseCache = loaded.filter { !$0.value.isExpired }
+            self.enforceResponseCacheLimitsLocked()
         }
     }
     
@@ -121,15 +146,64 @@ class NetworkService: ObservableObject {
             UserDefaults.standard.set(data, forKey: self.etagCacheKey)
         }
     }
+
+    private func saveResponseCache() {
+        cacheQueue.async { [weak self] in
+            guard let self = self,
+                  let data = try? JSONEncoder().encode(self.responseCache) else { return }
+            UserDefaults.standard.set(data, forKey: self.responseCacheKey)
+        }
+    }
+
+    private func authScope(for token: String?) -> String {
+        guard let token else { return "anon" }
+        let digest = SHA256.hash(data: Data(token.utf8))
+        let prefix = digest.prefix(12).map { String(format: "%02x", $0) }.joined()
+        return "auth-\(prefix)"
+    }
+
+    private func conditionalCacheKey(endpoint: String, queryItems: [URLQueryItem]?, authToken: String?) -> String {
+        var components = URLComponents()
+        components.path = endpoint
+        if let queryItems, !queryItems.isEmpty {
+            components.queryItems = queryItems.sorted {
+                if $0.name == $1.name {
+                    return ($0.value ?? "") < ($1.value ?? "")
+                }
+                return $0.name < $1.name
+            }
+        }
+
+        return "\(authScope(for: authToken)):\(components.string ?? endpoint)"
+    }
+
+    private func enforceResponseCacheLimitsLocked() {
+        for (key, response) in responseCache where response.isExpired {
+            responseCache.removeValue(forKey: key)
+            etagCache.removeValue(forKey: key)
+        }
+
+        var totalBytes = responseCache.values.reduce(0) { $0 + $1.data.count }
+        guard responseCache.count > maxResponseCacheEntries || totalBytes > maxResponseCacheBytes else { return }
+
+        let oldestKeys = responseCache
+            .sorted { $0.value.timestamp < $1.value.timestamp }
+            .map(\.key)
+
+        for key in oldestKeys where responseCache.count > maxResponseCacheEntries || totalBytes > maxResponseCacheBytes {
+            if let removed = responseCache.removeValue(forKey: key) {
+                totalBytes -= removed.data.count
+            }
+            etagCache.removeValue(forKey: key)
+        }
+    }
     
     func clearCache() async {
-        await MainActor.run {
-            cacheQueue.sync {
-                etagCache.removeAll()
-                responseCache.removeAll()
-                UserDefaults.standard.removeObject(forKey: etagCacheKey)
-                UserDefaults.standard.removeObject(forKey: responseCacheKey)
-            }
+        cacheQueue.sync {
+            etagCache.removeAll()
+            responseCache.removeAll()
+            UserDefaults.standard.removeObject(forKey: etagCacheKey)
+            UserDefaults.standard.removeObject(forKey: responseCacheKey)
         }
     }
     
@@ -255,7 +329,7 @@ class NetworkService: ObservableObject {
         }
     }
 
-    private func _performRequest<T: Decodable>(_ endpoint: String, method: String = "GET", body: Encodable? = nil, queryItems: [URLQueryItem]? = nil, isRetry: Bool = false, encoder: JSONEncoder? = nil, includeAppAttest: Bool = false) async throws -> T {
+    private func _performRequest<T: Decodable>(_ endpoint: String, method: String = "GET", body: Encodable? = nil, queryItems: [URLQueryItem]? = nil, isRetry: Bool = false, encoder: JSONEncoder? = nil, includeAppAttest: Bool = false, bypassConditionalCache: Bool = false) async throws -> T {
         var urlComponents = URLComponents(string: baseURL + endpoint)
         urlComponents?.queryItems = queryItems
         
@@ -268,15 +342,26 @@ class NetworkService: ObservableObject {
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         request.setValue("application/json", forHTTPHeaderField: "Accept")
         request.setValue("TheCoffeeLinks-iOS/1.0", forHTTPHeaderField: "User-Agent")
+
+        let token = await currentToken
+        let cacheKey = conditionalCacheKey(endpoint: endpoint, queryItems: queryItems, authToken: token)
         
-        // Add ETag support for GET requests (check if not expired)
-        if method == "GET" {
-            if let cached = cacheQueue.sync(execute: { etagCache[endpoint] }), !cached.isExpired {
+        // Add ETag support only when the matching payload is persisted locally.
+        if method == "GET", !bypassConditionalCache {
+            let cached = cacheQueue.sync { () -> CachedETag? in
+                guard let etag = etagCache[cacheKey],
+                      !etag.isExpired,
+                      let response = responseCache[cacheKey],
+                      !response.isExpired
+                else { return nil }
+                return etag
+            }
+            if let cached {
                 request.setValue(cached.etag, forHTTPHeaderField: "If-None-Match")
             }
         }
         
-        if let token = await currentToken {
+        if let token {
             request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
         }
         
@@ -340,24 +425,16 @@ class NetworkService: ObservableObject {
         // Handle ETag caching with 24hr TTL
         if method == "GET", let newETag = httpResponse.value(forHTTPHeaderField: "ETag") {
             cacheQueue.sync {
-                let cached = CachedETag(etag: newETag, timestamp: Date(), ttl: 86400) // 24hr
-                etagCache[endpoint] = cached
+                let now = Date()
+                let cached = CachedETag(etag: newETag, timestamp: now, ttl: responseCacheTTL)
+                etagCache[cacheKey] = cached
                 if httpResponse.statusCode != 304 {
-                    responseCache[endpoint] = data
+                    responseCache[cacheKey] = CachedResponse(data: data, timestamp: now, ttl: responseCacheTTL)
                 }
-                // Evict oldest entries if cache exceeds max size
-                if responseCache.count > maxResponseCacheEntries {
-                    let sortedKeys = etagCache
-                        .sorted { $0.value.timestamp < $1.value.timestamp }
-                        .prefix(responseCache.count - maxResponseCacheEntries)
-                        .map { $0.key }
-                    for key in sortedKeys {
-                        responseCache.removeValue(forKey: key)
-                        etagCache.removeValue(forKey: key)
-                    }
-                }
+                enforceResponseCacheLimitsLocked()
             }
             saveETagCache() // Persist to disk
+            saveResponseCache()
         }
         
         if let responseString = String(data: data, encoding: .utf8) {
@@ -370,8 +447,26 @@ class NetworkService: ObservableObject {
         case 304:
             // Not Modified - return cached data
             debugLog("✅ 304 Not Modified - Using cached response")
-            if let cachedData = cacheQueue.sync(execute: { responseCache[endpoint] }) {
+            if let cachedData = cacheQueue.sync(execute: { responseCache[cacheKey]?.data }) {
                 return try decoder.decode(T.self, from: cachedData)
+            } else if !bypassConditionalCache {
+                debugLog("⚠️ 304 received without cached payload - retrying without ETag")
+                cacheQueue.sync {
+                    etagCache.removeValue(forKey: cacheKey)
+                    responseCache.removeValue(forKey: cacheKey)
+                }
+                saveETagCache()
+                saveResponseCache()
+                return try await _performRequest(
+                    endpoint,
+                    method: method,
+                    body: body,
+                    queryItems: queryItems,
+                    isRetry: isRetry,
+                    encoder: encoder,
+                    includeAppAttest: includeAppAttest,
+                    bypassConditionalCache: true
+                )
             } else {
                 throw NetworkError.noData
             }

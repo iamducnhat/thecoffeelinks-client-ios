@@ -74,6 +74,7 @@ class OrderTrackingViewModel: ObservableObject {
             // Reset state for new user
             self.activeOrders = []
             self.errorMessage = nil
+            realtimeService.resetSubscriptions()
             setupRealtime()
         }
         
@@ -112,9 +113,10 @@ class OrderTrackingViewModel: ObservableObject {
     }
     
     private func setupRealtime() {
-        // Subscribe to 'orders' table
-        // RLS policies on Server ensure we only receive our own orders
-        realtimeService.subscribe(to: "orders")
+        guard let userId else { return }
+
+        // Subscribe only to the current user's active order surface.
+        realtimeService.subscribe(to: "orders", filter: "user_id=eq.\(userId)")
         
         // Ensure connection
         if !realtimeService.isConnected {
@@ -190,4 +192,3 @@ class OrderTrackingViewModel: ObservableObject {
     }
 }
  
-

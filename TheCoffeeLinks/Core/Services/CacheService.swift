@@ -14,23 +14,13 @@ private final class MemoryEntry: Sendable {
     }
 }
 
-private struct DiskEntry<T: Codable & Sendable>: Codable, Sendable {
-    let value: T
-    let ttl: TimeInterval?
-    let createdAt: Date
-    
-    enum CodingKeys: String, CodingKey {
-        case value
-        case ttl
-        case createdAt
-    }
-}
-
 // MARK: - Cache Service
 
 class CacheService: CacheServiceProtocol, @unchecked Sendable {
     private let memoryCache: NSCache<NSString, MemoryEntry>
     private let fileManager = FileManager.default
+    private let maxDiskEntries = 100
+    private let maxDiskBytes: Int64 = 20 * 1024 * 1024
     
     // Computed property is safe
     private var cacheDirectory: URL? {
@@ -41,7 +31,7 @@ class CacheService: CacheServiceProtocol, @unchecked Sendable {
         let memoryCache = NSCache<NSString, MemoryEntry>()
         memoryCache.countLimit = 50
         self.memoryCache = memoryCache
-        // Creating directory is safe on actor init (synchronous context)
+        createCacheDirectory()
     }
     
     private nonisolated func createCacheDirectory() {
@@ -85,8 +75,23 @@ class CacheService: CacheServiceProtocol, @unchecked Sendable {
             
             do {
                 let decoder = JSONDecoder()
+                if let object = try? JSONSerialization.jsonObject(with: data),
+                   let envelope = object as? [String: Any],
+                   let payload = envelope["payload"] as? String,
+                   let payloadData = Data(base64Encoded: payload),
+                   let createdAtSeconds = Self.doubleValue(from: envelope["createdAt"]) {
+                    let ttl = Self.doubleValue(from: envelope["ttl"])
+                    let createdAt = Date(timeIntervalSince1970: createdAtSeconds)
+                    let isExpired = ttl.map { Date() > createdAt.addingTimeInterval($0) } ?? false
+                    if isExpired {
+                        try? fileManager.removeItem(at: fileURL)
+                    }
+                    let value = try decoder.decode(T.self, from: payloadData)
+                    return (value, isExpired)
+                }
+
+                // Backward compatibility for older raw-value disk cache files.
                 let value = try decoder.decode(T.self, from: data)
-                // We can't decode TTL/createdAt here, so assume not expired
                 return (value, false)
             } catch {
                 return nil
@@ -106,12 +111,21 @@ class CacheService: CacheServiceProtocol, @unchecked Sendable {
         // 2. Write to L2 Disk (on background thread)
         guard let cacheDir = self.cacheDirectory else { return }
         
-        await Task.detached(priority: .background) { [cacheDir, value, ttl, now] in
+        await Task.detached(priority: .background) { [cacheDir, value, ttl, now, maxDiskEntries, maxDiskBytes] in
             let fileURL = cacheDir.appendingPathComponent(key.addingPercentEncoding(withAllowedCharacters: .alphanumerics) ?? key)
             do {
                 let encoder = JSONEncoder()
-                let data = try encoder.encode(value)
+                let payloadData = try encoder.encode(value)
+                var envelope: [String: Any] = [
+                    "payload": payloadData.base64EncodedString(),
+                    "createdAt": now.timeIntervalSince1970,
+                ]
+                if let ttl {
+                    envelope["ttl"] = ttl
+                }
+                let data = try JSONSerialization.data(withJSONObject: envelope)
                 try data.write(to: fileURL, options: .atomic)
+                Self.enforceDiskLimits(cacheDir: cacheDir, fileManager: FileManager.default, maxEntries: maxDiskEntries, maxBytes: maxDiskBytes)
             } catch {
                 // Silently fail - disk cache is not critical
             }
@@ -140,5 +154,37 @@ class CacheService: CacheServiceProtocol, @unchecked Sendable {
             try? fileManager.removeItem(at: cacheDir)
             try? fileManager.createDirectory(at: cacheDir, withIntermediateDirectories: true)
         }.value
+    }
+
+    private nonisolated static func enforceDiskLimits(cacheDir: URL, fileManager: FileManager, maxEntries: Int, maxBytes: Int64) {
+        guard let urls = try? fileManager.contentsOfDirectory(
+            at: cacheDir,
+            includingPropertiesForKeys: [.contentModificationDateKey, .fileSizeKey],
+            options: [.skipsHiddenFiles]
+        ) else { return }
+
+        var files: [(url: URL, modified: Date, size: Int64)] = []
+        var totalBytes: Int64 = 0
+
+        for url in urls {
+            guard let values = try? url.resourceValues(forKeys: [.contentModificationDateKey, .fileSizeKey]) else { continue }
+            let size = Int64(values.fileSize ?? 0)
+            totalBytes += size
+            files.append((url, values.contentModificationDate ?? .distantPast, size))
+        }
+
+        guard files.count > maxEntries || totalBytes > maxBytes else { return }
+
+        for file in files.sorted(by: { $0.modified < $1.modified }) where files.count > maxEntries || totalBytes > maxBytes {
+            try? fileManager.removeItem(at: file.url)
+            totalBytes -= file.size
+            files.removeAll { $0.url == file.url }
+        }
+    }
+
+    private nonisolated static func doubleValue(from value: Any?) -> Double? {
+        if let value = value as? Double { return value }
+        if let value = value as? NSNumber { return value.doubleValue }
+        return nil
     }
 }

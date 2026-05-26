@@ -220,7 +220,7 @@ final class FavoritesRepository: FavoritesRepositoryProtocol, @unchecked Sendabl
 
 // MARK: - Voucher Repository
 
-final class VoucherRepository: VoucherRepositoryProtocol, @unchecked Sendable {
+final class VoucherRepository: VoucherRepositoryProtocol, SyncableDomain, @unchecked Sendable {
     private let networkService: NetworkServiceProtocol
     private let profileStorage: ProfileStorageProtocol
     private let syncManager: SyncManagerProtocol
@@ -233,6 +233,11 @@ final class VoucherRepository: VoucherRepositoryProtocol, @unchecked Sendable {
         self.networkService = networkService
         self.profileStorage = profileStorage
         self.syncManager = syncManager
+        self.syncManager.register(domain: self)
+    }
+
+    func sync(reason: SyncReason) async {
+        _ = try? await refreshVouchers()
     }
     
     func getCachedVouchers() async -> [Voucher]? {
@@ -243,6 +248,9 @@ final class VoucherRepository: VoucherRepositoryProtocol, @unchecked Sendable {
         do {
             let response: VouchersResponse = try await networkService.get("/api/vouchers", queryItems: nil)
             profileStorage.saveVouchers(response.vouchers)
+            if let serverVersion = syncManager.serverVersion(for: domainKey) {
+                syncManager.updateLocalVersion(key: domainKey, version: serverVersion)
+            }
             return response.vouchers
         } catch NetworkError.unauthorized {
             return profileStorage.loadVouchers() ?? []

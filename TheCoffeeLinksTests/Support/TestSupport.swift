@@ -101,6 +101,7 @@ final class MockOrderRepository: OrderRepositoryProtocol, @unchecked Sendable {
         OrdersListResponse(success: true, orders: [try getOrderResult.get()], totalCount: 1, hasMore: false)
     }
     func getActiveOrders() async throws -> [Order] { [try getOrderResult.get()].filter(\.status.isActive) }
+    func getOrderCount() async throws -> Int { 1 }
     func cancelOrder(id: String, reason: String?) async throws -> Order {
         cancelledOrderIds.append(id)
         var order = try getOrderResult.get()

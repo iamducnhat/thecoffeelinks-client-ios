@@ -33,12 +33,7 @@ final class OrderRepository: OrderRepositoryProtocol, @unchecked Sendable {
         // Use standardized API response model
         let apiResponse: APIOrderResponse = try await networkService.get("/api/orders", queryItems: queryItems)
         
-        var orders = apiResponse.toOrders()
-        
-        // Client-side filtering because server ignores status param
-        if let status = status {
-            orders = orders.filter { $0.status == status }
-        }
+        let orders = apiResponse.toOrders()
         
         return OrdersListResponse(
             success: apiResponse.success,
@@ -49,10 +44,27 @@ final class OrderRepository: OrderRepositoryProtocol, @unchecked Sendable {
     }
     
     func getActiveOrders() async throws -> [Order] {
-        // SERVER MISSING ENDPOINT /api/orders/active
-        // WORKAROUND: Fetch all and filter for active status
-        let response = try await getOrders(status: nil, limit: 100, offset: 0)
-        return response.orders.filter { $0.status.isActive }
+        let queryItems = [URLQueryItem(name: "limit", value: "20")]
+        let response: APIOrderResponse = try await networkService.get("/api/orders/active", queryItems: queryItems)
+        return response.toOrders()
+    }
+
+    func getOrderCount() async throws -> Int {
+        struct UserStatsResponse: Decodable {
+            struct Stats: Decodable {
+                let orderCount: Int
+
+                enum CodingKeys: String, CodingKey {
+                    case orderCount = "orderCount"
+                }
+            }
+
+            let success: Bool
+            let stats: Stats
+        }
+
+        let response: UserStatsResponse = try await networkService.get("/api/user/stats", queryItems: nil)
+        return response.stats.orderCount
     }
     
     func cancelOrder(id: String, reason: String?) async throws -> Order {

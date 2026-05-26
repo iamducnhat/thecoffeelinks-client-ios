@@ -106,9 +106,9 @@ class ProfileViewModel: BaseViewModel {
             async let userTask = userRepository.refreshUser()
             async let vouchersTask = voucherRepository.refreshVouchers()
             async let connectionsTask = socialRepository.getConnections()
-            async let ordersTask = orderRepository.getOrders(status: nil, limit: 100, offset: 0)
+            async let orderCountTask = orderRepository.getOrderCount()
             
-            let (updatedUser, updatedVouchers, updatedConnections, updatedOrders) = try await (userTask, vouchersTask, connectionsTask, ordersTask)
+            let (updatedUser, updatedVouchers, updatedConnections, updatedOrderCount) = try await (userTask, vouchersTask, connectionsTask, orderCountTask)
             
             await MainActor.run {
                 // Update AuthViewModel's user (single source of truth)
@@ -152,10 +152,10 @@ class ProfileViewModel: BaseViewModel {
                           createdAt: conn.connectedAt,
                           preferences: .default)
                 }
-                self.orderCount = updatedOrders.totalCount
+                self.orderCount = updatedOrderCount
                 
                 // CRITICAL: Cache order count and timestamps for offline-first experience
-                self.profileStorage.saveOrderCount(updatedOrders.totalCount)
+                self.profileStorage.saveOrderCount(updatedOrderCount)
                 self.profileStorage.saveLastSyncTimestamp(key: "user_profile")
                 self.profileStorage.saveLastSyncTimestamp(key: "order_count")
                 

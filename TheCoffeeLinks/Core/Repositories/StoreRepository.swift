@@ -37,6 +37,9 @@ final class StoreRepository: StoreRepositoryProtocol, SyncableDomain, @unchecked
         let response: StoresResponse = try await networkService.get("/api/stores", queryItems: nil)
         
         storeStorage.saveStores(response.stores)
+        if let serverVersion = syncManager.serverVersion(for: domainKey) {
+            syncManager.updateLocalVersion(key: domainKey, version: serverVersion)
+        }
         return response.stores
     }
     
@@ -61,4 +64,3 @@ final class StoreRepository: StoreRepositoryProtocol, SyncableDomain, @unchecked
         })
     }
 }
-
