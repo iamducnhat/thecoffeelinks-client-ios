@@ -6,12 +6,6 @@
 	objectVersion = 77;
 	objects = {
 
-/* Begin PBXBuildFile section */
-		25544F522F1431A0009A6830 /* Realtime in Frameworks */ = {isa = PBXBuildFile; productRef = 25544F512F1431A0009A6830 /* Realtime */; };
-		25544F572F14341D009A6830 /* Supabase in Frameworks */ = {isa = PBXBuildFile; productRef = 25544F562F14341D009A6830 /* Supabase */; };
-		25FC4F5F2F1CB2A90001D920 /* CachedAsyncImage in Frameworks */ = {isa = PBXBuildFile; productRef = 25FC4F5E2F1CB2A90001D920 /* CachedAsyncImage */; };
-/* End PBXBuildFile section */
-
 /* Begin PBXContainerItemProxy section */
 		25544E7C2F1424F4009A6830 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -34,12 +28,6 @@
 		25544E7B2F1424F4009A6830 /* TheCoffeeLinksTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = TheCoffeeLinksTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		25544E852F1424F4009A6830 /* TheCoffeeLinksUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = TheCoffeeLinksUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		25DC21642F30C2EB002529FF /* TheCoffeeLinksUITests.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; path = TheCoffeeLinksUITests.xctestplan; sourceTree = "<group>"; };
-		448159AD55D041B982B3545F /* Geologica-Regular.ttf */ = {isa = PBXFileReference; lastKnownFileType = text; name = "Geologica-Regular.ttf"; path = "thecoffeelinks-client-ios/Fonts/Geologica-Regular.ttf"; sourceTree = "<group>"; };
-		6EA3220E26C74963B4C5E363 /* Geologica-SemiBold.ttf */ = {isa = PBXFileReference; lastKnownFileType = text; name = "Geologica-SemiBold.ttf"; path = "thecoffeelinks-client-ios/Fonts/Geologica-SemiBold.ttf"; sourceTree = "<group>"; };
-		7973847583F14F2591C6C6C7 /* Geologica-Medium.ttf */ = {isa = PBXFileReference; lastKnownFileType = text; name = "Geologica-Medium.ttf"; path = "thecoffeelinks-client-ios/Fonts/Geologica-Medium.ttf"; sourceTree = "<group>"; };
-		D6E00DA1F6FA4F3F8228D362 /* NotoSansMono-Regular.ttf */ = {isa = PBXFileReference; lastKnownFileType = text; name = "NotoSansMono-Regular.ttf"; path = "thecoffeelinks-client-ios/Fonts/NotoSansMono-Regular.ttf"; sourceTree = "<group>"; };
-		E02312DE5A624B2C8619C180 /* NotoSansMono-Medium.ttf */ = {isa = PBXFileReference; lastKnownFileType = text; name = "NotoSansMono-Medium.ttf"; path = "thecoffeelinks-client-ios/Fonts/NotoSansMono-Medium.ttf"; sourceTree = "<group>"; };
-		F9B1B4C3BE39473CBF00E7BB /* Geologica-Bold.ttf */ = {isa = PBXFileReference; lastKnownFileType = text; name = "Geologica-Bold.ttf"; path = "thecoffeelinks-client-ios/Fonts/Geologica-Bold.ttf"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -79,9 +67,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				25544F572F14341D009A6830 /* Supabase in Frameworks */,
-				25544F522F1431A0009A6830 /* Realtime in Frameworks */,
-				25FC4F5F2F1CB2A90001D920 /* CachedAsyncImage in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -121,12 +106,6 @@
 				25544E6E2F1424F2009A6830 /* TheCoffeeLinks.app */,
 				25544E7B2F1424F4009A6830 /* TheCoffeeLinksTests.xctest */,
 				25544E852F1424F4009A6830 /* TheCoffeeLinksUITests.xctest */,
-				448159AD55D041B982B3545F /* Geologica-Regular.ttf */,
-				7973847583F14F2591C6C6C7 /* Geologica-Medium.ttf */,
-				6EA3220E26C74963B4C5E363 /* Geologica-SemiBold.ttf */,
-				F9B1B4C3BE39473CBF00E7BB /* Geologica-Bold.ttf */,
-				D6E00DA1F6FA4F3F8228D362 /* NotoSansMono-Regular.ttf */,
-				E02312DE5A624B2C8619C180 /* NotoSansMono-Medium.ttf */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -165,9 +144,6 @@
 			);
 			name = TheCoffeeLinks;
 			packageProductDependencies = (
-				25544F512F1431A0009A6830 /* Realtime */,
-				25544F562F14341D009A6830 /* Supabase */,
-				25FC4F5E2F1CB2A90001D920 /* CachedAsyncImage */,
 			);
 			productName = "thecoffeelinks-client-ios";
 			productReference = 25544E6E2F1424F2009A6830 /* TheCoffeeLinks.app */;
@@ -253,8 +229,6 @@
 			mainGroup = 25544E652F1424F2009A6830;
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
-				25544F4C2F1431A0009A6830 /* XCRemoteSwiftPackageReference "supabase-swift" */,
-				25FC4F5D2F1CB2A90001D920 /* XCRemoteSwiftPackageReference "CachedAsyncImage" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 25544E6F2F1424F2009A6830 /* Products */;
@@ -472,7 +446,7 @@
 				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = NO;
 				CODE_SIGN_ENTITLEMENTS = TheCoffeeLinks/TheCoffeeLinks.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 101;
+				CURRENT_PROJECT_VERSION = 102;
 				DEVELOPMENT_ASSET_PATHS = "";
 				DEVELOPMENT_TEAM = UJLGY9Y9S3;
 				ENABLE_PREVIEWS = YES;
@@ -480,7 +454,6 @@
 				INFOPLIST_FILE = TheCoffeeLinks/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = "The Coffee Links";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.food-and-drink";
-				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "We use your location to find the nearest coffee shops.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -491,7 +464,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 0.6.1;
+				MARKETING_VERSION = 0.7.0;
 				PRODUCT_BUNDLE_IDENTIFIER = vn.thecoffeelinks.thecoffeelinks;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
@@ -500,7 +473,7 @@
 				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
-				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = nonisolated;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
 				SWIFT_VERSION = 6.0;
@@ -517,7 +490,7 @@
 				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = NO;
 				CODE_SIGN_ENTITLEMENTS = TheCoffeeLinks/TheCoffeeLinks.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 101;
+				CURRENT_PROJECT_VERSION = 102;
 				DEVELOPMENT_ASSET_PATHS = "";
 				DEVELOPMENT_TEAM = UJLGY9Y9S3;
 				ENABLE_PREVIEWS = YES;
@@ -525,7 +498,6 @@
 				INFOPLIST_FILE = TheCoffeeLinks/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = "The Coffee Links";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.food-and-drink";
-				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "We use your location to find the nearest coffee shops.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -536,7 +508,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 0.6.1;
+				MARKETING_VERSION = 0.7.0;
 				PRODUCT_BUNDLE_IDENTIFIER = vn.thecoffeelinks.thecoffeelinks;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
@@ -545,7 +517,7 @@
 				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
-				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = nonisolated;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
 				SWIFT_VERSION = 6.0;
@@ -691,42 +663,6 @@
 		};
 /* End XCConfigurationList section */
 
-/* Begin XCRemoteSwiftPackageReference section */
-		25544F4C2F1431A0009A6830 /* XCRemoteSwiftPackageReference "supabase-swift" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/supabase/supabase-swift";
-			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 2.5.1;
-			};
-		};
-		25FC4F5D2F1CB2A90001D920 /* XCRemoteSwiftPackageReference "CachedAsyncImage" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/iamducnhat/CachedAsyncImage.git";
-			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 1.0.2;
-			};
-		};
-/* End XCRemoteSwiftPackageReference section */
-
-/* Begin XCSwiftPackageProductDependency section */
-		25544F512F1431A0009A6830 /* Realtime */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 25544F4C2F1431A0009A6830 /* XCRemoteSwiftPackageReference "supabase-swift" */;
-			productName = Realtime;
-		};
-		25544F562F14341D009A6830 /* Supabase */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 25544F4C2F1431A0009A6830 /* XCRemoteSwiftPackageReference "supabase-swift" */;
-			productName = Supabase;
-		};
-		25FC4F5E2F1CB2A90001D920 /* CachedAsyncImage */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 25FC4F5D2F1CB2A90001D920 /* XCRemoteSwiftPackageReference "CachedAsyncImage" */;
-			productName = CachedAsyncImage;
-		};
-/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 25544E662F1424F2009A6830 /* Project object */;
 }
