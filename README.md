@@ -1,90 +1,54 @@
-# The Coffee Links - iOS Client
+# The Coffee Links — Lite iOS
 
-## Overview
+This `lite` branch is the focused member app for The Coffee Links. It keeps the existing target, scheme, display name, account system and bundle ID (`vn.thecoffeelinks.thecoffeelinks`), while limiting the product to:
 
-The iOS Client is a premium, native mobile application built for The Coffee Links customers. It combines fast coffee ordering with contextual professional networking, delivering a dynamic and personalized customer experience.
+- phone OTP and session recovery;
+- point balance and recent activity;
+- a signed, short-lived member QR plus a manual member code;
+- paginated point history with store, invoice, eligible value and rate snapshots;
+- basic account details, sign-out and OTP-confirmed account deletion.
 
-## Features
+The full ordering/social app remains on `main`. Both apps use the same production accounts, point balance and ledger.
 
-| Feature | Description |
-|---------|-------------|
-| Ordering | Browse menu, customize drinks, and track orders. |
-| Delivery | Address management, delivery zone checks, and delivery mode toggles. |
-| Space & Maps | Store maps for booking tables and checking seat availability. |
-| Connect | Professional intent badges, check-ins, community board, and profile discovery. |
-| Intelligence | Local prediction engine for personalized recommendations. |
-
-## Tech Stack
-
-| Category | Technology |
-|----------|------------|
-| Language | Swift 5.10 |
-| Framework | SwiftUI, iOS 16+ |
-| Architecture | MVVM, dependency injection, repository pattern |
-| Concurrency | Swift async/await |
-| Persistence | Keychain, UserDefaults, NSCache |
-
-## Project Structure
+## Architecture
 
 ```text
 TheCoffeeLinks/
-├── App/                   # App entry point and global environment
-├── Core/                  # Core services
-│   ├── DesignSystem/      # App-wide UI tokens and components
-│   ├── Networking/        # API client and realtime networking
-│   ├── Security/          # Keychain and App Attest
-│   └── Storage/           # Local persistence
-├── Data/                  # Concrete repositories
-├── Domain/                # Models and protocols
-├── Features/              # SwiftUI screens by feature module
-└── Resources/             # Assets, Info.plist, localization, config
+├── App/       # entry point, container, session state and root routing
+├── Core/      # URLSession, Keychain, App Attest, cache and small UI kit
+├── Domain/    # Member, MemberQR, PointTransaction and repository protocols
+├── Data/      # REST-backed auth and loyalty repositories
+├── Features/  # Auth, Member, History and Account
+└── Resources/ # brand assets, semantic colors and vi/en strings
 ```
 
-## Quick Start
+The app uses Apple frameworks only. Do not add Supabase, Realtime or remote-image packages to this branch. `Config.plist` contains only `API_BASE_URL`; authentication still reaches the shared Supabase account indirectly through the backend REST API.
 
-### Prerequisites
-
-- Xcode 15 or later
-- iOS 16.0 deployment target
-
-### Build
+## Build and test
 
 ```bash
-cd thecoffeelinks-client-ios
-xcodebuild build -project TheCoffeeLinks.xcodeproj -scheme TheCoffeeLinks -destination 'platform=iOS Simulator,name=iPhone 17,OS=26.2'
+xcodebuild -project TheCoffeeLinks.xcodeproj \
+  -scheme TheCoffeeLinks \
+  -sdk iphonesimulator \
+  -configuration Debug \
+  CODE_SIGNING_ALLOWED=NO build
+
+xcodebuild test -project TheCoffeeLinks.xcodeproj \
+  -scheme TheCoffeeLinks \
+  -destination 'platform=iOS Simulator,name=iPhone 17 Pro' \
+  -parallel-testing-enabled NO
 ```
 
-If that simulator is unavailable:
+The deployment target is iOS 16. The current release is `0.7.0 (102)`. Physical production builds require the App Attest entitlement and the backend signing configuration.
 
-```bash
-xcodebuild -showdestinations -scheme TheCoffeeLinks -project TheCoffeeLinks.xcodeproj
-```
+## Server contract
 
-Then choose an installed simulator destination.
+- `GET /api/loyalty/me`
+- `POST /api/loyalty/member-qr`
+- `POST /api/auth/otp/send`
+- `POST /api/auth/otp/verify`
+- `POST /api/auth/refresh`
+- `PUT /api/user/profile`
+- `DELETE /api/user/account`
 
-### Run in Xcode
-
-1. Open `TheCoffeeLinks.xcodeproj`.
-2. Select the `TheCoffeeLinks` scheme.
-3. Choose a simulator or physical device.
-4. Press `Cmd + R`.
-
-## Configuration
-
-- Runtime config lives in `TheCoffeeLinks/Config.plist`.
-- Use `TheCoffeeLinks/Config.template.plist` as the template for local setup.
-- Keep secrets and environment-specific values out of source code.
-
-## Agent Notes
-
-Operational guidance for AI coding agents lives in:
-
-- `agents.md`
-- `claude.md`
-
-Update those files instead of adding new one-off audit reports.
-
-## License
-
-This project is private and proprietary to The Coffee Links.
-
+Member QR payloads use `TCLM1`, expire after 120 seconds and refresh after 60 seconds. If an expired QR cannot be refreshed offline, the UI exposes only the manual member code.

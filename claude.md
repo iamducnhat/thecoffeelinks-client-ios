@@ -1,73 +1,13 @@
-# Claude Working Notes
+# The Coffee Links Lite context
 
-## Prime Directive
+This branch is a clean loyalty fork, not the full commerce app. The only customer journey is:
 
-This iOS repo was cleaned so future agents do not need to parse old generated reports. Keep context here concise and current. When you learn something durable about the app, update this file, `agents.md`, or `UI.md`; do not create another standalone markdown audit.
-
-## UI Consolidation
-
-- Shared UI source of truth now lives in `UI.md`.
-- Before adding or changing reusable UI, check `UI.md` first.
-- `TheCoffeeLinks/Core/DesignSystem/Components` is the app UI kit.
-- Legacy names such as `BaseCTAButton`, `CapsuleButton`, `ReceiptPrimaryButton`, `ReceiptQuantityStepper`, `BaseListRow`, `ProfileRow`, and `VoucherCard` should stay thin compatibility wrappers until they can be removed safely.
-- All remote images should go through `AppRemoteImage` and default to `BaseViewColor.placeholder`.
-
-## What Was Consolidated
-
-Old reports covered:
-
-- build target membership fixes for Swift files,
-- app state and onboarding redesign,
-- production runtime audit fixes,
-- design-system inconsistencies,
-- product-card redesign ideas,
-- test-suite rewrite notes,
-- launch/logo Python automation.
-
-Those files were intentionally removed. The operational parts now live in `agents.md`; the risk/backlog parts live below.
-
-## Verified Baseline
-
-Last known build check:
-
-```bash
-xcodebuild build -project TheCoffeeLinks.xcodeproj -scheme TheCoffeeLinks -destination 'platform=iOS Simulator,name=iPhone 17,OS=26.2'
+```text
+restore session → phone → OTP → name when new → member dashboard
 ```
 
-Result on 2026-05-13: build succeeded.
+The dashboard owns point balance, dynamic QR, manual member code and recent history. Account and full history are secondary destinations. Backend state is authoritative; local storage is an offline read cache only.
 
-## Known Risks To Watch
+Use `AppSession` for app-level routing and orchestration, repository protocols for test seams, `APIClient` for REST, `KeychainStore` for secrets, `AppAttestClient` for protected writes and `LiteCache` for the profile/history snapshot. Avoid new abstractions unless the four-feature app genuinely needs them.
 
-- `TheCoffeeLinksTests/LoginIntegrationTests.swift` and `TheCoffeeLinksTests/NetworkCheckInIntegrationTests.swift` include hardcoded credentials and live API behavior. Treat them as unsafe for CI until rewritten or quarantined.
-- App code still has direct `print()` calls in startup/profile sync paths. Prefer `debugLog`, which is stripped in Release.
-- `AppEnvironment.apiBaseURL` and `DependencyContainer` contain fallback URLs. New work should flow through `Config.plist` and `Config.template.plist`.
-- `DependencyContainer` is still a singleton. It has factory methods, but deeper protocol injection remains partial.
-- Design-system files still contain legacy compatibility layers. Prefer reducing duplicated components when modifying related screens.
-
-## High-Value Refactors
-
-1. Replace live-network tests with protocol-backed mocks.
-2. Move remaining hardcoded environment values behind config.
-3. Convert direct app `print()` calls to `debugLog`.
-4. Continue extracting protocols where view models still depend on concrete singletons.
-5. Remove legacy design-system wrappers only when nearby feature work gives enough test coverage.
-
-## Implementation Guardrails
-
-- Preserve guest mode behavior.
-- Do not clear tokens on transient network failures.
-- Keep `initializeSync()` truly synchronous.
-- Avoid fire-and-forget auth/App Attest tasks that can race startup.
-- Keep payment/order flows idempotent; rapid taps should not create duplicate orders.
-- Use existing repositories and services before adding new app-wide dependencies.
-
-## Files Worth Reading First
-
-- `TheCoffeeLinks/TheCoffeeLinksApp.swift`
-- `TheCoffeeLinks/ContentView.swift`
-- `TheCoffeeLinks/Core/DI/DependencyContainer.swift`
-- `TheCoffeeLinks/Core/Services/AppFlowController.swift`
-- `TheCoffeeLinks/Core/Networking/NetworkService.swift`
-- `TheCoffeeLinks/Core/Security/AppAttestService.swift`
-- `TheCoffeeLinks/Core/DesignSystem/DesignSystemV2.swift`
-
+Visual work follows `UI.md`. Product and security invariants follow `agents.md`. Before handing off, confirm the app builds without Swift packages and that `main` has not been modified.

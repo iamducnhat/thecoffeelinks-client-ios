@@ -1,88 +1,32 @@
-# TheCoffeeLinks iOS Agent Guide
+# Agent guide — iOS Lite
 
 ## Scope
 
-This folder is the native iOS client for TheCoffeeLinks. Keep this directory focused on Swift, SwiftUI, Xcode project files, assets, tests, and the durable docs that belong here. Do not add one-off Python scripts or extra markdown reports here; only update `agents.md`, `claude.md`, or `UI.md` when durable documentation changes.
+Work on the `lite` branch as a loyalty-only iOS app. Ordering, menu, cart, checkout, delivery, stores, vouchers, social, networking, prediction, location and onboarding carousel features belong to the full app on `main` and must not be restored here.
 
-## Project Facts
+## Invariants
 
-- App: `TheCoffeeLinks`
-- Platform: iOS 16+
-- Language/UI: Swift, SwiftUI, async/await
-- Architecture: MVVM with repository and service layers
-- Project file: `TheCoffeeLinks.xcodeproj`
-- Main scheme: `TheCoffeeLinks`
-- Test targets: `TheCoffeeLinksTests`, `TheCoffeeLinksUITests`
-- Main source root: `TheCoffeeLinks/`
-- Unit/UI tests: `TheCoffeeLinksTests/`, `TheCoffeeLinksUITests/`
-
-## Useful Commands
-
-```bash
-xcodebuild -list -project TheCoffeeLinks.xcodeproj
-xcodebuild build -project TheCoffeeLinks.xcodeproj -scheme TheCoffeeLinks -destination 'platform=iOS Simulator,name=iPhone 17,OS=26.2'
-xcodebuild test -project TheCoffeeLinks.xcodeproj -scheme TheCoffeeLinks -destination 'platform=iOS Simulator,name=iPhone 17,OS=26.2'
-```
-
-If that simulator is unavailable, run `xcodebuild -showdestinations -scheme TheCoffeeLinks -project TheCoffeeLinks.xcodeproj` and choose an installed iOS Simulator.
+- Target/scheme/display name: `TheCoffeeLinks` / **The Coffee Links**.
+- Bundle ID: `vn.thecoffeelinks.thecoffeelinks`.
+- iOS 16+, SwiftUI, Swift 6, Apple frameworks only.
+- REST goes through `APIClient`; never connect the app directly to Supabase.
+- Access/refresh tokens and App Attest identifiers stay in Keychain.
+- Shared accounts mean account deletion affects the full app too; preserve the explicit warning and fresh-OTP confirmation.
+- A member QR is server-issued and signed. Never construct a locally trusted QR or extend its expiry on-device.
+- On offline fallback, cached profile/history may be read, but an expired QR must disappear.
 
 ## Structure
 
-- `TheCoffeeLinks/App`: app environment and app-level setup.
-- `TheCoffeeLinks/Core`: dependency injection, networking, security, storage, design system, services, shared view models.
-- `TheCoffeeLinks/Data`: concrete repositories.
-- `TheCoffeeLinks/Domain`: models and protocols.
-- `TheCoffeeLinks/Features`: feature-first SwiftUI screens and feature view models.
-- `TheCoffeeLinks/Resources`: asset catalogs, localized strings, plist config, launch resources.
+- `App`: composition and the single `AppSession` state machine.
+- `Core`: URLSession, security, cache and the compact design system.
+- `Domain`: dependency-free value models and repository protocols.
+- `Data`: REST repository implementations.
+- `Features`: only `Auth`, `Member`, `History`, and `Account`.
 
-## Runtime Rules
+Keep repository DTO mapping close to the repository. Add shared UI only when it clearly fits one of `AppButton`, `AppCard`, `AppTextField`, `AppRow`, `AppBadge`, `AppStateView` or `IconView`.
 
-- `DependencyContainer.shared` wires the current app graph. Prefer existing factory methods when creating view models.
-- `initializeSync()` runs before UI routing and must stay synchronous for token/session setup.
-- `initializeAsync()` is for background sync, subscriptions, and authenticated startup work.
-- Auth tokens live in `KeychainManager`; do not put access or refresh tokens in `UserDefaults`.
-- Guest mode is valid. Auth-dependent services must skip network work when there is no access token.
-- App Attest registration should stay tied to authenticated OTP/login flows; avoid background key generation races.
+## Verification
 
-## App Flow
+Run a clean simulator build after dependency or file-graph changes. Add deterministic XCTest coverage for OTP/session, QR expiry, cache/offline behavior, history pagination and account deletion. UI tests use `-ui-testing` repositories and must never call production services.
 
-The app starts in `AppFlowController` and routes through these states:
-
-```text
-launching -> onboarding or guestReady
-launching -> checkingAuth -> ready
-guestReady -> loggingIn -> ready
-ready -> guestReady on logout or invalid auth
-```
-
-Onboarding is tracked in `UserDefaults`; secure auth state is tracked in Keychain. If token validation fails with auth errors, clear auth and fall back to guest mode. If validation fails due to transient network errors, prefer cached state and retry later.
-
-## Design System
-
-- Prefer semantic tokens from `Core/DesignSystem`: `BaseViewColor`, `BaseViewFont`, and `BaseViewLayout`.
-- Read `UI.md` before creating or changing reusable UI.
-- Reuse an existing shared `App*` component when it fits; if none fits, add a shared component under `TheCoffeeLinks/Core/DesignSystem/Components` first, then update `UI.md`.
-- Do not reintroduce `DesignSystemV2`, `Editorial`, `AppLayout`, `AppFont`, `AppSpacing`, `AppTypography`, or `AppRadius`.
-- Avoid hardcoded colors, spacing, and repeated button styles.
-- Use `BaseViewColor.placeholder` for remote-image fallback.
-- Use `strokeBorder` for shape borders.
-- Keep cards and controls touch-friendly; text-bearing controls should use padding plus `minHeight`, not fixed heights.
-- New UI work should reduce duplication and stay within the `BaseView* + App*` visual language.
-
-## Testing Expectations
-
-- Add focused XCTest coverage for service, repository, and view model changes.
-- Keep unit tests deterministic: no live network, no hardcoded personal credentials.
-- UI tests should cover critical customer journeys only when the flow is stable.
-- Existing live integration-style tests are risky; quarantine or refactor them before relying on full `xcodebuild test` in CI.
-
-## Current Audit Notes
-
-- Simulator build passed on 2026-05-13 with:
-  `xcodebuild build -project TheCoffeeLinks.xcodeproj -scheme TheCoffeeLinks -destination 'platform=iOS Simulator,name=iPhone 17,OS=26.2'`
-- Remaining cleanup candidates:
-  - Replace app `print()` calls with `debugLog`.
-  - Remove or quarantine tests that call real APIs and contain hardcoded credentials.
-  - Consolidate legacy design-system wrappers as features are touched.
-  - Keep config values in `Config.plist` / `Config.template.plist`, not hardcoded in new code.
-
+Do not stage or delete `TheCoffeeLinks.xcodeproj/xcshareddata/xcodecloud/` unless the user explicitly requests it.
