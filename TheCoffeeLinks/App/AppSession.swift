@@ -93,6 +93,7 @@ final class AppSession: ObservableObject {
 
     func signOut() async {
         await auth.signOut()
+        await loyalty.clearCache()
         member = nil
         history = []
         memberQR = nil
@@ -112,6 +113,7 @@ final class AppSession: ObservableObject {
         }
         let success = await run { try await auth.deleteAccount(phone: phone, otp: otp) }
         if success {
+            await loyalty.clearCache()
             member = nil
             history = []
             memberQR = nil

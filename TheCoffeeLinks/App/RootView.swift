@@ -3,7 +3,7 @@ import SwiftUI
 struct RootView: View {
     @StateObject private var session: AppSession
 
-    init(container: AppContainer = .live) {
+    init(container: AppContainer = .app) {
         _session = StateObject(wrappedValue: AppSession(container: container))
     }
 

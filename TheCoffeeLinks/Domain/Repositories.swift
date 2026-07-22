@@ -13,4 +13,5 @@ protocol LoyaltyRepositoryProtocol: Sendable {
     func memberSnapshot(cursor: String?) async throws -> (Member, HistoryPage)
     func cachedSnapshot() async -> (Member, HistoryPage)?
     func memberQR() async throws -> MemberQR
+    func clearCache() async
 }

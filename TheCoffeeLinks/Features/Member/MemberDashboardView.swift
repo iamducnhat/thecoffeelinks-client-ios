@@ -107,6 +107,7 @@ struct MemberDashboardView: View {
                         .font(AppFont.mono)
                         .tracking(2)
                         .textSelection(.enabled)
+                        .accessibilityIdentifier("member.code")
                 }
             }
         }

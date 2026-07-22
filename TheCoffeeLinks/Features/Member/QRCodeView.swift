@@ -14,6 +14,7 @@ struct QRCodeView: View {
                     .resizable()
                     .scaledToFit()
                     .accessibilityLabel(Text("member.qr_accessibility"))
+                    .accessibilityIdentifier("member.qr")
             } else {
                 AppStateView(kind: .error, title: "member.qr_error")
             }

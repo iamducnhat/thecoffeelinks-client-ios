@@ -33,6 +33,8 @@ actor LoyaltyRepository: LoyaltyRepositoryProtocol {
         )
         return response.qr
     }
+
+    func clearCache() async { await cache.clear() }
 }
 
 private struct EmptyRequest: Encodable {}

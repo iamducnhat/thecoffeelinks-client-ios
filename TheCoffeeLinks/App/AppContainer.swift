@@ -11,4 +11,11 @@ struct AppContainer {
             loyalty: LoyaltyRepository(client: client)
         )
     }()
+
+    static var app: AppContainer {
+#if DEBUG
+        if ProcessInfo.processInfo.arguments.contains("-ui-testing") { return uiTest }
+#endif
+        return live
+    }
 }
