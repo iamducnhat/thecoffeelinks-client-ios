@@ -3,6 +3,8 @@
 <plist version="1.0">
 <dict>
 	<key>API_BASE_URL</key>
+	<string>https://api.thecoffeelinks.vn</string>
+	<key>API_BASE_URL_DEBUG</key>
 	<string>https://thecoffeelinks.nnhhaatt.live</string>
 </dict>
 </plist>

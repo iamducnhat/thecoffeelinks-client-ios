@@ -3,6 +3,8 @@
 <plist version="1.0">
 <dict>
 	<key>API_BASE_URL</key>
-	<string>https://your-server.example.com</string>
+	<string>https://api.example.com</string>
+	<key>API_BASE_URL_DEBUG</key>
+	<string>https://api-preview.example.com</string>
 </dict>
 </plist>

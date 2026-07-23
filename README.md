@@ -22,7 +22,7 @@ TheCoffeeLinks/
 └── Resources/ # brand assets, semantic colors and vi/en strings
 ```
 
-The app uses Apple frameworks only. Do not add Supabase, Realtime or remote-image packages to this branch. `Config.plist` contains only `API_BASE_URL`; authentication still reaches the shared Supabase account indirectly through the backend REST API.
+The app uses Apple frameworks only. Do not add Supabase, Realtime or remote-image packages to this branch. `Config.plist` uses `API_BASE_URL_DEBUG` for Debug builds and `API_BASE_URL` for Release builds; authentication still reaches the shared Supabase account indirectly through the backend REST API.
 
 ## Build and test
 
