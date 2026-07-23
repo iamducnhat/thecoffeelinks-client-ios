@@ -23,7 +23,7 @@ actor AuthRepository: AuthRepositoryProtocol {
             body: VerifyRequest(phone: phone, otp: code, type: "sms"),
             authenticated: false
         )
-        try await client.setSession(response.session.authSession)
+        try await client.beginAuthenticatedSession(response.session.authSession)
     }
 
     func updateName(_ name: String) async throws {

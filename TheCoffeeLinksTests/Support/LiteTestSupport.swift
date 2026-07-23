@@ -22,17 +22,25 @@ actor MockLoyaltyRepository: LoyaltyRepositoryProtocol {
     var secondPage: (Member, HistoryPage)?
     var cache: (Member, HistoryPage)?
     var qr: MemberQR?
+    var snapshotError: APIError?
     private(set) var requestedCursors: [String?] = []
     private(set) var didClearCache = false
 
-    init(firstPage: (Member, HistoryPage), secondPage: (Member, HistoryPage)? = nil, cache: (Member, HistoryPage)? = nil) {
+    init(
+        firstPage: (Member, HistoryPage),
+        secondPage: (Member, HistoryPage)? = nil,
+        cache: (Member, HistoryPage)? = nil,
+        snapshotError: APIError? = nil
+    ) {
         self.firstPage = firstPage
         self.secondPage = secondPage
         self.cache = cache
+        self.snapshotError = snapshotError
     }
 
     func memberSnapshot(cursor: String?) async throws -> (Member, HistoryPage) {
         requestedCursors.append(cursor)
+        if let snapshotError { throw snapshotError }
         if cursor != nil, let secondPage { return secondPage }
         return firstPage
     }

@@ -29,6 +29,13 @@ actor AppAttestClient {
         ]
     }
 
+    func resetRegistration() {
+        // App Attest keys are bound to the authenticated member on the server.
+        // Abandon the key on account changes; keep the stable device ID.
+        keychain.remove(registeredKey)
+        keychain.remove(keyIDKey)
+    }
+
     private func ensureRegistered(accessToken: String) async throws -> String {
         let keyID: String
         if let data = keychain.data(for: keyIDKey), let saved = String(data: data, encoding: .utf8) {

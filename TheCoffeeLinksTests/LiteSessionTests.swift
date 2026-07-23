@@ -56,4 +56,25 @@ final class LiteSessionTests: XCTestCase {
         XCTAssertEqual(deletedOTP, "654321")
         XCTAssertTrue(didClearCache)
     }
+
+    func testExpiredSessionDoesNotExposeCachedMemberData() async {
+        let cached = (LiteFixture.member, HistoryPage(items: [LiteFixture.transaction("cached")], nextCursor: nil))
+        let auth = MockAuthRepository(sessionExists: true)
+        let loyalty = MockLoyaltyRepository(
+            firstPage: cached,
+            cache: cached,
+            snapshotError: .unauthorized
+        )
+        let session = AppSession(container: AppContainer(auth: auth, loyalty: loyalty))
+
+        await session.restore()
+
+        let hasSession = await auth.hasSession()
+        let didClearCache = await loyalty.didClearCache
+        XCTAssertEqual(session.flow, .authentication)
+        XCTAssertNil(session.member)
+        XCTAssertTrue(session.history.isEmpty)
+        XCTAssertFalse(hasSession)
+        XCTAssertTrue(didClearCache)
+    }
 }

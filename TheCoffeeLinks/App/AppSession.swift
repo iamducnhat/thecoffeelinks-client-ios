@@ -130,6 +130,18 @@ final class AppSession: ObservableObject {
             apply(snapshot)
             isOffline = false
         } catch {
+            if case APIError.unauthorized = error {
+                await auth.signOut()
+                await loyalty.clearCache()
+                member = nil
+                history = []
+                nextCursor = nil
+                memberQR = nil
+                isOffline = false
+                errorMessage = error.localizedDescription
+                flow = .authentication
+                return
+            }
             if allowCache, let cached = await loyalty.cachedSnapshot() {
                 apply(cached)
                 isOffline = true

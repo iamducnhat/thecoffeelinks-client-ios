@@ -8,7 +8,7 @@ struct AuthSession: Codable, Equatable, Sendable {
 
 enum HTTPMethod: String { case get = "GET", post = "POST", put = "PUT", delete = "DELETE" }
 
-enum APIError: LocalizedError, Equatable {
+enum APIError: LocalizedError, Equatable, Sendable {
     case invalidResponse
     case unauthorized
     case server(status: Int, message: String)
@@ -66,9 +66,15 @@ actor APIClient {
         try keychain.set(JSONEncoder().encode(session), for: sessionKey)
     }
 
-    func clearSession() {
+    func beginAuthenticatedSession(_ session: AuthSession) async throws {
+        await attestation.resetRegistration()
+        try setSession(session)
+    }
+
+    func clearSession() async {
         session = nil
         keychain.remove(sessionKey)
+        await attestation.resetRegistration()
     }
 
     func send<Response: Decodable, Body: Encodable>(
@@ -79,18 +85,17 @@ actor APIClient {
         attest: Bool = false
     ) async throws -> Response {
         let bodyData = try body.map(encoder.encode)
-        let response: (Data, HTTPURLResponse)
         do {
-            response = try await perform(path, method: method, body: bodyData, authenticated: authenticated, attest: attest)
-        } catch let error as URLError where error.code == .notConnectedToInternet || error.code == .networkConnectionLost {
+            let response = try await perform(path, method: method, body: bodyData, authenticated: authenticated, attest: attest)
+
+            if response.1.statusCode == 401, authenticated, try await refreshSession() {
+                let retried = try await perform(path, method: method, body: bodyData, authenticated: true, attest: attest)
+                return try decode(retried.0, response: retried.1)
+            }
+            return try decode(response.0, response: response.1)
+        } catch let error as URLError where Self.isOffline(error.code) {
             throw APIError.offline
         }
-
-        if response.1.statusCode == 401, authenticated, try await refreshSession() {
-            let retried = try await perform(path, method: method, body: bodyData, authenticated: true, attest: attest)
-            return try decode(retried.0, response: retried.1)
-        }
-        return try decode(response.0, response: response.1)
     }
 
     func send<Response: Decodable>(
@@ -145,11 +150,22 @@ actor APIClient {
         let payload = try encoder.encode(RefreshRequest(refreshToken: refreshToken))
         let result = try await perform("/api/auth/refresh", method: .post, body: payload, authenticated: false, attest: false)
         guard (200..<300).contains(result.1.statusCode), let envelope = try? decoder.decode(SessionEnvelope.self, from: result.0) else {
-            clearSession()
+            await clearSession()
             return false
         }
         try setSession(envelope.session.authSession)
         return true
+    }
+
+    private static func isOffline(_ code: URLError.Code) -> Bool {
+        switch code {
+        case .notConnectedToInternet, .networkConnectionLost, .timedOut,
+             .cannotFindHost, .cannotConnectToHost, .dnsLookupFailed,
+             .internationalRoamingOff, .dataNotAllowed:
+            return true
+        default:
+            return false
+        }
     }
 }
 
