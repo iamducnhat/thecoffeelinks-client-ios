@@ -18,8 +18,5 @@ struct AppRow<Leading: View, Trailing: View>: View {
         .padding(AppSpacing.row)
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(AppColor.elevated)
-        .overlay {
-            Rectangle().stroke(AppColor.border, lineWidth: AppSpacing.borderWidth)
-        }
     }
 }

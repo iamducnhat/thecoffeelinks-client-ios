@@ -27,15 +27,15 @@ struct AppButton: View {
 
                 Text(title)
                     .font(AppFont.button)
-                    .tracking(0.6)
+                    .tracking(1.2)
             }
             .frame(maxWidth: fillsWidth ? .infinity : nil)
-            .frame(minHeight: AppSpacing.touchTarget)
-            .padding(.horizontal, AppSpacing.card)
+            .frame(minHeight: AppSpacing.controlHeight)
+            .padding(.horizontal, 18)
             .foregroundStyle(foreground)
             .background(background)
             .overlay(border)
-            .contentShape(Rectangle())
+            .contentShape(RoundedRectangle(cornerRadius: AppSpacing.cornerRadius, style: .continuous))
         }
         .buttonStyle(PressedButtonStyle())
         .disabled(isDisabled || isLoading)
@@ -54,10 +54,10 @@ struct AppButton: View {
     @ViewBuilder private var background: some View {
         switch style {
         case .primary:
-            RoundedRectangle(cornerRadius: AppSpacing.cornerRadius)
+            RoundedRectangle(cornerRadius: AppSpacing.cornerRadius, style: .continuous)
                 .fill(AppColor.accent)
         case .destructive:
-            RoundedRectangle(cornerRadius: AppSpacing.cornerRadius)
+            RoundedRectangle(cornerRadius: AppSpacing.cornerRadius, style: .continuous)
                 .fill(AppColor.error.opacity(0.08))
         case .secondary, .ghost:
             Color.clear
@@ -67,7 +67,7 @@ struct AppButton: View {
     @ViewBuilder private var border: some View {
         switch style {
         case .secondary, .destructive:
-            RoundedRectangle(cornerRadius: AppSpacing.cornerRadius)
+            RoundedRectangle(cornerRadius: AppSpacing.cornerRadius, style: .continuous)
                 .strokeBorder(foreground, lineWidth: AppSpacing.borderWidth)
         case .primary, .ghost:
             EmptyView()

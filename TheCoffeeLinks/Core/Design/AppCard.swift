@@ -14,9 +14,9 @@ struct AppCard<Content: View>: View {
             .padding(padding)
             .frame(maxWidth: .infinity, alignment: .leading)
             .background(AppColor.elevated)
-            .clipShape(RoundedRectangle(cornerRadius: AppSpacing.cornerRadius))
+            .clipShape(RoundedRectangle(cornerRadius: AppSpacing.cornerRadius, style: .continuous))
             .overlay {
-                RoundedRectangle(cornerRadius: AppSpacing.cornerRadius)
+                RoundedRectangle(cornerRadius: AppSpacing.cornerRadius, style: .continuous)
                     .strokeBorder(AppColor.border, lineWidth: AppSpacing.borderWidth)
             }
     }

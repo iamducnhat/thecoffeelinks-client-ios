@@ -22,11 +22,13 @@ struct AppTextField: View {
                 .textContentType(textContentType)
                 .textInputAutocapitalization(keyboardType == .phonePad || keyboardType == .numberPad ? .never : .words)
                 .padding(.horizontal, AppSpacing.row)
-                .padding(.vertical, 11)
-                .frame(minHeight: AppSpacing.touchTarget)
+                .padding(.vertical, 12)
+                .frame(minHeight: AppSpacing.controlHeight)
                 .background(AppColor.elevated)
+                .clipShape(RoundedRectangle(cornerRadius: AppSpacing.cornerRadius, style: .continuous))
                 .overlay {
-                    Rectangle().stroke(AppColor.border, lineWidth: AppSpacing.borderWidth)
+                    RoundedRectangle(cornerRadius: AppSpacing.cornerRadius, style: .continuous)
+                        .strokeBorder(AppColor.border, lineWidth: AppSpacing.borderWidth)
                 }
         }
     }
@@ -46,8 +48,10 @@ struct AppOTPField: View {
             }
             .padding(.vertical, 12)
             .background(AppColor.elevated)
+            .clipShape(RoundedRectangle(cornerRadius: AppSpacing.cornerRadius, style: .continuous))
             .overlay {
-                Rectangle().stroke(AppColor.border, lineWidth: AppSpacing.borderWidth)
+                RoundedRectangle(cornerRadius: AppSpacing.cornerRadius, style: .continuous)
+                    .strokeBorder(AppColor.border, lineWidth: AppSpacing.borderWidth)
             }
             .accessibilityLabel(Text("otp_accessibility"))
     }

@@ -6,7 +6,7 @@ struct AccountView: View {
 
     var body: some View {
         ScrollView {
-            VStack(spacing: AppSpacing.section) {
+            VStack(spacing: 32) {
                 AppCard {
                     VStack(spacing: AppSpacing.card) {
                         accountRow("account.name", session.member?.fullName ?? "—")
@@ -14,17 +14,23 @@ struct AccountView: View {
                         accountRow("account.member_since", session.member?.memberSince.formatted(date: .long, time: .omitted) ?? "—")
                     }
                 }
-                AppButton(title: "account.sign_out", style: .secondary) { Task { await session.signOut() } }
-                AppButton(title: "account.delete", style: .destructive) { showsDelete = true }
-                Text("account.delete_shared_warning")
-                    .font(AppFont.label)
-                    .foregroundStyle(AppColor.textSecondary)
+
+                VStack(spacing: 10) {
+                    AppButton(title: "account.sign_out", style: .secondary) { Task { await session.signOut() } }
+                    AppButton(title: "account.delete", style: .destructive) { showsDelete = true }
+
+                    Text("account.delete_shared_warning")
+                        .font(AppFont.label)
+                        .foregroundStyle(AppColor.textSecondary)
+                        .padding(.top, AppSpacing.micro)
+                }
             }
             .padding(AppSpacing.screen)
         }
         .background(AppColor.background)
         .navigationTitle("account.title")
         .navigationBarTitleDisplayMode(.inline)
+        .toolbar(.visible, for: .navigationBar)
         .sheet(isPresented: $showsDelete) { DeleteAccountView(session: session) }
     }
 

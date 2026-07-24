@@ -5,8 +5,8 @@ struct PointHistoryView: View {
 
     var body: some View {
         ScrollView {
-            LazyVStack(spacing: -AppSpacing.borderWidth) {
-                ForEach(session.history) { transaction in
+            LazyVStack(spacing: 0) {
+                ForEach(Array(session.history.enumerated()), id: \.element.id) { index, transaction in
                     NavigationLink(destination: TransactionDetailView(transaction: transaction)) {
                         TransactionRow(transaction: transaction)
                     }
@@ -16,10 +16,22 @@ struct PointHistoryView: View {
                             Task { await session.loadMoreHistory() }
                         }
                     }
+
+                    if index < session.history.count - 1 {
+                        Rectangle()
+                            .fill(AppColor.borderMuted)
+                            .frame(height: AppSpacing.borderWidth)
+                    }
                 }
                 if session.nextCursor != nil {
                     ProgressView().tint(AppColor.accent).padding()
                 }
+            }
+            .background(AppColor.elevated)
+            .clipShape(RoundedRectangle(cornerRadius: AppSpacing.cornerRadius, style: .continuous))
+            .overlay {
+                RoundedRectangle(cornerRadius: AppSpacing.cornerRadius, style: .continuous)
+                    .strokeBorder(AppColor.border, lineWidth: AppSpacing.borderWidth)
             }
             .padding(.horizontal, AppSpacing.screen)
             .padding(.vertical, AppSpacing.card)
@@ -27,6 +39,7 @@ struct PointHistoryView: View {
         .background(AppColor.background)
         .navigationTitle("history.title")
         .navigationBarTitleDisplayMode(.inline)
+        .toolbar(.visible, for: .navigationBar)
     }
 }
 
@@ -83,6 +96,7 @@ struct TransactionDetailView: View {
         .background(AppColor.background)
         .navigationTitle("history.detail")
         .navigationBarTitleDisplayMode(.inline)
+        .toolbar(.visible, for: .navigationBar)
     }
 
     private func detail(_ key: LocalizedStringKey, _ value: String, mono: Bool = false) -> some View {
