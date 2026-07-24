@@ -1,66 +1,978 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
-    "account.delete" : { "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Delete account" } }, "vi" : { "stringUnit" : { "state" : "translated", "value" : "Xóa tài khoản" } } } },
-    "account.delete_confirm" : { "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Permanently delete" } }, "vi" : { "stringUnit" : { "state" : "translated", "value" : "Xóa vĩnh viễn" } } } },
-    "account.delete_explanation" : { "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "We will send a fresh OTP to your phone. Deletion is permanent." } }, "vi" : { "stringUnit" : { "state" : "translated", "value" : "Chúng tôi sẽ gửi OTP mới đến số điện thoại của bạn. Tài khoản sẽ bị xóa vĩnh viễn." } } } },
-    "account.delete_shared_warning" : { "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "This account is shared with the full The Coffee Links app. Deleting it affects both apps." } }, "vi" : { "stringUnit" : { "state" : "translated", "value" : "Tài khoản này dùng chung với app The Coffee Links đầy đủ. Xóa ở đây sẽ ảnh hưởng cả hai app." } } } },
-    "account.member_since" : { "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Member since" } }, "vi" : { "stringUnit" : { "state" : "translated", "value" : "Tham gia từ" } } } },
-    "account.name" : { "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Name" } }, "vi" : { "stringUnit" : { "state" : "translated", "value" : "Họ tên" } } } },
-    "account.phone" : { "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Phone" } }, "vi" : { "stringUnit" : { "state" : "translated", "value" : "Số điện thoại" } } } },
-    "account.send_delete_otp" : { "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Send verification code" } }, "vi" : { "stringUnit" : { "state" : "translated", "value" : "Gửi mã xác nhận" } } } },
-    "account.sign_out" : { "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Sign out" } }, "vi" : { "stringUnit" : { "state" : "translated", "value" : "Đăng xuất" } } } },
-    "account.title" : { "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Account" } }, "vi" : { "stringUnit" : { "state" : "translated", "value" : "Tài khoản" } } } },
-    "auth.change_phone" : { "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Use another phone number" } }, "vi" : { "stringUnit" : { "state" : "translated", "value" : "Dùng số điện thoại khác" } } } },
-    "auth.invalid_otp" : { "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Enter the 6-digit verification code." } }, "vi" : { "stringUnit" : { "state" : "translated", "value" : "Vui lòng nhập đủ mã xác nhận 6 số." } } } },
-    "auth.invalid_phone" : { "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Enter a valid phone number." } }, "vi" : { "stringUnit" : { "state" : "translated", "value" : "Vui lòng nhập số điện thoại hợp lệ." } } } },
-    "auth.otp_subtitle" : { "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Enter the 6-digit code sent to your phone." } }, "vi" : { "stringUnit" : { "state" : "translated", "value" : "Nhập mã 6 số vừa được gửi đến điện thoại của bạn." } } } },
-    "auth.otp_title" : { "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Verification code" } }, "vi" : { "stringUnit" : { "state" : "translated", "value" : "Mã xác nhận" } } } },
-    "auth.phone" : { "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Phone number" } }, "vi" : { "stringUnit" : { "state" : "translated", "value" : "Số điện thoại" } } } },
-    "auth.phone_placeholder" : { "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "090 123 4567" } }, "vi" : { "stringUnit" : { "state" : "translated", "value" : "090 123 4567" } } } },
-    "auth.send_otp" : { "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Continue" } }, "vi" : { "stringUnit" : { "state" : "translated", "value" : "Tiếp tục" } } } },
-    "auth.subtitle" : { "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Sign in to collect points and show your member QR at the counter." } }, "vi" : { "stringUnit" : { "state" : "translated", "value" : "Đăng nhập để tích điểm và đưa QR thành viên cho nhân viên tại quán." } } } },
-    "auth.terms" : { "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "By continuing, you agree to the membership terms and privacy policy." } }, "vi" : { "stringUnit" : { "state" : "translated", "value" : "Khi tiếp tục, bạn đồng ý với điều khoản thành viên và chính sách riêng tư." } } } },
-    "auth.title" : { "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Your coffee, your points" } }, "vi" : { "stringUnit" : { "state" : "translated", "value" : "Cà phê của bạn, điểm của bạn" } } } },
-    "auth.verify" : { "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Verify" } }, "vi" : { "stringUnit" : { "state" : "translated", "value" : "Xác nhận" } } } },
-    "common.close" : { "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Close" } }, "vi" : { "stringUnit" : { "state" : "translated", "value" : "Đóng" } } } },
-    "common.error" : { "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Something went wrong" } }, "vi" : { "stringUnit" : { "state" : "translated", "value" : "Có lỗi xảy ra" } } } },
-    "common.offline_cache" : { "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Offline — showing saved data" } }, "vi" : { "stringUnit" : { "state" : "translated", "value" : "Ngoại tuyến — đang hiển thị dữ liệu đã lưu" } } } },
-    "common.view_all" : { "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "View all" } }, "vi" : { "stringUnit" : { "state" : "translated", "value" : "Xem tất cả" } } } },
-    "error.attestation" : { "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "This device could not be verified." } }, "vi" : { "stringUnit" : { "state" : "translated", "value" : "Không thể xác minh thiết bị này." } } } },
-    "error.generic" : { "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Please try again." } }, "vi" : { "stringUnit" : { "state" : "translated", "value" : "Vui lòng thử lại." } } } },
-    "error.invalid_response" : { "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "The server returned an invalid response." } }, "vi" : { "stringUnit" : { "state" : "translated", "value" : "Máy chủ trả về dữ liệu không hợp lệ." } } } },
-    "error.offline" : { "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "You appear to be offline." } }, "vi" : { "stringUnit" : { "state" : "translated", "value" : "Thiết bị đang ngoại tuyến." } } } },
-    "error.session_expired" : { "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Your session expired. Please sign in again." } }, "vi" : { "stringUnit" : { "state" : "translated", "value" : "Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại." } } } },
-    "history.detail" : { "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Point details" } }, "vi" : { "stringUnit" : { "state" : "translated", "value" : "Chi tiết điểm" } } } },
-    "history.eligible_amount" : { "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Eligible amount" } }, "vi" : { "stringUnit" : { "state" : "translated", "value" : "Tiền hợp lệ" } } } },
-    "history.empty" : { "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "No point activity yet" } }, "vi" : { "stringUnit" : { "state" : "translated", "value" : "Chưa có lịch sử điểm" } } } },
-    "history.empty_message" : { "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Show your member QR before paying at the counter." } }, "vi" : { "stringUnit" : { "state" : "translated", "value" : "Hãy đưa QR thành viên cho nhân viên trước khi thanh toán." } } } },
-    "history.invoice" : { "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Invoice" } }, "vi" : { "stringUnit" : { "state" : "translated", "value" : "Hóa đơn" } } } },
-    "history.rate" : { "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Point rate" } }, "vi" : { "stringUnit" : { "state" : "translated", "value" : "Tỷ lệ điểm" } } } },
-    "history.rate_value" : { "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "%@ VND / point" } }, "vi" : { "stringUnit" : { "state" : "translated", "value" : "%@đ / điểm" } } } },
-    "history.recent" : { "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Recent points" } }, "vi" : { "stringUnit" : { "state" : "translated", "value" : "Điểm gần đây" } } } },
-    "history.store" : { "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Store" } }, "vi" : { "stringUnit" : { "state" : "translated", "value" : "Quán" } } } },
-    "history.store_unknown" : { "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "The Coffee Links" } }, "vi" : { "stringUnit" : { "state" : "translated", "value" : "The Coffee Links" } } } },
-    "history.time" : { "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Time" } }, "vi" : { "stringUnit" : { "state" : "translated", "value" : "Thời gian" } } } },
-    "history.title" : { "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Point history" } }, "vi" : { "stringUnit" : { "state" : "translated", "value" : "Lịch sử tích điểm" } } } },
-    "member.code" : { "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Member code" } }, "vi" : { "stringUnit" : { "state" : "translated", "value" : "Mã thành viên" } } } },
-    "member.current_points" : { "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Available points" } }, "vi" : { "stringUnit" : { "state" : "translated", "value" : "Điểm hiện có" } } } },
-    "member.manual_only" : { "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "The QR is unavailable. Ask staff to enter your member code." } }, "vi" : { "stringUnit" : { "state" : "translated", "value" : "QR hiện không khả dụng. Hãy nhờ nhân viên nhập mã thành viên." } } } },
-    "member.points_unit" : { "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "points" } }, "vi" : { "stringUnit" : { "state" : "translated", "value" : "điểm" } } } },
-    "member.qr_accessibility" : { "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Dynamic member QR code" } }, "vi" : { "stringUnit" : { "state" : "translated", "value" : "Mã QR thành viên động" } } } },
-    "member.qr_error" : { "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Could not create QR" } }, "vi" : { "stringUnit" : { "state" : "translated", "value" : "Không thể tạo QR" } } } },
-    "member.qr_rotates" : { "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Refreshes automatically for your security" } }, "vi" : { "stringUnit" : { "state" : "translated", "value" : "Tự động làm mới để bảo vệ tài khoản" } } } },
-    "member.scan_hint" : { "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Show this before paying" } }, "vi" : { "stringUnit" : { "state" : "translated", "value" : "Đưa mã này trước khi thanh toán" } } } },
-    "member.title" : { "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "The Coffee Links" } }, "vi" : { "stringUnit" : { "state" : "translated", "value" : "The Coffee Links" } } } },
-    "otp_accessibility" : { "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Six-digit verification code" } }, "vi" : { "stringUnit" : { "state" : "translated", "value" : "Mã xác nhận sáu số" } } } },
-    "otp_placeholder" : { "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "000000" } }, "vi" : { "stringUnit" : { "state" : "translated", "value" : "000000" } } } },
-    "profile.continue" : { "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Open my membership" } }, "vi" : { "stringUnit" : { "state" : "translated", "value" : "Mở thẻ thành viên" } } } },
-    "profile.full_name" : { "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Full name" } }, "vi" : { "stringUnit" : { "state" : "translated", "value" : "Họ và tên" } } } },
-    "profile.invalid_name" : { "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Enter your full name." } }, "vi" : { "stringUnit" : { "state" : "translated", "value" : "Vui lòng nhập họ tên của bạn." } } } },
-    "profile.name_once" : { "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Tell us your name to finish creating your member profile." } }, "vi" : { "stringUnit" : { "state" : "translated", "value" : "Cho chúng tôi biết tên của bạn để hoàn tất hồ sơ thành viên." } } } },
-    "profile.name_placeholder" : { "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Nguyen Van An" } }, "vi" : { "stringUnit" : { "state" : "translated", "value" : "Nguyễn Văn An" } } } },
-    "profile.welcome" : { "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Welcome to The Coffee Links" } }, "vi" : { "stringUnit" : { "state" : "translated", "value" : "Chào mừng đến The Coffee Links" } } } }
+    "%lld" : {
+      "comment" : "A view that displays the number of points earned or redeemed in a transaction. The number is positive for points earned and negative for points redeemed.",
+      "isCommentAutoGenerated" : true
+    },
+    "+%lld" : {
+      "comment" : "A view that displays the number of points earned or redeemed in a transaction. The number is positive for points earned and negative for points redeemed.",
+      "isCommentAutoGenerated" : true
+    },
+    "account.delete" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Delete account"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Xóa tài khoản"
+          }
+        }
+      }
+    },
+    "account.delete_confirm" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Permanently delete"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Xóa vĩnh viễn"
+          }
+        }
+      }
+    },
+    "account.delete_explanation" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "We will send a fresh OTP to your phone. Deletion is permanent."
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Chúng tôi sẽ gửi OTP mới đến số điện thoại của bạn. Tài khoản sẽ bị xóa vĩnh viễn."
+          }
+        }
+      }
+    },
+    "account.delete_shared_warning" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This account is shared with the full The Coffee Links app. Deleting it affects both apps."
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tài khoản này dùng chung với app The Coffee Links đầy đủ. Xóa ở đây sẽ ảnh hưởng cả hai app."
+          }
+        }
+      }
+    },
+    "account.member_since" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Member since"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tham gia từ"
+          }
+        }
+      }
+    },
+    "account.name" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Name"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Họ tên"
+          }
+        }
+      }
+    },
+    "account.phone" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Phone"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Số điện thoại"
+          }
+        }
+      }
+    },
+    "account.send_delete_otp" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Send verification code"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gửi mã xác nhận"
+          }
+        }
+      }
+    },
+    "account.sign_out" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sign out"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Đăng xuất"
+          }
+        }
+      }
+    },
+    "account.title" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Account"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tài khoản"
+          }
+        }
+      }
+    },
+    "auth.change_phone" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Use another phone number"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dùng số điện thoại khác"
+          }
+        }
+      }
+    },
+    "auth.invalid_otp" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Enter the 6-digit verification code."
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vui lòng nhập đủ mã xác nhận 6 số."
+          }
+        }
+      }
+    },
+    "auth.invalid_phone" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Enter a valid phone number."
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vui lòng nhập số điện thoại hợp lệ."
+          }
+        }
+      }
+    },
+    "auth.otp_subtitle" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Enter the 6-digit code sent to your phone."
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nhập mã 6 số vừa được gửi đến điện thoại của bạn."
+          }
+        }
+      }
+    },
+    "auth.otp_title" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Verification code"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mã xác nhận"
+          }
+        }
+      }
+    },
+    "auth.phone" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Phone number"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Số điện thoại"
+          }
+        }
+      }
+    },
+    "auth.phone_placeholder" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "090 123 4567"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "090 123 4567"
+          }
+        }
+      }
+    },
+    "auth.send_otp" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Continue"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tiếp tục"
+          }
+        }
+      }
+    },
+    "auth.subtitle" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sign in to collect points and show your member QR at the counter."
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Đăng nhập để tích điểm và đưa QR thành viên cho nhân viên tại quán."
+          }
+        }
+      }
+    },
+    "auth.terms" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "By continuing, you agree to the membership terms and privacy policy."
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Khi tiếp tục, bạn đồng ý với điều khoản thành viên và chính sách riêng tư."
+          }
+        }
+      }
+    },
+    "auth.title" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Your coffee, your points"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cà phê của bạn, điểm của bạn"
+          }
+        }
+      }
+    },
+    "auth.verify" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Verify"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Xác nhận"
+          }
+        }
+      }
+    },
+    "common.close" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Close"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Đóng"
+          }
+        }
+      }
+    },
+    "common.error" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Something went wrong"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Có lỗi xảy ra"
+          }
+        }
+      }
+    },
+    "common.offline_cache" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Offline — showing saved data"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ngoại tuyến — đang hiển thị dữ liệu đã lưu"
+          }
+        }
+      }
+    },
+    "common.view_all" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "View all"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Xem tất cả"
+          }
+        }
+      }
+    },
+    "error.attestation" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This device could not be verified."
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Không thể xác minh thiết bị này."
+          }
+        }
+      }
+    },
+    "error.generic" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Please try again."
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vui lòng thử lại."
+          }
+        }
+      }
+    },
+    "error.invalid_response" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The server returned an invalid response."
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Máy chủ trả về dữ liệu không hợp lệ."
+          }
+        }
+      }
+    },
+    "error.offline" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "You appear to be offline."
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Thiết bị đang ngoại tuyến."
+          }
+        }
+      }
+    },
+    "error.session_expired" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Your session expired. Please sign in again."
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại."
+          }
+        }
+      }
+    },
+    "history.detail" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Point details"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Chi tiết điểm"
+          }
+        }
+      }
+    },
+    "history.eligible_amount" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Eligible amount"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tiền hợp lệ"
+          }
+        }
+      }
+    },
+    "history.empty" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No point activity yet"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Chưa có lịch sử điểm"
+          }
+        }
+      }
+    },
+    "history.empty_message" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Show your member QR before paying at the counter."
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hãy đưa QR thành viên cho nhân viên trước khi thanh toán."
+          }
+        }
+      }
+    },
+    "history.invoice" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Invoice"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hóa đơn"
+          }
+        }
+      }
+    },
+    "history.rate" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Point rate"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tỷ lệ điểm"
+          }
+        }
+      }
+    },
+    "history.rate_value" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ VND / point"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@đ / điểm"
+          }
+        }
+      }
+    },
+    "history.recent" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Recent points"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Điểm gần đây"
+          }
+        }
+      }
+    },
+    "history.store" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Store"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Quán"
+          }
+        }
+      }
+    },
+    "history.store_unknown" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The Coffee Links"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The Coffee Links"
+          }
+        }
+      }
+    },
+    "history.time" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Time"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Thời gian"
+          }
+        }
+      }
+    },
+    "history.title" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Point history"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lịch sử tích điểm"
+          }
+        }
+      }
+    },
+    "member.code" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Member code"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mã thành viên"
+          }
+        }
+      }
+    },
+    "member.current_points" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Available points"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Điểm hiện có"
+          }
+        }
+      }
+    },
+    "member.manual_only" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The QR is unavailable. Ask staff to enter your member code."
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "QR hiện không khả dụng. Hãy nhờ nhân viên nhập mã thành viên."
+          }
+        }
+      }
+    },
+    "member.points_unit" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "points"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "điểm"
+          }
+        }
+      }
+    },
+    "member.qr_accessibility" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dynamic member QR code"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mã QR thành viên động"
+          }
+        }
+      }
+    },
+    "member.qr_error" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Could not create QR"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Không thể tạo QR"
+          }
+        }
+      }
+    },
+    "member.qr_rotates" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Refreshes automatically for your security"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tự động làm mới để bảo vệ tài khoản"
+          }
+        }
+      }
+    },
+    "member.scan_hint" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Show this before paying"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Đưa mã này trước khi thanh toán"
+          }
+        }
+      }
+    },
+    "member.title" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The Coffee Links"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The Coffee Links"
+          }
+        }
+      }
+    },
+    "otp_accessibility" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Six-digit verification code"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mã xác nhận sáu số"
+          }
+        }
+      }
+    },
+    "otp_placeholder" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "000000"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "000000"
+          }
+        }
+      }
+    },
+    "profile.continue" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Open my membership"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mở thẻ thành viên"
+          }
+        }
+      }
+    },
+    "profile.full_name" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Full name"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Họ và tên"
+          }
+        }
+      }
+    },
+    "profile.invalid_name" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Enter your full name."
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vui lòng nhập họ tên của bạn."
+          }
+        }
+      }
+    },
+    "profile.name_once" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tell us your name to finish creating your member profile."
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cho chúng tôi biết tên của bạn để hoàn tất hồ sơ thành viên."
+          }
+        }
+      }
+    },
+    "profile.name_placeholder" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nguyen Van An"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nguyễn Văn An"
+          }
+        }
+      }
+    },
+    "profile.welcome" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Welcome to The Coffee Links"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Chào mừng đến The Coffee Links"
+          }
+        }
+      }
+    },
+    "The Coffee Links" : {
+      "comment" : "The name of the app.",
+      "isCommentAutoGenerated" : true
+    }
   },
-  "version" : "1.0"
+  "version" : "1.1"
 }
