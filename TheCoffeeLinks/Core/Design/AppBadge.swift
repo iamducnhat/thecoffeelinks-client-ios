@@ -9,11 +9,12 @@ struct AppBadge: View {
     var body: some View {
         Text(text)
             .font(AppFont.labelStrong)
+            .tracking(2)
+            .textCase(.uppercase)
             .foregroundStyle(foreground)
-            .padding(.horizontal, 8)
-            .padding(.vertical, 5)
+            .padding(.horizontal, AppSpacing.micro)
+            .frame(height: AppSpacing.badgeHeight)
             .background(background)
-            .clipShape(RoundedRectangle(cornerRadius: AppSpacing.cornerRadius))
     }
 
     private var background: Color {

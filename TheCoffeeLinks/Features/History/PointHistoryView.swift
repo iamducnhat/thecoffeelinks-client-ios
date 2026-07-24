@@ -2,10 +2,13 @@ import SwiftUI
 
 struct PointHistoryView: View {
     @ObservedObject var session: AppSession
+    @Environment(\.dismiss) private var dismiss
 
     var body: some View {
         ScrollView {
-            LazyVStack(spacing: 0) {
+            screenHeader
+
+            LazyVStack(spacing: 5) {
                 ForEach(Array(session.history.enumerated()), id: \.element.id) { index, transaction in
                     NavigationLink(destination: TransactionDetailView(transaction: transaction)) {
                         TransactionRow(transaction: transaction)
@@ -17,29 +20,33 @@ struct PointHistoryView: View {
                         }
                     }
 
-                    if index < session.history.count - 1 {
-                        Rectangle()
-                            .fill(AppColor.borderMuted)
-                            .frame(height: AppSpacing.borderWidth)
-                    }
                 }
                 if session.nextCursor != nil {
                     ProgressView().tint(AppColor.accent).padding()
                 }
             }
-            .background(AppColor.elevated)
-            .clipShape(RoundedRectangle(cornerRadius: AppSpacing.cornerRadius, style: .continuous))
-            .overlay {
-                RoundedRectangle(cornerRadius: AppSpacing.cornerRadius, style: .continuous)
-                    .strokeBorder(AppColor.border, lineWidth: AppSpacing.borderWidth)
-            }
             .padding(.horizontal, AppSpacing.screen)
-            .padding(.vertical, AppSpacing.card)
         }
         .background(AppColor.background)
-        .navigationTitle("history.title")
-        .navigationBarTitleDisplayMode(.inline)
-        .toolbar(.visible, for: .navigationBar)
+        .toolbar(.hidden, for: .navigationBar)
+    }
+
+    private var screenHeader: some View {
+        HStack(spacing: AppSpacing.compact) {
+            Button { dismiss() } label: {
+                IconView(name: "chevron.left", size: 18)
+                    .frame(width: AppSpacing.touchTarget, height: AppSpacing.touchTarget)
+            }
+            .buttonStyle(.plain)
+
+            Text("history.title")
+                .font(AppFont.screenTitle)
+            Spacer()
+        }
+        .foregroundStyle(AppColor.textPrimary)
+        .padding(.horizontal, AppSpacing.screen - 11)
+        .padding(.top, 22)
+        .padding(.bottom, 18)
     }
 }
 
@@ -69,10 +76,22 @@ struct TransactionRow: View {
 
 struct TransactionDetailView: View {
     let transaction: PointTransaction
+    @Environment(\.dismiss) private var dismiss
 
     var body: some View {
         ScrollView {
             VStack(spacing: AppSpacing.section) {
+                HStack(spacing: AppSpacing.compact) {
+                    Button { dismiss() } label: {
+                        IconView(name: "chevron.left", size: 18)
+                            .frame(width: AppSpacing.touchTarget, height: AppSpacing.touchTarget)
+                    }
+                    .buttonStyle(.plain)
+                    Text("history.detail").font(AppFont.screenTitle)
+                    Spacer()
+                }
+                .padding(.leading, -11)
+
                 Text(transaction.points > 0 ? "+\(transaction.points)" : "\(transaction.points)")
                     .font(AppFont.points)
                     .foregroundStyle(transaction.isCredit ? AppColor.success : AppColor.error)
@@ -94,9 +113,7 @@ struct TransactionDetailView: View {
             .padding(AppSpacing.screen)
         }
         .background(AppColor.background)
-        .navigationTitle("history.detail")
-        .navigationBarTitleDisplayMode(.inline)
-        .toolbar(.visible, for: .navigationBar)
+        .toolbar(.hidden, for: .navigationBar)
     }
 
     private func detail(_ key: LocalizedStringKey, _ value: String, mono: Bool = false) -> some View {

@@ -2,43 +2,67 @@ import SwiftUI
 
 struct AccountView: View {
     @ObservedObject var session: AppSession
+    @Environment(\.dismiss) private var dismiss
     @State private var showsDelete = false
 
     var body: some View {
         ScrollView {
-            VStack(spacing: 32) {
-                AppCard {
-                    VStack(spacing: AppSpacing.card) {
-                        accountRow("account.name", session.member?.fullName ?? "—")
-                        accountRow("account.phone", session.member?.maskedPhone ?? "—", mono: true)
-                        accountRow("account.member_since", session.member?.memberSince.formatted(date: .long, time: .omitted) ?? "—")
-                    }
+            VStack(spacing: 0) {
+                screenHeader
+
+                VStack(spacing: 5) {
+                    accountRow("account.name", session.member?.fullName ?? "—")
+                    accountRow("account.phone", session.member?.maskedPhone ?? "—", mono: true)
+                    accountRow("account.member_since", session.member?.memberSince.formatted(date: .long, time: .omitted) ?? "—")
                 }
 
-                VStack(spacing: 10) {
+                VStack(spacing: 5) {
                     AppButton(title: "account.sign_out", style: .secondary) { Task { await session.signOut() } }
                     AppButton(title: "account.delete", style: .destructive) { showsDelete = true }
 
                     Text("account.delete_shared_warning")
                         .font(AppFont.label)
                         .foregroundStyle(AppColor.textSecondary)
-                        .padding(.top, AppSpacing.micro)
+                        .padding(.top, AppSpacing.compact)
                 }
+                .padding(.top, AppSpacing.section)
             }
-            .padding(AppSpacing.screen)
+            .padding(.horizontal, AppSpacing.screen)
+            .padding(.top, 22)
+            .padding(.bottom, AppSpacing.section)
         }
         .background(AppColor.background)
-        .navigationTitle("account.title")
-        .navigationBarTitleDisplayMode(.inline)
-        .toolbar(.visible, for: .navigationBar)
+        .toolbar(.hidden, for: .navigationBar)
         .sheet(isPresented: $showsDelete) { DeleteAccountView(session: session) }
     }
 
-    private func accountRow(_ key: LocalizedStringKey, _ value: String, mono: Bool = false) -> some View {
-        HStack(alignment: .firstTextBaseline) {
-            Text(key).font(AppFont.label).foregroundStyle(AppColor.textSecondary)
+    private var screenHeader: some View {
+        HStack(spacing: AppSpacing.compact) {
+            Button { dismiss() } label: {
+                IconView(name: "chevron.left", size: 18)
+                    .frame(width: AppSpacing.touchTarget, height: AppSpacing.touchTarget)
+            }
+            .buttonStyle(.plain)
+
+            Text("account.title")
+                .font(AppFont.screenTitle)
             Spacer()
-            Text(value).font(mono ? AppFont.monoSmall : AppFont.bodyStrong).multilineTextAlignment(.trailing)
+        }
+        .foregroundStyle(AppColor.textPrimary)
+        .padding(.leading, -11)
+        .padding(.bottom, 18)
+    }
+
+    private func accountRow(_ key: LocalizedStringKey, _ value: String, mono: Bool = false) -> some View {
+        AppRow {
+            Text(key)
+                .font(AppFont.bodyStrong)
+                .foregroundStyle(AppColor.textPrimary)
+        } trailing: {
+            Text(value)
+                .font(mono ? AppFont.monoSmall : AppFont.body)
+                .foregroundStyle(AppColor.textSecondary)
+                .multilineTextAlignment(.trailing)
         }
     }
 }

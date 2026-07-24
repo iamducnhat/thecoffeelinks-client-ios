@@ -14,6 +14,7 @@ struct AppButton: View {
     var isLoading = false
     var isDisabled = false
     var fillsWidth = true
+    var accessibilityIdentifier: String?
     let action: () -> Void
 
     var body: some View {
@@ -27,38 +28,38 @@ struct AppButton: View {
 
                 Text(title)
                     .font(AppFont.button)
-                    .tracking(1.2)
+                    .tracking(2)
+                    .textCase(.uppercase)
             }
             .frame(maxWidth: fillsWidth ? .infinity : nil)
-            .frame(minHeight: AppSpacing.controlHeight)
-            .padding(.horizontal, 18)
+            .frame(height: AppSpacing.buttonHeight)
+            .padding(.horizontal, AppSpacing.row)
             .foregroundStyle(foreground)
             .background(background)
             .overlay(border)
-            .contentShape(RoundedRectangle(cornerRadius: AppSpacing.cornerRadius, style: .continuous))
+            .contentShape(Rectangle())
         }
         .buttonStyle(PressedButtonStyle())
         .disabled(isDisabled || isLoading)
         .opacity(isDisabled ? 0.45 : 1)
+        .appAccessibilityIdentifier(accessibilityIdentifier)
     }
 
     private var foreground: Color {
         switch style {
         case .primary: AppColor.accentForeground
-        case .secondary: AppColor.accent
+        case .secondary: AppColor.textPrimary
         case .ghost: AppColor.textPrimary
-        case .destructive: AppColor.error
+        case .destructive: AppColor.accentForeground
         }
     }
 
     @ViewBuilder private var background: some View {
         switch style {
         case .primary:
-            RoundedRectangle(cornerRadius: AppSpacing.cornerRadius, style: .continuous)
-                .fill(AppColor.accent)
+            AppColor.accent
         case .destructive:
-            RoundedRectangle(cornerRadius: AppSpacing.cornerRadius, style: .continuous)
-                .fill(AppColor.error.opacity(0.08))
+            AppColor.error
         case .secondary, .ghost:
             Color.clear
         }
@@ -66,11 +67,21 @@ struct AppButton: View {
 
     @ViewBuilder private var border: some View {
         switch style {
-        case .secondary, .destructive:
-            RoundedRectangle(cornerRadius: AppSpacing.cornerRadius, style: .continuous)
-                .strokeBorder(foreground, lineWidth: AppSpacing.borderWidth)
-        case .primary, .ghost:
+        case .secondary:
+            Rectangle().strokeBorder(AppColor.border, lineWidth: AppSpacing.borderWidth)
+        case .primary, .ghost, .destructive:
             EmptyView()
+        }
+    }
+}
+
+private extension View {
+    @ViewBuilder
+    func appAccessibilityIdentifier(_ identifier: String?) -> some View {
+        if let identifier {
+            accessibilityIdentifier(identifier)
+        } else {
+            self
         }
     }
 }

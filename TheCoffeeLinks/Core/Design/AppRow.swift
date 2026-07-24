@@ -16,7 +16,11 @@ struct AppRow<Leading: View, Trailing: View>: View {
             trailing
         }
         .padding(AppSpacing.row)
+        .frame(minHeight: AppSpacing.rowHeight)
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(AppColor.elevated)
+        .overlay {
+            Rectangle().strokeBorder(AppColor.border, lineWidth: AppSpacing.borderWidth)
+        }
     }
 }

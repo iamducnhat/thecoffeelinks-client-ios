@@ -7,15 +7,24 @@ struct MemberDashboardView: View {
     var body: some View {
         NavigationStack {
             ScrollView {
-                LazyVStack(alignment: .leading, spacing: AppSpacing.section) {
+                LazyVStack(alignment: .leading, spacing: 0) {
                     header
-                    if session.isOffline { OfflineBanner() }
-                    pointsSummary
+
+                    if session.isOffline {
+                        OfflineBanner()
+                            .padding(.bottom, AppSpacing.compact)
+                    }
+
+                    pointsCard
+
                     memberCodeCard
+                        .padding(.top, 5)
+
                     recentHistory
+                        .padding(.top, AppSpacing.section)
                 }
                 .padding(.horizontal, AppSpacing.screen)
-                .padding(.top, AppSpacing.card)
+                .padding(.top, 22)
                 .padding(.bottom, AppSpacing.section)
             }
             .background(AppColor.background)
@@ -40,76 +49,81 @@ struct MemberDashboardView: View {
     }
 
     private var header: some View {
-        HStack(alignment: .center) {
-            Text("member.title")
-                .font(AppFont.screenTitle)
-                .foregroundStyle(AppColor.textPrimary)
+        HStack(alignment: .top) {
+            VStack(alignment: .leading, spacing: 0) {
+                Text("member.title")
+                    .font(AppFont.screenTitle)
+                    .foregroundStyle(AppColor.textPrimary)
+
+                if let name = session.member?.fullName, !name.isEmpty {
+                    Text(name)
+                        .font(AppFont.body)
+                        .foregroundStyle(AppColor.textPrimary)
+                }
+            }
 
             Spacer()
 
             NavigationLink(destination: AccountView(session: session)) {
-                IconView(name: "person.crop.circle", size: 24)
+                Text("account.title")
+                    .font(AppFont.labelStrong)
+                    .tracking(2)
+                    .textCase(.uppercase)
+                    .underline()
                     .foregroundStyle(AppColor.textPrimary)
-                    .frame(width: AppSpacing.touchTarget, height: AppSpacing.touchTarget)
-                    .contentShape(Rectangle())
+                    .frame(minHeight: AppSpacing.badgeHeight)
             }
             .buttonStyle(.plain)
             .accessibilityLabel(Text("account.title"))
         }
+        .padding(.bottom, 23)
     }
 
-    private var pointsSummary: some View {
-        VStack(alignment: .leading, spacing: AppSpacing.compact) {
-            Text("member.current_points")
-                .font(AppFont.labelStrong)
-                .tracking(1.2)
-                .foregroundStyle(AppColor.textSecondary)
+    private var pointsCard: some View {
+        AppCard {
+            VStack(alignment: .leading, spacing: 6) {
+                AppBadge(text: String(localized: "member.current_points"))
 
-            HStack(alignment: .lastTextBaseline, spacing: 12) {
-                Text((session.member?.points ?? 0).formatted(.number.grouping(.automatic)))
-                    .font(AppFont.points)
-                    .foregroundStyle(AppColor.textPrimary)
+                HStack(alignment: .lastTextBaseline, spacing: AppSpacing.compact) {
+                    Text((session.member?.points ?? 0).formatted(.number.grouping(.automatic)))
+                        .font(AppFont.points)
+                        .foregroundStyle(AppColor.textPrimary)
 
-                Text("member.points_unit")
-                    .font(AppFont.label)
-                    .foregroundStyle(AppColor.textSecondary)
+                    Text("member.points_unit")
+                        .font(AppFont.labelStrong)
+                        .tracking(2)
+                        .textCase(.uppercase)
+                        .foregroundStyle(AppColor.textSecondary)
+                }
             }
-        }
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(.bottom, 24)
-        .overlay(alignment: .bottom) {
-            Rectangle()
-                .fill(AppColor.border)
-                .frame(height: AppSpacing.borderWidth)
         }
     }
 
     private var memberCodeCard: some View {
         AppCard {
-            VStack(spacing: 20) {
-                HStack {
+            VStack(spacing: AppSpacing.row) {
+                HStack(alignment: .top) {
                     VStack(alignment: .leading, spacing: AppSpacing.micro) {
                         Text("member.scan_hint")
-                            .font(AppFont.cardTitle)
+                            .font(AppFont.bodyStrong)
                         Text("member.qr_rotates")
                             .font(AppFont.label)
                             .foregroundStyle(AppColor.textSecondary)
                     }
-                    Spacer()
+                    Spacer(minLength: AppSpacing.compact)
                     if let qr = session.memberQR {
                         TimelineView(.periodic(from: .now, by: 1)) { context in
-                            AppBadge(text: "\(qr.secondsRemaining(at: context.date))s", style: qr.secondsRemaining(at: context.date) > 20 ? .neutral : .warning)
+                            AppBadge(
+                                text: "\(qr.secondsRemaining(at: context.date))s",
+                                style: qr.secondsRemaining(at: context.date) > 20 ? .neutral : .warning
+                            )
                         }
                     }
                 }
 
-                Rectangle()
-                    .fill(AppColor.borderMuted)
-                    .frame(height: AppSpacing.borderWidth)
-
                 if let qr = session.memberQR, !qr.isExpired() {
                     QRCodeView(payload: qr.payload)
-                        .frame(maxWidth: 206)
+                        .frame(width: 206, height: 206)
                         .padding(10)
                         .background(Color.white)
                 } else {
@@ -120,20 +134,22 @@ struct MemberDashboardView: View {
                             .multilineTextAlignment(.center)
                             .foregroundStyle(AppColor.textSecondary)
                     }
-                    .padding(.vertical, AppSpacing.card)
+                    .frame(height: 206)
                 }
 
-                VStack(spacing: AppSpacing.micro) {
+                HStack(alignment: .firstTextBaseline) {
                     Text("member.code")
-                        .font(AppFont.label)
+                        .font(AppFont.labelStrong)
+                        .tracking(2)
+                        .textCase(.uppercase)
                         .foregroundStyle(AppColor.textSecondary)
+                    Spacer()
                     Text(session.member?.memberCode ?? "—")
                         .font(AppFont.mono)
                         .tracking(2)
                         .textSelection(.enabled)
                         .accessibilityIdentifier("member.code")
                 }
-                .padding(.top, AppSpacing.micro)
             }
         }
     }
@@ -143,34 +159,29 @@ struct MemberDashboardView: View {
             HStack {
                 Text("history.recent")
                     .font(AppFont.sectionTitle)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.82)
                 Spacer()
                 NavigationLink("common.view_all", destination: PointHistoryView(session: session))
                     .font(AppFont.labelStrong)
-                    .foregroundStyle(AppColor.accent)
+                    .tracking(2)
+                    .textCase(.uppercase)
+                    .underline()
+                    .foregroundStyle(AppColor.textPrimary)
+                    .fixedSize(horizontal: true, vertical: false)
+                    .accessibilityIdentifier("history.view_all")
             }
+
             if session.history.isEmpty {
                 AppCard { AppStateView(kind: .empty, title: "history.empty", message: "history.empty_message") }
             } else {
-                let transactions = Array(session.history.prefix(5))
-                VStack(spacing: 0) {
-                    ForEach(Array(transactions.enumerated()), id: \.element.id) { index, transaction in
+                VStack(spacing: 5) {
+                    ForEach(Array(session.history.prefix(5))) { transaction in
                         NavigationLink(destination: TransactionDetailView(transaction: transaction)) {
                             TransactionRow(transaction: transaction)
                         }
                         .buttonStyle(.plain)
-
-                        if index < transactions.count - 1 {
-                            Rectangle()
-                                .fill(AppColor.borderMuted)
-                                .frame(height: AppSpacing.borderWidth)
-                        }
                     }
-                }
-                .background(AppColor.elevated)
-                .clipShape(RoundedRectangle(cornerRadius: AppSpacing.cornerRadius, style: .continuous))
-                .overlay {
-                    RoundedRectangle(cornerRadius: AppSpacing.cornerRadius, style: .continuous)
-                        .strokeBorder(AppColor.border, lineWidth: AppSpacing.borderWidth)
                 }
             }
         }

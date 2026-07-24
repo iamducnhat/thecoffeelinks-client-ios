@@ -4,6 +4,7 @@ struct AppTextField: View {
     let title: LocalizedStringKey?
     @Binding var text: String
     let placeholder: LocalizedStringKey
+    var prefix: String?
     var keyboardType: UIKeyboardType = .default
     var textContentType: UITextContentType?
 
@@ -15,21 +16,22 @@ struct AppTextField: View {
                     .foregroundStyle(AppColor.textSecondary)
             }
 
-            TextField(placeholder, text: $text)
-                .font(AppFont.body)
-                .foregroundStyle(AppColor.textPrimary)
-                .keyboardType(keyboardType)
-                .textContentType(textContentType)
-                .textInputAutocapitalization(keyboardType == .phonePad || keyboardType == .numberPad ? .never : .words)
-                .padding(.horizontal, AppSpacing.row)
-                .padding(.vertical, 12)
-                .frame(minHeight: AppSpacing.controlHeight)
-                .background(AppColor.elevated)
-                .clipShape(RoundedRectangle(cornerRadius: AppSpacing.cornerRadius, style: .continuous))
-                .overlay {
-                    RoundedRectangle(cornerRadius: AppSpacing.cornerRadius, style: .continuous)
-                        .strokeBorder(AppColor.border, lineWidth: AppSpacing.borderWidth)
+            HStack(spacing: AppSpacing.row) {
+                if let prefix {
+                    Text(prefix)
+                        .font(AppFont.body)
+                        .foregroundStyle(AppColor.textPrimary)
                 }
+                TextField(placeholder, text: $text)
+                    .font(AppFont.body)
+                    .foregroundStyle(AppColor.textPrimary)
+                    .keyboardType(keyboardType)
+                    .textContentType(textContentType)
+                    .textInputAutocapitalization(keyboardType == .phonePad || keyboardType == .numberPad ? .never : .words)
+            }
+            .padding(.horizontal, AppSpacing.row)
+            .frame(height: AppSpacing.fieldHeight)
+            .background(AppColor.surface)
         }
     }
 }
@@ -39,20 +41,15 @@ struct AppOTPField: View {
 
     var body: some View {
         TextField("otp_placeholder", text: $code)
-            .font(AppFont.points)
+            .font(AppFont.screenTitle)
             .multilineTextAlignment(.center)
             .keyboardType(.numberPad)
             .textContentType(.oneTimeCode)
             .onChange(of: code) { value in
                 code = String(value.filter(\.isNumber).prefix(6))
             }
-            .padding(.vertical, 12)
-            .background(AppColor.elevated)
-            .clipShape(RoundedRectangle(cornerRadius: AppSpacing.cornerRadius, style: .continuous))
-            .overlay {
-                RoundedRectangle(cornerRadius: AppSpacing.cornerRadius, style: .continuous)
-                    .strokeBorder(AppColor.border, lineWidth: AppSpacing.borderWidth)
-            }
+            .frame(height: AppSpacing.fieldHeight)
+            .background(AppColor.surface)
             .accessibilityLabel(Text("otp_accessibility"))
     }
 }

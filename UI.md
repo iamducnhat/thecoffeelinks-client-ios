@@ -6,10 +6,10 @@ The visual character is quiet, tactile and editorial: warm paper behind dark ink
 
 - Horizontal screen margin: **23pt**.
 - Major section gap: **40pt**; compact content gap: **8pt**.
-- Card padding: **18pt**.
-- Controls use a **52pt** minimum height; icon-only controls retain a 44pt tap target.
-- Corner radius: **4pt continuous**.
-- Border: **0.75pt**, semantic `Border` color.
+- Card and row inset: **13pt**.
+- Text fields and rows are **49pt** high; CTA buttons are **38pt** high. Icon-only controls retain a 44pt tap target.
+- Corner radius: **0pt**. Components use crisp rectangular geometry.
+- Border: **1pt**, semantic `Border` color.
 - Main text: `TextInk`; supporting text: `TextMuted`.
 - Background: `BackgroundPaper`; cards: white or `SurfaceCard`.
 - Primary accent: `PrimaryEspresso`; use semantic success/warning/error colors for status only.
@@ -28,7 +28,7 @@ Use values from `Core/Design/DesignTokens.swift`; do not repeat raw values in fe
 
 The entire shared kit is intentionally small: `AppButton`, `AppCard`, `AppTextField`, `AppRow`, `AppBadge`, `AppStateView` and `IconView`. Generic icons use SF Symbols. Only app icon, logos, palette and launch identity remain as assets.
 
-Prefer one clear hierarchy per screen. Borders define groups; avoid glass, neomorphism, large shadows and ornamental motion. Interactions may use a restrained 120ms press animation. QR expiry and offline states must remain legible without relying on color alone.
+Prefer one clear hierarchy per screen. Borders define groups; avoid glass, neomorphism, large shadows, rounded cards and ornamental motion. Interactions may use a restrained 120ms press animation. QR expiry and offline states must remain legible without relying on color alone.
 
 Do not turn every section or row into its own card. Totals may sit directly on the paper background; repeating rows share one bordered container with internal hairlines. Keep the dashboard header in the content flow so iOS toolbar glass does not become the strongest visual element.
 

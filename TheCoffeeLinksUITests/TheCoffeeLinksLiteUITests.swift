@@ -21,17 +21,17 @@ final class TheCoffeeLinksLiteUITests: XCTestCase {
         XCTAssertTrue(phone.waitForExistence(timeout: 3))
         phone.tap()
         phone.typeText("0901234567")
-        app.buttons["Continue"].tap()
+        app.buttons["auth.send_otp"].tap()
         let otp = app.textFields["Six-digit verification code"]
         XCTAssertTrue(otp.waitForExistence(timeout: 2))
         otp.tap()
         otp.typeText("123456")
-        app.buttons["Verify"].tap()
+        app.buttons["auth.verify"].tap()
         let name = app.textFields["Nguyen Van An"]
         XCTAssertTrue(name.waitForExistence(timeout: 2))
         name.tap()
         name.typeText("Nguyen An")
-        app.buttons["Open my membership"].tap()
+        app.buttons["profile.continue"].tap()
         XCTAssertTrue(app.staticTexts["1,280"].waitForExistence(timeout: 3))
     }
 
@@ -43,7 +43,7 @@ final class TheCoffeeLinksLiteUITests: XCTestCase {
 
     func testHistoryShowsStoreAndInvoice() {
         let app = app()
-        app.buttons["View all"].tap()
+        app.buttons["history.view_all"].tap()
         XCTAssertTrue(app.staticTexts["The Coffee Links · Quận 1"].waitForExistence(timeout: 2))
         XCTAssertTrue(app.staticTexts["TCL-INV-0102"].exists)
     }
